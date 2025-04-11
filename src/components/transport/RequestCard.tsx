@@ -20,6 +20,13 @@ const RequestCard = ({ request }: RequestCardProps) => {
     return `${start.getHours()}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours()}:${end.getMinutes().toString().padStart(2, '0')}`;
   };
 
+  const statusColors = {
+    pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    matched: 'bg-blue-50 text-blue-700 border-blue-200',
+    in_transit: 'bg-purple-50 text-purple-700 border-purple-200',
+    completed: 'bg-green-50 text-green-700 border-green-200'
+  };
+
   return (
     <div className="border rounded-lg shadow-sm overflow-hidden bg-white hover:shadow-md transition-shadow">
       <div className="p-4">
@@ -27,12 +34,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h3 className="font-semibold text-lg">{request.title}</h3>
-              <Badge variant="outline" className={`${
-                request.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                request.status === 'matched' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                request.status === 'in_transit' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                'bg-green-50 text-green-700 border-green-200'
-              }`}>
+              <Badge variant="outline" className={statusColors[request.status as keyof typeof statusColors]}>
                 {request.status.replace('_', ' ')}
               </Badge>
             </div>
@@ -43,7 +45,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
           </div>
           
           <div className="text-right">
-            <div className="text-xl font-semibold text-brand-blue">€{request.budget}</div>
+            <div className="text-xl font-semibold text-brand-primary">€{request.budget}</div>
             <div className="text-xs text-gray-500">budget</div>
           </div>
         </div>
@@ -65,7 +67,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
                 )}
               </div>
               <div className="flex items-center">
-                <div className="flex text-yellow-400">
+                <div className="flex text-brand-orange">
                   <Star className="h-3.5 w-3.5 fill-current" />
                   <span className="ml-1 text-sm text-gray-700">{request.requester.rating}</span>
                 </div>
@@ -99,7 +101,12 @@ const RequestCard = ({ request }: RequestCardProps) => {
           Posted {new Date(request.createdAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
         </div>
         <Link to={`/request/${request.id}`}>
-          <Button size="sm">View Details</Button>
+          <Button 
+            size="sm"
+            className="bg-brand-primary hover:bg-brand-primary/90 text-white transition-colors"
+          >
+            View Details
+          </Button>
         </Link>
       </div>
     </div>
