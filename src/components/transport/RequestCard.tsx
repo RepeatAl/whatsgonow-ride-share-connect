@@ -1,5 +1,5 @@
 
-import { ArrowRight, Star, Clock, Calendar, DollarSign, Shield } from "lucide-react";
+import { ArrowRight, Star, Clock, Calendar, DollarSign, Shield, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TransportRequest } from "@/data/mockData";
