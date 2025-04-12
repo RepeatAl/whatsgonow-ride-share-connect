@@ -14,15 +14,16 @@ import {
   LayoutDashboard
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const navLinks = [
-    { name: "Find Transport", path: "/find-transport", icon: <Package className="h-5 w-5 mr-2" /> },
-    { name: "Offer Transport", path: "/offer-transport", icon: <Car className="h-5 w-5 mr-2" /> },
-    { name: "Messages", path: "/messages", icon: <MessageCircle className="h-5 w-5 mr-2" /> },
+    { name: "Find Transport", path: "/find-transport", icon: <Package className="h-5 w-5 mr-2" />, tooltip: "Browse available transports" },
+    { name: "Offer Transport", path: "/offer-transport", icon: <Car className="h-5 w-5 mr-2" />, tooltip: "Offer your transport services" },
+    { name: "Messages", path: "/messages", icon: <MessageCircle className="h-5 w-5 mr-2" />, tooltip: "View your messages" },
   ];
 
   return (
@@ -42,15 +43,22 @@ const Navbar = () => {
 
       {isMobile ? (
         <div className="flex items-center gap-2">
-          <Link to="/notifications">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-primary"></span>
-            </Button>
-          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link to="/notifications">
+                <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-primary" aria-hidden="true"></span>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Notifications</p>
+            </TooltipContent>
+          </Tooltip>
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label={isMenuOpen ? "Close menu" : "Open menu"}>
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </SheetTrigger>
@@ -91,40 +99,69 @@ const Navbar = () => {
       ) : (
         <div className="flex items-center gap-4">
           {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
-            >
-              {link.icon}
-              <span>{link.name}</span>
-            </Link>
+            <Tooltip key={link.path}>
+              <TooltipTrigger asChild>
+                <Link
+                  to={link.path}
+                  className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
+                >
+                  {link.icon}
+                  <span>{link.name}</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{link.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
           ))}
           <div className="h-6 border-l mx-1"></div>
-          <Link to="/notifications">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-primary"></span>
-            </Button>
-          </Link>
-          <Link to="/profile">
-            <Button 
-              variant="outline" 
-              className="gap-2 hover:bg-brand-primary hover:text-white transition-colors"
-            >
-              <User className="h-5 w-5" />
-              <span>Profile</span>
-            </Button>
-          </Link>
-          <Link to="/manager-dashboard">
-            <Button 
-              variant="outline" 
-              className="gap-2 hover:bg-brand-primary hover:text-white transition-colors"
-            >
-              <LayoutDashboard className="h-5 w-5" />
-              <span>Dashboard</span>
-            </Button>
-          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link to="/notifications">
+                <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-primary" aria-hidden="true"></span>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Notifications</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link to="/profile">
+                <Button 
+                  variant="outline" 
+                  className="gap-2 hover:bg-brand-primary hover:text-white transition-colors"
+                  aria-label="Profile"
+                >
+                  <User className="h-5 w-5" />
+                  <span>Profile</span>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View your profile</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link to="/manager-dashboard">
+                <Button 
+                  variant="outline" 
+                  className="gap-2 hover:bg-brand-primary hover:text-white transition-colors"
+                  aria-label="Dashboard"
+                >
+                  <LayoutDashboard className="h-5 w-5" />
+                  <span>Dashboard</span>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Community Manager Dashboard</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )}
     </nav>

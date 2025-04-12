@@ -22,13 +22,25 @@ const Footer = () => {
               The crowd-logistics platform for spontaneous and planned transports.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-500 hover:text-brand-primary transition-colors">
+              <a 
+                href="#" 
+                className="text-gray-500 hover:text-brand-primary transition-colors"
+                aria-label="Facebook"
+              >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-500 hover:text-brand-primary transition-colors">
+              <a 
+                href="#" 
+                className="text-gray-500 hover:text-brand-primary transition-colors"
+                aria-label="Instagram"
+              >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-500 hover:text-brand-primary transition-colors">
+              <a 
+                href="#" 
+                className="text-gray-500 hover:text-brand-primary transition-colors"
+                aria-label="Twitter"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
             </div>
@@ -68,10 +80,12 @@ const Footer = () => {
         <div className="border-t pt-6 mt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-500 text-sm">© {new Date().getFullYear()} whatsgonow. All rights reserved.</p>
-            <div className="flex space-x-4 mt-4 md:mt-0">
+            <div className="flex flex-wrap gap-4 mt-4 md:mt-0 justify-center">
+              <Link to="/privacy-policy" className="text-gray-500 hover:text-brand-primary text-sm">Privacy Policy</Link>
               <Link to="/terms" className="text-gray-500 hover:text-brand-primary text-sm">Terms of Service</Link>
-              <Link to="/privacy" className="text-gray-500 hover:text-brand-primary text-sm">Privacy Policy</Link>
-              <Link to="/cookies" className="text-gray-500 hover:text-brand-primary text-sm">Cookies</Link>
+              <Link to="/cookies" className="text-gray-500 hover:text-brand-primary text-sm">Cookie Policy</Link>
+              <Link to="/data-deletion" className="text-gray-500 hover:text-brand-primary text-sm">Data Deletion</Link>
+              <Link to="/imprint" className="text-gray-500 hover:text-brand-primary text-sm">Imprint</Link>
             </div>
           </div>
         </div>
