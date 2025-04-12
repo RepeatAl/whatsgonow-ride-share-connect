@@ -19,6 +19,8 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DataDeletion from "./pages/DataDeletion";
 import Feedback from "./pages/Feedback";
+import FAQ from "./pages/FAQ";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
 import LaunchProvider from "./components/launch/LaunchProvider";
@@ -79,8 +81,10 @@ const App = () => {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/data-deletion" element={<DataDeletion />} />
               
-              {/* Feedback Route */}
+              {/* Feedback & Support Routes */}
               <Route path="/feedback" element={<Feedback />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/support" element={<Support />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

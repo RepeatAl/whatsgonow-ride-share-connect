@@ -53,6 +53,7 @@ const Footer = () => {
               <li><Link to="/how-it-works" className="text-gray-600 hover:text-brand-primary text-sm">How It Works</Link></li>
               <li><Link to="/pricing" className="text-gray-600 hover:text-brand-primary text-sm">Pricing</Link></li>
               <li><Link to="/safety" className="text-gray-600 hover:text-brand-primary text-sm">Safety & Insurance</Link></li>
+              <li><Link to="/faq" className="text-gray-600 hover:text-brand-primary text-sm">FAQ</Link></li>
             </ul>
           </div>
           
@@ -63,6 +64,7 @@ const Footer = () => {
               <li><Link to="/driver-requirements" className="text-gray-600 hover:text-brand-primary text-sm">Requirements</Link></li>
               <li><Link to="/earnings" className="text-gray-600 hover:text-brand-primary text-sm">Earnings</Link></li>
               <li><Link to="/safety" className="text-gray-600 hover:text-brand-primary text-sm">Safety & Insurance</Link></li>
+              <li><Link to="/support" className="text-gray-600 hover:text-brand-primary text-sm">Support</Link></li>
             </ul>
           </div>
           
@@ -73,6 +75,7 @@ const Footer = () => {
               <li><Link to="/contact" className="text-gray-600 hover:text-brand-primary text-sm">Contact</Link></li>
               <li><Link to="/careers" className="text-gray-600 hover:text-brand-primary text-sm">Careers</Link></li>
               <li><Link to="/community-managers" className="text-gray-600 hover:text-brand-primary text-sm">Community Managers</Link></li>
+              <li><Link to="/feedback" className="text-gray-600 hover:text-brand-primary text-sm">Share Feedback</Link></li>
             </ul>
           </div>
         </div>
@@ -85,6 +88,8 @@ const Footer = () => {
               <Link to="/terms" className="text-gray-500 hover:text-brand-primary text-sm">Terms of Service</Link>
               <Link to="/cookies" className="text-gray-500 hover:text-brand-primary text-sm">Cookie Policy</Link>
               <Link to="/data-deletion" className="text-gray-500 hover:text-brand-primary text-sm">Data Deletion</Link>
+              <Link to="/faq" className="text-gray-500 hover:text-brand-primary text-sm">FAQ</Link>
+              <Link to="/support" className="text-gray-500 hover:text-brand-primary text-sm">Support</Link>
               <Link to="/imprint" className="text-gray-500 hover:text-brand-primary text-sm">Imprint</Link>
             </div>
           </div>
