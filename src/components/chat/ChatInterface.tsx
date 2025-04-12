@@ -14,14 +14,16 @@ import {
   Clock,
   Truck,
   CheckCircle2,
-  Info
+  Info,
+  BadgeDollarSign
 } from "lucide-react";
 import { TransportRequest } from "@/data/mockData";
 import ChatMessage from "./ChatMessage";
 import { TrackingStatus } from "@/pages/Tracking";
+import { PaymentStatus } from "@/types/payment";
 
 // Define chat message types
-export type MessageType = "message" | "offer" | "counter_offer" | "accept" | "reject" | "status";
+export type MessageType = "message" | "offer" | "counter_offer" | "accept" | "reject" | "status" | "payment";
 
 export interface ChatMessage {
   id: string;
@@ -31,6 +33,7 @@ export interface ChatMessage {
   timestamp: Date;
   price?: number;
   status?: TrackingStatus;
+  paymentStatus?: PaymentStatus;
 }
 
 interface ChatInterfaceProps {
@@ -52,6 +55,7 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
+  const previousPaymentStatus = useRef<PaymentStatus | undefined>(order.paymentStatus);
 
   // Update local state when prop changes
   useEffect(() => {
@@ -88,6 +92,38 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
       });
     }
   }, [orderStatus, isConnected]);
+
+  // Handle payment status changes
+  useEffect(() => {
+    if (isConnected && order.paymentStatus && order.paymentStatus !== previousPaymentStatus.current) {
+      // Create payment status message content
+      let content = "";
+      
+      if (order.paymentStatus === "reserved") {
+        content = "Die Zahlung wurde vorgemerkt. Der Betrag wird nach erfolgreicher Lieferung freigegeben.";
+      } else if (order.paymentStatus === "paid") {
+        content = "Die Zahlung wurde abgeschlossen. Vielen Dank für Ihren Auftrag!";
+      } else if (order.paymentStatus === "cancelled") {
+        content = "Die Zahlungsreservierung wurde storniert.";
+      }
+      
+      if (content) {
+        const paymentMessage: ChatMessage = {
+          id: `payment-${Date.now()}`,
+          sender: "system",
+          type: "payment",
+          content,
+          timestamp: new Date(),
+          paymentStatus: order.paymentStatus
+        };
+        
+        setMessages(prev => [...prev, paymentMessage]);
+      }
+      
+      // Update the ref for comparison in next render
+      previousPaymentStatus.current = order.paymentStatus;
+    }
+  }, [order.paymentStatus, isConnected]);
 
   // Simulate WebSocket connection
   useEffect(() => {
@@ -267,17 +303,35 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
       default: return <Info className="h-4 w-4 text-gray-500" />;
     }
   };
+  
+  const getPaymentStatusIcon = (status: PaymentStatus) => {
+    switch(status) {
+      case "reserved": return <BadgeDollarSign className="h-4 w-4 text-blue-500" />;
+      case "paid": return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case "cancelled": return <X className="h-4 w-4 text-red-500" />;
+      default: return <DollarSign className="h-4 w-4 text-gray-500" />;
+    }
+  };
 
   // Add status class to message styling
   const getMessageStatusClass = (message: ChatMessage) => {
-    if (message.type !== "status") return "";
-    
-    switch(message.status) {
-      case "pickup": return "bg-blue-50 border-blue-200";
-      case "transit": return "bg-yellow-50 border-yellow-200";
-      case "delivered": return "bg-green-50 border-green-200";
-      default: return "bg-gray-50 border-gray-200";
+    if (message.type === "status") {
+      switch(message.status) {
+        case "pickup": return "bg-blue-50 border-blue-200";
+        case "transit": return "bg-yellow-50 border-yellow-200";
+        case "delivered": return "bg-green-50 border-green-200";
+        default: return "bg-gray-50 border-gray-200";
+      }
+    } else if (message.type === "payment") {
+      switch(message.paymentStatus) {
+        case "reserved": return "bg-blue-50 border-blue-200";
+        case "paid": return "bg-green-50 border-green-200";
+        case "cancelled": return "bg-red-50 border-red-200";
+        default: return "bg-gray-50 border-gray-200";
+      }
     }
+    
+    return "bg-gray-50 border-gray-200";
   };
 
   // Get status display text
@@ -309,20 +363,35 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
               </span>
             </div>
           )}
+          {order.paymentStatus && order.paymentStatus !== "pending" && (
+            <div className={`flex items-center text-sm ml-2 px-2 py-1 rounded-full ${
+              order.paymentStatus === "reserved" ? "bg-blue-50 text-blue-700" :
+              order.paymentStatus === "paid" ? "bg-green-50 text-green-700" :
+              "bg-red-50 text-red-700"
+            }`}>
+              {getPaymentStatusIcon(order.paymentStatus)}
+              <span className="ml-1 font-medium">
+                {order.paymentStatus === "reserved" ? "Zahlung vorgemerkt" :
+                 order.paymentStatus === "paid" ? "Zahlung abgeschlossen" :
+                 "Zahlung storniert"}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       
       <ScrollArea ref={scrollAreaRef} className="flex-grow px-4 py-2">
         <div className="space-y-4">
           {messages.map((message) => {
-            if (message.type === "status") {
+            if (message.type === "status" || message.type === "payment") {
               return (
                 <div key={message.id} className={`p-2 border rounded-md text-sm ${getMessageStatusClass(message)}`}>
                   <div className="flex items-center justify-center gap-2">
-                    {message.status && getStatusIcon(message.status)}
+                    {message.type === "status" && message.status && getStatusIcon(message.status)}
+                    {message.type === "payment" && message.paymentStatus && getPaymentStatusIcon(message.paymentStatus)}
                     <span>{message.content}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 mt-1 text-center">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>

@@ -3,13 +3,23 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Navigation, Clock, Truck, CheckCircle2 } from "lucide-react";
+import { 
+  Loader2, 
+  ArrowLeft, 
+  Navigation, 
+  Clock, 
+  Truck, 
+  CheckCircle2,
+  BadgeDollarSign
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TransportRequest } from "@/data/mockData";
 import ChatInterface from "@/components/chat/ChatInterface";
 import RouteMap from "@/components/map/RouteMap";
 import StatusUpdateButtons from "@/components/tracking/StatusUpdateButtons";
 import { TrackingStatus } from "@/pages/Tracking";
+import { paymentService } from "@/services/paymentService";
+import { PaymentStatus } from "@/types/payment";
 
 const Deal = () => {
   const { orderId } = useParams();
@@ -19,6 +29,7 @@ const Deal = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<TrackingStatus>("pickup");
   const [statusUpdateTime, setStatusUpdateTime] = useState<Date | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   // Fetch order details
   useEffect(() => {
@@ -69,6 +80,48 @@ const Deal = () => {
     }, 1500);
   };
 
+  // Handle payment reservation
+  const handleReservePayment = async () => {
+    if (!order) return;
+    
+    setIsProcessingPayment(true);
+    try {
+      // Simulate payment reservation
+      const result = await paymentService.reservePayment(order.id, order.budget);
+      
+      if (result.success) {
+        // Update order locally with new payment status and reference
+        const updatedOrder = { 
+          ...order, 
+          paymentStatus: result.status as PaymentStatus,
+          paymentReference: result.reference
+        };
+        setOrder(updatedOrder);
+        
+        // Show success message
+        toast({
+          title: "Zahlung vorgemerkt",
+          description: "Die Zahlung wurde erfolgreich vorgemerkt. Sie wird nach Lieferung freigegeben.",
+        });
+        
+        // Navigate to payment status page
+        navigate(`/payment-status/${orderId}`);
+      }
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Die Zahlung konnte nicht vorgemerkt werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleViewPaymentStatus = () => {
+    navigate(`/payment-status/${orderId}`);
+  };
+
   // Status badge style based on current status
   const getStatusBadgeClass = () => {
     switch(status) {
@@ -86,6 +139,55 @@ const Deal = () => {
       case "transit": return <Truck className="h-4 w-4" />;
       case "delivered": return <CheckCircle2 className="h-4 w-4" />;
       default: return null;
+    }
+  };
+  
+  // Get payment status button based on current payment status
+  const getPaymentButton = () => {
+    if (!order) return null;
+    
+    switch (order.paymentStatus) {
+      case "reserved":
+        return (
+          <Button 
+            onClick={handleViewPaymentStatus}
+            variant="outline"
+            className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+          >
+            <BadgeDollarSign className="h-4 w-4 mr-2" />
+            Zahlung vorgemerkt
+          </Button>
+        );
+      case "paid":
+        return (
+          <Button 
+            onClick={handleViewPaymentStatus}
+            variant="outline"
+            className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+          >
+            <CheckCircle2 className="h-4 w-4 mr-2" />
+            Zahlung abgeschlossen
+          </Button>
+        );
+      default:
+        return (
+          <Button 
+            onClick={handleReservePayment}
+            disabled={isProcessingPayment}
+          >
+            {isProcessingPayment ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Verarbeitung...
+              </>
+            ) : (
+              <>
+                <BadgeDollarSign className="h-4 w-4 mr-2" />
+                Zahlung vormerkenn
+              </>
+            )}
+          </Button>
+        );
     }
   };
 
@@ -122,14 +224,16 @@ const Deal = () => {
                 </div>
                 <div className="flex flex-col items-end">
                   <div className="text-lg font-semibold text-brand-primary">€{order.budget}</div>
-                  <Button 
-                    onClick={handleStartTracking}
-                    className="mt-2"
-                    size="sm"
-                  >
-                    <Navigation className="h-4 w-4 mr-2" />
-                    Live-Tracking
-                  </Button>
+                  <div className="flex gap-2 mt-2">
+                    <Button 
+                      onClick={handleStartTracking}
+                      size="sm"
+                    >
+                      <Navigation className="h-4 w-4 mr-2" />
+                      Live-Tracking
+                    </Button>
+                    {getPaymentButton()}
+                  </div>
                 </div>
               </div>
             </div>

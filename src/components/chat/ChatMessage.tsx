@@ -1,4 +1,5 @@
-import { Check, DollarSign, MessageSquare, ThumbsUp, ThumbsDown, Info } from "lucide-react";
+
+import { Check, DollarSign, MessageSquare, ThumbsUp, ThumbsDown, Info, BadgeDollarSign, CheckCircle2 } from "lucide-react";
 import { ChatMessage as ChatMessageType } from "./ChatInterface";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,13 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
         return <ThumbsDown className="h-4 w-4" />;
       case "status":
         return <Info className="h-4 w-4 text-blue-500" />;
+      case "payment":
+        if (message.paymentStatus === "reserved") {
+          return <BadgeDollarSign className="h-4 w-4 text-blue-500" />;
+        } else if (message.paymentStatus === "paid") {
+          return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        }
+        return <DollarSign className="h-4 w-4" />;
       default:
         return <MessageSquare className="h-4 w-4" />;
     }
@@ -35,6 +43,10 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
         return isUserMessage ? "bg-red-100" : "bg-red-600";
       case "status":
         return "bg-blue-50";
+      case "payment":
+        if (message.paymentStatus === "reserved") return "bg-blue-50";
+        if (message.paymentStatus === "paid") return "bg-green-50";
+        return "bg-gray-50";
       default:
         return isUserMessage ? "bg-blue-100" : "bg-brand-primary";
     }
@@ -43,6 +55,12 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
   const getMessageTypeTextColor = () => {
     if (message.type === "status") {
       return "text-blue-700";
+    }
+    
+    if (message.type === "payment") {
+      if (message.paymentStatus === "reserved") return "text-blue-700";
+      if (message.paymentStatus === "paid") return "text-green-700";
+      return "text-gray-700";
     }
     
     if (isUserMessage) {
@@ -64,13 +82,16 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
     <div className={cn(
       "flex",
       isUserMessage ? "justify-start" : "justify-end",
-      message.type === "status" && "justify-center"
+      (message.type === "status" || message.type === "payment") && "justify-center"
     )}>
       <div className={cn(
         "max-w-[80%] rounded-lg p-3 shadow-sm",
         getMessageTypeBg(),
         getMessageTypeTextColor(),
-        message.type === "status" && "border border-blue-200 w-full text-center"
+        (message.type === "status" || message.type === "payment") && "border w-full text-center",
+        message.type === "status" && "border-blue-200",
+        message.type === "payment" && message.paymentStatus === "reserved" && "border-blue-200",
+        message.type === "payment" && message.paymentStatus === "paid" && "border-green-200"
       )}>
         {(message.type === "offer" || message.type === "counter_offer") && message.price && (
           <div className="font-bold mb-1 flex items-center">
@@ -85,6 +106,12 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
         <div className="flex gap-1 items-start">
           {message.type === "status" && (
             <Info className="h-4 w-4 mr-1 text-blue-500" />
+          )}
+          {message.type === "payment" && message.paymentStatus === "reserved" && (
+            <BadgeDollarSign className="h-4 w-4 mr-1 text-blue-500" />
+          )}
+          {message.type === "payment" && message.paymentStatus === "paid" && (
+            <CheckCircle2 className="h-4 w-4 mr-1 text-green-500" />
           )}
           <div className="flex-grow">{message.content}</div>
         </div>

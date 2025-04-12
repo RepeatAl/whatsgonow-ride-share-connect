@@ -1,4 +1,3 @@
-
 export interface Transport {
   id: string;
   from: string;
@@ -58,6 +57,8 @@ export interface TransportRequest {
     verified: boolean;
   };
   createdAt: string;
+  paymentStatus?: "pending" | "reserved" | "paid" | "cancelled";
+  paymentReference?: string;
 }
 
 export const mockTransports: Transport[] = [
@@ -229,7 +230,9 @@ export const mockRequests: TransportRequest[] = [
       avatar: "https://randomuser.me/api/portraits/men/42.jpg",
       verified: true
     },
-    createdAt: "2025-04-13 09:23"
+    createdAt: "2025-04-13 09:23",
+    paymentStatus: "pending",
+    paymentReference: "PAY-R1-ABCDEF"
   },
   {
     id: "r2",
@@ -261,7 +264,9 @@ export const mockRequests: TransportRequest[] = [
       avatar: "https://randomuser.me/api/portraits/women/56.jpg",
       verified: true
     },
-    createdAt: "2025-04-12 16:45"
+    createdAt: "2025-04-12 16:45",
+    paymentStatus: "pending",
+    paymentReference: "PAY-R2-XYZABC"
   },
   {
     id: "r3",
@@ -293,6 +298,8 @@ export const mockRequests: TransportRequest[] = [
       avatar: "https://randomuser.me/api/portraits/men/22.jpg",
       verified: false
     },
-    createdAt: "2025-04-12 11:30"
+    createdAt: "2025-04-12 11:30",
+    paymentStatus: "pending",
+    paymentReference: "PAY-R3-123456"
   }
 ];
