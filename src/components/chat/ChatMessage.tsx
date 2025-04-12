@@ -1,5 +1,5 @@
 
-import { Check, DollarSign, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Check, DollarSign, MessageSquare, ThumbsUp, ThumbsDown, Info } from "lucide-react";
 import { ChatMessage as ChatMessageType } from "./ChatInterface";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,8 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
         return <ThumbsUp className="h-4 w-4" />;
       case "reject":
         return <ThumbsDown className="h-4 w-4" />;
+      case "status":
+        return <Info className="h-4 w-4" />;
       default:
         return <MessageSquare className="h-4 w-4" />;
     }
@@ -32,12 +34,18 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
         return isUserMessage ? "bg-green-100" : "bg-green-600";
       case "reject":
         return isUserMessage ? "bg-red-100" : "bg-red-600";
+      case "status":
+        return "bg-blue-50";
       default:
         return isUserMessage ? "bg-blue-100" : "bg-brand-primary";
     }
   };
 
   const getMessageTypeTextColor = () => {
+    if (message.type === "status") {
+      return "text-blue-700";
+    }
+    
     if (isUserMessage) {
       return "text-gray-800";
     }
@@ -56,12 +64,14 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
   return (
     <div className={cn(
       "flex",
-      isUserMessage ? "justify-start" : "justify-end"
+      isUserMessage ? "justify-start" : "justify-end",
+      message.type === "status" && "justify-center"
     )}>
       <div className={cn(
         "max-w-[80%] rounded-lg p-3 shadow-sm",
         getMessageTypeBg(),
-        getMessageTypeTextColor()
+        getMessageTypeTextColor(),
+        message.type === "status" && "border border-blue-200 w-full text-center"
       )}>
         {(message.type === "offer" || message.type === "counter_offer") && message.price && (
           <div className="font-bold mb-1 flex items-center">
@@ -74,6 +84,9 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
         )}
         
         <div className="flex gap-1 items-start">
+          {message.type === "status" && (
+            <Info className="h-4 w-4 mr-1 text-blue-500" />
+          )}
           <div className="flex-grow">{message.content}</div>
         </div>
         
