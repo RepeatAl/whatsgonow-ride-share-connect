@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -31,10 +30,8 @@ const formSchema = z.object({
   reason: z.string().min(10, {
     message: "Please provide more detail about your request (min 10 characters).",
   }),
-  confirmDelete: z.literal(true, {
-    errorMap: () => ({
-      message: "You must confirm that you understand the deletion process.",
-    }),
+  confirmDelete: z.boolean().refine(val => val === true, {
+    message: "You must confirm that you understand the deletion process.",
   }),
 });
 
