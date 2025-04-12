@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +15,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import QRCode from "@/components/payment/QRCode";
+import UserRating from "@/components/rating/UserRating";
 import { mockRequests, TransportRequest } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { paymentService } from "@/services/paymentService";
@@ -29,11 +29,9 @@ const PaymentStatus = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [order, setOrder] = useState<TransportRequest | null>(null);
 
-  // Fetch order data
   const { data: orderData, isLoading } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const order = mockRequests.find(req => req.id === orderId);
@@ -41,7 +39,6 @@ const PaymentStatus = () => {
         throw new Error("Order not found");
       }
       
-      // Update local state
       setOrder(order);
       if (order.paymentStatus) {
         setPaymentStatus(order.paymentStatus as PaymentStatusType);
@@ -51,29 +48,20 @@ const PaymentStatus = () => {
     }
   });
 
-  // Handle QR code scan
   const handleQRScan = async (value: string) => {
     if (!order || !order.paymentReference) return;
     
     setIsProcessing(true);
     try {
-      // Simulate payment release process
       const result = await paymentService.releasePayment(order.paymentReference);
       
       if (result.success) {
-        // Update status locally
         setPaymentStatus("paid");
-        
-        // Update order locally (in real app would be API call)
         setOrder(prev => prev ? { ...prev, paymentStatus: "paid" } : null);
-        
-        // Show success toast
         toast({
           title: "Zahlung erfolgreich",
           description: "Der Zahlungsbetrag wurde freigegeben.",
         });
-        
-        // Redirect back to deal page after a short delay
         setTimeout(() => {
           navigate(`/deal/${orderId}`);
         }, 3000);
@@ -166,6 +154,10 @@ const PaymentStatus = () => {
                     <p className="text-sm text-gray-500">
                       {order.pickupLocation} → {order.deliveryLocation}
                     </p>
+                    
+                    <div className="mt-2">
+                      <UserRating userId="user-1" showBadge={true} />
+                    </div>
                   </div>
                   
                   <div className="border-t pt-4">
