@@ -10,7 +10,8 @@ import {
   Car, 
   User, 
   MessageCircle,
-  Bell
+  Bell,
+  LayoutDashboard
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -75,6 +76,14 @@ const Navbar = () => {
                   <User className="h-5 w-5 mr-2" />
                   <span>Profile</span>
                 </Link>
+                <Link 
+                  to="/manager-dashboard"
+                  onClick={() => setIsMenuOpen(false)} 
+                  className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+                >
+                  <LayoutDashboard className="h-5 w-5 mr-2" />
+                  <span>Manager Dashboard</span>
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
@@ -105,6 +114,15 @@ const Navbar = () => {
             >
               <User className="h-5 w-5" />
               <span>Profile</span>
+            </Button>
+          </Link>
+          <Link to="/manager-dashboard">
+            <Button 
+              variant="outline" 
+              className="gap-2 hover:bg-brand-primary hover:text-white transition-colors"
+            >
+              <LayoutDashboard className="h-5 w-5" />
+              <span>Dashboard</span>
             </Button>
           </Link>
         </div>
