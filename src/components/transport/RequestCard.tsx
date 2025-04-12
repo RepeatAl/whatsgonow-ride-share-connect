@@ -1,5 +1,5 @@
 
-import { ArrowRight, Star, Clock, Calendar, DollarSign, Shield, Package } from "lucide-react";
+import { ArrowRight, Star, Clock, Calendar, DollarSign, Shield, Package, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TransportRequest } from "@/data/mockData";
@@ -26,6 +26,9 @@ const RequestCard = ({ request }: RequestCardProps) => {
     in_transit: 'bg-purple-50 text-purple-700 border-purple-200',
     completed: 'bg-green-50 text-green-700 border-green-200'
   };
+
+  // For demo purposes, we'll assume some requests have pending negotiations
+  const hasPendingNegotiation = request.id === "1" || request.id === "3";
 
   return (
     <div className="border rounded-lg shadow-sm overflow-hidden bg-white hover:shadow-md transition-shadow">
@@ -110,14 +113,27 @@ const RequestCard = ({ request }: RequestCardProps) => {
               View Details
             </Button>
           </Link>
-          <Link to={`/submit-offer/${request.id}`}>
-            <Button 
-              size="sm"
-              className="bg-brand-primary hover:bg-brand-primary/90 text-white transition-colors"
-            >
-              Angebot abgeben
-            </Button>
-          </Link>
+          
+          {hasPendingNegotiation ? (
+            <Link to={`/deal/${request.id}`}>
+              <Button 
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              >
+                <MessageSquare className="mr-1 h-4 w-4" />
+                Verhandeln
+              </Button>
+            </Link>
+          ) : (
+            <Link to={`/submit-offer/${request.id}`}>
+              <Button 
+                size="sm"
+                className="bg-brand-primary hover:bg-brand-primary/90 text-white transition-colors"
+              >
+                Angebot abgeben
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>
