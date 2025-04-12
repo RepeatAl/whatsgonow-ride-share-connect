@@ -100,14 +100,25 @@ const RequestCard = ({ request }: RequestCardProps) => {
         <div className="text-sm font-medium text-gray-500">
           Posted {new Date(request.createdAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
         </div>
-        <Link to={`/request/${request.id}`}>
-          <Button 
-            size="sm"
-            className="bg-brand-primary hover:bg-brand-primary/90 text-white transition-colors"
-          >
-            View Details
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to={`/request/${request.id}`}>
+            <Button 
+              size="sm"
+              variant="outline"
+              className="transition-colors"
+            >
+              View Details
+            </Button>
+          </Link>
+          <Link to={`/submit-offer/${request.id}`}>
+            <Button 
+              size="sm"
+              className="bg-brand-primary hover:bg-brand-primary/90 text-white transition-colors"
+            >
+              Angebot abgeben
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

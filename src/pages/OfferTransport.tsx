@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import RequestCard from "@/components/transport/RequestCard";
@@ -32,6 +31,7 @@ import { TransportRequest } from "@/data/mockData";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const OfferTransport = () => {
   const [activeTab, setActiveTab] = useState("requests");
@@ -47,6 +47,7 @@ const OfferTransport = () => {
   const [maxDistance, setMaxDistance] = useState<number>(100);
   
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMatchingOrders();
@@ -98,12 +99,8 @@ const OfferTransport = () => {
   };
 
   const handleOfferSubmit = (requestId: string) => {
-    // In a real app, this would redirect to an offer page
-    console.log(`Offer submitted for request ${requestId}`);
-    toast({
-      title: "Angebot erstellt",
-      description: "Sie werden zur Angebotsseite weitergeleitet.",
-    });
+    // Navigate to the submit offer page with the requestId
+    navigate(`/submit-offer/${requestId}`);
   };
 
   return (

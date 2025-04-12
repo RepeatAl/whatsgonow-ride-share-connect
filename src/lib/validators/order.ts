@@ -18,3 +18,13 @@ export const createOrderSchema = z.object({
 });
 
 export type CreateOrderFormValues = z.infer<typeof createOrderSchema>;
+
+// Added for the Submit Offer functionality
+export const submitOfferSchema = z.object({
+  price: z.coerce.number()
+    .positive({ message: "Preis muss eine positive Zahl sein" })
+    .min(1, { message: "Bitte geben Sie einen gültigen Preis ein" }),
+  message: z.string().optional(),
+});
+
+export type SubmitOfferFormValues = z.infer<typeof submitOfferSchema>;
