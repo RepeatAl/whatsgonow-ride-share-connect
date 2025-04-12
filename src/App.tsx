@@ -58,10 +58,10 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <LaunchProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <BrowserRouter>
+          <LaunchProvider>
+            <Toaster />
+            <Sonner />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/find-transport" element={<FindTransport />} />
@@ -86,8 +86,8 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CookieConsent />
-          </BrowserRouter>
-        </LaunchProvider>
+          </LaunchProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
