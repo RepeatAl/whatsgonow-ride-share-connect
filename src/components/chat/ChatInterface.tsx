@@ -12,29 +12,35 @@ import {
   ThumbsUp,
   ThumbsDown,
   Check,
-  X
+  X,
+  Clock,
+  Truck,
+  CheckCircle2
 } from "lucide-react";
 import { TransportRequest } from "@/data/mockData";
 import ChatMessage from "./ChatMessage";
+import { TrackingStatus } from "@/pages/Tracking";
 
 // Define chat message types
-export type MessageType = "message" | "offer" | "counter_offer" | "accept" | "reject";
+export type MessageType = "message" | "offer" | "counter_offer" | "accept" | "reject" | "status";
 
 export interface ChatMessage {
   id: string;
-  sender: "user" | "driver";
+  sender: "user" | "driver" | "system";
   type: MessageType;
   content: string;
   timestamp: Date;
   price?: number;
+  status?: TrackingStatus;
 }
 
 interface ChatInterfaceProps {
   orderId: string;
   order: TransportRequest;
+  currentStatus?: TrackingStatus;
 }
 
-const ChatInterface = ({ orderId, order }: ChatInterfaceProps) => {
+const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [inputPrice, setInputPrice] = useState("");
@@ -43,9 +49,33 @@ const ChatInterface = ({ orderId, order }: ChatInterfaceProps) => {
   const [isSending, setIsSending] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [offerPending, setOfferPending] = useState(false);
+  const [lastStatus, setLastStatus] = useState<TrackingStatus | null>(null);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
+
+  // Handle status changes and add status messages
+  useEffect(() => {
+    if (currentStatus && lastStatus !== currentStatus && isConnected) {
+      const statusMap = {
+        pickup: "Der Fahrer hat die Ware abgeholt.",
+        transit: "Der Fahrer ist jetzt unterwegs zum Lieferort.",
+        delivered: "Die Lieferung wurde erfolgreich zugestellt."
+      };
+      
+      const statusMessage: ChatMessage = {
+        id: `status-${Date.now()}`,
+        sender: "system",
+        type: "status",
+        content: statusMap[currentStatus],
+        timestamp: new Date(),
+        status: currentStatus
+      };
+      
+      setMessages(prev => [...prev, statusMessage]);
+      setLastStatus(currentStatus);
+    }
+  }, [currentStatus, lastStatus, isConnected]);
 
   // Simulate WebSocket connection
   useEffect(() => {
@@ -217,6 +247,27 @@ const ChatInterface = ({ orderId, order }: ChatInterfaceProps) => {
     setOfferPending(false);
   };
 
+  const getStatusIcon = (status: TrackingStatus) => {
+    switch(status) {
+      case "pickup": return <Clock className="h-4 w-4 text-blue-500" />;
+      case "transit": return <Truck className="h-4 w-4 text-yellow-500" />;
+      case "delivered": return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      default: return null;
+    }
+  };
+
+  // Add status class to message styling
+  const getMessageStatusClass = (message: ChatMessage) => {
+    if (message.type !== "status") return "";
+    
+    switch(message.status) {
+      case "pickup": return "bg-blue-50 border-blue-200";
+      case "transit": return "bg-yellow-50 border-yellow-200";
+      case "delivered": return "bg-green-50 border-green-200";
+      default: return "bg-gray-50 border-gray-200";
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border">
       <div className="p-3 border-b">
@@ -226,14 +277,42 @@ const ChatInterface = ({ orderId, order }: ChatInterfaceProps) => {
           <span className="text-sm text-gray-500">
             {isConnected ? 'Verbunden' : 'Verbindung wird hergestellt...'}
           </span>
+          {currentStatus && isConnected && (
+            <div className="ml-4 flex items-center text-sm">
+              <span className="text-gray-500 mr-1">Status:</span>
+              <span className="flex items-center font-medium">
+                {getStatusIcon(currentStatus)}
+                <span className="ml-1">
+                  {{
+                    pickup: "Abholung",
+                    transit: "Unterwegs",
+                    delivered: "Zugestellt"
+                  }[currentStatus]}
+                </span>
+              </span>
+            </div>
+          )}
         </div>
       </div>
       
       <ScrollArea ref={scrollAreaRef} className="flex-grow px-4 py-2">
         <div className="space-y-4">
-          {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
+          {messages.map((message) => {
+            if (message.type === "status") {
+              return (
+                <div key={message.id} className={`p-2 border rounded-md text-center text-sm ${getMessageStatusClass(message)}`}>
+                  <div className="flex items-center justify-center gap-2">
+                    {message.status && getStatusIcon(message.status)}
+                    <span>{message.content}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              );
+            }
+            return <ChatMessage key={message.id} message={message} />;
+          })}
           
           {isTyping && (
             <div className="flex items-center gap-2 text-gray-500 text-sm ml-2">
