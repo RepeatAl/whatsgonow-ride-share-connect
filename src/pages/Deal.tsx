@@ -92,9 +92,9 @@ const Deal = () => {
               <div className="bg-white p-4 rounded-lg shadow-sm border h-[200px] flex flex-col justify-between">
                 <div>
                   <h2 className="font-semibold text-gray-800">Auftragsdetails</h2>
-                  <p className="text-sm text-gray-600 mt-2">Gewicht: {order.weight} kg</p>
-                  <p className="text-sm text-gray-600">Dimensionen: {order.dimensions}</p>
-                  <p className="text-sm text-gray-600">Abholzeitfenster: {order.pickupTimeWindow}</p>
+                  <p className="text-sm text-gray-600 mt-2">Gewicht: {order.itemDetails.weight} kg</p>
+                  <p className="text-sm text-gray-600">Dimensionen: {order.itemDetails.dimensions}</p>
+                  <p className="text-sm text-gray-600">Abholzeitfenster: {order.pickupTimeWindow.start} - {order.pickupTimeWindow.end}</p>
                 </div>
                 <div className="flex justify-end">
                   <Button 
