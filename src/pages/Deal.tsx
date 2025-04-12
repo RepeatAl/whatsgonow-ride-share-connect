@@ -10,7 +10,8 @@ import {
   Clock, 
   Truck, 
   CheckCircle2,
-  BadgeDollarSign
+  BadgeDollarSign,
+  QrCode
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TransportRequest } from "@/data/mockData";
@@ -20,6 +21,7 @@ import StatusUpdateButtons from "@/components/tracking/StatusUpdateButtons";
 import { TrackingStatus } from "@/pages/Tracking";
 import { paymentService } from "@/services/paymentService";
 import { PaymentStatus } from "@/types/payment";
+import QRCode from "@/components/payment/QRCode";
 
 const Deal = () => {
   const { orderId } = useParams();
@@ -30,6 +32,8 @@ const Deal = () => {
   const [status, setStatus] = useState<TrackingStatus>("pickup");
   const [statusUpdateTime, setStatusUpdateTime] = useState<Date | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [qrCodeValue, setQrCodeValue] = useState("");
   
   // Fetch order details
   useEffect(() => {
@@ -39,6 +43,9 @@ const Deal = () => {
       const selectedOrder = mockRequests.find(req => req.id === orderId);
       if (selectedOrder) {
         setOrder(selectedOrder);
+        // Generate QR code value for delivery confirmation
+        const qrValue = `delivery-confirm:${selectedOrder.id}:${Date.now()}`;
+        setQrCodeValue(qrValue);
       } else {
         toast({
           title: "Fehler",
@@ -78,6 +85,11 @@ const Deal = () => {
         description: `Der Kunde wurde über den neuen Status "${statusText}" informiert.`,
       });
     }, 1500);
+    
+    // Show QR code when delivery is marked as complete
+    if (newStatus === "delivered") {
+      setShowQRCode(true);
+    }
   };
 
   // Handle payment reservation
@@ -120,6 +132,39 @@ const Deal = () => {
 
   const handleViewPaymentStatus = () => {
     navigate(`/payment-status/${orderId}`);
+  };
+  
+  // QR code scan handler
+  const handleQRScan = async (value: string) => {
+    if (!order || !order.paymentReference) return;
+    
+    setIsProcessingPayment(true);
+    try {
+      // Simulate payment release
+      const result = await paymentService.releasePayment(order.paymentReference);
+      
+      if (result.success) {
+        // Update order locally
+        setOrder(prev => prev ? { ...prev, paymentStatus: "paid" } : null);
+        
+        // Show success message
+        toast({
+          title: "Lieferung bestätigt",
+          description: "Die Lieferung wurde erfolgreich bestätigt und die Zahlung freigegeben.",
+        });
+        
+        // Close QR code view after success
+        setShowQRCode(false);
+      }
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Die Bestätigung konnte nicht verarbeitet werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   // Status badge style based on current status
@@ -238,6 +283,53 @@ const Deal = () => {
               </div>
             </div>
             
+            {/* QR code modal for delivery confirmation */}
+            {showQRCode && (
+              <div className="bg-white p-4 rounded-lg shadow-sm border mb-4">
+                <div className="flex flex-col items-center">
+                  <h2 className="text-lg font-semibold mb-3">Lieferung bestätigen</h2>
+                  <p className="text-gray-600 text-center mb-4">
+                    Bitten Sie den Empfänger, diesen QR-Code zu scannen, um die Lieferung zu bestätigen
+                  </p>
+                  
+                  <div className="w-full max-w-xs">
+                    <QRCode 
+                      value={qrCodeValue}
+                      size={200}
+                      className="mx-auto"
+                      onScan={handleQRScan}
+                      allowScan={true}
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      onClick={() => setShowQRCode(false)}
+                      variant="outline"
+                    >
+                      Schließen
+                    </Button>
+                    <Button 
+                      onClick={() => handleQRScan(qrCodeValue)}
+                      disabled={isProcessingPayment}
+                    >
+                      {isProcessingPayment ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Verarbeitung...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Manuell bestätigen
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               <div className="h-[200px]">
                 <RouteMap 
@@ -254,10 +346,19 @@ const Deal = () => {
                   <p className="text-sm text-gray-600">Dimensionen: {order.itemDetails.dimensions}</p>
                   <p className="text-sm text-gray-600">Abholzeitfenster: {order.pickupTimeWindow.start} - {order.pickupTimeWindow.end}</p>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-between">
+                  <Button 
+                    onClick={() => setShowQRCode(true)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <QrCode className="h-4 w-4 mr-2" />
+                    QR-Code anzeigen
+                  </Button>
                   <Button 
                     onClick={handleStartTracking}
                     variant="outline"
+                    size="sm"
                   >
                     <Navigation className="h-4 w-4 mr-2" />
                     Live-Tracking starten

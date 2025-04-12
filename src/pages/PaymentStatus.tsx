@@ -9,7 +9,8 @@ import {
   CreditCard, 
   QrCode, 
   AlertTriangle,
-  BadgeDollarSign 
+  BadgeDollarSign,
+  Scan
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -50,8 +51,8 @@ const PaymentStatus = () => {
     }
   });
 
-  // Simulate QR code scan and payment release
-  const handleScanQR = async () => {
+  // Handle QR code scan
+  const handleQRScan = async (value: string) => {
     if (!order || !order.paymentReference) return;
     
     setIsProcessing(true);
@@ -195,26 +196,30 @@ const PaymentStatus = () => {
                       value={`payment:${order.id}:${order.paymentReference}`} 
                       size={180}
                       className="mb-4"
+                      onScan={handleQRScan}
+                      allowScan={true}
                     />
                   </div>
                   
-                  <Button 
-                    onClick={handleScanQR}
-                    disabled={isProcessing}
-                    className="w-full"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Verarbeitung...
-                      </>
-                    ) : (
-                      <>
-                        <QrCode className="h-4 w-4 mr-2" />
-                        QR-Code scannen
-                      </>
-                    )}
-                  </Button>
+                  {!isProcessing && (
+                    <Button 
+                      onClick={() => handleQRScan(`payment:${order.id}:${order.paymentReference}`)}
+                      className="w-full"
+                    >
+                      <Scan className="h-4 w-4 mr-2" />
+                      Manuell bestätigen
+                    </Button>
+                  )}
+                  
+                  {isProcessing && (
+                    <Button 
+                      disabled
+                      className="w-full"
+                    >
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Verarbeitung...
+                    </Button>
+                  )}
                 </CardFooter>
               )}
               
