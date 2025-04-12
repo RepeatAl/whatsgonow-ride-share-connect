@@ -18,8 +18,10 @@ import PaymentStatus from "./pages/PaymentStatus";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DataDeletion from "./pages/DataDeletion";
+import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
+import LaunchProvider from "./components/launch/LaunchProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,31 +58,36 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/find-transport" element={<FindTransport />} />
-            <Route path="/offer-transport" element={<OfferTransport />} />
-            <Route path="/create-order" element={<CreateOrder />} />
-            <Route path="/submit-offer/:orderId" element={<SubmitOffer />} />
-            <Route path="/deal/:orderId" element={<Deal />} />
-            <Route path="/tracking/:orderId" element={<Tracking />} />
-            <Route path="/payment-status/:orderId" element={<PaymentStatus />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-            
-            {/* GDPR Routes */}
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/data-deletion" element={<DataDeletion />} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <CookieConsent />
-        </BrowserRouter>
+        <LaunchProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/find-transport" element={<FindTransport />} />
+              <Route path="/offer-transport" element={<OfferTransport />} />
+              <Route path="/create-order" element={<CreateOrder />} />
+              <Route path="/submit-offer/:orderId" element={<SubmitOffer />} />
+              <Route path="/deal/:orderId" element={<Deal />} />
+              <Route path="/tracking/:orderId" element={<Tracking />} />
+              <Route path="/payment-status/:orderId" element={<PaymentStatus />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              
+              {/* GDPR Routes */}
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/data-deletion" element={<DataDeletion />} />
+              
+              {/* Feedback Route */}
+              <Route path="/feedback" element={<Feedback />} />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <CookieConsent />
+          </BrowserRouter>
+        </LaunchProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
