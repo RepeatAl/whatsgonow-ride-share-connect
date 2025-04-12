@@ -3,10 +3,11 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Navigation } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TransportRequest } from "@/data/mockData";
 import ChatInterface from "@/components/chat/ChatInterface";
+import RouteMap from "@/components/map/RouteMap";
 
 const Deal = () => {
   const { orderId } = useParams();
@@ -35,6 +36,10 @@ const Deal = () => {
     });
   }, [orderId, navigate, toast]);
 
+  const handleStartTracking = () => {
+    navigate(`/tracking/${orderId}`);
+  };
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-16 h-[calc(100vh-180px)] flex flex-col">
@@ -54,12 +59,52 @@ const Deal = () => {
         ) : order ? (
           <div className="flex flex-col h-full">
             <div className="bg-white p-4 rounded-lg shadow-sm border mb-4">
-              <h1 className="text-xl font-bold text-gray-900">{order.title}</h1>
-              <div className="flex justify-between items-center mt-2">
-                <div className="text-sm text-gray-600">
-                  {order.pickupLocation} → {order.deliveryLocation}
+              <div className="flex justify-between items-start">
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">{order.title}</h1>
+                  <div className="mt-2 text-sm text-gray-600">
+                    {order.pickupLocation} → {order.deliveryLocation}
+                  </div>
                 </div>
-                <div className="text-lg font-semibold text-brand-primary">€{order.budget}</div>
+                <div className="flex flex-col items-end">
+                  <div className="text-lg font-semibold text-brand-primary">€{order.budget}</div>
+                  <Button 
+                    onClick={handleStartTracking}
+                    className="mt-2"
+                    size="sm"
+                  >
+                    <Navigation className="h-4 w-4 mr-2" />
+                    Live-Tracking
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
+              <div className="h-[200px]">
+                <RouteMap 
+                  startPoint={order.pickupLocation} 
+                  endPoint={order.deliveryLocation}
+                  className="h-full"
+                />
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg shadow-sm border h-[200px] flex flex-col justify-between">
+                <div>
+                  <h2 className="font-semibold text-gray-800">Auftragsdetails</h2>
+                  <p className="text-sm text-gray-600 mt-2">Gewicht: {order.weight} kg</p>
+                  <p className="text-sm text-gray-600">Dimensionen: {order.dimensions}</p>
+                  <p className="text-sm text-gray-600">Abholzeitfenster: {order.pickupTimeWindow}</p>
+                </div>
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleStartTracking}
+                    variant="outline"
+                  >
+                    <Navigation className="h-4 w-4 mr-2" />
+                    Live-Tracking starten
+                  </Button>
+                </div>
               </div>
             </div>
 

@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import CreateOrder from "./pages/CreateOrder";
 import SubmitOffer from "./pages/SubmitOffer";
 import Deal from "./pages/Deal";
+import Tracking from "./pages/Tracking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/create-order" element={<CreateOrder />} />
           <Route path="/submit-offer/:orderId" element={<SubmitOffer />} />
           <Route path="/deal/:orderId" element={<Deal />} />
+          <Route path="/tracking/:orderId" element={<Tracking />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
