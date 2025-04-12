@@ -9,6 +9,7 @@ import FindTransport from "./pages/FindTransport";
 import OfferTransport from "./pages/OfferTransport";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
+import CreateOrder from "./pages/CreateOrder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/find-transport" element={<FindTransport />} />
           <Route path="/offer-transport" element={<OfferTransport />} />
+          <Route path="/create-order" element={<CreateOrder />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
