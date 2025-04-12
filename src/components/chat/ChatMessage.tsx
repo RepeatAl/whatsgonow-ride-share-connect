@@ -1,4 +1,3 @@
-
 import { Check, DollarSign, MessageSquare, ThumbsUp, ThumbsDown, Info } from "lucide-react";
 import { ChatMessage as ChatMessageType } from "./ChatInterface";
 import { cn } from "@/lib/utils";
@@ -19,7 +18,7 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
       case "reject":
         return <ThumbsDown className="h-4 w-4" />;
       case "status":
-        return <Info className="h-4 w-4" />;
+        return <Info className="h-4 w-4 text-blue-500" />;
       default:
         return <MessageSquare className="h-4 w-4" />;
     }
