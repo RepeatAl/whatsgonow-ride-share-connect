@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -24,6 +23,7 @@ import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
 import LaunchProvider from "./components/launch/LaunchProvider";
+import ShadcnDemo from "./pages/ShadcnDemo";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,11 +39,9 @@ const App = () => {
   const [isMonitoringEnabled, setIsMonitoringEnabled] = useState(false);
   
   useEffect(() => {
-    // Simulating Supabase Performance Monitoring initialization
     console.log("Initializing Supabase Performance Monitoring...");
     
     const initializeMonitoring = async () => {
-      // Simulate monitoring initialization
       await new Promise(resolve => setTimeout(resolve, 1000));
       setIsMonitoringEnabled(true);
       console.log("Performance monitoring enabled. Target response time: < 1.5s");
@@ -53,7 +51,6 @@ const App = () => {
     
     return () => {
       console.log("Shutting down performance monitoring...");
-      // Cleanup monitoring if needed
     };
   }, []);
 
@@ -77,16 +74,15 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />
               
-              {/* GDPR Routes */}
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/data-deletion" element={<DataDeletion />} />
               
-              {/* Feedback & Support Routes */}
               <Route path="/feedback" element={<Feedback />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/support" element={<Support />} />
               
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/shadcn-demo" element={<ShadcnDemo />} />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CookieConsent />
