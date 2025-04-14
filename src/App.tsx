@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
@@ -31,6 +30,7 @@ import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
 import ShadcnDemo from "./pages/ShadcnDemo";
 import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -142,6 +142,14 @@ const App = () => {
                 element={
                   <PrivateRoute requiredRole="admin">
                     <Admin />
+                  </PrivateRoute>
+                } 
+              />
+              
+              <Route path="/admin/dashboard" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminDashboard />
                   </PrivateRoute>
                 } 
               />

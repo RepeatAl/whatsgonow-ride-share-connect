@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
@@ -11,19 +11,56 @@ import {
   User, 
   MessageCircle,
   Bell,
-  LayoutDashboard
+  LayoutDashboard,
+  Shield,
+  Database
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/lib/supabaseClient";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const location = useLocation();
+
+  useEffect(() => {
+    const checkUserRole = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching user role:', error);
+            return;
+          }
+          
+          setUserRole(data?.role || null);
+        } catch (error) {
+          console.error('Error in Navbar role check:', error);
+        }
+      }
+    };
+    
+    checkUserRole();
+  }, [location.pathname]);
 
   const navLinks = [
     { name: "Find Transport", path: "/find-transport", icon: <Package className="h-5 w-5 mr-2" />, tooltip: "Browse available transports" },
     { name: "Offer Transport", path: "/offer-transport", icon: <Car className="h-5 w-5 mr-2" />, tooltip: "Offer your transport services" },
     { name: "Messages", path: "/messages", icon: <MessageCircle className="h-5 w-5 mr-2" />, tooltip: "View your messages" },
+  ];
+
+  const adminLinks = [
+    { name: "User Management", path: "/admin", icon: <Shield className="h-5 w-5 mr-2" />, tooltip: "Manage users" },
+    { name: "Admin Dashboard", path: "/admin/dashboard", icon: <Database className="h-5 w-5 mr-2" />, tooltip: "View logs and transactions" },
   ];
 
   return (
@@ -75,6 +112,25 @@ const Navbar = () => {
                     <span>{link.name}</span>
                   </Link>
                 ))}
+                
+                {userRole === 'admin' && (
+                  <>
+                    <div className="border-t my-2"></div>
+                    <div className="px-3 py-1 text-sm font-semibold text-gray-500">Admin</div>
+                    {adminLinks.map((link) => (
+                      <Link 
+                        key={link.path} 
+                        to={link.path}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+                      >
+                        {link.icon}
+                        <span>{link.name}</span>
+                      </Link>
+                    ))}
+                  </>
+                )}
+                
                 <div className="border-t my-2"></div>
                 <Link 
                   to="/profile"
@@ -114,6 +170,29 @@ const Navbar = () => {
               </TooltipContent>
             </Tooltip>
           ))}
+          
+          {userRole === 'admin' && (
+            <>
+              <div className="h-6 border-l mx-1"></div>
+              {adminLinks.map((link) => (
+                <Tooltip key={link.path}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to={link.path}
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
+                    >
+                      {link.icon}
+                      <span>{link.name}</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{link.tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </>
+          )}
+          
           <div className="h-6 border-l mx-1"></div>
           <Tooltip>
             <TooltipTrigger asChild>
