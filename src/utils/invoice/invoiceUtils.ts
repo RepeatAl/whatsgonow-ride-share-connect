@@ -20,6 +20,14 @@ export const formatCurrency = (amount: number): string => {
   return amount.toFixed(2) + ' €';
 };
 
-export const getServiceDescription = (origin: string, destination: string): string => {
-  return `Transportdienstleistung von ${origin} nach ${destination}`;
+// Updated to accept either two address strings or an order object
+export const getServiceDescription = (originOrOrder: string | any, destination?: string): string => {
+  // If first argument is an object (like an order), extract origin and destination from it
+  if (typeof originOrOrder === 'object' && originOrOrder !== null) {
+    const order = originOrOrder;
+    return `Transportdienstleistung von ${order.from_address || 'Startpunkt'} nach ${order.to_address || 'Zielpunkt'}`;
+  }
+  
+  // Original behavior with two string arguments
+  return `Transportdienstleistung von ${originOrOrder} nach ${destination || 'Zielpunkt'}`;
 };

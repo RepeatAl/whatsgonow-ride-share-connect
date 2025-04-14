@@ -76,7 +76,7 @@ export const prepareInvoiceData = async (
     const senderAddress = addresses?.find((addr: any) => addr.entity_type === 'sender') || {};
     const recipientAddress = addresses?.find((addr: any) => addr.entity_type === 'recipient') || {};
     
-    // Format invoice items
+    // Format invoice items - Now correctly passing the order object to getServiceDescription
     const formattedItems: InvoiceItem[] = items?.map((item: any, index: number) => ({
       id: item.item_id || `item-${index}`,
       description: item.description || getServiceDescription(order),
