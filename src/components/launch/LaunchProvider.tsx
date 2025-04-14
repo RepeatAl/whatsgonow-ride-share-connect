@@ -1,4 +1,3 @@
-
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import NewUserOnboarding from "./NewUserOnboarding";
 import { useLocation } from "react-router-dom";
@@ -13,8 +12,6 @@ interface LaunchContextType {
 
 const LaunchContext = createContext<LaunchContextType | undefined>(undefined);
 
-const TEST_REGIONS = ["US-CA", "US-NY", "UK-LDN"]; // Test regions by code
-
 interface LaunchProviderProps {
   children: ReactNode;
 }
@@ -25,14 +22,11 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const location = useLocation();
 
-  // Check if launch is ready from environment variable
   const isLaunchReady = import.meta.env.VITE_LAUNCH_READY === "true";
 
   useEffect(() => {
-    // Simulate checking user's region
     const checkRegion = async () => {
-      // In a real app, this would be an API call to determine the user's region
-      const mockUserRegion = "US-CA"; // Mock for testing
+      const mockUserRegion = "US-CA";
       setIsTestRegion(TEST_REGIONS.includes(mockUserRegion));
     };
     
@@ -40,7 +34,6 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
   }, []);
 
   useEffect(() => {
-    // Check if this is a new user session
     const isNewUser = localStorage.getItem("hasSeenOnboarding") !== "true";
     
     if (isNewUser && location.pathname === "/" && (isLaunchReady || isTestRegion)) {
@@ -48,18 +41,14 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
     }
   }, [isLaunchReady, isTestRegion, location]);
 
-  // Analytics tracking function
   const trackEvent = (eventName: string, properties: Record<string, any> = {}) => {
-    // In production, this would send to Supabase analytics or Mixpanel
     console.log(`[Analytics] ${eventName}`, properties);
 
-    // Log page visits and important events
     if (eventName === "page_view") {
       console.log(`User visited: ${properties.path}`);
     }
   };
 
-  // Track page views
   useEffect(() => {
     trackEvent("page_view", { path: location.pathname });
   }, [location.pathname]);
