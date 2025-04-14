@@ -1,9 +1,9 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
-import { Search, MessageSquare } from "lucide-react";
+import { Search, MessageSquare, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
@@ -12,13 +12,30 @@ import { ChatBox } from "@/components/chat/ChatBox";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useChatRealtime } from "@/contexts/ChatRealtimeContext";
 
 const Inbox = () => {
-  const { conversations, loading } = useChatConversations();
+  const { conversations, loading, refresh } = useChatConversations();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const params = useParams();
+  const { resetUnreadCount, setActiveOrderId } = useChatRealtime();
+  const orderIdFromUrl = params.orderId;
+
+  useEffect(() => {
+    // If there's an orderId in the URL, select that conversation
+    if (orderIdFromUrl) {
+      setSelectedConversation(orderIdFromUrl);
+      setActiveOrderId(orderIdFromUrl);
+    } else {
+      setActiveOrderId(null);
+    }
+
+    // Reset unread count when entering the inbox
+    resetUnreadCount();
+  }, [orderIdFromUrl, resetUnreadCount, setActiveOrderId]);
 
   const filteredConversations = conversations.filter(
     (conv) =>
@@ -45,6 +62,13 @@ const Inbox = () => {
 
   const handleBackToList = () => {
     setSelectedConversation(null);
+    navigate("/inbox");
+  };
+
+  const handleConversationClick = (conversationId: string) => {
+    setSelectedConversation(conversationId);
+    setActiveOrderId(conversationId);
+    navigate(`/inbox/${conversationId}`);
   };
 
   if (!user) {
@@ -101,7 +125,7 @@ const Inbox = () => {
                         className={`p-4 border-b hover:bg-accent cursor-pointer transition-colors ${
                           selectedConversation === conv.order_id ? "bg-accent" : ""
                         }`}
-                        onClick={() => setSelectedConversation(conv.order_id)}
+                        onClick={() => handleConversationClick(conv.order_id)}
                       >
                         <div className="flex gap-3">
                           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium flex-shrink-0">
@@ -142,9 +166,10 @@ const Inbox = () => {
             <div className={`md:col-span-2 ${selectedConversation ? "" : "hidden md:block"}`}>
               {selectedConversation ? (
                 <div className="flex flex-col h-full border rounded-lg shadow-sm">
-                  <div className="md:hidden border-b p-2">
-                    <Button variant="ghost" size="sm" onClick={handleBackToList}>
-                      &larr; Zurück zur Übersicht
+                  <div className="md:hidden border-b p-2 sticky top-0 bg-background z-10">
+                    <Button variant="ghost" size="sm" onClick={handleBackToList} className="flex items-center">
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Zurück zur Übersicht
                     </Button>
                   </div>
                   <div className="flex-grow">

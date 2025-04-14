@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
@@ -19,17 +19,22 @@ import NotFound from "./pages/NotFound";
 import RLSTest from "./pages/RLSTest";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
-import Inbox from "./pages/Inbox"; // Import the new Inbox page
+import { ChatRealtimeProvider } from "./contexts/ChatRealtimeContext";
+
+// Lazy-loaded components
+const Inbox = lazy(() => import("./pages/Inbox"));
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingFallback />;
   }
   
   if (!user) {
@@ -42,98 +47,112 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   return (
     <AuthProvider>
-      <TooltipProvider>
-        <div className="App">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/orders" 
-              element={
-                <ProtectedRoute>
-                  <Orders />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/create-order" 
-              element={
-                <ProtectedRoute>
-                  <CreateOrder />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/community-manager" 
-              element={
-                <ProtectedRoute>
-                  <CommunityManager />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin-dashboard" 
-              element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/deal/:orderId" 
-              element={
-                <ProtectedRoute>
-                  <Deal />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/delivery/:token" element={<DeliveryConfirmationPage />} />
-            <Route 
-              path="/inbox" 
-              element={
-                <ProtectedRoute>
-                  <Inbox />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/rls-test" 
-              element={
-                <ProtectedRoute>
-                  <RLSTest />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-        </div>
-      </TooltipProvider>
+      <ChatRealtimeProvider>
+        <TooltipProvider>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/orders" 
+                element={
+                  <ProtectedRoute>
+                    <Orders />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/create-order" 
+                element={
+                  <ProtectedRoute>
+                    <CreateOrder />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/community-manager" 
+                element={
+                  <ProtectedRoute>
+                    <CommunityManager />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin-dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/deal/:orderId" 
+                element={
+                  <ProtectedRoute>
+                    <Deal />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/delivery/:token" element={<DeliveryConfirmationPage />} />
+              <Route 
+                path="/inbox" 
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Inbox />
+                    </Suspense>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/inbox/:orderId" 
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Inbox />
+                    </Suspense>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/rls-test" 
+                element={
+                  <ProtectedRoute>
+                    <RLSTest />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </TooltipProvider>
+      </ChatRealtimeProvider>
     </AuthProvider>
   );
 }

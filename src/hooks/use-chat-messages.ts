@@ -91,7 +91,21 @@ export function useChatMessages(orderId: string) {
         table: 'messages',
         filter: `order_id=eq.${orderId}`,
       }, 
-      () => {
+      async (payload) => {
+        // If the new message is for the current user, mark it as read immediately
+        const newMessage = payload.new;
+        if (newMessage.recipient_id === user.id) {
+          const { error } = await supabase
+            .from('messages')
+            .update({ read: true })
+            .eq('id', newMessage.id);
+          
+          if (error) {
+            console.error("Error marking message as read:", error);
+          }
+        }
+        
+        // Refresh messages
         fetchMessages();
       })
       .subscribe();
@@ -131,10 +145,39 @@ export function useChatMessages(orderId: string) {
     }
   };
 
+  // Function to manually mark messages as read
+  const markAsRead = async () => {
+    if (!user || !orderId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ read: true })
+        .eq('recipient_id', user.id)
+        .eq('order_id', orderId)
+        .eq('read', false);
+      
+      if (error) throw error;
+      
+      // Update local messages state to reflect the change
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.recipient_id === user.id ? { ...msg, read: true } : msg
+        )
+      );
+      
+      return { success: true, error: null };
+    } catch (err) {
+      console.error("Error marking messages as read:", err);
+      return { success: false, error: err as Error };
+    }
+  };
+
   return {
     messages,
     loading,
     error,
     sendMessage,
+    markAsRead,
   };
 }

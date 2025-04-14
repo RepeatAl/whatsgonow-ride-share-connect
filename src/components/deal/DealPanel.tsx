@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { getConversationPartner } from "@/utils/get-conversation-participants";
 import { ChatBox } from "@/components/chat/ChatBox";
+import { useChatRealtime } from "@/contexts/ChatRealtimeContext";
 
 export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
   const [offerPrice, setOfferPrice] = useState("");
@@ -18,6 +20,8 @@ export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
   const [activeTab, setActiveTab] = useState("negotiate");
   const [conversationPartner, setConversationPartner] = useState<string | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { setActiveOrderId } = useChatRealtime();
   
   const handleSubmitOffer = async () => {
     if (!user || !orderId) return;
@@ -57,6 +61,19 @@ export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
 
     getPartner();
   }, [orderId, user]);
+
+  // Update active order ID when chat tab is active
+  useEffect(() => {
+    if (activeTab === "message" && orderId) {
+      setActiveOrderId(orderId);
+    } else {
+      setActiveOrderId(null);
+    }
+  }, [activeTab, orderId, setActiveOrderId]);
+
+  const handleViewFullChat = () => {
+    navigate(`/inbox/${orderId}`);
+  };
 
   return (
     <Card className="w-full">
@@ -102,13 +119,27 @@ export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
           </TabsContent>
           
           <TabsContent value="message" className="mt-4">
-            <div className="h-[400px]">
+            <div className="h-[400px] flex flex-col">
               {conversationPartner ? (
-                <ChatBox 
-                  orderId={orderId} 
-                  recipientId={conversationPartner}
-                  orderDescription={orderInfo?.description}
-                />
+                <>
+                  <div className="flex-grow overflow-hidden">
+                    <ChatBox 
+                      orderId={orderId} 
+                      recipientId={conversationPartner}
+                      orderDescription={orderInfo?.description}
+                    />
+                  </div>
+                  <div className="pt-2 border-t mt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={handleViewFullChat}
+                    >
+                      Vollständigen Chat ansehen
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <div className="flex h-full flex-col items-center justify-center p-6">
                   <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
