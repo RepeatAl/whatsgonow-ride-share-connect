@@ -230,6 +230,47 @@ export type Database = {
           },
         ]
       }
+      invoice_sms_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          invoice_id: string | null
+          pin: string | null
+          recipient_phone: string
+          token: string
+          token_id: string
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          invoice_id?: string | null
+          pin?: string | null
+          recipient_phone: string
+          token: string
+          token_id?: string
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          invoice_id?: string | null
+          pin?: string | null
+          recipient_phone?: string
+          token?: string
+          token_id?: string
+          used?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_sms_tokens_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["invoice_id"]
+          },
+        ]
+      }
       invoice_validation_results: {
         Row: {
           error_messages: Json | null

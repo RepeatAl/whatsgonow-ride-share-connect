@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabaseClient';
 import { prepareInvoiceData } from '@/utils/invoice';
 import { pdfService } from './pdfService';
@@ -90,6 +89,54 @@ export const emailService = {
       toast({
         title: "Fehler",
         description: "Die Rechnung konnte nicht per E-Mail versendet werden.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  },
+
+  /**
+   * Send invoice via SMS
+   */
+  sendInvoiceSMS: async (
+    orderId: string, 
+    recipientPhone: string, 
+    includePin: boolean = false
+  ): Promise<boolean> => {
+    try {
+      // Find the invoice for this order
+      const { data: invoiceData, error: invoiceError } = await supabase
+        .from('invoices')
+        .select('invoice_id')
+        .eq('order_id', orderId)
+        .single();
+      
+      if (invoiceError || !invoiceData) {
+        throw new Error("Keine Rechnung für diesen Auftrag gefunden");
+      }
+      
+      // Call the SMS edge function
+      const { data, error } = await supabase.functions.invoke('send-invoice-sms', {
+        body: {
+          invoiceId: invoiceData.invoice_id,
+          recipientPhone,
+          includePin
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "SMS versendet",
+        description: "Die Rechnungs-Benachrichtigung wurde per SMS gesendet."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error sending invoice SMS:", error);
+      toast({
+        title: "Fehler",
+        description: "Die SMS konnte nicht versendet werden.",
         variant: "destructive"
       });
       return false;

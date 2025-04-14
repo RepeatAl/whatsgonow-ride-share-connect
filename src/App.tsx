@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -149,6 +148,7 @@ function App() {
                 } 
               />
               <Route path="/admin/validation" element={<ValidationAdmin />} />
+              <Route path="/invoice-download/:token" element={<InvoiceDownload />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
