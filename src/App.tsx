@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,7 @@ import Profile from "./pages/Profile";
 import CommunityManager from "./pages/CommunityManager";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
+import ValidationAdmin from "./pages/ValidationAdmin";
 import Deal from "./pages/Deal";
 import { DeliveryConfirmation } from "./components/delivery/DeliveryConfirmation";
 import DeliveryConfirmationPage from "./pages/DeliveryConfirmationPage";
