@@ -44,6 +44,7 @@ export const invoiceQueries = {
   
   /**
    * Get a single invoice by ID
+   * Returns the invoice object directly, not a {data, error} object
    */
   getInvoiceById: async (invoiceId: string) => {
     try {
@@ -62,6 +63,7 @@ export const invoiceQueries = {
           sent_at,
           created_at,
           updated_at,
+          digital_signature,
           orders(
             from_address,
             to_address,

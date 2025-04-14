@@ -32,10 +32,10 @@ const VerifyInvoiceButton = ({
     setVerificationResult(null);
     
     try {
-      // Fetch invoice data from database
-      const { data: invoice, error } = await invoiceService.getInvoiceById(invoiceId);
+      // Fetch invoice data from database - getInvoiceById returns invoice directly, not {data, error}
+      const invoice = await invoiceService.getInvoiceById(invoiceId);
       
-      if (error || !invoice) {
+      if (!invoice) {
         throw new Error("Rechnung nicht gefunden oder kein Zugriff");
       }
       

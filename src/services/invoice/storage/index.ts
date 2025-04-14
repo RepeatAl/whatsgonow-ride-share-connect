@@ -96,11 +96,14 @@ export const storageService = {
   // Expose the uploadFile utility
   uploadFile: storageUtils.uploadFile,
   
-  // Re-export query functions for external use
+  // Re-export query functions for external use with appropriate return types
   getInvoicesForUser: invoiceQueries.getInvoicesForUser,
-  getInvoiceById: invoiceQueries.getInvoiceById
+  
+  // This function returns the invoice directly, not a {data, error} object
+  getInvoiceById: async (invoiceId: string) => {
+    return invoiceQueries.getInvoiceById(invoiceId);
+  }
 };
 
 // Export utilities
 export { storageUtils };
-
