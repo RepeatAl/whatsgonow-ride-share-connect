@@ -27,6 +27,7 @@ export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> 
       email: "buchhaltung@whatsgonow.de",
       phone: "+49 30 12345678",
       vatId: "DE123456789",
+      address: "Musterstraße 123, 10115 Berlin" // Added for compatibility
     };
     
     // Prepare buyer address
@@ -37,6 +38,7 @@ export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> 
       postalCode: "10115", // Mocked
       country: "DE",
       email: "customer@example.com", // Mocked
+      address: order.pickupLocation // Added for compatibility
     };
     
     // Create invoice items
@@ -56,12 +58,15 @@ export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> 
     
     // Generate invoice data
     const invoiceDate = new Date();
+    // Fix deadline property access
+    const serviceDate = order.expectedDeliveryDate || new Date().toISOString().split('T')[0];
+    
     const invoiceData: InvoiceData = {
       invoiceNumber: generateInvoiceNumber(orderId),
       date: invoiceDate.toISOString().split('T')[0],
       dueDate: calculateDueDate(invoiceDate),
       orderId,
-      serviceDate: order.deadline.split('T')[0],
+      serviceDate: serviceDate.split('T')[0],
       paymentMethod: "Überweisung",
       sender: seller,
       recipient: buyer,

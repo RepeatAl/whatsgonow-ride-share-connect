@@ -12,6 +12,7 @@ export interface InvoiceAddress {
   email?: string;
   phone?: string;
   vatId?: string;
+  address?: string; // Added to support the AddressSection component
 }
 
 export interface InvoiceItem {
@@ -37,4 +38,13 @@ export interface InvoiceData {
   taxAmount: number;
   total: number;
   notes?: string;
+}
+
+// Added for tax ID validation
+export type TaxIdType = 'ustid' | 'steuernummer';
+
+export interface TaxIdentification {
+  type: TaxIdType;
+  value: string;
+  isValid: boolean;
 }
