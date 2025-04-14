@@ -1,5 +1,5 @@
 
-import { Star } from "lucide-react";
+import { Star, StarHalf } from "lucide-react";
 
 interface StarRatingProps {
   rating: number;
@@ -23,20 +23,46 @@ export const StarRating = ({
 
   return (
     <div className="flex items-center gap-0.5">
-      {[...Array(maxRating)].map((_, i) => (
-        <Star
-          key={i}
-          className={`${sizeClasses[size]} ${
-            i < Math.floor(rating)
-              ? "fill-yellow-400 text-yellow-400"
-              : i < rating && i + 1 > rating
-              ? "fill-yellow-400 text-yellow-400 opacity-60" // For partial stars (though this is simplified)
-              : showEmpty
-              ? "text-gray-300"
-              : "hidden"
-          }`}
-        />
-      ))}
+      {[...Array(maxRating)].map((_, i) => {
+        const starValue = i + 1;
+        const difference = starValue - rating;
+
+        // Full star
+        if (difference <= 0) {
+          return (
+            <Star
+              key={i}
+              className={`${sizeClasses[size]} fill-yellow-400 text-yellow-400`}
+            />
+          );
+        }
+        // Half star (difference between 0 and 0.5)
+        else if (difference > 0 && difference < 0.8) {
+          return (
+            <div key={i} className="relative">
+              {/* Background star (empty) */}
+              <Star
+                className={`${sizeClasses[size]} ${showEmpty ? "text-gray-300" : "hidden"}`}
+              />
+              {/* Half star overlay */}
+              <div className="absolute top-0 left-0 overflow-hidden w-[50%]">
+                <Star
+                  className={`${sizeClasses[size]} fill-yellow-400 text-yellow-400`}
+                />
+              </div>
+            </div>
+          );
+        }
+        // Empty star
+        else {
+          return (
+            <Star
+              key={i}
+              className={`${sizeClasses[size]} ${showEmpty ? "text-gray-300" : "hidden"}`}
+            />
+          );
+        }
+      })}
     </div>
   );
 };
