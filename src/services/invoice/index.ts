@@ -10,7 +10,7 @@ import { autoInvoiceService } from './autoInvoiceService';
 import { detailedInvoiceService } from './detailedInvoiceService';
 import { validationService } from './validationService';
 import { archiveService } from './archiveService';
-import * as archiveSignatureService from './archiveSignatureService';
+import * as signatureService from './signature';
 
 export const invoiceService = {
   // PDF operations
@@ -46,10 +46,10 @@ export const invoiceService = {
   getArchiveInfo: archiveService.getArchiveInfo,
   
   // Digital signature operations
-  signInvoice: archiveSignatureService.signAndStoreInvoice,
-  signInvoiceText: archiveSignatureService.signAndStoreInvoiceText,
-  verifySignature: archiveSignatureService.verifySignature,
-  verifyInvoiceSignature: archiveSignatureService.verifyInvoiceSignature
+  signInvoice: signatureService.signAndStoreInvoice,
+  signInvoiceText: signatureService.signAndStoreInvoiceText,
+  verifySignature: signatureService.verifySignature,
+  verifyInvoiceSignature: signatureService.verifyInvoiceSignature
 };
 
 export * from './pdfService';
@@ -60,4 +60,5 @@ export * from './autoInvoiceService';
 export * from './detailedInvoiceService';
 export * from './validationService';
 export * from './archiveService';
-export * from './archiveSignatureService';
+export * from './signature';
+export * from './archiveSignatureService'; // For backward compatibility
