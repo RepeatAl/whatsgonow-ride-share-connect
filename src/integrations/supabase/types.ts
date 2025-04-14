@@ -35,6 +35,41 @@ export type Database = {
           },
         ]
       }
+      delivery_logs: {
+        Row: {
+          action: string
+          ip_address: string | null
+          log_id: string
+          order_id: string | null
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          ip_address?: string | null
+          log_id?: string
+          order_id?: string | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          ip_address?: string | null
+          log_id?: string
+          order_id?: string | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           driver_id: string | null
@@ -80,9 +115,12 @@ export type Database = {
           description: string
           from_address: string
           order_id: string
+          qr_code_token: string | null
           sender_id: string | null
           status: string
           to_address: string
+          token_expires_at: string | null
+          verified_at: string | null
           weight: number
         }
         Insert: {
@@ -90,9 +128,12 @@ export type Database = {
           description: string
           from_address: string
           order_id?: string
+          qr_code_token?: string | null
           sender_id?: string | null
           status: string
           to_address: string
+          token_expires_at?: string | null
+          verified_at?: string | null
           weight: number
         }
         Update: {
@@ -100,9 +141,12 @@ export type Database = {
           description?: string
           from_address?: string
           order_id?: string
+          qr_code_token?: string | null
           sender_id?: string | null
           status?: string
           to_address?: string
+          token_expires_at?: string | null
+          verified_at?: string | null
           weight?: number
         }
         Relationships: [

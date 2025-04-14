@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -15,11 +16,14 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import QRCode from "@/components/payment/QRCode";
+import { DeliveryConfirmation } from "@/components/delivery/DeliveryConfirmation";
 import UserRating from "@/components/rating/UserRating";
 import { mockRequests, TransportRequest } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { paymentService } from "@/services/paymentService";
+import { deliveryService } from "@/services/deliveryService";
 import { PaymentStatus as PaymentStatusType } from "@/types/payment";
+import { supabase } from "@/integrations/supabase/client";
 
 const PaymentStatus = () => {
   const { orderId } = useParams();
@@ -28,6 +32,20 @@ const PaymentStatus = () => {
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatusType>("pending");
   const [isProcessing, setIsProcessing] = useState(false);
   const [order, setOrder] = useState<TransportRequest | null>(null);
+  const [showDeliveryConfirmation, setShowDeliveryConfirmation] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
+
+  useEffect(() => {
+    // Check auth status
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setCurrentUser({ id: data.session.user.id });
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const { data: orderData, isLoading } = useQuery({
     queryKey: ["order", orderId],
@@ -49,22 +67,38 @@ const PaymentStatus = () => {
   });
 
   const handleQRScan = async (value: string) => {
-    if (!order || !order.paymentReference) return;
+    if (!order || !order.paymentReference || !currentUser) return;
     
     setIsProcessing(true);
     try {
-      const result = await paymentService.releasePayment(order.paymentReference);
+      // First verify delivery
+      const deliveryResult = await deliveryService.verifyDelivery(
+        orderId as string,
+        value,
+        currentUser.id
+      );
       
-      if (result.success) {
-        setPaymentStatus("paid");
-        setOrder(prev => prev ? { ...prev, paymentStatus: "paid" } : null);
+      if (deliveryResult.success) {
+        // Then release payment
+        const result = await paymentService.releasePayment(order.paymentReference);
+        
+        if (result.success) {
+          setPaymentStatus("paid");
+          setOrder(prev => prev ? { ...prev, paymentStatus: "paid" } : null);
+          toast({
+            title: "Zahlung erfolgreich",
+            description: "Die Lieferung wurde bestätigt und der Zahlungsbetrag wurde freigegeben.",
+          });
+          setTimeout(() => {
+            navigate(`/deal/${orderId}`);
+          }, 3000);
+        }
+      } else {
         toast({
-          title: "Zahlung erfolgreich",
-          description: "Der Zahlungsbetrag wurde freigegeben.",
+          title: "Fehler bei der Bestätigung",
+          description: deliveryResult.message,
+          variant: "destructive"
         });
-        setTimeout(() => {
-          navigate(`/deal/${orderId}`);
-        }, 3000);
       }
     } catch (error) {
       toast({
@@ -75,6 +109,21 @@ const PaymentStatus = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleDeliveryConfirmed = () => {
+    // Refresh payment status
+    if (order?.paymentReference) {
+      paymentService.getPaymentStatus(order.paymentReference)
+        .then(status => {
+          setPaymentStatus(status);
+          setOrder(prev => prev ? { ...prev, paymentStatus: status } : null);
+        });
+    }
+  };
+
+  const handleConfirmDelivery = () => {
+    setShowDeliveryConfirmation(true);
   };
 
   const getStatusDisplay = () => {
@@ -183,35 +232,17 @@ const PaymentStatus = () => {
               {paymentStatus === "reserved" && (
                 <CardFooter className="flex-col space-y-4 border-t pt-4">
                   <div className="w-full flex flex-col items-center justify-center py-4">
-                    <p className="text-sm text-gray-600 mb-4">Scannen Sie den QR-Code, um die Zahlung zu bestätigen</p>
-                    <QRCode 
-                      value={`payment:${order.id}:${order.paymentReference}`} 
-                      size={180}
-                      className="mb-4"
-                      onScan={handleQRScan}
-                      allowScan={true}
-                    />
+                    <p className="text-sm text-gray-600 mb-4">
+                      Um die Zahlung freizugeben, muss die Lieferung bestätigt werden
+                    </p>
+                    <Button 
+                      onClick={handleConfirmDelivery}
+                      className="w-full"
+                    >
+                      <QrCode className="h-4 w-4 mr-2" />
+                      Lieferung bestätigen
+                    </Button>
                   </div>
-                  
-                  {!isProcessing && (
-                    <Button 
-                      onClick={() => handleQRScan(`payment:${order.id}:${order.paymentReference}`)}
-                      className="w-full"
-                    >
-                      <Scan className="h-4 w-4 mr-2" />
-                      Manuell bestätigen
-                    </Button>
-                  )}
-                  
-                  {isProcessing && (
-                    <Button 
-                      disabled
-                      className="w-full"
-                    >
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Verarbeitung...
-                    </Button>
-                  )}
                 </CardFooter>
               )}
               
@@ -226,6 +257,16 @@ const PaymentStatus = () => {
           <div className="flex-grow flex justify-center items-center py-12">
             <p className="text-gray-600">Auftrag nicht gefunden</p>
           </div>
+        )}
+        
+        {currentUser && orderId && (
+          <DeliveryConfirmation
+            orderId={orderId}
+            userId={currentUser.id}
+            isOpen={showDeliveryConfirmation}
+            onClose={() => setShowDeliveryConfirmation(false)}
+            onConfirmed={handleDeliveryConfirmed}
+          />
         )}
       </div>
     </Layout>

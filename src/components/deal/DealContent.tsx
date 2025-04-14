@@ -6,15 +6,18 @@ import { TrackingStatus } from "@/pages/Tracking";
 import { useToast } from "@/hooks/use-toast";
 import { ratingService } from "@/services/ratingService";
 import { paymentService } from "@/services/paymentService";
+import { deliveryService } from "@/services/deliveryService";
 import { PaymentStatus } from "@/types/payment";
 import { DealHeader } from "@/components/deal/DealHeader";
 import { QRCodeSection } from "@/components/deal/QRCodeSection";
 import { DealInfoGrid } from "@/components/deal/DealInfoGrid";
 import { StatusSection } from "@/components/deal/StatusSection";
 import { RatingSection } from "@/components/deal/RatingSection";
+import { DeliveryConfirmation } from "@/components/delivery/DeliveryConfirmation";
 import ChatInterface from "@/components/chat/ChatInterface";
 import RatingModal from "@/components/rating/RatingModal";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DealContentProps {
   orderId: string;
@@ -30,9 +33,23 @@ export const DealContent = ({ orderId, navigateToOfferTransport }: DealContentPr
   const [statusUpdateTime, setStatusUpdateTime] = useState<Date | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [showDeliveryConfirmation, setShowDeliveryConfirmation] = useState(false);
   const [qrCodeValue, setQrCodeValue] = useState("");
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [hasRated, setHasRated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
+
+  useEffect(() => {
+    // Check auth status
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setCurrentUser({ id: data.session.user.id });
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -96,7 +113,7 @@ export const DealContent = ({ orderId, navigateToOfferTransport }: DealContentPr
     }, 1500);
     
     if (newStatus === "delivered") {
-      setShowQRCode(true);
+      setShowDeliveryConfirmation(true);
     }
   };
 
@@ -138,21 +155,37 @@ export const DealContent = ({ orderId, navigateToOfferTransport }: DealContentPr
   };
 
   const handleQRScan = async (value: string) => {
-    if (!order || !order.paymentReference) return;
+    if (!order || !order.paymentReference || !currentUser) return;
     
     setIsProcessingPayment(true);
     try {
-      const result = await paymentService.releasePayment(order.paymentReference);
+      // First verify delivery
+      const deliveryResult = await deliveryService.verifyDelivery(
+        orderId,
+        value,
+        currentUser.id
+      );
       
-      if (result.success) {
-        setOrder(prev => prev ? { ...prev, paymentStatus: "paid" } : null);
+      if (deliveryResult.success) {
+        // Then release payment
+        const paymentResult = await paymentService.releasePayment(order.paymentReference);
         
+        if (paymentResult.success) {
+          setOrder(prev => prev ? { ...prev, paymentStatus: "paid" } : null);
+          
+          toast({
+            title: "Lieferung bestätigt",
+            description: "Die Lieferung wurde erfolgreich bestätigt und die Zahlung freigegeben.",
+          });
+          
+          setShowQRCode(false);
+        }
+      } else {
         toast({
-          title: "Lieferung bestätigt",
-          description: "Die Lieferung wurde erfolgreich bestätigt und die Zahlung freigegeben.",
+          title: "Fehler",
+          description: deliveryResult.message,
+          variant: "destructive"
         });
-        
-        setShowQRCode(false);
       }
     } catch (error) {
       toast({
@@ -162,6 +195,16 @@ export const DealContent = ({ orderId, navigateToOfferTransport }: DealContentPr
       });
     } finally {
       setIsProcessingPayment(false);
+    }
+  };
+
+  const handleDeliveryConfirmed = () => {
+    // Update local state
+    setStatus("delivered");
+    
+    // If there's payment, navigate to payment status
+    if (order?.paymentReference) {
+      navigate(`/payment-status/${orderId}`);
     }
   };
 
@@ -231,6 +274,16 @@ export const DealContent = ({ orderId, navigateToOfferTransport }: DealContentPr
         orderId={orderId}
         userName="Max Mustermann"
       />
+
+      {currentUser && (
+        <DeliveryConfirmation
+          orderId={orderId}
+          userId={currentUser.id}
+          isOpen={showDeliveryConfirmation}
+          onClose={() => setShowDeliveryConfirmation(false)}
+          onConfirmed={handleDeliveryConfirmed}
+        />
+      )}
     </div>
   );
 };
