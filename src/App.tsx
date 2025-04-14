@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { LaunchProvider } from "./components/launch/LaunchProvider";
 import Index from "./pages/Index";
 import Login from "./pages/login";
 import Dashboard from "./pages/Dashboard";
@@ -27,8 +28,8 @@ import FAQ from "./pages/FAQ";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
-import LaunchProvider from "./components/launch/LaunchProvider";
 import ShadcnDemo from "./pages/ShadcnDemo";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +40,50 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const PrivateRoute = ({ children, requiredRole }: { 
+  children: React.ReactNode, 
+  requiredRole: string 
+}) => {
+  const [loading, setLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const checkAuthorization = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setIsAuthorized(false);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error || !data) {
+        setIsAuthorized(false);
+      } else {
+        setIsAuthorized(data.role === requiredRole);
+      }
+
+      setLoading(false);
+    };
+
+    checkAuthorization();
+  }, [requiredRole]);
+
+  if (loading) {
+    return <div>Wird geladen...</div>;
+  }
+
+  return isAuthorized 
+    ? <>{children}</>
+    : <Navigate to="/" replace />;
+};
 
 const App = () => {
   const [isMonitoringEnabled, setIsMonitoringEnabled] = useState(false);
@@ -91,6 +136,14 @@ const App = () => {
               <Route path="/support" element={<Support />} />
               
               <Route path="/shadcn-demo" element={<ShadcnDemo />} />
+              
+              <Route path="/admin" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <Admin />
+                  </PrivateRoute>
+                } 
+              />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
