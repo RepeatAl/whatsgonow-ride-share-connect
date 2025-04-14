@@ -15,8 +15,15 @@ export type Order = {
   region?: string;
 };
 
+// Define a proper type for the user object
+type UserWithRole = {
+  id: string;
+  role: string;
+  region?: string;
+};
+
 export const useOrders = () => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<UserWithRole | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,32 +40,35 @@ export const useOrders = () => {
         return;
       }
 
-      setUser(session.user);
+      // Get the user's role and region from the users table
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("user_id, role, region")
+        .eq("user_id", session.user.id)
+        .single();
       
-      // Check if user has driver role
-      if (session.user) {
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .single();
-        
-        if (userError || !userData || userData.role !== "driver") {
-          toast({
-            title: "Zugriff verweigert",
-            description: "Du hast keine Berechtigung, diese Seite zu sehen.",
-            variant: "destructive"
-          });
-          navigate("/dashboard");
-          return;
-        }
-        
-        // Fetch orders
-        fetchOrders();
-
-        // Subscribe to real-time updates for new orders
-        subscribeToOrderUpdates(userData.region);
+      if (userError || !userData || userData.role !== "driver") {
+        toast({
+          title: "Zugriff verweigert",
+          description: "Du hast keine Berechtigung, diese Seite zu sehen.",
+          variant: "destructive"
+        });
+        navigate("/dashboard");
+        return;
       }
+      
+      // Set user with role and region
+      setUser({
+        id: session.user.id,
+        role: userData.role,
+        region: userData.region
+      });
+      
+      // Fetch orders
+      fetchOrders();
+
+      // Subscribe to real-time updates for new orders
+      subscribeToOrderUpdates(userData.region);
     };
 
     checkAuth();
@@ -74,19 +84,34 @@ export const useOrders = () => {
 
   // Subscribe to real-time updates for new orders
   const subscribeToOrderUpdates = (userRegion: string | null) => {
+    let filter = {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'orders',
+      filter: 'status=eq.offen',
+    };
+
+    // Add region filter if user has a region
+    if (userRegion) {
+      console.log(`Subscribing to orders in region: ${userRegion}`);
+      // Note: in a real implementation, you might need to filter by region in the database
+      // or handle the filtering in the payload callback
+    }
+
     ordersChannel
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders',
-          filter: 'status=eq.offen',
-        },
+        filter,
         (payload) => {
           console.log('New order received:', payload);
           
           const newOrder = payload.new as Order;
+          
+          // Filter by region if applicable
+          if (userRegion && newOrder.region && newOrder.region !== userRegion) {
+            console.log(`Ignoring order from different region: ${newOrder.region}`);
+            return;
+          }
           
           // Add new order to the state
           setOrders(currentOrders => {
