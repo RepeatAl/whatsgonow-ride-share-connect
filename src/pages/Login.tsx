@@ -1,14 +1,13 @@
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -17,6 +16,13 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn, signUp, user } = useAuth();
+
+  // If user is already logged in, redirect to dashboard
+  if (user) {
+    navigate("/dashboard");
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,23 +30,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { error } = isSignup
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password });
-
-      if (error) {
-        setError(error.message);
+      if (isSignup) {
+        await signUp(email, password);
       } else {
-        toast({
-          title: isSignup ? "Registrierung erfolgreich" : "Login erfolgreich",
-          description: isSignup 
-            ? "Dein Konto wurde erfolgreich erstellt. Bitte prüfe deine E-Mails für die Bestätigung." 
-            : "Du bist jetzt eingeloggt.",
-        });
-        navigate("/");
+        await signIn(email, password);
       }
     } catch (err) {
-      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.");
+      // Error is already handled in the auth context with toast
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

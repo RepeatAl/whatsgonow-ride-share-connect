@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
 
 // Use the client from the correct location
@@ -9,12 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 export type { User } from "@supabase/supabase-js";
 
 interface UseSupabaseReturn {
-  supabase: SupabaseClient;
+  supabase: typeof supabase;
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
 
+// This hook is kept for backward compatibility
+// New components should use the AuthContext instead
 export function useSupabase(): UseSupabaseReturn {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
