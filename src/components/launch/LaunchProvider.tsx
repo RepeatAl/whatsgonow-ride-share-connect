@@ -51,21 +51,53 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
 
   useEffect(() => {
     const loadUserRegion = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData.session?.user;
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Error fetching session:", sessionError);
+          setRegion("unbekannt");
+          setLoading(false);
+          return;
+        }
+        
+        const user = sessionData.session?.user;
 
-      if (!user) {
-        navigate("/login");
-        return;
+        if (!user) {
+          console.warn("Kein Benutzer eingeloggt");
+          setRegion("unbekannt");
+          setLoading(false);
+          
+          // Only navigate to login if not already on login page to avoid redirect loops
+          if (location.pathname !== "/login" && location.pathname !== "/register") {
+            navigate("/login");
+          }
+          return;
+        }
+
+        try {
+          const userRegion = await fetchUserRegion(supabase, user.id);
+          if (!userRegion) {
+            console.warn("Region konnte nicht geladen werden");
+            setRegion("unbekannt");
+          } else {
+            setRegion(userRegion);
+          }
+        } catch (e) {
+          console.error("Fehler beim Laden der Region:", e);
+          setRegion("unbekannt");
+        } finally {
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error("Unerwarteter Fehler:", e);
+        setRegion("unbekannt");
+        setLoading(false);
       }
-
-      const userRegion = await fetchUserRegion(supabase, user.id);
-      setRegion(userRegion);
-      setLoading(false);
     };
 
     loadUserRegion();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   // Onboarding logic
   useEffect(() => {
