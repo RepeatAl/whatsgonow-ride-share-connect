@@ -12,6 +12,8 @@ export interface ChatMessage {
   sent_at: string;
   read: boolean;
   sender_name?: string;
+  message_id?: string; // Added for compatibility with ChatBox
+  isCurrentUser?: boolean; // Added for compatibility with ChatBox
 }
 
 export function useChatMessages(orderId: string) {
@@ -53,7 +55,7 @@ export function useChatMessages(orderId: string) {
           if (updateError) console.error("Error marking messages as read:", updateError);
         }
         
-        // Format messages with sender name
+        // Format messages with sender name and additional properties for ChatBox
         const formattedMessages = messagesData?.map(msg => {
           // Safely access the sender name from the joined users table
           const senderObj = msg.users || {};
@@ -63,7 +65,9 @@ export function useChatMessages(orderId: string) {
           
           return {
             ...msg,
-            sender_name: senderName
+            sender_name: senderName,
+            message_id: msg.message_id || msg.id, // Ensure message_id is available
+            isCurrentUser: msg.sender_id === user.id // Add isCurrentUser flag for ChatBox
           };
         }) || [];
         
