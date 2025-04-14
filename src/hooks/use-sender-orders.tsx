@@ -14,6 +14,7 @@ export type Order = {
   deadline: string;
   status: string;
   sender_id: string;
+  verified_at?: string;
 };
 
 export const useSenderOrders = () => {
@@ -143,7 +144,7 @@ export const useSenderOrders = () => {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select("*, transactions(*)")
         .eq("sender_id", userId);
       
       if (error) throw error;

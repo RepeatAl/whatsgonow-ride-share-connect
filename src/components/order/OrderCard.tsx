@@ -1,121 +1,109 @@
 
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { 
-  MapPin, 
-  Package, 
-  Calendar, 
-  Clock, 
-  ChevronRight 
-} from "lucide-react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import StatusBadge from "@/components/community-manager/StatusBadge";
-import { type Order } from "@/hooks/use-orders";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Order } from "@/hooks/use-sender-orders";
+import { formatDate } from "@/utils/pdfGenerator";
+import { MapPin, Calendar, Package, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import OrderReceiptButton from "./OrderReceiptButton";
 
 interface OrderCardProps {
   order: Order;
-  showControls?: boolean;
+  showActions?: boolean;
 }
 
-const OrderCard = ({ order, showControls = true }: OrderCardProps) => {
+const OrderCard = ({ order, showActions = true }: OrderCardProps) => {
   const navigate = useNavigate();
-  const [isNew, setIsNew] = useState(false);
   
-  // Check if this is a newly added order based on timestamp
-  useEffect(() => {
-    // This is a simple way to highlight new orders
-    // In a real app, you might want to track this differently
-    setIsNew(true);
-    const timeout = setTimeout(() => {
-      setIsNew(false);
-    }, 5000);
-    
-    return () => clearTimeout(timeout);
-  }, [order.order_id]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('de-DE', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
-    });
+  const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case "offen": return "secondary";
+      case "matched": return "info";
+      case "unterwegs": return "warning";
+      case "abgeschlossen": return "success";
+      default: return "outline";
+    }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('de-DE', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "offen": return "Offen";
+      case "matched": return "Zugeordnet";
+      case "unterwegs": return "Unterwegs";
+      case "abgeschlossen": return "Abgeschlossen";
+      default: return status;
+    }
   };
+  
+  const handleViewDetails = () => {
+    navigate(`/deal/${order.order_id}`);
+  };
+
+  const isCompleted = order.status === "abgeschlossen";
+  const userEmail = "user@example.com"; // In a real app, get from auth context or user data
 
   return (
-    <Card className={`overflow-hidden transition-all ${isNew ? 'ring-2 ring-brand-primary animate-pulse-slow' : ''}`}>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">
-              {order.description}
-              {isNew && (
-                <Badge className="ml-2 bg-brand-primary text-white">
-                  Neu
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription>
-              <span className="inline-flex items-center gap-0.5">
-                <Package className="h-3.5 w-3.5" /> {order.weight} kg
-              </span>
-            </CardDescription>
-          </div>
-          <StatusBadge status={order.status} />
+    <Card className="shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="px-4 py-3 flex flex-row justify-between items-center">
+        <div className="font-medium truncate flex-1">
+          {order.description}
         </div>
+        <Badge variant={getBadgeVariant(order.status)}>
+          {getStatusLabel(order.status)}
+        </Badge>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div className="flex items-start gap-2">
-            <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
-            <div className="flex-1">
-              <div className="text-sm text-gray-700">{order.from_address}</div>
-              <div className="text-sm text-gray-700 mt-1 flex items-center">
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-                {order.to_address}
-              </div>
-            </div>
+      <CardContent className="px-4 py-3 space-y-2 text-sm">
+        <div className="flex items-start gap-2">
+          <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
+          <div className="flex-1">
+            <div className="text-gray-600">Von:</div>
+            <div>{order.from_address}</div>
           </div>
-          
-          <div className="flex items-center gap-6 pt-2">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-gray-500" />
-              <span className="text-sm">{formatDate(order.deadline)}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span className="text-sm">{formatTime(order.deadline)}</span>
-            </div>
+        </div>
+        <div className="flex items-start gap-2">
+          <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
+          <div className="flex-1">
+            <div className="text-gray-600">Nach:</div>
+            <div>{order.to_address}</div>
+          </div>
+        </div>
+        <div className="flex items-start gap-2">
+          <Calendar className="w-4 h-4 text-gray-500 mt-0.5" />
+          <div className="flex-1">
+            <div className="text-gray-600">Lieferfrist:</div>
+            <div>{formatDate(order.deadline)}</div>
+          </div>
+        </div>
+        <div className="flex items-start gap-2">
+          <Package className="w-4 h-4 text-gray-500 mt-0.5" />
+          <div className="flex-1">
+            <div className="text-gray-600">Gewicht:</div>
+            <div>{order.weight} kg</div>
           </div>
         </div>
       </CardContent>
-      {showControls && (
-        <CardFooter>
-          <Button 
-            className="w-full" 
-            variant="brand"
-            onClick={() => navigate(`/submit-offer/${order.order_id}`)}
-          >
-            Angebot abgeben
-          </Button>
-        </CardFooter>
+      
+      {showActions && (
+        <>
+          <Separator />
+          <CardFooter className="px-4 py-3 flex justify-between">
+            <OrderReceiptButton 
+              orderId={order.order_id}
+              isCompleted={isCompleted}
+              userEmail={userEmail}
+            />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-primary ml-auto"
+              onClick={handleViewDetails}
+            >
+              Details <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </CardFooter>
+        </>
       )}
     </Card>
   );

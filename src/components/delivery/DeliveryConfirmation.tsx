@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import QRCode from "@/components/payment/QRCode";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { receiptService } from "@/services/receiptService";
 
 interface DeliveryConfirmationProps {
   orderId: string;
@@ -175,10 +176,13 @@ export const DeliveryConfirmation = ({
           action: "delivery_confirmed"
         });
 
+      // Generate and send receipt automatically
+      await receiptService.handleAutoReceipt(orderId, userId);
+
       setVerificationStatus("success");
       toast({
         title: "Lieferung bestätigt",
-        description: "Die Lieferung wurde erfolgreich bestätigt.",
+        description: "Die Lieferung wurde erfolgreich bestätigt und eine Quittung wurde generiert.",
       });
       
       // Notify parent component
