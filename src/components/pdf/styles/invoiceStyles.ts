@@ -1,7 +1,5 @@
-
 import { StyleSheet } from '@react-pdf/renderer';
 
-// Define styles for PDF
 export const invoiceStyles = StyleSheet.create({
   page: {
     padding: 30,
@@ -15,8 +13,15 @@ export const invoiceStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  logoText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#374151',
+    textAlign: 'right',
+  },
   logo: {
     width: 120,
+    maxHeight: 80,
   },
   title: {
     fontSize: 24,
