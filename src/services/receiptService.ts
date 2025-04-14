@@ -1,5 +1,5 @@
 
-import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import DeliveryReceipt from '@/components/pdf/DeliveryReceipt';
 import { prepareReceiptData } from '@/utils/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,8 @@ export const receiptService = {
   generatePDF: async (orderId: string): Promise<Blob> => {
     try {
       const receiptData = await prepareReceiptData(orderId);
-      const pdfBlob = await pdf(<DeliveryReceipt data={receiptData} />).toBlob();
+      // Fix: Use createElement instead of JSX to create PDF component
+      const pdfBlob = await pdf(DeliveryReceipt({ data: receiptData })).toBlob();
       return pdfBlob;
     } catch (error) {
       console.error("Error generating PDF:", error);
