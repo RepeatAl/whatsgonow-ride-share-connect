@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/login";
 import Dashboard from "./pages/Dashboard";
+import Orders from "./pages/Orders";
 import FindTransport from "./pages/FindTransport";
 import OfferTransport from "./pages/OfferTransport";
 import Messages from "./pages/Messages";
@@ -68,6 +69,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/orders" element={<Orders />} />
               <Route path="/find-transport" element={<FindTransport />} />
               <Route path="/offer-transport" element={<OfferTransport />} />
               <Route path="/create-order" element={<CreateOrder />} />
