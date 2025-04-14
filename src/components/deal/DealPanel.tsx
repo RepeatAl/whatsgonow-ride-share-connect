@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,11 +11,12 @@ import { ArrowRight, MessageCircle } from "lucide-react";
 import { getConversationPartner } from "@/utils/get-conversation-participants";
 import { ChatBox } from "@/components/chat/ChatBox";
 
-// Add this section to your DealPanel component where appropriate
 export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
   const [offerPrice, setOfferPrice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOfferSent, setIsOfferSent] = useState(false);
+  const [activeTab, setActiveTab] = useState("negotiate");
+  const [conversationPartner, setConversationPartner] = useState<string | null>(null);
   const { user } = useAuth();
   
   const handleSubmitOffer = async () => {
@@ -43,10 +45,6 @@ export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
       setIsLoading(false);
     }
   };
-  
-  const [activeTab, setActiveTab] = useState("negotiate");
-  const [conversationPartner, setConversationPartner] = useState<string | null>(null);
-  const { user } = useAuth();
 
   // Get conversation partner for chat
   useEffect(() => {

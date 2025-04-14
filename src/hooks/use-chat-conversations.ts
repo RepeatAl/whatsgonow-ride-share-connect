@@ -34,7 +34,7 @@ export function useChatConversations() {
 
         if (ordersError) {
           // If the function doesn't exist, we'll use a more manual approach
-          console.warn('RPC function not found, using alternative method:', ordersError);
+          console.warn('RPC function not found,  using alternative method:', ordersError);
           
           // Get all orders where the user is either sender or receiver of messages
           const { data: messagesData, error: messagesError } = await supabase
@@ -56,7 +56,7 @@ export function useChatConversations() {
           // Group by order_id to get conversations
           const ordersMap = new Map<string, any>();
           
-          for (const msg of messagesData) {
+          for (const msg of messagesData || []) { // Adding fallback for null messagesData
             if (!ordersMap.has(msg.order_id)) {
               const partnerId = msg.sender_id === user.id ? msg.recipient_id : msg.sender_id;
               
@@ -68,7 +68,7 @@ export function useChatConversations() {
                 .single();
               
               // Count unread messages
-              const unreadCount = messagesData.filter(
+              const unreadCount = (messagesData || []).filter(
                 m => m.order_id === msg.order_id && 
                      m.recipient_id === user.id && 
                      !m.read
@@ -89,7 +89,7 @@ export function useChatConversations() {
           setConversations(Array.from(ordersMap.values()));
         } else {
           // Use the result from the RPC function
-          setConversations(ordersData);
+          setConversations(ordersData || []); // Adding fallback for null ordersData
         }
       } catch (err) {
         setError(err as Error);

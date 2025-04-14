@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,6 @@ import ChatMessage from "./ChatMessage";
 import { TrackingStatus } from "@/pages/Tracking";
 import { PaymentStatus } from "@/types/payment";
 
-// Define chat message types
 export type MessageType = "message" | "offer" | "counter_offer" | "accept" | "reject" | "status" | "payment";
 
 export interface ChatMessage {
@@ -57,14 +55,12 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
   const messageEndRef = useRef<HTMLDivElement>(null);
   const previousPaymentStatus = useRef<PaymentStatus | undefined>(order.paymentStatus);
 
-  // Update local state when prop changes
   useEffect(() => {
     if (currentStatus !== orderStatus) {
       setOrderStatus(currentStatus);
     }
   }, [currentStatus, orderStatus]);
 
-  // Handle status changes and add status messages
   useEffect(() => {
     if (orderStatus && isConnected) {
       const statusMap = {
@@ -82,7 +78,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
         status: orderStatus
       };
       
-      // Only add a status message if this is a new status or first connection
       setMessages(prev => {
         const lastMsg = prev[prev.length - 1];
         if (!lastMsg || lastMsg.type !== "status" || lastMsg.status !== orderStatus) {
@@ -93,10 +88,8 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
     }
   }, [orderStatus, isConnected]);
 
-  // Handle payment status changes
   useEffect(() => {
     if (isConnected && order.paymentStatus && order.paymentStatus !== previousPaymentStatus.current) {
-      // Create payment status message content
       let content = "";
       
       if (order.paymentStatus === "reserved") {
@@ -120,17 +113,13 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
         setMessages(prev => [...prev, paymentMessage]);
       }
       
-      // Update the ref for comparison in next render
       previousPaymentStatus.current = order.paymentStatus;
     }
   }, [order.paymentStatus, isConnected]);
 
-  // Simulate WebSocket connection
   useEffect(() => {
-    // In a real implementation, this would connect to the WebSocket server
     console.log("Connecting to WebSocket for order:", orderId);
     
-    // Simulate connection setup
     const connectionTimeout = setTimeout(() => {
       setIsConnected(true);
       toast({
@@ -138,7 +127,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
         description: "Chat-Verbindung hergestellt.",
       });
       
-      // Add initial system message
       setMessages([
         {
           id: "system-1",
@@ -149,11 +137,9 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
         }
       ]);
       
-      // Simulate "user is typing" after a delay
       setTimeout(() => {
         setIsTyping(true);
         
-        // Then simulate receiving a counter offer
         setTimeout(() => {
           setIsTyping(false);
           setMessages(prev => [
@@ -172,14 +158,12 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
       }, 2000);
     }, 1500);
     
-    // Cleanup function
     return () => {
       clearTimeout(connectionTimeout);
       console.log("Disconnecting WebSocket");
     };
   }, [orderId, toast]);
 
-  // Auto-scroll to the bottom when new messages arrive
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -201,7 +185,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
       ...(showPriceInput && inputPrice ? { price: parseFloat(inputPrice) } : {})
     };
 
-    // Simulate sending to WebSocket
     setTimeout(() => {
       setMessages(prev => [...prev, newMessage]);
       setInputMessage("");
@@ -209,7 +192,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
       setShowPriceInput(false);
       setIsSending(false);
       
-      // If this was a counter offer, simulate response
       if (messageType === "counter_offer") {
         simulateResponse();
       }
@@ -217,7 +199,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
   };
 
   const simulateResponse = () => {
-    // Simulate user typing after receiving counter offer
     setTimeout(() => {
       setIsTyping(true);
       
@@ -226,7 +207,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
         const randomResponse = Math.random() > 0.5;
         
         if (randomResponse) {
-          // Accept offer
           setMessages(prev => [
             ...prev,
             {
@@ -244,7 +224,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
             description: "Der Auftraggeber hat Ihr Angebot angenommen."
           });
         } else {
-          // Counter offer or message
           setMessages(prev => [
             ...prev,
             {
@@ -313,7 +292,17 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
     }
   };
 
-  // Add status class to message styling
+  const transformChatMessage = (message: ChatMessage) => {
+    return {
+      id: message.id,
+      content: message.content,
+      timestamp: message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isCurrentUser: message.sender === 'driver',
+      sender: message.sender === 'driver' ? 'You' : message.sender === 'user' ? order.userName || 'User' : 'System',
+      read: true
+    };
+  };
+
   const getMessageStatusClass = (message: ChatMessage) => {
     if (message.type === "status") {
       switch(message.status) {
@@ -334,7 +323,6 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
     return "bg-gray-50 border-gray-200";
   };
 
-  // Get status display text
   const getStatusDisplayText = (status: TrackingStatus) => {
     switch(status) {
       case "pickup": return "Abholung läuft";
@@ -397,7 +385,10 @@ const ChatInterface = ({ orderId, order, currentStatus = "pickup" }: ChatInterfa
                 </div>
               );
             }
-            return <ChatMessage key={message.id} message={message} />;
+            return <ChatMessage 
+              key={message.id} 
+              message={transformChatMessage(message)} 
+            />;
           })}
           
           {isTyping && (

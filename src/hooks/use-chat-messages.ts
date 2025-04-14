@@ -44,7 +44,7 @@ export function useChatMessages(orderId: string) {
         if (messagesError) throw messagesError;
         
         // Mark received messages as read
-        const messagesToUpdate = messagesData
+        const messagesToUpdate = (messagesData || [])
           .filter(msg => msg.recipient_id === user.id && !msg.read)
           .map(msg => msg.message_id);
         
@@ -58,11 +58,22 @@ export function useChatMessages(orderId: string) {
         }
         
         // Transform messages data
-        const transformedMessages = messagesData.map(msg => ({
-          ...msg,
-          senderName: msg.sender?.name || 'Unknown User',
-          isCurrentUser: msg.sender_id === user.id
-        }));
+        const transformedMessages = (messagesData || []).map(msg => {
+          // Handle the case where sender might be a SelectQueryError
+          let senderName = 'Unknown User';
+          if (typeof msg.sender === 'object' && msg.sender !== null) {
+            // Check if sender has name property directly
+            if ('name' in msg.sender) {
+              senderName = msg.sender.name;
+            }
+          }
+          
+          return {
+            ...msg,
+            senderName,
+            isCurrentUser: msg.sender_id === user.id
+          };
+        });
         
         setMessages(transformedMessages);
       } catch (err) {
