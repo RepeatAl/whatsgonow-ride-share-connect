@@ -114,7 +114,7 @@ const Dashboard = () => {
                   <OrderCard 
                     key={order.order_id} 
                     order={order} 
-                    showControls={false}
+                    showActions={false}
                   />
                 ))}
               </div>
@@ -138,4 +138,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

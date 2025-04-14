@@ -24,20 +24,20 @@ export const prepareReceiptData = async (orderId: string) => {
       date: new Date().toISOString(),
       sender: {
         name: "Max Mustermann", // In real app: fetch from users table
-        address: order.origin
+        address: order.pickupLocation
       },
       driver: {
         name: "Delivery Driver", // In real app: fetch from users table
         id: "driver-123"
       },
-      price: order.price,
+      price: order.budget,
       route: {
-        origin: order.origin,
-        destination: order.destination,
+        origin: order.pickupLocation,
+        destination: order.deliveryLocation,
         distance: `${Math.round(Math.random() * 20 + 5)} km` // Mock distance
       },
-      weight: `${order.weight} kg`,
-      rating: order.rating || "Keine Bewertung",
+      weight: `${order.itemDetails.weight} kg`,
+      rating: order.requester.rating || "Keine Bewertung",
       status: "abgeschlossen"
     };
   } catch (error) {

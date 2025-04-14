@@ -7,6 +7,7 @@ import OrderCard from "@/components/order/OrderCard";
 import OrderSkeleton from "@/components/order/OrderSkeleton";
 import OrderEmptyState from "@/components/order/OrderEmptyState";
 import { Toaster } from "@/components/ui/toaster";
+import { Order as SenderOrder } from "@/hooks/use-sender-orders";
 
 const Orders = () => {
   const {
@@ -23,6 +24,20 @@ const Orders = () => {
   const resetFilters = () => {
     setSelectedRegion("all");
     setMaxWeight(100);
+  };
+
+  // Helper function to adapt Order to SenderOrder format
+  const adaptOrderFormat = (order: any): SenderOrder => {
+    return {
+      order_id: order.order_id,
+      description: order.description,
+      from_address: order.from_address,
+      to_address: order.to_address,
+      weight: order.weight,
+      deadline: order.deadline,
+      status: order.status,
+      sender_id: order.sender_id || "unknown"
+    };
   };
 
   return (
@@ -74,7 +89,7 @@ const Orders = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredOrders.map((order) => (
-            <OrderCard key={order.order_id} order={order} />
+            <OrderCard key={order.order_id} order={adaptOrderFormat(order)} />
           ))}
         </div>
       )}

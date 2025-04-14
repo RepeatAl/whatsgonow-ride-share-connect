@@ -20,9 +20,9 @@ const OrderCard = ({ order, showActions = true }: OrderCardProps) => {
   const getBadgeVariant = (status: string) => {
     switch (status) {
       case "offen": return "secondary";
-      case "matched": return "info";
-      case "unterwegs": return "warning";
-      case "abgeschlossen": return "success";
+      case "matched": return "default";
+      case "unterwegs": return "outline";
+      case "abgeschlossen": return "default";
       default: return "outline";
     }
   };
