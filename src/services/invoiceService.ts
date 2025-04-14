@@ -1,7 +1,11 @@
 
 import { pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
-import { prepareInvoiceData, generateXRechnungXML, stringToBlob } from '@/utils/invoiceGenerator';
+import { 
+  prepareInvoiceData, 
+  generateXRechnungXML, 
+  stringToBlob 
+} from '@/utils/invoice';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
