@@ -36,7 +36,7 @@ export interface ChatMessage {
 
 interface ChatInterfaceProps {
   orderId: string;
-  order: TransportRequest;
+  order: TransportRequest & { userName?: string };
   currentStatus?: TrackingStatus;
 }
 

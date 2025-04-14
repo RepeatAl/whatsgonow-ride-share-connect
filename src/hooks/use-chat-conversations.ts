@@ -78,9 +78,14 @@ export function useChatConversations() {
                      !m.read
               ).length;
               
+              // Safely access the orders property and description field
+              const orderDescription = msg.orders && typeof msg.orders === 'object' ? 
+                (msg.orders as any).description || 'No description' : 
+                'No description';
+              
               ordersMap.set(msg.order_id, {
                 order_id: msg.order_id,
-                order_description: msg.orders?.description || 'No description',
+                order_description: orderDescription,
                 participant_id: partnerId,
                 participant_name: partnerData?.name || 'Unknown User',
                 last_message: msg.content,
