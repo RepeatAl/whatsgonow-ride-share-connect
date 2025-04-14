@@ -58,15 +58,17 @@ export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> 
     
     // Generate invoice data
     const invoiceDate = new Date();
-    // Fix deadline property access
-    const serviceDate = order.expectedDeliveryDate || new Date().toISOString().split('T')[0];
+    // Use the correct date property from the order
+    const serviceDate = order.deliveryTimeWindow?.start 
+      ? new Date(order.deliveryTimeWindow.start).toISOString().split('T')[0] 
+      : new Date().toISOString().split('T')[0];
     
     const invoiceData: InvoiceData = {
       invoiceNumber: generateInvoiceNumber(orderId),
       date: invoiceDate.toISOString().split('T')[0],
       dueDate: calculateDueDate(invoiceDate),
       orderId,
-      serviceDate: serviceDate.split('T')[0],
+      serviceDate: serviceDate,
       paymentMethod: "Überweisung",
       sender: seller,
       recipient: buyer,
