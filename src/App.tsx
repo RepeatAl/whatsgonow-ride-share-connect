@@ -1,16 +1,18 @@
+
 import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Index from "./pages/Index";
-import Login from "./pages/Login";
+import Login from "./pages/login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Support from "./pages/Support";
-import Faq from "./pages/Faq";
+import Faq from "./pages/FAQ";
 import Legal from "./pages/Legal";
 import Profile from "./pages/Profile";
 import DataDeletion from "./pages/DataDeletion";
 import ShadcnDemoPage from "./pages/ShadcnDemo";
 import EmailTest from "./pages/EmailTest";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const location = useLocation();
@@ -46,6 +48,7 @@ function App() {
         <Route path="/data-deletion" element={<DataDeletion />} />
         <Route path="/shadcn-demo" element={<ShadcnDemoPage />} />
         <Route path="/email-test" element={<EmailTest />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
