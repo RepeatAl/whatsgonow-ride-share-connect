@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import { useLaunch } from "@/components/launch/LaunchProvider";
 import SuccessConfirmation from "@/components/data-deletion/SuccessConfirmation";
 
 const Feedback = () => {
-  const { isLaunchReady, isTestRegion, trackEvent } = useLaunch();
+  const { isLaunchReady, isTest, trackEvent } = useLaunch();
   const [feedbackType, setFeedbackType] = useState("suggestion");
   const [satisfaction, setSatisfaction] = useState("3");
   const [features, setFeatures] = useState<string[]>([]);
@@ -23,7 +22,7 @@ const Feedback = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Only show if launched or in test region
-  if (!isLaunchReady && !isTestRegion) {
+  if (!isLaunchReady && !isTest) {
     return (
       <Layout>
         <div className="container max-w-lg px-4 py-12">

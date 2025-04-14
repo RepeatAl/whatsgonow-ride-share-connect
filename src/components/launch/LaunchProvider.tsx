@@ -3,14 +3,7 @@ import { useEffect, useState, ReactNode, createContext, useContext } from "react
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import NewUserOnboarding from "./NewUserOnboarding";
-
-// Utility function to check if a region is a test region
-const isTestRegion = (region: string | null | undefined) => {
-  const TEST_REGION_PREFIXES = ["test", "us-ca", "us-ny", "uk-ldn"];
-  return region ? TEST_REGION_PREFIXES.some(prefix => 
-    region.toLowerCase().startsWith(prefix)
-  ) : false;
-};
+import { isTestRegion, fetchUserRegion } from "@/utils/regionUtils";
 
 interface LaunchContextType {
   region: string | null;
@@ -57,7 +50,7 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
   };
 
   useEffect(() => {
-    const fetchUserRegion = async () => {
+    const loadUserRegion = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const user = sessionData.session?.user;
 
@@ -66,23 +59,12 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
         return;
       }
 
-      const { data: profile, error } = await supabase
-        .from("users")
-        .select("region")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error || !profile) {
-        console.error("Failed to load region", error);
-        setRegion(null);
-      } else {
-        setRegion(profile.region);
-      }
-
+      const userRegion = await fetchUserRegion(supabase, user.id);
+      setRegion(userRegion);
       setLoading(false);
     };
 
-    fetchUserRegion();
+    loadUserRegion();
   }, [navigate]);
 
   // Onboarding logic

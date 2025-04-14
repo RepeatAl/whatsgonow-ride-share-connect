@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import Hero from "@/components/home/Hero";
 import HowItWorks from "@/components/home/HowItWorks";
@@ -14,11 +13,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 const Index = () => {
-  const { isLaunchReady, isTestRegion } = useLaunch();
+  const { isLaunchReady, isTest } = useLaunch();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // Only show feedback button if launched or in test region
-  const showFeedbackButton = isLaunchReady || isTestRegion;
+  const showFeedbackButton = isLaunchReady || isTest;
   
   useEffect(() => {
     const checkAuth = async () => {
