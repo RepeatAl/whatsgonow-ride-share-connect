@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Deal from "./pages/Deal";
 // Import DeliveryConfirmation as a named export
 import { DeliveryConfirmation } from "./components/delivery/DeliveryConfirmation";
+import DeliveryConfirmationPage from "./pages/DeliveryConfirmationPage";
 import NotFound from "./pages/NotFound";
 // Import the RLSTest page
 import RLSTest from "./pages/RLSTest";
@@ -34,7 +35,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/deal/:orderId" element={<Deal />} />
-          <Route path="/delivery/:token" element={<DeliveryConfirmation />} />
+          <Route path="/delivery/:token" element={<DeliveryConfirmationPage />} />
           <Route path="/rls-test" element={<RLSTest />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
