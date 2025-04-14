@@ -9,7 +9,237 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      community_managers: {
+        Row: {
+          commission_rate: number | null
+          region: string
+          user_id: string
+        }
+        Insert: {
+          commission_rate?: number | null
+          region: string
+          user_id: string
+        }
+        Update: {
+          commission_rate?: number | null
+          region?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_managers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          driver_id: string | null
+          offer_id: string
+          order_id: string | null
+          price: number
+          status: string
+        }
+        Insert: {
+          driver_id?: string | null
+          offer_id?: string
+          order_id?: string | null
+          price: number
+          status: string
+        }
+        Update: {
+          driver_id?: string | null
+          offer_id?: string
+          order_id?: string | null
+          price?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "offers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          deadline: string
+          description: string
+          from_address: string
+          order_id: string
+          sender_id: string | null
+          status: string
+          to_address: string
+          weight: number
+        }
+        Insert: {
+          deadline: string
+          description: string
+          from_address: string
+          order_id?: string
+          sender_id?: string | null
+          status: string
+          to_address: string
+          weight: number
+        }
+        Update: {
+          deadline?: string
+          description?: string
+          from_address?: string
+          order_id?: string
+          sender_id?: string | null
+          status?: string
+          to_address?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      ratings: {
+        Row: {
+          comment: string | null
+          from_user: string | null
+          order_id: string | null
+          rating_id: string
+          score: number | null
+          to_user: string | null
+        }
+        Insert: {
+          comment?: string | null
+          from_user?: string | null
+          order_id?: string | null
+          rating_id?: string
+          score?: number | null
+          to_user?: string | null
+        }
+        Update: {
+          comment?: string | null
+          from_user?: string | null
+          order_id?: string | null
+          rating_id?: string
+          score?: number | null
+          to_user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_from_user_fkey"
+            columns: ["from_user"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ratings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "ratings_to_user_fkey"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          order_id: string | null
+          payer_id: string | null
+          receiver_id: string | null
+          timestamp: string | null
+          tx_id: string
+        }
+        Insert: {
+          amount: number
+          order_id?: string | null
+          payer_id?: string | null
+          receiver_id?: string | null
+          timestamp?: string | null
+          tx_id?: string
+        }
+        Update: {
+          amount?: number
+          order_id?: string | null
+          payer_id?: string | null
+          receiver_id?: string | null
+          timestamp?: string | null
+          tx_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "transactions_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "transactions_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          name: string
+          region: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          name: string
+          region?: string | null
+          role: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          name?: string
+          region?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
