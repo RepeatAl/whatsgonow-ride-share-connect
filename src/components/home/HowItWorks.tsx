@@ -2,11 +2,11 @@ import { Package, MapPin, Clock, CreditCard, ThumbsUp } from "lucide-react";
 const features = [{
   title: "Create a Request",
   description: "Describe what you need to send, where it's going, and when it needs to arrive.",
-  icon: <Package className="h-8 w-8 text-brand-purple" />
+  icon: <Package className="h-8 w-8 text-brand-purple bg-orange-500" />
 }, {
   title: "Match with a Driver",
   description: "Our AI matches your request with drivers already traveling your route.",
-  icon: <MapPin className="h-8 w-8 text-brand-purple" />
+  icon: <MapPin className="h-8 w-8 text-brand-purple bg-orange-500" />
 }, {
   title: "Real-time Tracking",
   description: "Follow your item's journey in real-time from pickup to delivery.",
@@ -14,11 +14,11 @@ const features = [{
 }, {
   title: "Secure Payment",
   description: "Pay only when your item is delivered safely with our secure escrow system.",
-  icon: <CreditCard className="h-8 w-8 text-brand-purple" />
+  icon: <CreditCard className="h-8 w-8 text-brand-purple bg-orange-500" />
 }, {
   title: "Rate & Review",
   description: "Share your experience and help build our trusted community network.",
-  icon: <ThumbsUp className="h-8 w-8 text-brand-purple" />
+  icon: <ThumbsUp className="h-8 w-8 text-brand-purple bg-orange-500" />
 }];
 const HowItWorks = () => {
   return <div className="py-12 bg-gray-50">
@@ -35,7 +35,7 @@ const HowItWorks = () => {
         <div className="mt-16">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => <div key={index} className="flex flex-col bg-white p-8 rounded-lg shadow-sm">
-                <div className="bg-brand-light rounded-lg w-14 h-14 flex items-center justify-center mb-4">
+                <div className="rounded-lg w-14 h-14 flex items-center justify-center mb-4 bg-slate-950">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-medium text-gray-900 mt-2">{feature.title}</h3>

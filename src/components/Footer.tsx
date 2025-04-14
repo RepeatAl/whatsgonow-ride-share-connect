@@ -1,20 +1,13 @@
-
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter } from "lucide-react";
-
 const Footer = () => {
-  return (
-    <footer className="bg-white border-t mt-auto">
+  return <footer className="bg-white border-t mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link to="/" className="flex items-center">
-              <img 
-                src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" 
-                alt="whatsgonow logo" 
-                className="h-10 mr-2" 
-              />
-              <span className="text-2xl font-bold">
+              <img src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" alt="whatsgonow logo" className="h-10 mr-2" />
+              <span className="text-2xl font-bold text-slate-950">
                 whats<span className="text-brand-orange">go</span>now
               </span>
             </Link>
@@ -22,32 +15,20 @@ const Footer = () => {
               The crowd-logistics platform for spontaneous and planned transports.
             </p>
             <div className="flex space-x-4">
-              <a 
-                href="#" 
-                className="text-gray-500 hover:text-brand-primary transition-colors"
-                aria-label="Facebook"
-              >
+              <a href="#" className="text-gray-500 hover:text-brand-primary transition-colors" aria-label="Facebook">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a 
-                href="#" 
-                className="text-gray-500 hover:text-brand-primary transition-colors"
-                aria-label="Instagram"
-              >
+              <a href="#" className="text-gray-500 hover:text-brand-primary transition-colors" aria-label="Instagram">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a 
-                href="#" 
-                className="text-gray-500 hover:text-brand-primary transition-colors"
-                aria-label="Twitter"
-              >
+              <a href="#" className="text-gray-500 hover:text-brand-primary transition-colors" aria-label="Twitter">
                 <Twitter className="h-5 w-5" />
               </a>
             </div>
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">For Customers</h4>
+            <h4 className="font-semibold mb-4 text-orange-500">For Customers</h4>
             <ul className="space-y-2">
               <li><Link to="/find-transport" className="text-gray-600 hover:text-brand-primary text-sm">Find Transport</Link></li>
               <li><Link to="/how-it-works" className="text-gray-600 hover:text-brand-primary text-sm">How It Works</Link></li>
@@ -58,7 +39,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">For Drivers</h4>
+            <h4 className="font-semibold mb-4 text-orange-500">For Drivers</h4>
             <ul className="space-y-2">
               <li><Link to="/offer-transport" className="text-gray-600 hover:text-brand-primary text-sm">Offer Transport</Link></li>
               <li><Link to="/driver-requirements" className="text-gray-600 hover:text-brand-primary text-sm">Requirements</Link></li>
@@ -69,7 +50,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Company</h4>
+            <h4 className="font-semibold mb-4 text-orange-500">Company</h4>
             <ul className="space-y-2">
               <li><Link to="/about" className="text-gray-600 hover:text-brand-primary text-sm">About Us</Link></li>
               <li><Link to="/contact" className="text-gray-600 hover:text-brand-primary text-sm">Contact</Link></li>
@@ -95,8 +76,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
