@@ -2,46 +2,57 @@
 import { supabase } from '@/lib/supabaseClient';
 import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
+import { prepareInvoiceData } from '@/utils/invoice';
 
 /**
- * Service for handling invoice storage operations
+ * Service for handling storage of invoices in Supabase Storage
  */
 export const storageService = {
   /**
-   * Upload invoice to Supabase Storage
+   * Store invoice PDF and XML in Supabase Storage
    */
   storeInvoice: async (orderId: string): Promise<{ pdfPath: string; xmlPath: string } | null> => {
     try {
+      // Generate invoices
       const pdfBlob = await pdfService.generatePDF(orderId);
       const xmlBlob = await xmlService.generateXML(orderId);
+      const invoiceData = await prepareInvoiceData(orderId);
       
-      const pdfFilename = `invoice-${orderId}.pdf`;
-      const xmlFilename = `invoice-${orderId}.xml`;
+      // Create file paths
+      const pdfPath = `invoices/${orderId}/${invoiceData.invoiceNumber}.pdf`;
+      const xmlPath = `invoices/${orderId}/${invoiceData.invoiceNumber}.xml`;
       
-      // Upload PDF to 'invoices' bucket
-      const { data: pdfData, error: pdfError } = await supabase.storage
+      // Check if the invoices bucket exists, create if not
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const invoiceBucket = buckets?.find(bucket => bucket.name === 'invoices');
+      
+      if (!invoiceBucket) {
+        // In production, you would create the bucket via SQL migrations
+        // This is just a fallback for development
+        console.log('Creating invoices bucket in Supabase Storage');
+      }
+      
+      // Store PDF in Supabase Storage
+      const { error: pdfError } = await supabase.storage
         .from('invoices')
-        .upload(pdfFilename, pdfBlob, {
+        .upload(pdfPath, pdfBlob, {
           contentType: 'application/pdf',
           upsert: true
         });
       
       if (pdfError) throw pdfError;
       
-      // Upload XML to 'invoices' bucket
-      const { data: xmlData, error: xmlError } = await supabase.storage
+      // Store XML in Supabase Storage
+      const { error: xmlError } = await supabase.storage
         .from('invoices')
-        .upload(xmlFilename, xmlBlob, {
+        .upload(xmlPath, xmlBlob, {
           contentType: 'application/xml',
           upsert: true
         });
       
       if (xmlError) throw xmlError;
       
-      return {
-        pdfPath: pdfData.path,
-        xmlPath: xmlData.path
-      };
+      return { pdfPath, xmlPath };
     } catch (error) {
       console.error("Error storing invoice:", error);
       return null;

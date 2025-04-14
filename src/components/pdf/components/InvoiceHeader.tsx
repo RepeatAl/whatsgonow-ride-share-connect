@@ -19,6 +19,10 @@ export const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({
       <Text style={invoiceStyles.title}>{title}</Text>
       <Text style={invoiceStyles.subtitle}>{subtitle}</Text>
     </View>
-    {logoSrc && <Image style={invoiceStyles.logo} src={logoSrc} />}
+    {logoSrc ? (
+      <Image style={invoiceStyles.logo} src={logoSrc} />
+    ) : (
+      <Text style={invoiceStyles.logoText}>Whatsgonow GmbH</Text>
+    )}
   </View>
 );

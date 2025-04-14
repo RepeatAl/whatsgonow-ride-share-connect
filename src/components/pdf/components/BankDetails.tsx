@@ -18,6 +18,7 @@ export const BankDetails: React.FC<BankDetailsProps> = ({
       <Text>BIC: DEUTDEFFXXX</Text>
       <Text>Bank: Deutsche Bank</Text>
       <Text>Verwendungszweck: {invoiceNumber}</Text>
+      <Text>USt-ID: DE123456789</Text>
     </View>
   </View>
 );

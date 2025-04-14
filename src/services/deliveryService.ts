@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
+import { invoiceService } from "@/services/invoice";
 
 export interface DeliveryVerificationResult {
   success: boolean;
@@ -89,7 +90,7 @@ export const deliveryService = {
       // Check if the order exists and token matches
       const { data, error } = await supabase
         .from("orders")
-        .select("status, token_expires_at, qr_code_token")
+        .select("status, token_expires_at, qr_code_token, sender_id")
         .eq("order_id", orderId)
         .single();
 
@@ -149,6 +150,20 @@ export const deliveryService = {
 
       // Log successful verification
       await logDeliveryAction(orderId, userId, "delivery_confirmed");
+
+      // Automatically generate and send invoice
+      if (data.sender_id) {
+        try {
+          // Send invoice in background to avoid blocking the response
+          setTimeout(() => {
+            invoiceService.handleAutoInvoice(orderId, data.sender_id)
+              .catch(err => console.error("Error in auto invoice processing:", err));
+          }, 100);
+        } catch (invoiceError) {
+          console.error("Error starting invoice process:", invoiceError);
+          // Don't return error - delivery was still successful
+        }
+      }
 
       return {
         success: true,
