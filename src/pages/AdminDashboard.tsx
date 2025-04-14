@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import Layout from "@/components/Layout";
@@ -63,11 +62,10 @@ const AdminDashboard = () => {
     loading 
   } = useAdminLogs(timeRange, selectedRegion);
   
-  // Initialize the admin monitoring system
   const currentUser = users.find(u => u.role === 'admin');
-  const { isActive: monitoringActive } = useAdminMonitoring(currentUser || null);
+  const monitoringUser = currentUser ? { id: currentUser.user_id, role: currentUser.role } : null;
+  const { isActive: monitoringActive } = useAdminMonitoring(monitoringUser);
 
-  // Check if user is admin (should be handled by App.tsx route guard, but just in case)
   if (loadingUsers) {
     return (
       <Layout>

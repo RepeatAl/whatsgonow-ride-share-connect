@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import LogoutButton from "./auth/LogoutButton";
+import { supabase } from "@/integrations/supabase/client"; // Added import for supabase
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
