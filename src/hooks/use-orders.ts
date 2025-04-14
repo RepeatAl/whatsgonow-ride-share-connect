@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 export type Order = {
@@ -75,7 +75,9 @@ export const useOrders = () => {
 
     // Cleanup function to remove subscription when unmounting
     return () => {
-      supabase.removeChannel(ordersChannel);
+      if (ordersChannel) {
+        supabase.removeChannel(ordersChannel);
+      }
     };
   }, [navigate]);
 
@@ -84,24 +86,15 @@ export const useOrders = () => {
 
   // Subscribe to real-time updates for new orders
   const subscribeToOrderUpdates = (userRegion: string | null) => {
-    let filter = {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'orders',
-      filter: 'status=eq.offen',
-    };
-
-    // Add region filter if user has a region
-    if (userRegion) {
-      console.log(`Subscribing to orders in region: ${userRegion}`);
-      // Note: in a real implementation, you might need to filter by region in the database
-      // or handle the filtering in the payload callback
-    }
-
     ordersChannel
       .on(
-        'postgres_changes' as any, // Use type assertion to fix TypeScript error
-        filter,
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'orders',
+          filter: 'status=eq.offen',
+        },
         (payload) => {
           console.log('New order received:', payload);
           

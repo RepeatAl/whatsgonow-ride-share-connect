@@ -48,3 +48,11 @@ export interface InvoiceItem {
   taxRate: number;
   totalPrice: number;
 }
+
+export type TaxIdType = 'ustid' | 'steuernummer';
+
+export interface TaxIdentification {
+  type: TaxIdType;
+  value: string;
+  isValid: boolean;
+}

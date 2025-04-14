@@ -113,7 +113,7 @@ export const useDealOffers = (order_id: string, user: User | null) => {
 
     // Real-time subscription for offer updates
     const channel = supabase
-      .channel('offers')
+      .channel(`offers_deal_${order_id}`)
       .on(
         'postgres_changes', 
         { 
@@ -123,7 +123,29 @@ export const useDealOffers = (order_id: string, user: User | null) => {
           filter: `order_id=eq.${order_id}`
         },
         (payload) => {
+          console.log('Offer update:', payload);
           fetchOffers();
+          
+          // Show notification based on event type
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: 'Neues Angebot',
+              description: `Ein neues Angebot wurde für diesen Auftrag abgegeben.`,
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const newOffer = payload.new as Offer;
+            if (newOffer.status === 'angenommen') {
+              toast({
+                title: 'Angebot angenommen',
+                description: `Das Angebot wurde angenommen.`,
+              });
+            } else if (newOffer.status === 'abgelehnt') {
+              toast({
+                title: 'Angebot abgelehnt',
+                description: `Das Angebot wurde abgelehnt.`,
+              });
+            }
+          }
         }
       )
       .subscribe();

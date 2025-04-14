@@ -66,6 +66,16 @@ const Navbar = () => {
     { name: "Admin Dashboard", path: "/admin/dashboard", icon: <Database className="h-5 w-5 mr-2" />, tooltip: "View logs and transactions" },
   ];
 
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <nav className="w-full py-4 px-4 md:px-6 flex items-center justify-between bg-white border-b shadow-sm fixed top-0 z-50">
       <div className="flex items-center">
@@ -168,7 +178,7 @@ const Navbar = () => {
                     <button
                       onClick={() => {
                         setIsMenuOpen(false);
-                        LogoutButton({ showIcon: false });
+                        signOut();
                       }}
                       className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 w-full text-left"
                     >

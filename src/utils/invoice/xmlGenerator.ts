@@ -4,10 +4,16 @@
  */
 
 import { InvoiceData } from './invoiceTypes';
+import { validateTaxId, formatTaxIdForXML } from './taxIdValidator';
 
 export const generateXRechnungXML = (invoiceData: InvoiceData): string => {
   // This is a simplified XRechnung XML generator
   // In a real implementation, this would need to follow the XRechnung standard exactly
+  
+  // Validate the tax ID
+  const taxId = validateTaxId(invoiceData.sender.taxId);
+  const formattedTaxId = formatTaxIdForXML(taxId);
+  
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
              xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
@@ -34,9 +40,9 @@ export const generateXRechnungXML = (invoiceData: InvoiceData): string => {
         </cac:Country>
       </cac:PostalAddress>
       <cac:PartyTaxScheme>
-        <cbc:CompanyID>${invoiceData.sender.taxId}</cbc:CompanyID>
+        <cbc:CompanyID>${formattedTaxId}</cbc:CompanyID>
         <cac:TaxScheme>
-          <cbc:ID>VA</cbc:ID>
+          <cbc:ID>${taxId.type === 'ustid' ? 'VAT' : 'FC'}</cbc:ID>
         </cac:TaxScheme>
       </cac:PartyTaxScheme>
       <cac:Contact>

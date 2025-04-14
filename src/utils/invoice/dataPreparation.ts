@@ -5,6 +5,7 @@
 
 import { InvoiceData } from './invoiceTypes';
 import { generateInvoiceNumber, calculateDueDate } from './invoiceUtils';
+import { validateTaxId, formatTaxIdForDisplay } from './taxIdValidator';
 
 export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> => {
   try {
@@ -22,6 +23,17 @@ export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> 
     const serviceAmount = order.budget;
     const taxAmount = (serviceAmount * taxRate) / 100;
     const totalAmount = serviceAmount + taxAmount;
+    
+    // Company tax ID (USt-ID)
+    const companyTaxId = "DE123456789";
+    const taxIdValidation = validateTaxId(companyTaxId);
+    
+    if (!taxIdValidation.isValid) {
+      throw new Error("Ungültige Steuer-ID: " + companyTaxId);
+    }
+    
+    // Format the tax ID for display
+    const formattedTaxId = formatTaxIdForDisplay(taxIdValidation);
     
     return {
       invoiceNumber: generateInvoiceNumber(orderId),
@@ -51,7 +63,7 @@ export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> 
       sender: {
         name: "Whatsgonow GmbH",
         address: "Startup Allee 42, 10115 Berlin",
-        taxId: "DE123456789",
+        taxId: companyTaxId,
         email: "kontakt@whatsgonow.de",
         website: "www.whatsgonow.de"
       },
@@ -63,7 +75,7 @@ export const prepareInvoiceData = async (orderId: string): Promise<InvoiceData> 
       sellerInfo: {
         name: "Whatsgonow GmbH",
         address: "Startup Allee 42, 10115 Berlin",
-        taxId: "USt-ID: DE123456789",
+        taxId: formattedTaxId,
         email: "kontakt@whatsgonow.de",
         website: "www.whatsgonow.de"
       }

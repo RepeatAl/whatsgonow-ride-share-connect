@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, Truck } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 export type Order = {
@@ -60,24 +60,29 @@ export const useSenderOrders = () => {
 
       // Subscribe to real-time updates for order status changes
       subscribeToOrderUpdates(session.user.id);
+
+      // Subscribe to real-time updates for offers
+      subscribeToOfferUpdates(session.user.id);
     };
 
     checkAuth();
 
-    // Cleanup function to remove subscription when unmounting
+    // Cleanup function to remove subscriptions when unmounting
     return () => {
       supabase.removeChannel(ordersStatusChannel);
+      supabase.removeChannel(offersChannel);
     };
   }, [navigate]);
 
-  // Set up Supabase Realtime channel
+  // Set up Supabase Realtime channels
   const ordersStatusChannel = supabase.channel('orders_status_sender');
+  const offersChannel = supabase.channel('offers_sender');
 
   // Subscribe to real-time updates for order status changes
   const subscribeToOrderUpdates = (userId: string) => {
     ordersStatusChannel
       .on(
-        'postgres_changes' as any, // Use type assertion to fix TypeScript error
+        'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
@@ -108,6 +113,56 @@ export const useSenderOrders = () => {
       .subscribe();
 
     console.log(`Subscribed to order status updates for sender ${userId}`);
+  };
+
+  // Subscribe to real-time updates for offers
+  const subscribeToOfferUpdates = (userId: string) => {
+    // First, get the orders from this sender
+    supabase
+      .from("orders")
+      .select("order_id")
+      .eq("sender_id", userId)
+      .then(({ data, error }) => {
+        if (error || !data) {
+          console.error("Error fetching orders for offers subscription:", error);
+          return;
+        }
+
+        const orderIds = data.map(order => order.order_id);
+        
+        // Now subscribe to offer changes for these orders
+        if (orderIds.length > 0) {
+          offersChannel
+            .on(
+              'postgres_changes',
+              {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'offers',
+              },
+              (payload) => {
+                const newOffer = payload.new;
+                
+                // Check if the offer is for one of the user's orders
+                if (orderIds.includes(newOffer.order_id)) {
+                  console.log('New offer received:', newOffer);
+                  
+                  // Show toast notification
+                  toast({
+                    title: "Neues Angebot eingegangen!",
+                    description: `Ein neues Angebot für ${newOffer.price}€ wurde für deinen Auftrag abgegeben.`,
+                    variant: "default"
+                  });
+                  
+                  // You could also update the state here if you're tracking offers
+                }
+              }
+            )
+            .subscribe();
+          
+          console.log(`Subscribed to offer updates for sender ${userId}`);
+        }
+      });
   };
 
   const handleStatusChange = (order: any) => {

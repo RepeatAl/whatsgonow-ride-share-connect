@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import Layout from "@/components/Layout";
 import { 
@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminLogEntry, TransactionEntry, UserSummary, useAdminLogs } from '@/hooks/use-admin-logs';
 import { useAdminUsers } from '@/hooks/use-admin-users';
+import { useAdminMonitoring } from '@/hooks/use-admin-monitoring';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { 
@@ -43,12 +44,16 @@ import {
   Star,
   Activity,
   Database,
-  UserCheck
+  UserCheck,
+  Bell,
+  BellOff
 } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminDashboard = () => {
   const [timeRange, setTimeRange] = useState<number>(30);
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(undefined);
+  const { user } = useAuth();
   const { users, loading: loadingUsers } = useAdminUsers();
   const { 
     logs, 
@@ -57,10 +62,12 @@ const AdminDashboard = () => {
     stats, 
     loading 
   } = useAdminLogs(timeRange, selectedRegion);
+  
+  // Initialize the admin monitoring system
+  const currentUser = users.find(u => u.role === 'admin');
+  const { isActive: monitoringActive } = useAdminMonitoring(currentUser || null);
 
   // Check if user is admin (should be handled by App.tsx route guard, but just in case)
-  const currentUser = users.find(u => u.role === 'admin');
-  
   if (loadingUsers) {
     return (
       <Layout>
@@ -318,6 +325,25 @@ const AdminDashboard = () => {
             <Database className="h-8 w-8" />
             Admin Dashboard
           </h1>
+          
+          <div className="flex items-center">
+            <Badge 
+              variant={monitoringActive ? "default" : "outline"}
+              className="flex items-center gap-1 mr-4"
+            >
+              {monitoringActive ? (
+                <>
+                  <Bell className="h-3 w-3" />
+                  <span>Live-Monitoring aktiv</span>
+                </>
+              ) : (
+                <>
+                  <BellOff className="h-3 w-3" />
+                  <span>Monitoring inaktiv</span>
+                </>
+              )}
+            </Badge>
+          </div>
         </div>
 
         {loading ? (
