@@ -1,58 +1,40 @@
 
 /**
- * Type definitions for invoice generation
+ * Type definitions for invoice data
  */
+
+export interface InvoiceAddress {
+  name: string;
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+  email?: string;
+  phone?: string;
+  vatId?: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  taxRate?: number;
+}
 
 export interface InvoiceData {
   invoiceNumber: string;
   date: string;
   dueDate: string;
-  customerName: string;
-  customerAddress: string;
+  orderId: string;
+  serviceDate?: string;
+  paymentMethod?: string;
+  sender: InvoiceAddress;
+  recipient: InvoiceAddress;
   items: InvoiceItem[];
   subtotal: number;
-  taxRate: number;
   taxAmount: number;
   total: number;
-  notes: string;
-  paymentInfo: string;
-  orderId: string;
-  serviceDate: string;
-  paymentMethod: string;
-  sender: {
-    name: string;
-    address: string;
-    taxId: string;
-    email: string;
-    website: string;
-  };
-  recipient: {
-    name: string;
-    address: string;
-    email: string;
-  };
-  sellerInfo: {
-    name: string;
-    address: string;
-    taxId: string;
-    email: string;
-    website: string;
-  };
-}
-
-export interface InvoiceItem {
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-  taxRate: number;
-  totalPrice: number;
-}
-
-export type TaxIdType = 'ustid' | 'steuernummer';
-
-export interface TaxIdentification {
-  type: TaxIdType;
-  value: string;
-  isValid: boolean;
+  notes?: string;
 }

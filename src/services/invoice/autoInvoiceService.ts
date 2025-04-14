@@ -1,8 +1,9 @@
 
 import { supabase } from '@/lib/supabaseClient';
+import { pdfService } from './pdfService';
+import { xmlService } from './xmlService';
 import { storageService } from './storageService';
 import { emailService } from './emailService';
-import { toast } from "@/hooks/use-toast";
 
 /**
  * Service for handling automatic invoice generation
@@ -11,53 +12,44 @@ export const autoInvoiceService = {
   /**
    * Handle automatic invoice generation after delivery confirmation
    */
-  handleAutoInvoice: async (orderId: string, userId: string): Promise<boolean> => {
+  handleAutoInvoice: async (orderId: string, userId: string): Promise<void> => {
     try {
-      // Get user email from database
+      console.log(`Auto-generating invoice for order ${orderId} and user ${userId}`);
+      
+      // Store the invoice files
+      const storedPaths = await storageService.storeInvoice(orderId);
+      if (!storedPaths) {
+        console.error("Failed to store invoice files");
+        return;
+      }
+      
+      // Log invoice generation
+      await supabase
+        .from('delivery_logs')
+        .insert({
+          order_id: orderId,
+          user_id: userId,
+          action: 'invoice_generated',
+        });
+      
+      // Get user email and send invoice
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('email')
         .eq('user_id', userId)
         .single();
       
-      if (userError || !userData?.email) {
+      if (userError || !userData) {
         console.error("Error fetching user email:", userError);
-        return false;
+        return;
       }
       
       // Send invoice to user's email
-      const emailSent = await emailService.sendInvoiceEmail(orderId, userData.email);
+      await emailService.sendInvoiceEmail(orderId, userData.email);
       
-      if (emailSent) {
-        // Store invoice in Supabase Storage (for future reference)
-        await storageService.storeInvoice(orderId);
-        
-        // Log invoice generation
-        await supabase
-          .from('delivery_logs')
-          .insert({
-            order_id: orderId,
-            user_id: userId,
-            action: 'invoice_sent',
-          });
-        
-        toast({
-          title: "Rechnung gesendet",
-          description: `Rechnung wurde automatisch an ${userData.email} gesendet.`
-        });
-        
-        return true;
-      }
-      
-      return false;
+      console.log(`Invoice for order ${orderId} generated and sent successfully`);
     } catch (error) {
-      console.error("Error handling automatic invoice:", error);
-      toast({
-        title: "Fehler",
-        description: "Automatischer Rechnungsversand fehlgeschlagen.",
-        variant: "destructive"
-      });
-      return false;
+      console.error("Error in automatic invoice generation:", error);
     }
   }
 };
