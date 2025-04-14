@@ -12,6 +12,7 @@ import UnreadBadge from "./navbar/UnreadBadge";
 import NavbarLogo from "./navbar/NavbarLogo";
 import MobileMenu from "./navbar/MobileMenu";
 import DesktopMenu from "./navbar/DesktopMenu";
+import { ThemeToggle } from "./navbar/ThemeToggle";
 
 const Navbar = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -92,13 +93,14 @@ const Navbar = () => {
   }, [user]);
 
   return (
-    <nav className="w-full py-4 px-4 md:px-6 flex items-center justify-between bg-white border-b shadow-sm fixed top-0 z-50">
+    <nav className="w-full py-4 px-4 md:px-6 flex items-center justify-between bg-background border-b shadow-sm fixed top-0 z-50">
       <div className="flex items-center">
         <NavbarLogo />
       </div>
 
       {isMobile ? (
         <div className="flex items-center gap-2">
+          {!isMobile && <ThemeToggle />}
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>

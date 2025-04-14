@@ -22,7 +22,7 @@ const NavLink = ({ to, icon, name, tooltip, onClick, badge }: NavLinkProps) => {
       <TooltipTrigger asChild>
         <Link
           to={to}
-          className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 relative"
+          className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 relative"
           onClick={onClick}
         >
           {icon}

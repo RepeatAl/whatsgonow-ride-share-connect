@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -18,9 +17,12 @@ import {
   Shield, 
   Database,
   LogIn, 
-  LogOut 
+  LogOut,
+  Moon,
+  Sun
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface MobileMenuProps {
   user: any;
@@ -30,6 +32,7 @@ interface MobileMenuProps {
 
 const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const navLinks = [
     { name: "Find Transport", path: "/find-transport", icon: <Package className="h-5 w-5 mr-2" /> },
@@ -61,11 +64,28 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
       </SheetTrigger>
       <SheetContent side="right" className="w-[250px] sm:w-[300px]">
         <div className="flex flex-col gap-4 mt-8">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            {theme === "light" ? (
+              <>
+                <Moon className="h-5 w-5 mr-2" />
+                <span>Dark Mode</span>
+              </>
+            ) : (
+              <>
+                <Sun className="h-5 w-5 mr-2" />
+                <span>Light Mode</span>
+              </>
+            )}
+          </button>
+
           {!user ? (
             <Link 
               to="/login"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+              className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <LogIn className="h-5 w-5 mr-2" />
               <span>Anmelden</span>
@@ -77,7 +97,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                   key={link.path} 
                   to={link.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+                  className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   {link.icon}
                   <span>{link.name}</span>
@@ -92,13 +112,13 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               {userRole === 'admin' && (
                 <>
                   <div className="border-t my-2"></div>
-                  <div className="px-3 py-1 text-sm font-semibold text-gray-500">Admin</div>
+                  <div className="px-3 py-1 text-sm font-semibold text-gray-500 dark:text-gray-400">Admin</div>
                   {adminLinks.map((link) => (
                     <Link 
                       key={link.path} 
                       to={link.path}
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+                      className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       {link.icon}
                       <span>{link.name}</span>
@@ -111,7 +131,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               <Link 
                 to="/profile"
                 onClick={() => setIsMenuOpen(false)} 
-                className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+                className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <User className="h-5 w-5 mr-2" />
                 <span>Profile</span>
@@ -119,7 +139,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               <Link 
                 to="/dashboard"
                 onClick={() => setIsMenuOpen(false)} 
-                className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100"
+                className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <LayoutDashboard className="h-5 w-5 mr-2" />
                 <span>Dashboard</span>
@@ -130,7 +150,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                   setIsMenuOpen(false);
                   signOut();
                 }}
-                className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 w-full text-left"
+                className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left"
               >
                 <LogOut className="h-5 w-5 mr-2" />
                 <span>Abmelden</span>

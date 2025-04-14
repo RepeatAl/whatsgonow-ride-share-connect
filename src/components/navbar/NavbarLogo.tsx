@@ -9,7 +9,7 @@ const NavbarLogo = () => {
         alt="whatsgonow logo" 
         className="h-10 mr-2" 
       />
-      <span className="text-2xl font-bold">
+      <span className="text-2xl font-bold text-foreground">
         whats<span className="text-brand-orange">go</span>now
       </span>
     </Link>
