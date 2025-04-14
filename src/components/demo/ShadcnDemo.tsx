@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar as CalendarIcon, Archive, Activity, Info } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ShadcnDemo = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -132,6 +132,15 @@ const ShadcnDemo = () => {
           </Accordion>
         </TabsContent>
       </Tabs>
+      
+      <div className="mb-8 p-4 border rounded-lg">
+        <h2 className="text-xl font-semibold mb-4">Test Pages</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button asChild variant="outline">
+            <Link to="/email-test">E-Mail Test Page</Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
