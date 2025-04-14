@@ -1,4 +1,5 @@
 
+import React from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/home/Hero";
 import HowItWorks from "@/components/home/HowItWorks";
@@ -8,7 +9,7 @@ import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { MessageSquare, LogIn, LayoutDashboard } from "lucide-react";
+import { MessageSquare, LogIn, LayoutDashboard, MessageCircle } from "lucide-react";
 import { useLaunch } from "@/components/launch/LaunchProvider";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,7 +17,6 @@ const Index = () => {
   const { isLaunchReady, isTest } = useLaunch();
   const { user } = useAuth();
   
-  // Only show feedback button if launched or in test region
   const showFeedbackButton = isLaunchReady || isTest;
   
   return (
@@ -44,6 +44,13 @@ const Index = () => {
             </Link>
           </Button>
         )}
+        
+        <Button asChild className="rounded-full h-14 w-14 p-0" variant="outline">
+          <Link to="/chat">
+            <MessageCircle className="h-6 w-6" />
+            <span className="sr-only">Start Chat</span>
+          </Link>
+        </Button>
         
         {showFeedbackButton && (
           <Button asChild className="rounded-full h-14 w-14 p-0">
