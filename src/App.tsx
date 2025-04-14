@@ -19,6 +19,7 @@ import Deal from "./pages/Deal";
 import Tracking from "./pages/Tracking";
 import PaymentStatus from "./pages/PaymentStatus";
 import ManagerDashboard from "./pages/ManagerDashboard";
+import CommunityManager from "./pages/CommunityManager";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DataDeletion from "./pages/DataDeletion";
 import Feedback from "./pages/Feedback";
@@ -80,6 +81,7 @@ const App = () => {
               <Route path="/messages" element={<Messages />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              <Route path="/cm" element={<CommunityManager />} />
               
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/data-deletion" element={<DataDeletion />} />
