@@ -103,6 +103,9 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'pulse-slow': 'pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+      },
+      textColor: {
+        foreground: 'hsl(var(--foreground))',
       }
     }
   },
