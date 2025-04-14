@@ -1,8 +1,10 @@
+
 import { supabase } from '@/lib/supabaseClient';
 import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
 import { prepareInvoiceData } from '@/utils/invoice';
 import { toast } from "@/hooks/use-toast";
+import { validateInvoice } from '@/utils/invoice/validation';
 
 /**
  * Service for handling storage of invoices in Supabase Storage
@@ -106,6 +108,9 @@ export const storageService = {
         .eq('invoice_id', invoiceId);
       
       console.log("Invoice stored successfully in bucket:", { pdfPath, xmlPath });
+      
+      // Run validation on the stored invoice
+      await validateInvoice(invoiceId);
       
       return { pdfPath, xmlPath };
     } catch (error) {

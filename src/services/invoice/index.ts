@@ -8,6 +8,7 @@ import { storageService } from './storageService';
 import { emailService } from './emailService';
 import { autoInvoiceService } from './autoInvoiceService';
 import { detailedInvoiceService } from './detailedInvoiceService';
+import { validationService } from './validationService';
 
 export const invoiceService = {
   // PDF operations
@@ -29,7 +30,13 @@ export const invoiceService = {
   
   // Detailed invoice operations
   createDetailedInvoice: detailedInvoiceService.createDetailedInvoice,
-  getDetailedInvoice: detailedInvoiceService.getDetailedInvoice
+  getDetailedInvoice: detailedInvoiceService.getDetailedInvoice,
+  
+  // Validation operations
+  validateInvoice: validationService.validateInvoice,
+  validateInvoiceAll: validationService.validateInvoiceAll,
+  getValidationResults: validationService.getValidationResults,
+  isInvoiceValid: validationService.isInvoiceValid
 };
 
 export * from './pdfService';
@@ -38,3 +45,4 @@ export * from './storageService';
 export * from './emailService';
 export * from './autoInvoiceService';
 export * from './detailedInvoiceService';
+export * from './validationService';

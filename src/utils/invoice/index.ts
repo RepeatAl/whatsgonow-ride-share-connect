@@ -7,3 +7,4 @@ export * from './invoiceTypes';
 export * from './invoiceUtils';
 export * from './xmlGenerator';
 export * from './dataPreparation';
+export * from './validation';
