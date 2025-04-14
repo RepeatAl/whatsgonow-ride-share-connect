@@ -53,15 +53,15 @@ const VerifyInvoiceButton = ({
       setInvoiceData(invoice);
       
       // Generate a sample invoice content - in a real app, this would be fetched from the DB
-      // Here we're using a placeholder value
       const invoiceContent = `Rechnung für Auftrag #${invoice.order_id} - ${new Date(invoice.created_at).toLocaleDateString('de-DE')}`;
       
-      // Verify the signature
-      const isValid = await invoiceService.verifyInvoiceSignature({
-        invoiceText: invoiceContent,
-        signatureBase64: invoice.digital_signature.signature,
-        publicKeyPEM: invoice.digital_signature.publicKey
-      });
+      // Use our new autoVerifyAndLog function
+      const isValid = await invoiceService.autoVerifyAndLog(
+        invoiceId,
+        invoiceContent,
+        invoice.digital_signature.signature,
+        invoice.digital_signature.publicKey
+      );
       
       setVerificationResult(isValid);
       setIsOpen(true);

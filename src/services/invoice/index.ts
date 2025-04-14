@@ -50,7 +50,8 @@ export const invoiceService = {
   signInvoice: signatureService.signAndStoreInvoice,
   signInvoiceText: signatureService.signAndStoreInvoiceText,
   verifySignature: signatureService.verifySignature,
-  verifyInvoiceSignature: signatureService.verifyInvoiceSignature
+  verifyInvoiceSignature: signatureService.verifyInvoiceSignature,
+  autoVerifyAndLog: signatureService.autoVerifyAndLog
 };
 
 export * from './pdfService';

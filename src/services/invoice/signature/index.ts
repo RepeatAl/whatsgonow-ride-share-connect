@@ -3,6 +3,7 @@ import { generateSignatureKeyPair, exportPublicKeyPEM, importPublicKeyFromPEM } 
 import { createSHA256Hash, textToArrayBuffer } from './hashingService';
 import { signInvoiceHash, verifySignature } from './signatureOperations';
 import { storeSignatureInDatabase } from './storageService';
+import { autoVerifyAndLog } from './autoVerifyAndLog';
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -117,5 +118,6 @@ export {
   textToArrayBuffer,
   signInvoiceHash,
   verifySignature,
-  storeSignatureInDatabase
+  storeSignatureInDatabase,
+  autoVerifyAndLog
 };
