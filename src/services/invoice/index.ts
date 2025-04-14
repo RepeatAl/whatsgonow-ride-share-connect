@@ -47,6 +47,7 @@ export const invoiceService = {
   
   // Digital signature operations
   signInvoice: archiveSignatureService.signAndStoreInvoice,
+  signInvoiceText: archiveSignatureService.signAndStoreInvoiceText,
   verifySignature: archiveSignatureService.verifySignature
 };
 

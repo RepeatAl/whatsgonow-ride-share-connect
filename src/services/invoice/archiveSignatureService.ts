@@ -171,3 +171,31 @@ export async function signAndStoreInvoice(
     return false;
   }
 }
+
+/**
+ * Sign an invoice using text content
+ * Alternative signature method that accepts plain text instead of ArrayBuffer
+ * @param invoiceText The text content of the invoice
+ * @param invoiceId The invoice ID
+ * @returns Success status
+ */
+export async function signAndStoreInvoiceText(
+  invoiceText: string, 
+  invoiceId: string
+): Promise<boolean> {
+  try {
+    // Convert text to ArrayBuffer
+    const dataBuffer = new TextEncoder().encode(invoiceText);
+    
+    // Use the main signature function with the converted buffer
+    return await signAndStoreInvoice(invoiceId, dataBuffer);
+  } catch (error) {
+    console.error("Error signing invoice text:", error);
+    toast({
+      title: "Signierungsfehler",
+      description: "Die Rechnung konnte nicht digital signiert werden.",
+      variant: "destructive"
+    });
+    return false;
+  }
+}
