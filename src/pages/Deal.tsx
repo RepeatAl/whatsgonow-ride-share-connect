@@ -25,6 +25,7 @@ import QRCode from "@/components/payment/QRCode";
 import RatingModal from "@/components/rating/RatingModal";
 import UserRating from "@/components/rating/UserRating";
 import { ratingService } from "@/services/ratingService";
+import { RatingSection } from "@/components/deal/RatingSection";
 
 const Deal = () => {
   const { orderId } = useParams();
@@ -402,26 +403,13 @@ const Deal = () => {
             </div>
 
             {order.paymentStatus === "paid" && status === "delivered" && (
-              <div className="bg-white p-4 rounded-lg shadow-sm border mb-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="font-semibold text-gray-800 mb-1">Bewertung</h2>
-                    <p className="text-sm text-gray-600">
-                      {hasRated 
-                        ? "Vielen Dank für Ihre Bewertung!" 
-                        : "Bewerten Sie den Transporteur für diesen Auftrag"}
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={() => setShowRatingModal(true)}
-                    variant="outline"
-                    disabled={hasRated}
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    {hasRated ? "Bereits bewertet" : "Jetzt bewerten"}
-                  </Button>
-                </div>
-              </div>
+              <RatingSection 
+                orderId={orderId as string}
+                userId="driver-123"
+                currentUserId="current-user"
+                hasRated={hasRated}
+                role="driver"
+              />
             )}
 
             <ChatInterface orderId={orderId as string} order={order} currentStatus={status} />
