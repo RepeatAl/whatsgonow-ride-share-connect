@@ -55,11 +55,60 @@ export const useOrders = () => {
         
         // Fetch orders
         fetchOrders();
+
+        // Subscribe to real-time updates for new orders
+        subscribeToOrderUpdates(userData.region);
       }
     };
 
     checkAuth();
+
+    // Cleanup function to remove subscription when unmounting
+    return () => {
+      supabase.removeChannel(ordersChannel);
+    };
   }, [navigate]);
+
+  // Set up Supabase Realtime channel
+  const ordersChannel = supabase.channel('orders_realtime');
+
+  // Subscribe to real-time updates for new orders
+  const subscribeToOrderUpdates = (userRegion: string | null) => {
+    ordersChannel
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'orders',
+          filter: 'status=eq.offen',
+        },
+        (payload) => {
+          console.log('New order received:', payload);
+          
+          const newOrder = payload.new as Order;
+          
+          // Add new order to the state
+          setOrders(currentOrders => {
+            // Check if order already exists
+            if (currentOrders.some(order => order.order_id === newOrder.order_id)) {
+              return currentOrders;
+            }
+            return [newOrder, ...currentOrders];
+          });
+          
+          // Show toast notification
+          toast({
+            title: "Neuer Auftrag verfügbar!",
+            description: `${newOrder.description} von ${newOrder.from_address}`,
+            variant: "default",
+          });
+        }
+      )
+      .subscribe();
+
+    console.log('Subscribed to orders table for real-time updates');
+  };
 
   const fetchOrders = async () => {
     setLoading(true);

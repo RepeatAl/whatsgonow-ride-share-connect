@@ -1,11 +1,12 @@
 
-import { TruckIcon } from "lucide-react";
+import { TruckIcon, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOrders } from "@/hooks/use-orders";
 import OrderFilters from "@/components/order/OrderFilters";
 import OrderCard from "@/components/order/OrderCard";
 import OrderSkeleton from "@/components/order/OrderSkeleton";
 import OrderEmptyState from "@/components/order/OrderEmptyState";
+import { Toaster } from "@/components/ui/toaster";
 
 const Orders = () => {
   const {
@@ -32,9 +33,22 @@ const Orders = () => {
           <p className="text-muted-foreground mt-1">Finde Aufträge, die zu dir passen</p>
         </div>
         
-        <Button onClick={fetchOrders} variant="outline" className="flex items-center gap-2">
-          <TruckIcon className="h-4 w-4" /> Aufträge aktualisieren
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2 text-sm"
+            onClick={fetchOrders} 
+          >
+            <Bell className="h-4 w-4" /> 
+            <span className="hidden sm:inline">Echtzeit-Updates aktiv</span>
+            <span className="inline sm:hidden">Updates aktiv</span>
+          </Button>
+          
+          <Button onClick={fetchOrders} variant="outline" className="flex items-center gap-2">
+            <TruckIcon className="h-4 w-4" /> Aufträge aktualisieren
+          </Button>
+        </div>
       </div>
       
       {/* Filter section */}
@@ -64,6 +78,9 @@ const Orders = () => {
           ))}
         </div>
       )}
+      
+      {/* Toast container */}
+      <Toaster />
     </div>
   );
 };

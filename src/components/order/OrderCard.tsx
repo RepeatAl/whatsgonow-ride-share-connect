@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   MapPin, 
@@ -16,6 +17,7 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { type Order } from "@/hooks/use-orders";
 
 interface OrderCardProps {
@@ -24,6 +26,19 @@ interface OrderCardProps {
 
 const OrderCard = ({ order }: OrderCardProps) => {
   const navigate = useNavigate();
+  const [isNew, setIsNew] = useState(false);
+  
+  // Check if this is a newly added order based on timestamp
+  useEffect(() => {
+    // This is a simple way to highlight new orders
+    // In a real app, you might want to track this differently
+    setIsNew(true);
+    const timeout = setTimeout(() => {
+      setIsNew(false);
+    }, 5000);
+    
+    return () => clearTimeout(timeout);
+  }, [order.order_id]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -43,11 +58,18 @@ const OrderCard = ({ order }: OrderCardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className={`overflow-hidden transition-all ${isNew ? 'ring-2 ring-brand-primary animate-pulse-slow' : ''}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg">{order.description}</CardTitle>
+            <CardTitle className="text-lg">
+              {order.description}
+              {isNew && (
+                <Badge className="ml-2 bg-brand-primary text-white">
+                  Neu
+                </Badge>
+              )}
+            </CardTitle>
             <CardDescription>
               <span className="inline-flex items-center gap-0.5">
                 <Package className="h-3.5 w-3.5" /> {order.weight} kg
