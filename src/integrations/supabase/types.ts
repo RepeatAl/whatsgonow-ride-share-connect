@@ -70,6 +70,73 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          invoice_id: string
+          order_id: string | null
+          pdf_url: string | null
+          recipient_id: string | null
+          sender_id: string | null
+          sent_at: string | null
+          status: string | null
+          updated_at: string | null
+          xml_url: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          invoice_id?: string
+          order_id?: string | null
+          pdf_url?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          xml_url?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          invoice_id?: string
+          order_id?: string | null
+          pdf_url?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          xml_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "invoices_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "invoices_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string

@@ -9,6 +9,7 @@ const corsHeaders = {
 
 interface InvoiceEmailRequest {
   orderId: string;
+  invoiceId: string | null;
   email: string;
   invoiceNumber: string;
   pdfBase64: string;
@@ -26,6 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { 
       orderId, 
+      invoiceId,
       email, 
       invoiceNumber, 
       pdfBase64, 
@@ -37,6 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
     // This is where you would integrate with an email sending service like Resend or SendGrid
     // For demonstration purposes, we'll log the request and return success
     console.log(`Sending invoice ${invoiceNumber} to ${email} for order ${orderId}`);
+    console.log(`Invoice ID: ${invoiceId || 'Not provided'}`);
     console.log(`PDF size: ${pdfBase64.length} characters`);
     console.log(`XML size: ${xmlBase64.length} characters`);
     
@@ -69,6 +72,9 @@ const handler = async (req: Request): Promise<Response> => {
       ],
     });
     */
+
+    // Update invoice record in database if you have invoiceId
+    // This would be done via a separate API call or directly in the invoice service
 
     // Simulate successful response
     return new Response(

@@ -4,6 +4,7 @@ import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
 import { storageService } from './storageService';
 import { emailService } from './emailService';
+import { prepareInvoiceData } from '@/utils/invoice';
 
 /**
  * Service for handling automatic invoice generation
@@ -15,6 +16,21 @@ export const autoInvoiceService = {
   handleAutoInvoice: async (orderId: string, userId: string): Promise<void> => {
     try {
       console.log(`Auto-generating invoice for order ${orderId} and user ${userId}`);
+      
+      // Check if invoice already exists
+      const { data: existingInvoice } = await supabase
+        .from('invoices')
+        .select('invoice_id')
+        .eq('order_id', orderId)
+        .single();
+        
+      if (existingInvoice) {
+        console.log(`Invoice already exists for order ${orderId}`);
+        return;
+      }
+      
+      // Get invoice data for amount calculation
+      const invoiceData = await prepareInvoiceData(orderId);
       
       // Store the invoice files
       const storedPaths = await storageService.storeInvoice(orderId);
