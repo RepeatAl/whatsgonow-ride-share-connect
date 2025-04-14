@@ -1,7 +1,8 @@
+
 import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Index from "./pages/Index";
-import Login from "./pages/login";
+import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Support from "./pages/Support";
