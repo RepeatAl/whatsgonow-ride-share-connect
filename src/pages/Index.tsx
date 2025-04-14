@@ -8,14 +8,32 @@ import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { MessageSquare, LogIn } from "lucide-react";
+import { MessageSquare, LogIn, LayoutDashboard } from "lucide-react";
 import { useLaunch } from "@/components/launch/LaunchProvider";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 const Index = () => {
   const { isLaunchReady, isTestRegion } = useLaunch();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // Only show feedback button if launched or in test region
   const showFeedbackButton = isLaunchReady || isTestRegion;
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
   
   return (
     <Layout>
@@ -27,12 +45,21 @@ const Index = () => {
       <CTA />
       
       <div className="fixed bottom-6 right-6 z-10 flex flex-col gap-3">
-        <Button asChild className="rounded-full h-14 w-14 p-0" variant="accent">
-          <Link to="/login">
-            <LogIn className="h-6 w-6" />
-            <span className="sr-only">Login</span>
-          </Link>
-        </Button>
+        {isLoggedIn ? (
+          <Button asChild className="rounded-full h-14 w-14 p-0" variant="accent">
+            <Link to="/dashboard">
+              <LayoutDashboard className="h-6 w-6" />
+              <span className="sr-only">Dashboard</span>
+            </Link>
+          </Button>
+        ) : (
+          <Button asChild className="rounded-full h-14 w-14 p-0" variant="accent">
+            <Link to="/login">
+              <LogIn className="h-6 w-6" />
+              <span className="sr-only">Login</span>
+            </Link>
+          </Button>
+        )}
         
         {showFeedbackButton && (
           <Button asChild className="rounded-full h-14 w-14 p-0">
