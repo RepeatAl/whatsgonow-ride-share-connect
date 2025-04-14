@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FileText, Download, Mail, BookText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { invoiceService } from "@/services/invoiceService";
+import { invoiceService } from "@/services/invoice";
 import {
   DropdownMenu,
   DropdownMenuContent,
