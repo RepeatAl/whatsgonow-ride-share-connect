@@ -8,6 +8,7 @@ import { formatDate } from "@/utils/pdfGenerator";
 import { MapPin, Calendar, Package, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import OrderReceiptButton from "./OrderReceiptButton";
+import OrderInvoiceButton from "./OrderInvoiceButton";
 
 interface OrderCardProps {
   order: Order;
@@ -88,12 +89,19 @@ const OrderCard = ({ order, showActions = true }: OrderCardProps) => {
       {showActions && (
         <>
           <Separator />
-          <CardFooter className="px-4 py-3 flex justify-between">
-            <OrderReceiptButton 
-              orderId={order.order_id}
-              isCompleted={isCompleted}
-              userEmail={userEmail}
-            />
+          <CardFooter className="px-4 py-3 flex justify-between flex-wrap gap-2">
+            <div className="flex gap-2">
+              <OrderReceiptButton 
+                orderId={order.order_id}
+                isCompleted={isCompleted}
+                userEmail={userEmail}
+              />
+              <OrderInvoiceButton 
+                orderId={order.order_id}
+                isCompleted={isCompleted}
+                userEmail={userEmail}
+              />
+            </div>
             <Button 
               variant="ghost" 
               size="sm" 
