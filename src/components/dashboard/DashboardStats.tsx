@@ -1,11 +1,11 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Package, BadgeCheck, Banknote } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardStatsProps {
-  stats: {
+  role?: string;
+  stats?: {
     totalUsers: number;
     activeUsers: number;
     pendingKyc: number;
@@ -16,7 +16,18 @@ interface DashboardStatsProps {
   isLoading?: boolean;
 }
 
-export const DashboardStats = ({ stats, isLoading = false }: DashboardStatsProps) => {
+export const DashboardStats = ({ 
+  role = 'sender', 
+  stats = {
+    totalUsers: 0,
+    activeUsers: 0,
+    pendingKyc: 0,
+    totalOrders: 0,
+    completedOrders: 0,
+    totalCommission: 0
+  }, 
+  isLoading = false 
+}: DashboardStatsProps) => {
   const statItems = [
     {
       title: "Total Users",

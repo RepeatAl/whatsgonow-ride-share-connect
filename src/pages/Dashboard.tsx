@@ -6,7 +6,7 @@ import { PlusCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import DashboardStats from "@/components/dashboard/DashboardStats";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import OrderCard from "@/components/order/OrderCard";
 import OrderSkeleton from "@/components/order/OrderSkeleton";
 import { useSenderOrders } from "@/hooks/use-sender-orders";
@@ -138,3 +138,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
