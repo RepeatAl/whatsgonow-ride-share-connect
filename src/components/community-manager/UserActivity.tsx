@@ -88,24 +88,34 @@ const UserActivity = ({ region }: UserActivityProps) => {
         if (ratingsError) throw ratingsError;
         
         // Combine and format all activities
-        const orderActivities = (orders || []).map(order => ({
-          id: order.order_id,
-          type: "order" as const,
-          user_name: order.users?.name || 'Unknown User', // Fixed: Access name property on users object, not array
-          user_id: order.sender_id,
-          timestamp: order.deadline,
-          description: order.description,
-          status: order.status
-        }));
+        const orderActivities = (orders || []).map(order => {
+          // Access the user's name safely
+          const userName = order.users ? order.users.name : 'Unknown User';
+          
+          return {
+            id: order.order_id,
+            type: "order" as const,
+            user_name: userName,
+            user_id: order.sender_id,
+            timestamp: order.deadline,
+            description: order.description,
+            status: order.status
+          };
+        });
         
-        const ratingActivities = (ratings || []).map(rating => ({
-          id: rating.rating_id,
-          type: "rating" as const,
-          user_name: rating.users?.name || 'Unknown User', // Fixed: Access name property on users object, not array
-          user_id: rating.from_user,
-          timestamp: new Date().toISOString(), // Using current date as a fallback
-          description: `Bewertung: ${rating.score}/5 ${rating.comment ? `- "${rating.comment}"` : ""}`,
-        }));
+        const ratingActivities = (ratings || []).map(rating => {
+          // Access the user's name safely
+          const userName = rating.users ? rating.users.name : 'Unknown User';
+          
+          return {
+            id: rating.rating_id,
+            type: "rating" as const,
+            user_name: userName,
+            user_id: rating.from_user,
+            timestamp: new Date().toISOString(), // Using current date as a fallback
+            description: `Bewertung: ${rating.score}/5 ${rating.comment ? `- "${rating.comment}"` : ""}`,
+          };
+        });
         
         // Combine all activities and sort by date
         const allActivities = [...orderActivities, ...ratingActivities]
