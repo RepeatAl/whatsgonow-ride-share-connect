@@ -115,9 +115,9 @@ export function ChatBox({ orderId, recipientId, userName, orderDescription }: Ch
                     </div>
                     {msgs.map(msg => (
                       <ChatMessage
-                        key={msg.id || msg.message_id}
+                        key={msg.id || (msg.message_id ? msg.message_id : `msg-${msg.sent_at}`)}
                         message={{
-                          id: msg.id || msg.message_id || '',
+                          id: msg.id || (msg.message_id ? msg.message_id : ''),
                           content: msg.content,
                           timestamp: formatMessageTime(msg.sent_at),
                           isCurrentUser: msg.isCurrentUser || false,
