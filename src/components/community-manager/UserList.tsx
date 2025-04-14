@@ -6,7 +6,8 @@ import {
   TableCaption, 
   TableHead, 
   TableHeader, 
-  TableRow 
+  TableRow,
+  TableCell
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFetchUsers } from "@/hooks/use-fetch-users";

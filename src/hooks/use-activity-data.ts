@@ -39,7 +39,7 @@ export const useActivityData = (region: string) => {
             status,
             description,
             deadline,
-            users!inner(name)
+            users(name)
           `)
           .eq("users.region", region)
           .gte("deadline", thirtyDaysAgo.toISOString())
@@ -57,7 +57,7 @@ export const useActivityData = (region: string) => {
             to_user,
             score,
             comment,
-            users!inner(name, region)
+            users(name, region)
           `)
           .eq("users.region", region)
           .order("created_at", { ascending: false })
@@ -68,7 +68,7 @@ export const useActivityData = (region: string) => {
         // Combine and format all activities
         const orderActivities = (orders || []).map(order => {
           // Extract name safely
-          const userName = order.users ? order.users.name : 'Unknown User';
+          const userName = order.users?.[0]?.name || 'Unknown User';
           
           return {
             id: order.order_id,
@@ -83,7 +83,7 @@ export const useActivityData = (region: string) => {
         
         const ratingActivities = (ratings || []).map(rating => {
           // Extract name safely
-          const userName = rating.users ? rating.users.name : 'Unknown User';
+          const userName = rating.users?.[0]?.name || 'Unknown User';
           
           return {
             id: rating.rating_id,
