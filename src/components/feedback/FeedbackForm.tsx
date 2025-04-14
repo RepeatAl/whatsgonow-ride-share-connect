@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Send } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import FeedbackTypeSelector from "./FeedbackTypeSelector";
+import FeedbackTypes from "./FeedbackTypes";
 import SatisfactionRating from "./SatisfactionRating";
 
 interface FeedbackFormProps {
@@ -51,9 +51,9 @@ const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <FeedbackTypeSelector 
-            feedbackType={feedbackType} 
-            onChange={setFeedbackType} 
+          <FeedbackTypes 
+            selectedType={feedbackType} 
+            onTypeChange={setFeedbackType} 
           />
 
           <SatisfactionRating 
