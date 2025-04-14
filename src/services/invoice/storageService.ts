@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabaseClient';
 import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
@@ -19,23 +18,52 @@ export const storageService = {
       const xmlBlob = await xmlService.generateXML(orderId);
       const invoiceData = await prepareInvoiceData(orderId);
       
-      // Create file paths
-      const pdfPath = `invoices/${orderId}/${invoiceData.invoiceNumber}.pdf`;
-      const xmlPath = `invoices/${orderId}/${invoiceData.invoiceNumber}.xml`;
+      // Create file paths based on invoice ID to match our RLS policy pattern
+      const { data: invoiceRecord } = await supabase
+        .from('invoices')
+        .select('invoice_id')
+        .eq('order_id', orderId)
+        .maybeSingle();
       
-      // Check if the invoices bucket exists, create if not
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const invoiceBucket = buckets?.find(bucket => bucket.name === 'invoices');
-      
-      if (!invoiceBucket) {
-        // In production, you would create the bucket via SQL migrations
-        // This is just a fallback for development
-        console.log('Creating invoices bucket in Supabase Storage');
-        await supabase.storage.createBucket('invoices', {
-          public: false,
-          fileSizeLimit: 10485760, // 10MB
-        });
+      // If no invoice exists yet, create one to get the invoice_id
+      let invoiceId = invoiceRecord?.invoice_id;
+      if (!invoiceId) {
+        // Get order data to link to sender
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .select('sender_id')
+          .eq('order_id', orderId)
+          .single();
+          
+        if (orderError) {
+          console.error("Error fetching order data:", orderError);
+          throw new Error("Order not found");
+        }
+        
+        // Create invoice record to get an ID
+        const { data: newInvoice, error: invoiceError } = await supabase
+          .from('invoices')
+          .insert({
+            order_id: orderId,
+            sender_id: orderData.sender_id,
+            amount: invoiceData.total,
+            currency: 'EUR',
+            status: 'draft'
+          })
+          .select()
+          .single();
+          
+        if (invoiceError) {
+          console.error("Error creating invoice record:", invoiceError);
+          throw new Error("Failed to create invoice");
+        }
+        
+        invoiceId = newInvoice.invoice_id;
       }
+      
+      // Create folder structure following our RLS pattern: invoices/[invoice_id]/...
+      const pdfPath = `invoices/${invoiceId}/${invoiceData.invoiceNumber}.pdf`;
+      const xmlPath = `invoices/${invoiceId}/${invoiceData.invoiceNumber}.xml`;
       
       // Store PDF in Supabase Storage
       const { error: pdfError } = await supabase.storage
@@ -57,57 +85,27 @@ export const storageService = {
       
       if (xmlError) throw xmlError;
       
-      // Get public URLs (or signed URLs in production)
-      const { data: pdfUrl } = supabase.storage
+      // Get signed URLs for the files (since the bucket is private)
+      const { data: pdfUrl } = await supabase.storage
         .from('invoices')
-        .getPublicUrl(pdfPath);
+        .createSignedUrl(pdfPath, 60 * 60 * 24 * 7); // 7 days
         
-      const { data: xmlUrl } = supabase.storage
+      const { data: xmlUrl } = await supabase.storage
         .from('invoices')
-        .getPublicUrl(xmlPath);
+        .createSignedUrl(xmlPath, 60 * 60 * 24 * 7); // 7 days
       
-      // Get order and recipient information
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .select('sender_id')
-        .eq('order_id', orderId)
-        .single();
-        
-      if (orderError) {
-        console.error("Error fetching order data:", orderError);
-      }
+      // Update invoice record with file URLs
+      await supabase
+        .from('invoices')
+        .update({ 
+          pdf_url: pdfUrl?.signedUrl || null,
+          xml_url: xmlUrl?.signedUrl || null,
+          status: 'stored',
+          updated_at: new Date().toISOString()
+        })
+        .eq('invoice_id', invoiceId);
       
-      // Store invoice record in database
-      if (orderData?.sender_id) {
-        const { data: invoice, error: invoiceError } = await supabase
-          .from('invoices')
-          .upsert({
-            order_id: orderId,
-            sender_id: orderData.sender_id,
-            recipient_id: invoiceData.recipient.email ? null : null, // Would be set in a real app
-            amount: invoiceData.total,
-            currency: 'EUR',
-            status: 'sent',
-            pdf_url: pdfUrl?.publicUrl || null,
-            xml_url: xmlUrl?.publicUrl || null,
-            sent_at: new Date().toISOString(),
-          }, {
-            onConflict: 'order_id'
-          })
-          .select()
-          .single();
-          
-        if (invoiceError) {
-          console.error("Error storing invoice record:", invoiceError);
-          toast({
-            title: "Hinweis",
-            description: "Rechnung wurde erstellt, aber nicht in der Datenbank gespeichert.",
-            variant: "default"
-          });
-        } else {
-          console.log("Invoice stored successfully:", invoice);
-        }
-      }
+      console.log("Invoice stored successfully in bucket:", { pdfPath, xmlPath });
       
       return { pdfPath, xmlPath };
     } catch (error) {

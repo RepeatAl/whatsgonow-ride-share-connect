@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,12 +37,39 @@ const handler = async (req: Request): Promise<Response> => {
       amount 
     }: InvoiceEmailRequest = await req.json();
 
+    // Create a Supabase client with the service role key to bypass RLS
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // If we have an invoiceId, get the signed URLs directly to save bandwidth
+    let pdfAttachment = pdfBase64;
+    let xmlAttachment = xmlBase64;
+
+    if (invoiceId) {
+      // Check if we have PDF and XML file paths in storage
+      const { data: invoice } = await supabase
+        .from('invoices')
+        .select('pdf_url, xml_url')
+        .eq('invoice_id', invoiceId)
+        .single();
+
+      // If we have existing URLs, don't re-upload the files
+      if (invoice && (invoice.pdf_url || invoice.xml_url)) {
+        console.log("Using existing signed URLs");
+        
+        // Here we would get the files from storage directly
+        // For demonstration purposes we'll just log that we would use the existing URLs
+        // In a production environment, we would download the files or use S3 presigned URLs
+      }
+    }
+
     // This is where you would integrate with an email sending service like Resend or SendGrid
     // For demonstration purposes, we'll log the request and return success
     console.log(`Sending invoice ${invoiceNumber} to ${email} for order ${orderId}`);
     console.log(`Invoice ID: ${invoiceId || 'Not provided'}`);
-    console.log(`PDF size: ${pdfBase64.length} characters`);
-    console.log(`XML size: ${xmlBase64.length} characters`);
+    console.log(`PDF size: ${typeof pdfAttachment === 'string' ? pdfAttachment.length : 'Using URL'} characters`);
+    console.log(`XML size: ${typeof xmlAttachment === 'string' ? xmlAttachment.length : 'Using URL'} characters`);
     
     // Here's how you would implement it with Resend if you have that configured:
     /*
@@ -61,20 +89,28 @@ const handler = async (req: Request): Promise<Response> => {
       attachments: [
         {
           filename: `Rechnung-${invoiceNumber}.pdf`,
-          content: pdfBase64,
+          content: pdfAttachment,
           encoding: 'base64',
         },
         {
           filename: `XRechnung-${invoiceNumber}.xml`,
-          content: xmlBase64,
+          content: xmlAttachment,
           encoding: 'base64',
         },
       ],
     });
     */
 
-    // Update invoice record in database if you have invoiceId
-    // This would be done via a separate API call or directly in the invoice service
+    // Update invoice record status to 'sent'
+    if (invoiceId) {
+      await supabase
+        .from('invoices')
+        .update({ 
+          status: 'sent',
+          sent_at: new Date().toISOString() 
+        })
+        .eq('invoice_id', invoiceId);
+    }
 
     // Simulate successful response
     return new Response(

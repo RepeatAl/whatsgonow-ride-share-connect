@@ -22,17 +22,17 @@ export const autoInvoiceService = {
         .from('invoices')
         .select('invoice_id')
         .eq('order_id', orderId)
-        .single();
+        .maybeSingle();
         
       if (existingInvoice) {
-        console.log(`Invoice already exists for order ${orderId}`);
+        console.log(`Invoice ${existingInvoice.invoice_id} already exists for order ${orderId}`);
         return;
       }
       
       // Get invoice data for amount calculation
       const invoiceData = await prepareInvoiceData(orderId);
       
-      // Store the invoice files
+      // Store the invoice files (will also create invoice record)
       const storedPaths = await storageService.storeInvoice(orderId);
       if (!storedPaths) {
         console.error("Failed to store invoice files");
