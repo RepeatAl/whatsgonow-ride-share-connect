@@ -142,7 +142,6 @@ export function ChatBox({ orderId, recipientId, userName, orderDescription }: Ch
             onKeyDown={handleKeyDown}
             placeholder="Nachricht schreiben..."
             className="flex-grow resize-none min-h-[60px]"
-            // Removed the maxRows prop as it's not supported by our Textarea component
           />
           <Button 
             onClick={handleSendMessage} 

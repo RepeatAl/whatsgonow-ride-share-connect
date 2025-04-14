@@ -1,10 +1,9 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
-export interface Message {
+interface ChatMessage {
   message_id: string;
   order_id: string;
   sender_id: string;
@@ -12,180 +11,139 @@ export interface Message {
   content: string;
   sent_at: string;
   read: boolean;
-  senderName?: string;
   isCurrentUser: boolean;
+  senderName?: string;
 }
 
 export function useChatMessages(orderId: string) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { user } = useAuth();
-  const { toast } = useToast();
-  
-  useEffect(() => {
-    if (!orderId || !user) return;
-    
-    // Fetch initial messages
-    const fetchMessages = async () => {
-      try {
-        setLoading(true);
-        
-        // Get messages for this order
-        const { data: messagesData, error: messagesError } = await supabase
-          .from('messages')
-          .select(`
-            *,
-            sender:sender_id(name)
-          `)
-          .eq('order_id', orderId)
-          .order('sent_at', { ascending: true });
-        
-        if (messagesError) throw messagesError;
-        
-        // Mark received messages as read
-        const messagesToUpdate = (messagesData || [])
-          .filter(msg => msg.recipient_id === user.id && !msg.read)
-          .map(msg => msg.message_id);
-        
-        if (messagesToUpdate.length > 0) {
-          const { error: updateError } = await supabase
-            .from('messages')
-            .update({ read: true })
-            .in('message_id', messagesToUpdate);
-          
-          if (updateError) console.error('Error marking messages as read:', updateError);
-        }
-        
-        // Transform messages data
-        const transformedMessages = (messagesData || []).map(msg => {
-          // Handle the case where sender might be a SelectQueryError
-          let senderName = 'Unknown User';
-          if (typeof msg.sender === 'object' && msg.sender !== null) {
-            // Check if sender has name property directly
-            if ('name' in msg.sender) {
-              senderName = msg.sender.name;
-            }
-          }
-          
-          return {
-            ...msg,
-            senderName,
-            isCurrentUser: msg.sender_id === user.id
-          };
-        });
-        
-        setMessages(transformedMessages);
-      } catch (err) {
-        setError(err as Error);
-        console.error('Error fetching messages:', err);
-      } finally {
-        setLoading(false);
+
+  // Function to fetch messages
+  const fetchMessages = async () => {
+    if (!user || !orderId) return;
+
+    try {
+      setLoading(true);
+      
+      // Query messages for this order
+      const { data, error: messagesError } = await supabase
+        .from('messages')
+        .select(`
+          message_id,
+          order_id,
+          sender_id,
+          recipient_id,
+          content,
+          sent_at,
+          read,
+          sender:sender_id(name)
+        `)
+        .eq('order_id', orderId)
+        .order('sent_at', { ascending: true });
+      
+      if (messagesError) throw messagesError;
+      
+      // Mark unread messages as read if user is recipient
+      const unreadMessages = (data || []).filter(
+        msg => msg.recipient_id === user.id && !msg.read
+      );
+      
+      if (unreadMessages.length > 0) {
+        await Promise.all(
+          unreadMessages.map(msg => 
+            supabase
+              .from('messages')
+              .update({ read: true })
+              .eq('message_id', msg.message_id)
+          )
+        );
       }
-    };
-    
-    fetchMessages();
-    
-    // Set up realtime subscription
-    const channel = supabase
-      .channel(`order-${orderId}-messages`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `order_id=eq.${orderId}`,
-      }, async (payload) => {
-        const newMessage = payload.new as any;
-        
-        // Fetch sender name
-        const { data: senderData } = await supabase
-          .from('users')
-          .select('name')
-          .eq('user_id', newMessage.sender_id)
-          .single();
-        
-        const messageWithSender = {
-          ...newMessage,
-          senderName: senderData?.name || 'Unknown User',
-          isCurrentUser: newMessage.sender_id === user.id
-        };
-        
-        setMessages(prev => [...prev, messageWithSender]);
-        
-        // Mark as read if recipient is current user
-        if (newMessage.recipient_id === user.id) {
-          const { error: updateError } = await supabase
-            .from('messages')
-            .update({ read: true })
-            .eq('message_id', newMessage.message_id);
-          
-          if (updateError) console.error('Error marking message as read:', updateError);
-          
-          // Show a toast notification for new messages
-          if (newMessage.sender_id !== user.id) {
-            toast({
-              title: `New message from ${messageWithSender.senderName}`,
-              description: newMessage.content.substring(0, 50) + (newMessage.content.length > 50 ? '...' : ''),
-            });
-          }
-        }
-      })
-      .subscribe();
-    
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [orderId, user, toast]);
-  
+      
+      // Process messages with sender info
+      const processedMessages = (data || []).map(msg => ({
+        ...msg,
+        isCurrentUser: msg.sender_id === user.id,
+        senderName: msg.sender?.name || 'Unknown User',
+      }));
+      
+      setMessages(processedMessages);
+    } catch (err) {
+      setError(err as Error);
+      console.error('Error fetching messages:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to send a new message
   const sendMessage = async (content: string, recipientId: string) => {
-    if (!user || !orderId || !content.trim()) return null;
+    if (!user || !orderId || !content.trim() || !recipientId) {
+      return;
+    }
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('messages')
         .insert({
           order_id: orderId,
           sender_id: user.id,
           recipient_id: recipientId,
           content: content.trim(),
-        })
-        .select()
-        .single();
+        });
       
       if (error) throw error;
-      return data;
+      
+      // No need to manually refresh - realtime will handle it
     } catch (err) {
-      setError(err as Error);
       console.error('Error sending message:', err);
-      return null;
+      throw err;
     }
   };
-  
-  const markAsRead = async (messageId: string) => {
-    if (!user) return;
+
+  // Initial fetch and subscribe to updates
+  useEffect(() => {
+    if (!user || !orderId) {
+      setLoading(false);
+      return;
+    }
     
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ read: true })
-        .eq('message_id', messageId)
-        .eq('recipient_id', user.id);
-      
-      if (error) throw error;
-      
-      setMessages(prev => prev.map(msg => 
-        msg.message_id === messageId ? { ...msg, read: true } : msg
-      ));
-    } catch (err) {
-      console.error('Error marking message as read:', err);
-    }
-  };
-  
+    // Initial fetch
+    fetchMessages();
+    
+    // Subscribe to new messages
+    const channel = supabase
+      .channel(`order-chat-${orderId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `order_id=eq.${orderId}`,
+      }, () => {
+        fetchMessages();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `order_id=eq.${orderId}`,
+      }, () => {
+        fetchMessages();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, orderId]);
+
   return {
     messages,
     loading,
     error,
     sendMessage,
-    markAsRead
+    refresh: fetchMessages
   };
 }

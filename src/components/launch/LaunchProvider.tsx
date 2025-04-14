@@ -52,6 +52,7 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
   useEffect(() => {
     const loadUserRegion = async () => {
       try {
+        setLoading(true);
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -68,8 +69,12 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
           setRegion("unbekannt");
           setLoading(false);
           
-          // Only navigate to login if not already on login page to avoid redirect loops
-          if (location.pathname !== "/login" && location.pathname !== "/register") {
+          // Only navigate to login if not already on auth-related pages to avoid redirect loops
+          const isAuthPage = location.pathname === "/login" || 
+                            location.pathname === "/register" || 
+                            location.pathname === "/";
+          
+          if (!isAuthPage) {
             navigate("/login");
           }
           return;

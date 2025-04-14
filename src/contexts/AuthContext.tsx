@@ -1,6 +1,6 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -30,19 +31,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentSession?.user ?? null);
         setLoading(false);
 
-        // Handle navigation based on auth state changes
+        // Handle navigation based on auth state changes with path checks to prevent loops
         if (event === 'SIGNED_IN') {
+          const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+          
           toast({
             title: "Angemeldet",
             description: "Du bist jetzt eingeloggt."
           });
-          navigate('/dashboard');
+          
+          // Only redirect to dashboard if on an auth page
+          if (isAuthPage) {
+            navigate('/dashboard');
+          }
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Abgemeldet",
             description: "Du wurdest erfolgreich abgemeldet."
           });
-          navigate('/login');
+          
+          // Don't redirect if we're already on login/home
+          if (location.pathname !== "/login" && location.pathname !== "/") {
+            navigate('/login');
+          }
         }
       }
     );
@@ -57,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const signIn = async (email: string, password: string) => {
     try {

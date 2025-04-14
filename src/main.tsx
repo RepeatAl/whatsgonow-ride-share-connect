@@ -5,7 +5,11 @@ import App from './App.tsx'
 import './index.css'
 import LaunchProvider from './components/launch/LaunchProvider'
 
-createRoot(document.getElementById("root")!).render(
+// Create root element
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("Root element not found");
+
+createRoot(rootElement).render(
   <BrowserRouter>
     <LaunchProvider>
       <App />

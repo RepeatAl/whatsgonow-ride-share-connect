@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,14 +16,26 @@ const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, signUp, user } = useAuth();
 
-  // If user is already logged in, redirect to dashboard
-  if (user) {
-    navigate("/dashboard");
-    return null;
-  }
+  // Determine if we should redirect based on query parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('signup') === 'true') {
+      setIsSignup(true);
+    }
+  }, [location]);
+
+  // Handle redirect for authenticated users
+  useEffect(() => {
+    if (user && !redirecting) {
+      setRedirecting(true);
+      navigate("/dashboard");
+    }
+  }, [user, navigate, redirecting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +55,20 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
+  // If we're already redirecting, show a loading message
+  if (redirecting) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen bg-background p-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Du wirst zum Dashboard weitergeleitet...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
