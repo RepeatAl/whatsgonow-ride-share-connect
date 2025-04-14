@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Send, Star } from "lucide-react";
+import { Send } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLaunch } from "@/components/launch/LaunchProvider";
+import FeedbackTypeSelector from "./FeedbackTypeSelector";
+import SatisfactionRating from "./SatisfactionRating";
 
 interface FeedbackFormProps {
   onSubmit: (feedbackData: FeedbackData) => void;
@@ -51,49 +51,15 @@ const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label>What type of feedback do you have?</Label>
-            <RadioGroup
-              value={feedbackType}
-              onValueChange={setFeedbackType}
-              className="flex flex-col space-y-1"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="suggestion" id="suggestion" />
-                <Label htmlFor="suggestion">Suggestion</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="bug" id="bug" />
-                <Label htmlFor="bug">Bug Report</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="compliment" id="compliment" />
-                <Label htmlFor="compliment">Compliment</Label>
-              </div>
-            </RadioGroup>
-          </div>
+          <FeedbackTypeSelector 
+            feedbackType={feedbackType} 
+            onChange={setFeedbackType} 
+          />
 
-          <div className="space-y-2">
-            <Label>How satisfied are you with Whatsgonow?</Label>
-            <div className="flex items-center space-x-1">
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <button
-                  key={rating}
-                  type="button"
-                  onClick={() => setSatisfaction(rating.toString())}
-                  className="flex items-center justify-center"
-                >
-                  <Star
-                    className={`h-8 w-8 ${
-                      parseInt(satisfaction) >= rating
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
+          <SatisfactionRating 
+            satisfaction={satisfaction} 
+            onChange={setSatisfaction} 
+          />
 
           <div className="space-y-2">
             <Label>Which features have you used?</Label>
