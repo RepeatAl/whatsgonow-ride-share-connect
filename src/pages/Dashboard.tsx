@@ -1,23 +1,24 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { User } from "@supabase/supabase-js";
+import { PlusCircle } from "lucide-react";
+import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut, User as UserIcon } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import DashboardStats from "@/components/dashboard/DashboardStats";
+import OrderCard from "@/components/order/OrderCard";
+import OrderSkeleton from "@/components/order/OrderSkeleton";
+import { useSenderOrders } from "@/hooks/use-sender-orders";
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { orders, loading: ordersLoading } = useSenderOrders();
 
   useEffect(() => {
-    // Check if user is authenticated
-    const checkAuth = async () => {
+    const getUserProfile = async () => {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -25,139 +26,114 @@ const Dashboard = () => {
         navigate("/login");
         return;
       }
-
-      setUser(session.user);
       
-      // Fetch user role from the users table
-      if (session.user) {
-        const { data, error } = await supabase
-          .from("users")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .single();
-        
-        if (error) {
-          console.error("Error fetching user role:", error);
-        } else if (data) {
-          setUserRole(data.role);
-          
-          // Redirect based on role
-          if (data.role === "driver") {
-            navigate("/orders");
-          } else if (data.role === "cm") {
-            navigate("/cm");
-          } else if (data.role === "admin") {
-            navigate("/admin");
-          }
-        }
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+      
+      if (error) {
+        console.error("Error loading user profile", error);
+        return;
       }
       
+      setUser(data);
       setLoading(false);
     };
-
-    checkAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (!session) {
-        navigate("/login");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
     
-    if (error) {
-      toast({
-        title: "Fehler beim Abmelden",
-        description: error.message,
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Abmeldung erfolgreich",
-        description: "Du wurdest erfolgreich abgemeldet."
-      });
-      navigate("/login");
-    }
-  };
-
+    getUserProfile();
+  }, [navigate]);
+  
   if (loading) {
     return (
-      <div className="container mx-auto max-w-4xl p-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-24 w-full" />
-          </CardContent>
-          <CardFooter>
-            <Skeleton className="h-10 w-32" />
-          </CardFooter>
-        </Card>
-      </div>
+      <Layout>
+        <div className="container mx-auto max-w-6xl px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 w-1/3 bg-gray-200 rounded mb-4"></div>
+            <div className="h-4 w-1/2 bg-gray-200 rounded mb-8"></div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Layout>
     );
   }
-
+  
   return (
-    <div className="container mx-auto max-w-4xl p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl flex items-center gap-2">
-            <UserIcon className="h-6 w-6" />
-            Willkommen, {user?.user_metadata?.name || user?.email || "Nutzer"}
-          </CardTitle>
-          <CardDescription>
-            {userRole && (
-              <span className="font-medium text-muted-foreground">
-                Rolle: {userRole}
-              </span>
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">
-            Dies ist dein persönliches Dashboard. Hier kannst du deine Aktivitäten verwalten und deine Einstellungen ändern.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Aktuelle Aufträge</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Keine aktuellen Aufträge vorhanden.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistiken</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Keine Statistiken verfügbar.</p>
-              </CardContent>
-            </Card>
+    <Layout>
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Willkommen, {user?.name || 'Benutzer'}</h1>
+            <p className="text-muted-foreground">
+              Dein Dashboard für {user?.role === 'sender' ? 'Sendungen' : user?.role === 'driver' ? 'Transporte' : 'Whatsgonow'}
+            </p>
           </div>
-        </CardContent>
-        <CardFooter>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Abmelden
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+          
+          {user?.role === 'sender' && (
+            <Button 
+              variant="brand" 
+              className="flex items-center gap-2"
+              onClick={() => navigate('/create-order')}
+            >
+              <PlusCircle className="h-4 w-4" />
+              Neuen Auftrag erstellen
+            </Button>
+          )}
+          
+          {user?.role === 'driver' && (
+            <Button 
+              variant="brand" 
+              onClick={() => navigate('/orders')}
+            >
+              Verfügbare Aufträge
+            </Button>
+          )}
+        </div>
+        
+        <DashboardStats role={user?.role} />
+        
+        {user?.role === 'sender' && (
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Deine aktuellen Aufträge</h2>
+            
+            {ordersLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[1, 2].map((i) => (
+                  <OrderSkeleton key={i} />
+                ))}
+              </div>
+            ) : orders.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {orders.map((order) => (
+                  <OrderCard 
+                    key={order.order_id} 
+                    order={order} 
+                    showControls={false}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Keine Aufträge</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Du hast noch keine Aufträge erstellt. Klicke oben auf "Neuen Auftrag erstellen".
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 

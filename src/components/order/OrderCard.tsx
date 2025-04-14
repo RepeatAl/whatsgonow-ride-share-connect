@@ -18,13 +18,15 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import StatusBadge from "@/components/community-manager/StatusBadge";
 import { type Order } from "@/hooks/use-orders";
 
 interface OrderCardProps {
   order: Order;
+  showControls?: boolean;
 }
 
-const OrderCard = ({ order }: OrderCardProps) => {
+const OrderCard = ({ order, showControls = true }: OrderCardProps) => {
   const navigate = useNavigate();
   const [isNew, setIsNew] = useState(false);
   
@@ -76,9 +78,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
               </span>
             </CardDescription>
           </div>
-          <div className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-medium">
-            {order.status}
-          </div>
+          <StatusBadge status={order.status} />
         </div>
       </CardHeader>
       <CardContent>
@@ -106,15 +106,17 @@ const OrderCard = ({ order }: OrderCardProps) => {
           </div>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button 
-          className="w-full" 
-          variant="brand"
-          onClick={() => navigate(`/submit-offer/${order.order_id}`)}
-        >
-          Angebot abgeben
-        </Button>
-      </CardFooter>
+      {showControls && (
+        <CardFooter>
+          <Button 
+            className="w-full" 
+            variant="brand"
+            onClick={() => navigate(`/submit-offer/${order.order_id}`)}
+          >
+            Angebot abgeben
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };
