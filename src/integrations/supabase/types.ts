@@ -70,48 +70,291 @@ export type Database = {
           },
         ]
       }
+      invoice_addresses: {
+        Row: {
+          address_id: string
+          building_number: string | null
+          city: string | null
+          company_name: string | null
+          contact_person: string | null
+          country: string | null
+          department: string | null
+          entity_type: string
+          invoice_id: string | null
+          postal_code: string | null
+          street: string | null
+          tax_id: string | null
+          vat_id: string | null
+        }
+        Insert: {
+          address_id?: string
+          building_number?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_person?: string | null
+          country?: string | null
+          department?: string | null
+          entity_type: string
+          invoice_id?: string | null
+          postal_code?: string | null
+          street?: string | null
+          tax_id?: string | null
+          vat_id?: string | null
+        }
+        Update: {
+          address_id?: string
+          building_number?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_person?: string | null
+          country?: string | null
+          department?: string | null
+          entity_type?: string
+          invoice_id?: string | null
+          postal_code?: string | null
+          street?: string | null
+          tax_id?: string | null
+          vat_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_addresses_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["invoice_id"]
+          },
+        ]
+      }
+      invoice_audit_log: {
+        Row: {
+          action: string
+          invoice_id: string | null
+          ip_address: string | null
+          log_id: string
+          new_state: Json | null
+          previous_state: Json | null
+          timestamp: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          invoice_id?: string | null
+          ip_address?: string | null
+          log_id?: string
+          new_state?: Json | null
+          previous_state?: Json | null
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          invoice_id?: string | null
+          ip_address?: string | null
+          log_id?: string
+          new_state?: Json | null
+          previous_state?: Json | null
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_audit_log_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["invoice_id"]
+          },
+          {
+            foreignKeyName: "invoice_audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      invoice_line_items: {
+        Row: {
+          classification_code: string | null
+          description: string
+          invoice_id: string | null
+          item_id: string
+          product_code: string | null
+          quantity: number
+          tax_amount: number | null
+          tax_category_code: string | null
+          tax_rate: number | null
+          total_price: number
+          unit_of_measure: string
+          unit_price: number
+        }
+        Insert: {
+          classification_code?: string | null
+          description: string
+          invoice_id?: string | null
+          item_id?: string
+          product_code?: string | null
+          quantity: number
+          tax_amount?: number | null
+          tax_category_code?: string | null
+          tax_rate?: number | null
+          total_price: number
+          unit_of_measure: string
+          unit_price: number
+        }
+        Update: {
+          classification_code?: string | null
+          description?: string
+          invoice_id?: string | null
+          item_id?: string
+          product_code?: string | null
+          quantity?: number
+          tax_amount?: number | null
+          tax_category_code?: string | null
+          tax_rate?: number | null
+          total_price?: number
+          unit_of_measure?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["invoice_id"]
+          },
+        ]
+      }
+      invoice_validation_results: {
+        Row: {
+          error_messages: Json | null
+          invoice_id: string | null
+          passed: boolean
+          validation_date: string | null
+          validation_id: string
+          validation_type: string
+          validator_version: string | null
+          warning_messages: Json | null
+        }
+        Insert: {
+          error_messages?: Json | null
+          invoice_id?: string | null
+          passed: boolean
+          validation_date?: string | null
+          validation_id?: string
+          validation_type: string
+          validator_version?: string | null
+          warning_messages?: Json | null
+        }
+        Update: {
+          error_messages?: Json | null
+          invoice_id?: string | null
+          passed?: boolean
+          validation_date?: string | null
+          validation_id?: string
+          validation_type?: string
+          validator_version?: string | null
+          warning_messages?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_validation_results_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["invoice_id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
+          bic: string | null
+          buyer_department: string | null
+          buyer_tax_id: string | null
           created_at: string | null
           currency: string | null
+          digital_signature: Json | null
+          document_hash: string | null
+          gobd_compliant: boolean | null
+          iban: string | null
           invoice_id: string
           order_id: string | null
+          payment_reference: string | null
+          payment_terms: string | null
           pdf_url: string | null
           recipient_id: string | null
+          retention_legal_basis: string | null
+          retention_period: unknown | null
+          scheduled_deletion_date: string | null
           sender_id: string | null
           sent_at: string | null
           status: string | null
           updated_at: string | null
+          version: number | null
           xml_url: string | null
+          xrechnung_compliant: boolean | null
         }
         Insert: {
           amount: number
+          bic?: string | null
+          buyer_department?: string | null
+          buyer_tax_id?: string | null
           created_at?: string | null
           currency?: string | null
+          digital_signature?: Json | null
+          document_hash?: string | null
+          gobd_compliant?: boolean | null
+          iban?: string | null
           invoice_id?: string
           order_id?: string | null
+          payment_reference?: string | null
+          payment_terms?: string | null
           pdf_url?: string | null
           recipient_id?: string | null
+          retention_legal_basis?: string | null
+          retention_period?: unknown | null
+          scheduled_deletion_date?: string | null
           sender_id?: string | null
           sent_at?: string | null
           status?: string | null
           updated_at?: string | null
+          version?: number | null
           xml_url?: string | null
+          xrechnung_compliant?: boolean | null
         }
         Update: {
           amount?: number
+          bic?: string | null
+          buyer_department?: string | null
+          buyer_tax_id?: string | null
           created_at?: string | null
           currency?: string | null
+          digital_signature?: Json | null
+          document_hash?: string | null
+          gobd_compliant?: boolean | null
+          iban?: string | null
           invoice_id?: string
           order_id?: string | null
+          payment_reference?: string | null
+          payment_terms?: string | null
           pdf_url?: string | null
           recipient_id?: string | null
+          retention_legal_basis?: string | null
+          retention_period?: unknown | null
+          scheduled_deletion_date?: string | null
           sender_id?: string | null
           sent_at?: string | null
           status?: string | null
           updated_at?: string | null
+          version?: number | null
           xml_url?: string | null
+          xrechnung_compliant?: boolean | null
         }
         Relationships: [
           {

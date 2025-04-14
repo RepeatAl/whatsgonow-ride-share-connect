@@ -7,6 +7,7 @@ import { xmlService } from './xmlService';
 import { storageService } from './storageService';
 import { emailService } from './emailService';
 import { autoInvoiceService } from './autoInvoiceService';
+import { detailedInvoiceService } from './detailedInvoiceService';
 
 export const invoiceService = {
   // PDF operations
@@ -24,5 +25,16 @@ export const invoiceService = {
   sendInvoiceEmail: emailService.sendInvoiceEmail,
   
   // Auto-invoice operations
-  handleAutoInvoice: autoInvoiceService.handleAutoInvoice
+  handleAutoInvoice: autoInvoiceService.handleAutoInvoice,
+  
+  // Detailed invoice operations
+  createDetailedInvoice: detailedInvoiceService.createDetailedInvoice,
+  getDetailedInvoice: detailedInvoiceService.getDetailedInvoice
 };
+
+export * from './pdfService';
+export * from './xmlService';
+export * from './storageService';
+export * from './emailService';
+export * from './autoInvoiceService';
+export * from './detailedInvoiceService';
