@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Index from "./pages/Index";
@@ -11,9 +12,9 @@ import CommunityManager from "./pages/CommunityManager";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
 import Deal from "./pages/Deal";
-import DeliveryConfirmation from "./pages/DeliveryConfirmation";
+// Update the import path for DeliveryConfirmation
+import DeliveryConfirmation from "./components/delivery/DeliveryConfirmation";
 import NotFound from "./pages/NotFound";
-
 // Import the RLSTest page
 import RLSTest from "./pages/RLSTest";
 
