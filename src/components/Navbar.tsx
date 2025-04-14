@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,17 +14,20 @@ import {
   Shield,
   Database,
   LogIn,
-  LogOut
+  LogOut,
+  Inbox
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import LogoutButton from "./auth/LogoutButton";
-import { supabase } from "@/integrations/supabase/client"; // Added import for supabase
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const isMobile = useIsMobile();
   const location = useLocation();
   const { user } = useAuth();
@@ -57,10 +59,54 @@ const Navbar = () => {
     checkUserRole();
   }, [location.pathname, user]);
 
+  useEffect(() => {
+    if (!user) {
+      setUnreadMessagesCount(0);
+      return;
+    }
+
+    const fetchUnreadCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('recipient_id', user.id)
+          .eq('read', false);
+        
+        if (error) throw error;
+        setUnreadMessagesCount(count || 0);
+      } catch (error) {
+        console.error('Error fetching unread messages count:', error);
+      }
+    };
+
+    fetchUnreadCount();
+
+    const channel = supabase
+      .channel('unread-messages-count')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `recipient_id=eq.${user.id}`,
+      }, fetchUnreadCount)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `recipient_id=eq.${user.id}`,
+      }, fetchUnreadCount)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const navLinks = [
     { name: "Find Transport", path: "/find-transport", icon: <Package className="h-5 w-5 mr-2" />, tooltip: "Browse available transports" },
     { name: "Offer Transport", path: "/offer-transport", icon: <Car className="h-5 w-5 mr-2" />, tooltip: "Offer your transport services" },
-    { name: "Messages", path: "/messages", icon: <MessageCircle className="h-5 w-5 mr-2" />, tooltip: "View your messages" },
+    { name: "Messages", path: "/inbox", icon: <MessageCircle className="h-5 w-5 mr-2" />, tooltip: "View your messages" },
   ];
 
   const adminLinks = [
@@ -98,15 +144,22 @@ const Navbar = () => {
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link to="/notifications">
-                  <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-primary" aria-hidden="true"></span>
+                <Link to="/inbox">
+                  <Button variant="ghost" size="icon" className="relative" aria-label="Messages">
+                    <Inbox className="h-5 w-5" />
+                    {unreadMessagesCount > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                      >
+                        {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                      </Badge>
+                    )}
                   </Button>
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Notifications</p>
+                <p>Messages ({unreadMessagesCount} unread)</p>
               </TooltipContent>
             </Tooltip>
           )}
@@ -202,10 +255,18 @@ const Navbar = () => {
                   <TooltipTrigger asChild>
                     <Link
                       to={link.path}
-                      className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 relative"
                     >
                       {link.icon}
                       <span>{link.name}</span>
+                      {link.path === "/inbox" && unreadMessagesCount > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                        >
+                          {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                        </Badge>
+                      )}
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -239,15 +300,22 @@ const Navbar = () => {
               <div className="h-6 border-l mx-1"></div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link to="/notifications">
-                    <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-                      <Bell className="h-5 w-5" />
-                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-primary" aria-hidden="true"></span>
+                  <Link to="/inbox">
+                    <Button variant="ghost" size="icon" className="relative" aria-label="Messages">
+                      <Inbox className="h-5 w-5" />
+                      {unreadMessagesCount > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-primary" aria-hidden="true"
+                        >
+                          {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                        </Badge>
+                      )}
                     </Button>
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Notifications</p>
+                  <p>Messages ({unreadMessagesCount} unread)</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>

@@ -70,6 +70,58 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          message_id: string
+          order_id: string | null
+          read: boolean | null
+          recipient_id: string | null
+          sender_id: string | null
+          sent_at: string | null
+        }
+        Insert: {
+          content: string
+          message_id?: string
+          order_id?: string | null
+          read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+        }
+        Update: {
+          content?: string
+          message_id?: string
+          order_id?: string | null
+          read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           driver_id: string | null

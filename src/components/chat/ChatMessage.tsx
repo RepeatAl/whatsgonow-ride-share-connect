@@ -1,130 +1,60 @@
 
-import { Check, DollarSign, MessageSquare, ThumbsUp, ThumbsDown, Info, BadgeDollarSign, CheckCircle2 } from "lucide-react";
-import { ChatMessage as ChatMessageType } from "./ChatInterface";
-import { cn } from "@/lib/utils";
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface ChatMessageProps {
-  message: ChatMessageType;
+export interface ChatMessageProps {
+  message: {
+    id: string;
+    content: string;
+    timestamp: string;
+    isCurrentUser: boolean;
+    sender: string;
+    read: boolean;
+  };
 }
 
-const ChatMessage = ({ message }: ChatMessageProps) => {
-  const isUserMessage = message.sender === "user";
-  const getMessageTypeIcon = () => {
-    switch (message.type) {
-      case "offer":
-      case "counter_offer":
-        return <DollarSign className="h-4 w-4" />;
-      case "accept":
-        return <ThumbsUp className="h-4 w-4" />;
-      case "reject":
-        return <ThumbsDown className="h-4 w-4" />;
-      case "status":
-        return <Info className="h-4 w-4 text-blue-500" />;
-      case "payment":
-        if (message.paymentStatus === "reserved") {
-          return <BadgeDollarSign className="h-4 w-4 text-blue-500" />;
-        } else if (message.paymentStatus === "paid") {
-          return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-        }
-        return <DollarSign className="h-4 w-4" />;
-      default:
-        return <MessageSquare className="h-4 w-4" />;
-    }
-  };
-
-  const getMessageTypeBg = () => {
-    switch (message.type) {
-      case "offer":
-      case "counter_offer":
-        return isUserMessage ? "bg-blue-100" : "bg-brand-primary";
-      case "accept":
-        return isUserMessage ? "bg-green-100" : "bg-green-600";
-      case "reject":
-        return isUserMessage ? "bg-red-100" : "bg-red-600";
-      case "status":
-        return "bg-blue-50";
-      case "payment":
-        if (message.paymentStatus === "reserved") return "bg-blue-50";
-        if (message.paymentStatus === "paid") return "bg-green-50";
-        return "bg-gray-50";
-      default:
-        return isUserMessage ? "bg-blue-100" : "bg-brand-primary";
-    }
-  };
-
-  const getMessageTypeTextColor = () => {
-    if (message.type === "status") {
-      return "text-blue-700";
-    }
-    
-    if (message.type === "payment") {
-      if (message.paymentStatus === "reserved") return "text-blue-700";
-      if (message.paymentStatus === "paid") return "text-green-700";
-      return "text-gray-700";
-    }
-    
-    if (isUserMessage) {
-      return "text-gray-800";
-    }
-    
-    switch (message.type) {
-      case "offer":
-      case "counter_offer":
-      case "accept":
-      case "reject":
-        return "text-white";
-      default:
-        return "text-white";
-    }
-  };
+export default function ChatMessage({ message }: ChatMessageProps) {
+  const { isCurrentUser, content, timestamp, read } = message;
 
   return (
     <div className={cn(
-      "flex",
-      isUserMessage ? "justify-start" : "justify-end",
-      (message.type === "status" || message.type === "payment") && "justify-center"
+      "flex items-end gap-2",
+      isCurrentUser ? "justify-end" : "justify-start"
     )}>
-      <div className={cn(
-        "max-w-[80%] rounded-lg p-3 shadow-sm",
-        getMessageTypeBg(),
-        getMessageTypeTextColor(),
-        (message.type === "status" || message.type === "payment") && "border w-full text-center",
-        message.type === "status" && "border-blue-200",
-        message.type === "payment" && message.paymentStatus === "reserved" && "border-blue-200",
-        message.type === "payment" && message.paymentStatus === "paid" && "border-green-200"
-      )}>
-        {(message.type === "offer" || message.type === "counter_offer") && message.price && (
-          <div className="font-bold mb-1 flex items-center">
-            <DollarSign className={cn(
-              "h-4 w-4 mr-1",
-              isUserMessage ? "text-blue-500" : "text-white"
-            )} />
-            €{message.price.toFixed(2)}
-          </div>
-        )}
-        
-        <div className="flex gap-1 items-start">
-          {message.type === "status" && (
-            <Info className="h-4 w-4 mr-1 text-blue-500" />
-          )}
-          {message.type === "payment" && message.paymentStatus === "reserved" && (
-            <BadgeDollarSign className="h-4 w-4 mr-1 text-blue-500" />
-          )}
-          {message.type === "payment" && message.paymentStatus === "paid" && (
-            <CheckCircle2 className="h-4 w-4 mr-1 text-green-500" />
-          )}
-          <div className="flex-grow">{message.content}</div>
+      {!isCurrentUser && (
+        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+          {message.sender.charAt(0).toUpperCase()}
         </div>
-        
-        <div className="text-xs mt-1 opacity-70 flex items-center justify-end gap-1">
-          {message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-          {message.type === "accept" && (
-            <Check className="h-3 w-3 ml-1" />
-          )}
+      )}
+      <div className="max-w-[80%]">
+        {!isCurrentUser && (
+          <p className="text-xs text-muted-foreground mb-1">{message.sender}</p>
+        )}
+        <div className={cn(
+          "rounded-lg p-3 shadow-sm",
+          isCurrentUser
+            ? "bg-primary text-primary-foreground"
+            : "bg-secondary"
+        )}>
+          <div className="whitespace-pre-wrap break-words">{content}</div>
+          <div className="flex items-center justify-end gap-1 mt-1">
+            <span className="text-xs opacity-70">{timestamp}</span>
+            {isCurrentUser && (
+              <Check 
+                className={cn(
+                  "h-3 w-3", 
+                  read ? "text-green-500" : "opacity-70"
+                )} 
+              />
+            )}
+          </div>
         </div>
       </div>
+      {isCurrentUser && (
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shrink-0">
+          {message.sender.charAt(0).toUpperCase()}
+        </div>
+      )}
     </div>
   );
-};
-
-export default ChatMessage;
+}

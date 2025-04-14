@@ -1,131 +1,129 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
+import { ArrowRight, MessageCircle } from "lucide-react";
+import { getConversationPartner } from "@/utils/get-conversation-participants";
+import { ChatBox } from "@/components/chat/ChatBox";
 
-import React, { useState } from 'react';
-import { User } from '@supabase/supabase-js';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useDealOffers, Offer } from '@/hooks/use-deal-offers';
-import { formatCurrency } from '@/lib/utils';
-import { DollarSign, Send, Check, X } from 'lucide-react';
-
-interface DealPanelProps {
-  order_id: string;
-  user: User | null;
-  userRole: 'driver' | 'sender';
-}
-
-export const DealPanel: React.FC<DealPanelProps> = ({ 
-  order_id, 
-  user, 
-  userRole 
-}) => {
-  const [offerPrice, setOfferPrice] = useState('');
-  const { offers, loading, submitOffer, updateOfferStatus } = useDealOffers(order_id, user);
-
+// Add this section to your DealPanel component where appropriate
+export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
+  const [offerPrice, setOfferPrice] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOfferSent, setIsOfferSent] = useState(false);
+  const { user } = useAuth();
+  
   const handleSubmitOffer = async () => {
-    const price = parseFloat(offerPrice);
-    if (isNaN(price) || price <= 0) {
-      alert('Bitte geben Sie einen gültigen Preis ein');
-      return;
-    }
+    if (!user || !orderId) return;
     
-    await submitOffer(price);
-    setOfferPrice('');
+    setIsLoading(true);
+    
+    try {
+      const price = parseFloat(offerPrice);
+      if (isNaN(price) || price <= 0) {
+        alert("Please enter a valid price.");
+        return;
+      }
+      
+      // Simulate sending an offer
+      console.log("Offer submitted:", { orderId, price, userId: user.id });
+      
+      // Call the callback function to handle offer submission
+      onOfferSubmit({ orderId, price, userId: user.id });
+      
+      setIsOfferSent(true);
+    } catch (error) {
+      console.error("Error submitting offer:", error);
+      alert("Failed to submit offer. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
+  const [activeTab, setActiveTab] = useState("negotiate");
+  const [conversationPartner, setConversationPartner] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  const renderDriverView = () => (
-    <div className="space-y-4">
-      <div>
-        <Label>Preis für den Auftrag</Label>
-        <div className="flex gap-2 mt-2">
-          <Input 
-            type="number" 
-            placeholder="Preis eingeben" 
-            value={offerPrice}
-            onChange={(e) => setOfferPrice(e.target.value)}
-            min="0"
-            step="0.01"
-          />
-          <Button onClick={handleSubmitOffer}>
-            <Send className="mr-2 h-4 w-4" /> Angebot senden
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+  // Get conversation partner for chat
+  useEffect(() => {
+    if (!user || !orderId) return;
 
-  const renderSenderView = () => (
-    <div className="space-y-4">
-      {loading ? (
-        <p>Lade Angebote...</p>
-      ) : offers.length === 0 ? (
-        <p>Noch keine Angebote eingegangen</p>
-      ) : (
-        offers.map((offer) => (
-          <OfferCard 
-            key={offer.offer_id} 
-            offer={offer} 
-            onAccept={() => updateOfferStatus(offer.offer_id, 'angenommen')}
-            onReject={() => updateOfferStatus(offer.offer_id, 'abgelehnt')}
-          />
-        ))
-      )}
-    </div>
-  );
+    const getPartner = async () => {
+      const partnerId = await getConversationPartner(orderId, user.id);
+      setConversationPartner(partnerId);
+    };
+
+    getPartner();
+  }, [orderId, user]);
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>
-          {userRole === 'driver' ? 'Dein Angebot' : 'Eingegangene Angebote'}
-        </CardTitle>
+        <CardTitle>Deal Zone</CardTitle>
+        <CardDescription>
+          Verhandle und schließe den Transport ab
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        {userRole === 'driver' ? renderDriverView() : renderSenderView()}
+        <Tabs defaultValue="negotiate" onValueChange={setActiveTab} value={activeTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="negotiate">Angebot & Verhandlung</TabsTrigger>
+            <TabsTrigger value="message">
+              Nachrichten
+              <MessageCircle className="ml-2 h-4 w-4" />
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="negotiate" className="mt-4">
+            {!isOfferSent ? (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="price">Dein Angebot (EUR)</Label>
+                  <Input
+                    type="number"
+                    id="price"
+                    placeholder="Gib deinen Preis ein"
+                    value={offerPrice}
+                    onChange={(e) => setOfferPrice(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleSubmitOffer} disabled={isLoading}>
+                  {isLoading ? "Sende Angebot..." : "Angebot senden"}
+                  <ArrowRight className="ml-2" />
+                </Button>
+              </div>
+            ) : (
+              <div className="text-green-500 font-semibold">
+                Angebot gesendet! Warte auf die Bestätigung.
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="message" className="mt-4">
+            <div className="h-[400px]">
+              {conversationPartner ? (
+                <ChatBox 
+                  orderId={orderId} 
+                  recipientId={conversationPartner}
+                  orderDescription={orderInfo?.description}
+                />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center p-6">
+                  <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">Noch keine Konversation</h3>
+                  <p className="text-sm text-muted-foreground text-center mt-2">
+                    Sobald der Deal zustande kommt, kannst du hier mit dem Partner chatten
+                  </p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
-};
-
-const OfferCard: React.FC<{
-  offer: Offer;
-  onAccept: () => void;
-  onReject: () => void;
-}> = ({ offer, onAccept, onReject }) => {
-  return (
-    <Card className={`${offer.status === 'angenommen' ? 'border-green-500' : ''}`}>
-      <CardContent className="flex justify-between items-center p-4">
-        <div className="flex items-center space-x-4">
-          <DollarSign className="h-6 w-6 text-gray-500" />
-          <div>
-            <p className="font-semibold">{formatCurrency(offer.price)}</p>
-            <p className="text-sm text-gray-500">
-              {offer.status === 'eingereicht' && 'Neues Angebot'}
-              {offer.status === 'angenommen' && 'Akzeptiert'}
-              {offer.status === 'abgelehnt' && 'Abgelehnt'}
-            </p>
-          </div>
-        </div>
-        {offer.status === 'eingereicht' && (
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onAccept}
-            >
-              <Check className="mr-2 h-4 w-4" /> Annehmen
-            </Button>
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={onReject}
-            >
-              <X className="mr-2 h-4 w-4" /> Ablehnen
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+}

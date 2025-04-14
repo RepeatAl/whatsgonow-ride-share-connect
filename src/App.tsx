@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import RLSTest from "./pages/RLSTest";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
+import Inbox from "./pages/Inbox"; // Import the new Inbox page
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -111,6 +113,14 @@ function App() {
               } 
             />
             <Route path="/delivery/:token" element={<DeliveryConfirmationPage />} />
+            <Route 
+              path="/inbox" 
+              element={
+                <ProtectedRoute>
+                  <Inbox />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/rls-test" 
               element={
