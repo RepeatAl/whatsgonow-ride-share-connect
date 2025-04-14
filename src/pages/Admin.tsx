@@ -35,8 +35,10 @@ import RoleBadge from "@/components/community-manager/RoleBadge";
 import { 
   ChevronDown, 
   Trash2, 
-  User as UserIcon 
+  User as UserIcon,
+  ClipboardCheck 
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -58,10 +60,25 @@ const Admin = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
-        <UserIcon className="h-8 w-8" />
-        Nutzerverwaltung
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <UserIcon className="h-8 w-8" />
+          Nutzerverwaltung
+        </h1>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            asChild
+          >
+            <Link to="/admin/validation">
+              <ClipboardCheck className="h-4 w-4" />
+              Validierungs-Dashboard
+            </Link>
+          </Button>
+        </div>
+      </div>
 
       <Table>
         <TableHeader>

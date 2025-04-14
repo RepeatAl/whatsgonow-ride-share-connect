@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -147,6 +146,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/admin/validation" element={<ValidationAdmin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

@@ -1,7 +1,7 @@
-
 import { validateInvoice, getValidationResults, ValidatorType, ValidationResult } from '@/utils/invoice/validation';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabaseClient';
+import { getAllValidationResults, getInvoiceAuditLog } from './validation/validationLogService';
 
 /**
  * Service for handling invoice validation operations
@@ -91,5 +91,19 @@ export const validationService = {
       console.error("Error checking invoice validity:", error);
       return false;
     }
+  },
+
+  /**
+   * Get all validation results with optional filters
+   */
+  getAllValidationResults: async (filters = {}) => {
+    return getAllValidationResults(filters);
+  },
+
+  /**
+   * Get audit log entries for a specific invoice
+   */
+  getInvoiceAuditLog: async (invoiceId: string) => {
+    return getInvoiceAuditLog(invoiceId);
   }
 };
