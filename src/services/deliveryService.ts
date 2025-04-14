@@ -8,6 +8,31 @@ export interface DeliveryVerificationResult {
   error?: string;
 }
 
+/**
+ * Helper function to log delivery actions
+ */
+const logDeliveryAction = async (orderId: string, userId: string, action: string): Promise<void> => {
+  try {
+    await supabase
+      .from("delivery_logs")
+      .insert({
+        order_id: orderId,
+        user_id: userId,
+        action
+      });
+  } catch (error) {
+    console.error("Error logging delivery action:", error);
+  }
+};
+
+/**
+ * Check if an order token has expired
+ */
+const isTokenExpired = (expiresAt: string | null): boolean => {
+  if (!expiresAt) return false;
+  return new Date(expiresAt) < new Date();
+};
+
 export const deliveryService = {
   // Generate a QR code token for an order
   generateToken: async (orderId: string, userId: string): Promise<string | null> => {
@@ -15,7 +40,7 @@ export const deliveryService = {
       // Check if order already has a token
       const { data, error } = await supabase
         .from("orders")
-        .select("qr_code_token, status")
+        .select("qr_code_token, status, token_expires_at")
         .eq("order_id", orderId)
         .single();
 
@@ -26,10 +51,11 @@ export const deliveryService = {
         throw new Error("Diese Lieferung wurde bereits bestätigt");
       }
 
-      // Use existing token or generate a new one
+      // Check if token is still valid
       let token = data.qr_code_token;
+      const tokenExpired = isTokenExpired(data.token_expires_at);
       
-      if (!token) {
+      if (!token || tokenExpired) {
         token = `delivery-${orderId}-${uuidv4()}`;
         
         // Set token expiration time (24 hours from now)
@@ -47,13 +73,7 @@ export const deliveryService = {
         if (updateError) throw updateError;
         
         // Log token generation
-        await supabase
-          .from("delivery_logs")
-          .insert({
-            order_id: orderId,
-            user_id: userId,
-            action: "token_generated"
-          });
+        await logDeliveryAction(orderId, userId, "token_generated");
       }
       
       return token;
@@ -100,7 +120,7 @@ export const deliveryService = {
       }
 
       // Check if token has expired
-      if (data.token_expires_at && new Date(data.token_expires_at) < new Date()) {
+      if (isTokenExpired(data.token_expires_at)) {
         return {
           success: false,
           message: "Der QR-Code ist abgelaufen",
@@ -128,13 +148,7 @@ export const deliveryService = {
       }
 
       // Log successful verification
-      await supabase
-        .from("delivery_logs")
-        .insert({
-          order_id: orderId,
-          user_id: userId,
-          action: "delivery_confirmed"
-        });
+      await logDeliveryAction(orderId, userId, "delivery_confirmed");
 
       return {
         success: true,
