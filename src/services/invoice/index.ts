@@ -23,6 +23,7 @@ export const invoiceService = {
   
   // Storage operations
   storeInvoice: storageService.storeInvoice,
+  getInvoiceById: storageService.getInvoiceById,
   
   // Email operations
   sendInvoiceEmail: emailService.sendInvoiceEmail,
