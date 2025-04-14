@@ -1,18 +1,21 @@
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Users, Package, BadgeCheck, Banknote } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "./StatCard";
+import { StatsGrid } from "./StatsGrid";
+import { StatsSkeleton } from "./StatsSkeleton";
+
+interface StatsData {
+  totalUsers: number;
+  activeUsers: number;
+  pendingKyc: number;
+  totalOrders: number;
+  completedOrders: number;
+  totalCommission: number;
+}
 
 interface DashboardStatsProps {
   role?: string;
-  stats?: {
-    totalUsers: number;
-    activeUsers: number;
-    pendingKyc: number;
-    totalOrders: number;
-    completedOrders: number;
-    totalCommission: number;
-  };
+  stats?: StatsData;
   isLoading?: boolean;
 }
 
@@ -28,6 +31,10 @@ export const DashboardStats = ({
   }, 
   isLoading = false 
 }: DashboardStatsProps) => {
+  if (isLoading) {
+    return <StatsSkeleton />;
+  }
+
   const statItems = [
     {
       title: "Total Users",
@@ -59,46 +66,18 @@ export const DashboardStats = ({
     },
   ];
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {Array(4).fill(0).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-5 w-5 rounded-full" />
-              </div>
-              <Skeleton className="h-8 w-16 mb-2" />
-              <Skeleton className="h-3 w-32" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" aria-label="Dashboard statistics">
+    <StatsGrid>
       {statItems.map((item) => (
-        <Tooltip key={item.title}>
-          <TooltipTrigger asChild>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">{item.title}</h3>
-                  {item.icon}
-                </div>
-                <div className="text-2xl font-bold">{item.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
-              </CardContent>
-            </Card>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{item.tooltip}</p>
-          </TooltipContent>
-        </Tooltip>
+        <StatCard
+          key={item.title}
+          title={item.title}
+          value={item.value}
+          icon={item.icon}
+          description={item.description}
+          tooltip={item.tooltip}
+        />
       ))}
-    </div>
+    </StatsGrid>
   );
 };
