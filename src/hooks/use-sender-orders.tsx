@@ -115,24 +115,21 @@ export const useSenderOrders = () => {
         toast({
           title: "Auftrag angenommen",
           description: `Dein Auftrag ${order.description} wurde angenommen.`,
-          variant: "default",
-          icon: <Check className="h-4 w-4" />,
+          variant: "default"
         });
         break;
       case "unterwegs":
         toast({
           title: "Paket unterwegs",
           description: `Dein Paket ${order.description} ist jetzt unterwegs.`,
-          variant: "default",
-          icon: <Truck className="h-4 w-4" />,
+          variant: "default"
         });
         break;
       case "abgeschlossen":
         toast({
           title: "Lieferung abgeschlossen",
           description: `Die Lieferung für ${order.description} wurde abgeschlossen.`,
-          variant: "default",
-          icon: <Check className="h-4 w-4" />,
+          variant: "default"
         });
         break;
       default:
