@@ -4,7 +4,7 @@
  */
 import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
-import { storageService } from './storageService';
+import { storageService } from './storage';
 import { emailService } from './emailService';
 import { autoInvoiceService } from './autoInvoiceService';
 import { detailedInvoiceService } from './detailedInvoiceService';
@@ -47,7 +47,7 @@ export const invoiceService = {
 
 export * from './pdfService';
 export * from './xmlService';
-export * from './storageService';
+export * from './storage';
 export * from './emailService';
 export * from './autoInvoiceService';
 export * from './detailedInvoiceService';

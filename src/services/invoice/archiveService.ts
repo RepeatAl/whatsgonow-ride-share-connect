@@ -1,7 +1,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import { createHash } from 'crypto';
-import dayjs from 'date-fns';
+import { add } from 'date-fns';
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -25,8 +25,7 @@ export const archiveService = {
       const documentHash = createHash("sha256").update(fileBuffer).digest("hex");
       
       // Calculate scheduled deletion date based on retention period
-      const scheduledDeletionDate = new Date();
-      scheduledDeletionDate.setFullYear(scheduledDeletionDate.getFullYear() + retentionYears);
+      const scheduledDeletionDate = add(new Date(), { years: retentionYears });
       
       // Update invoice with archival information
       const { error } = await supabase
