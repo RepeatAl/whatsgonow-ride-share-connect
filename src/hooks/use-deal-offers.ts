@@ -28,7 +28,7 @@ export const useDealOffers = (order_id: string, user: User | null) => {
         .eq('order_id', order_id);
 
       if (error) throw error;
-      setOffers(data || []);
+      setOffers(data as Offer[] || []);
     } catch (error) {
       toast({
         title: 'Fehler',
@@ -62,7 +62,7 @@ export const useDealOffers = (order_id: string, user: User | null) => {
         description: `Dein Angebot für €${price} wurde übermittelt`,
       });
 
-      return data;
+      return data as Offer;
     } catch (error) {
       toast({
         title: 'Fehler',
@@ -97,7 +97,7 @@ export const useDealOffers = (order_id: string, user: User | null) => {
         description: `Der Status des Angebots wurde aktualisiert`,
       });
 
-      return data;
+      return data as Offer;
     } catch (error) {
       toast({
         title: 'Fehler',
