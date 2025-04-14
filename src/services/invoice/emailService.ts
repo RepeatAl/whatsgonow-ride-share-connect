@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { prepareInvoiceData } from '@/utils/invoice';
 import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
+import { xRechnungService } from './xRechnungService';
 import { blobToBase64 } from './helpers';
 import { toast } from "@/hooks/use-toast";
 
@@ -66,6 +67,22 @@ export const emailService = {
         title: "Erfolg",
         description: "Die Rechnung wurde per E-Mail versendet."
       });
+      
+      // Check if recipient is a government agency and send XRechnung if needed
+      if (xRechnungService.isGovernmentAgency(email)) {
+        // Wait a moment before sending the XRechnung to avoid rate limiting
+        setTimeout(async () => {
+          try {
+            await xRechnungService.sendXRechnungEmail(
+              orderId, 
+              email, 
+              invoiceData.recipient.name
+            );
+          } catch (xRechnungError) {
+            console.error("Error sending XRechnung after regular invoice:", xRechnungError);
+          }
+        }, 2000);
+      }
       
       return true;
     } catch (error) {

@@ -6,6 +6,7 @@ import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
 import { storageService } from './storage';
 import { emailService } from './emailService';
+import { xRechnungService } from './xRechnungService';
 import { autoInvoiceService } from './autoInvoiceService';
 import { detailedInvoiceService } from './detailedInvoiceService';
 import { validationService } from './validationService';
@@ -27,6 +28,11 @@ export const invoiceService = {
   
   // Email operations
   sendInvoiceEmail: emailService.sendInvoiceEmail,
+  
+  // XRechnung operations for government agencies
+  sendXRechnungEmail: xRechnungService.sendXRechnungEmail,
+  isGovernmentAgency: xRechnungService.isGovernmentAgency,
+  autoSendXRechnungIfGovernment: xRechnungService.autoSendXRechnungIfGovernment,
   
   // Auto-invoice operations
   handleAutoInvoice: autoInvoiceService.handleAutoInvoice,
@@ -58,6 +64,7 @@ export * from './pdfService';
 export * from './xmlService';
 export * from './storage';
 export * from './emailService';
+export * from './xRechnungService';
 export * from './autoInvoiceService';
 export * from './detailedInvoiceService';
 export * from './validationService';

@@ -1,12 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import ValidationDashboard from '@/components/admin/ValidationDashboard';
 import Layout from '@/components/Layout';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const ValidationAdmin: React.FC = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("validation");
 
   // Show loading state
   if (loading) {
@@ -29,7 +35,60 @@ const ValidationAdmin: React.FC = () => {
 
   return (
     <Layout>
-      <ValidationDashboard />
+      <div className="container mx-auto py-6">
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="ghost" 
+            className="mb-4 pl-0" 
+            onClick={() => navigate("/admin")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Zurück zum Admin-Bereich
+          </Button>
+          <h1 className="text-2xl font-bold">Validierungs-Administration</h1>
+        </div>
+
+        <Tabs defaultValue="validation" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsTrigger value="validation">Validierung</TabsTrigger>
+            <TabsTrigger value="xrechnung">XRechnung-Versand</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="validation">
+            <ValidationDashboard />
+          </TabsContent>
+          
+          <TabsContent value="xrechnung">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-xl font-semibold mb-4">XRechnung Email-Versand</h2>
+              <p className="mb-6 text-gray-600">
+                Überwachung des automatisierten Versands von XRechnungen an Behörden und öffentliche Auftraggeber.
+                Der Versand wird automatisch ausgelöst, wenn eine Rechnung an eine E-Mail-Adresse mit einer behördlichen Domain gesendet wird.
+              </p>
+              
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <p className="text-yellow-700">
+                  <strong>Hinweis:</strong> XRechnungen werden nur an folgende behördliche Domains versendet:
+                </p>
+                <ul className="list-disc pl-5 mt-2 text-yellow-700">
+                  <li>@bdr.de</li>
+                  <li>@bund.de</li>
+                  <li>@bundesregierung.de</li>
+                  <li>@bundeswehr.org</li>
+                  <li>@zoll.de</li>
+                  <li>@bzst.de</li>
+                  <li>@bafa.de</li>
+                </ul>
+              </div>
+              
+              <div className="mt-4">
+                <h3 className="font-medium mb-2">Statistik und Überwachung</h3>
+                <p>Diese Funktion wird demnächst implementiert.</p>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </Layout>
   );
 };
