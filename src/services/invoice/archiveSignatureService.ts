@@ -56,6 +56,40 @@ export async function exportPublicKeyPEM(publicKey: CryptoKey): Promise<string> 
 }
 
 /**
+ * Import a public key from PEM format
+ * @param pemKey The public key in PEM format
+ * @returns The public key as a CryptoKey
+ */
+export async function importPublicKeyFromPEM(pemKey: string): Promise<CryptoKey | null> {
+  try {
+    // Remove header, footer, newlines using regex for better reliability
+    const pemContents = pemKey.replace(/(-----(BEGIN|END) PUBLIC KEY-----|\n)/g, '');
+    
+    // Convert base64 to ArrayBuffer
+    const binaryString = atob(pemContents);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Import the key
+    return await crypto.subtle.importKey(
+      'spki',
+      bytes.buffer,
+      {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['verify']
+    );
+  } catch (error) {
+    console.error("Error importing public key:", error);
+    return null;
+  }
+}
+
+/**
  * Verify a digital signature against a hash
  * @param publicKey The public key to verify with
  * @param signature The signature to verify
@@ -83,39 +117,44 @@ export async function verifySignature(
 }
 
 /**
- * Import a public key from PEM format
- * @param pemKey The public key in PEM format
- * @returns The public key as a CryptoKey
+ * Verify invoice signature using text content and signature data
+ * @param params Object containing invoice text, signature (base64), and public key (PEM)
+ * @returns True if the signature is valid
  */
-export async function importPublicKeyFromPEM(pemKey: string): Promise<CryptoKey | null> {
+export async function verifyInvoiceSignature({
+  invoiceText,
+  signatureBase64,
+  publicKeyPEM
+}: {
+  invoiceText: string;
+  signatureBase64: string;
+  publicKeyPEM: string;
+}): Promise<boolean> {
   try {
-    // Remove header, footer, newlines
-    const pemContents = pemKey
-      .replace('-----BEGIN PUBLIC KEY-----', '')
-      .replace('-----END PUBLIC KEY-----', '')
-      .replace(/\n/g, '');
+    // Convert text to hash
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(invoiceText);
+    const hash = await crypto.subtle.digest('SHA-256', dataBuffer);
     
-    // Convert base64 to ArrayBuffer
-    const binaryString = atob(pemContents);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
+    // Convert base64 signature to ArrayBuffer
+    const signatureBytes = Uint8Array.from(atob(signatureBase64), c => c.charCodeAt(0));
     
-    // Import the key
-    return await crypto.subtle.importKey(
-      'spki',
-      bytes.buffer,
+    // Import the public key
+    const publicKey = await importPublicKeyFromPEM(publicKeyPEM);
+    if (!publicKey) return false;
+    
+    // Verify the signature
+    return await crypto.subtle.verify(
       {
         name: 'RSASSA-PKCS1-v1_5',
-        hash: { name: 'SHA-256' },
       },
-      true,
-      ['verify']
+      publicKey,
+      signatureBytes,
+      hash
     );
   } catch (error) {
-    console.error("Error importing public key:", error);
-    return null;
+    console.error("Error verifying invoice signature:", error);
+    return false;
   }
 }
 
