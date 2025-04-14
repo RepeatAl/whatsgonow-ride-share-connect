@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ import RLSTest from "./pages/RLSTest";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { ChatRealtimeProvider } from "./contexts/ChatRealtimeContext";
+import InvoiceDownload from "./pages/InvoiceDownload";
 
 // Lazy-loaded components
 const Inbox = lazy(() => import("./pages/Inbox"));
