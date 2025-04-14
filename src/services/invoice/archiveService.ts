@@ -1,8 +1,23 @@
 
 import { supabase } from '@/lib/supabaseClient';
-import { createHash } from 'crypto';
 import { add } from 'date-fns';
 import { toast } from "@/hooks/use-toast";
+
+/**
+ * Creates a SHA-256 hash using the Web Crypto API (browser compatible)
+ * @param buffer The buffer to hash
+ * @returns The hex-encoded hash string
+ */
+async function createSHA256Hash(buffer: ArrayBuffer): Promise<string> {
+  // Use the Web Crypto API instead of Node.js crypto module
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  
+  // Convert the hash to a hex string
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return hashHex;
+}
 
 /**
  * Service for handling invoice archiving operations in compliance with GoBD standards
@@ -17,12 +32,12 @@ export const archiveService = {
    */
   archiveInvoice: async (
     invoiceId: string, 
-    fileBuffer: Buffer,
+    fileBuffer: ArrayBuffer,
     retentionYears: number = 10
   ): Promise<boolean> => {
     try {
       // Create document hash for immutability verification
-      const documentHash = createHash("sha256").update(fileBuffer).digest("hex");
+      const documentHash = await createSHA256Hash(fileBuffer);
       
       // Calculate scheduled deletion date based on retention period
       const scheduledDeletionDate = add(new Date(), { years: retentionYears });
@@ -74,7 +89,7 @@ export const archiveService = {
    */
   verifyArchiveIntegrity: async (
     invoiceId: string,
-    fileBuffer: Buffer
+    fileBuffer: ArrayBuffer
   ): Promise<{ intact: boolean; message: string }> => {
     try {
       // Get the stored hash from the database
@@ -93,7 +108,7 @@ export const archiveService = {
       }
       
       // Calculate current hash of the file
-      const currentHash = createHash("sha256").update(fileBuffer).digest("hex");
+      const currentHash = await createSHA256Hash(fileBuffer);
       
       // Compare stored hash with current hash
       const intact = data.document_hash === currentHash;
