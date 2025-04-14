@@ -9,6 +9,7 @@ import { emailService } from './emailService';
 import { autoInvoiceService } from './autoInvoiceService';
 import { detailedInvoiceService } from './detailedInvoiceService';
 import { validationService } from './validationService';
+import { archiveService } from './archiveService';
 
 export const invoiceService = {
   // PDF operations
@@ -36,7 +37,12 @@ export const invoiceService = {
   validateInvoice: validationService.validateInvoice,
   validateInvoiceAll: validationService.validateInvoiceAll,
   getValidationResults: validationService.getValidationResults,
-  isInvoiceValid: validationService.isInvoiceValid
+  isInvoiceValid: validationService.isInvoiceValid,
+  
+  // Archive operations
+  archiveInvoice: archiveService.archiveInvoice,
+  verifyArchiveIntegrity: archiveService.verifyArchiveIntegrity,
+  getArchiveInfo: archiveService.getArchiveInfo
 };
 
 export * from './pdfService';
@@ -46,3 +52,4 @@ export * from './emailService';
 export * from './autoInvoiceService';
 export * from './detailedInvoiceService';
 export * from './validationService';
+export * from './archiveService';
