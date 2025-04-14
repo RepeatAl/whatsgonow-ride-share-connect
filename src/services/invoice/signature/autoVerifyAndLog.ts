@@ -1,7 +1,6 @@
 
 import { verifyInvoiceSignature } from './index';
-import { supabase } from '@/lib/supabaseClient';
-import { ValidationResult } from '@/utils/invoice/validation';
+import { insertValidationResult } from '../validation/validationLogService';
 
 /**
  * Automatically verify a digital signature and log the result
@@ -50,31 +49,5 @@ export async function autoVerifyAndLog(
     });
     
     return false;
-  }
-}
-
-/**
- * Store validation result in the database
- */
-async function insertValidationResult(result: {
-  invoice_id: string;
-  validation_type: string;
-  passed: boolean;
-  validator_version: string;
-  error_messages: string[];
-  warning_messages: string[];
-}): Promise<void> {
-  try {
-    await supabase.from("invoice_validation_results").insert({
-      invoice_id: result.invoice_id,
-      validation_type: result.validation_type,
-      passed: result.passed,
-      validator_version: result.validator_version,
-      warning_messages: result.warning_messages,
-      error_messages: result.error_messages
-    });
-  } catch (error) {
-    console.error("Error storing validation result:", error);
-    // We don't throw here to avoid interrupting the verification process
   }
 }
