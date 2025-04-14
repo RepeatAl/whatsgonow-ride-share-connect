@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 import { storageCore } from './storageCore';
 import { invoiceQueries } from './invoiceQueries';
+import { storageUtils } from './storageUtils';
 
 /**
  * Service for handling storage of invoices in Supabase Storage
@@ -92,7 +93,14 @@ export const storageService = {
     }
   },
   
+  // Expose the uploadFile utility
+  uploadFile: storageUtils.uploadFile,
+  
   // Re-export query functions for external use
   getInvoicesForUser: invoiceQueries.getInvoicesForUser,
   getInvoiceById: invoiceQueries.getInvoiceById
 };
+
+// Export utilities
+export { storageUtils };
+

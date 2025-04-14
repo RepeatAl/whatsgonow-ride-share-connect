@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { toast } from "@/hooks/use-toast";
 import { prepareInvoiceData } from '@/utils/invoice';
 import { validateInvoice } from '@/utils/invoice/validation';
+import { storageUtils } from './storageUtils';
 
 /**
  * Core storage functionality for invoices
@@ -22,40 +23,35 @@ export const storageCore = {
       const pdfPath = `invoices/${invoiceId}/${invoiceData.invoiceNumber}.pdf`;
       const xmlPath = `invoices/${invoiceId}/${invoiceData.invoiceNumber}.xml`;
       
-      // Store PDF in Supabase Storage
-      const { error: pdfError } = await supabase.storage
-        .from('invoices')
-        .upload(pdfPath, pdfBlob, {
-          contentType: 'application/pdf',
-          upsert: true
-        });
+      // Store PDF in Supabase Storage using the utility
+      const pdfResult = await storageUtils.uploadFile(
+        'invoices',
+        pdfPath,
+        pdfBlob,
+        'application/pdf'
+      );
       
-      if (pdfError) throw pdfError;
+      if (!pdfResult) {
+        throw new Error('Failed to upload PDF file');
+      }
       
-      // Store XML in Supabase Storage
-      const { error: xmlError } = await supabase.storage
-        .from('invoices')
-        .upload(xmlPath, xmlBlob, {
-          contentType: 'application/xml',
-          upsert: true
-        });
+      // Store XML in Supabase Storage using the utility
+      const xmlResult = await storageUtils.uploadFile(
+        'invoices',
+        xmlPath,
+        xmlBlob,
+        'application/xml'
+      );
       
-      if (xmlError) throw xmlError;
-      
-      // Get signed URLs for the files (since the bucket is private)
-      const { data: pdfUrl } = await supabase.storage
-        .from('invoices')
-        .createSignedUrl(pdfPath, 60 * 60 * 24 * 7); // 7 days
-        
-      const { data: xmlUrl } = await supabase.storage
-        .from('invoices')
-        .createSignedUrl(xmlPath, 60 * 60 * 24 * 7); // 7 days
+      if (!xmlResult) {
+        throw new Error('Failed to upload XML file');
+      }
       
       return { 
         pdfPath, 
         xmlPath, 
-        pdfUrl: pdfUrl?.signedUrl,
-        xmlUrl: xmlUrl?.signedUrl
+        pdfUrl: pdfResult.url,
+        xmlUrl: xmlResult.url
       };
     } catch (error) {
       console.error("Error storing invoice files:", error);
