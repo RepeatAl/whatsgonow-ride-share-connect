@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
@@ -40,100 +40,92 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/orders" 
-        element={
-          <ProtectedRoute>
-            <Orders />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/create-order" 
-        element={
-          <ProtectedRoute>
-            <CreateOrder />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route 
-        path="/profile" 
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/community-manager" 
-        element={
-          <ProtectedRoute>
-            <CommunityManager />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin" 
-        element={
-          <ProtectedRoute>
-            <Admin />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin-dashboard" 
-        element={
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/deal/:orderId" 
-        element={
-          <ProtectedRoute>
-            <Deal />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="/delivery/:token" element={<DeliveryConfirmationPage />} />
-      <Route 
-        path="/rls-test" 
-        element={
-          <ProtectedRoute>
-            <RLSTest />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
-
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <div className="App">
-          <AppRoutes />
-          <Toaster />
-        </div>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/orders" 
+            element={
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/create-order" 
+            element={
+              <ProtectedRoute>
+                <CreateOrder />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/community-manager" 
+            element={
+              <ProtectedRoute>
+                <CommunityManager />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin-dashboard" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/deal/:orderId" 
+            element={
+              <ProtectedRoute>
+                <Deal />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/delivery/:token" element={<DeliveryConfirmationPage />} />
+          <Route 
+            path="/rls-test" 
+            element={
+              <ProtectedRoute>
+                <RLSTest />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Toaster />
+      </div>
+    </AuthProvider>
   );
 }
 
