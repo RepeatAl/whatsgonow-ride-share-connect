@@ -100,7 +100,7 @@ export const useOrders = () => {
 
     ordersChannel
       .on(
-        'postgres_changes',
+        'postgres_changes' as any, // Use type assertion to fix TypeScript error
         filter,
         (payload) => {
           console.log('New order received:', payload);
