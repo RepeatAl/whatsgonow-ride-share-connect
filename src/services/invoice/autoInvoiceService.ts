@@ -2,7 +2,7 @@
 import { supabase } from '@/lib/supabaseClient';
 import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
-import { storageService } from './storageService';
+import { storageService } from './storage';
 import { emailService } from './emailService';
 import { prepareInvoiceData } from '@/utils/invoice';
 
