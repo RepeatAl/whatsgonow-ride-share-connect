@@ -5,9 +5,7 @@ import { TransportRequest } from "@/data/mockData";
 import { TrackingStatus } from "@/pages/Tracking";
 import { useToast } from "@/hooks/use-toast";
 import { ratingService } from "@/services/ratingService";
-import { paymentService } from "@/services/paymentService";
-import { deliveryService } from "@/services/deliveryService";
-import { PaymentStatus } from "@/types/payment";
+import { useDealConfirmation } from "@/hooks/use-deal-confirmation";
 import { DealHeader } from "@/components/deal/DealHeader";
 import { QRCodeSection } from "@/components/deal/QRCodeSection";
 import { DealInfoGrid } from "@/components/deal/DealInfoGrid";
@@ -31,13 +29,23 @@ export const DealContent = ({ orderId, navigateToOfferTransport }: DealContentPr
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<TrackingStatus>("pickup");
   const [statusUpdateTime, setStatusUpdateTime] = useState<Date | null>(null);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false);
-  const [showDeliveryConfirmation, setShowDeliveryConfirmation] = useState(false);
-  const [qrCodeValue, setQrCodeValue] = useState("");
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [hasRated, setHasRated] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
+
+  // Use our new custom hook
+  const {
+    isProcessingPayment,
+    showQRCode,
+    setShowQRCode,
+    showDeliveryConfirmation,
+    setShowDeliveryConfirmation,
+    qrCodeValue,
+    setQrCodeValue,
+    handleReservePayment,
+    handleQRScan,
+    handleDeliveryConfirmed
+  } = useDealConfirmation(orderId, order, currentUser);
 
   useEffect(() => {
     // Check auth status
@@ -117,95 +125,8 @@ export const DealContent = ({ orderId, navigateToOfferTransport }: DealContentPr
     }
   };
 
-  const handleReservePayment = async () => {
-    if (!order) return;
-    
-    setIsProcessingPayment(true);
-    try {
-      const result = await paymentService.reservePayment(order.id, order.budget);
-      
-      if (result.success) {
-        const updatedOrder = { 
-          ...order, 
-          paymentStatus: result.status as PaymentStatus,
-          paymentReference: result.reference
-        };
-        setOrder(updatedOrder);
-        
-        toast({
-          title: "Zahlung vorgemerkt",
-          description: "Die Zahlung wurde erfolgreich vorgemerkt. Sie wird nach Lieferung freigegeben.",
-        });
-        
-        navigate(`/payment-status/${orderId}`);
-      }
-    } catch (error) {
-      toast({
-        title: "Fehler",
-        description: "Die Zahlung konnte nicht vorgemerkt werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
-
   const handleViewPaymentStatus = () => {
     navigate(`/payment-status/${orderId}`);
-  };
-
-  const handleQRScan = async (value: string) => {
-    if (!order || !order.paymentReference || !currentUser) return;
-    
-    setIsProcessingPayment(true);
-    try {
-      // First verify delivery
-      const deliveryResult = await deliveryService.verifyDelivery(
-        orderId,
-        value,
-        currentUser.id
-      );
-      
-      if (deliveryResult.success) {
-        // Then release payment
-        const paymentResult = await paymentService.releasePayment(order.paymentReference);
-        
-        if (paymentResult.success) {
-          setOrder(prev => prev ? { ...prev, paymentStatus: "paid" } : null);
-          
-          toast({
-            title: "Lieferung bestätigt",
-            description: "Die Lieferung wurde erfolgreich bestätigt und die Zahlung freigegeben.",
-          });
-          
-          setShowQRCode(false);
-        }
-      } else {
-        toast({
-          title: "Fehler",
-          description: deliveryResult.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Fehler",
-        description: "Die Bestätigung konnte nicht verarbeitet werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
-
-  const handleDeliveryConfirmed = () => {
-    // Update local state
-    setStatus("delivered");
-    
-    // If there's payment, navigate to payment status
-    if (order?.paymentReference) {
-      navigate(`/payment-status/${orderId}`);
-    }
   };
 
   if (isLoading) {
