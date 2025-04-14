@@ -91,7 +91,7 @@ const UserActivity = ({ region }: UserActivityProps) => {
         const orderActivities = (orders || []).map(order => ({
           id: order.order_id,
           type: "order" as const,
-          user_name: order.users.name,
+          user_name: order.users?.name || 'Unknown User', // Fixed: Access name property on users object, not array
           user_id: order.sender_id,
           timestamp: order.deadline,
           description: order.description,
@@ -101,7 +101,7 @@ const UserActivity = ({ region }: UserActivityProps) => {
         const ratingActivities = (ratings || []).map(rating => ({
           id: rating.rating_id,
           type: "rating" as const,
-          user_name: rating.users.name,
+          user_name: rating.users?.name || 'Unknown User', // Fixed: Access name property on users object, not array
           user_id: rating.from_user,
           timestamp: new Date().toISOString(), // Using current date as a fallback
           description: `Bewertung: ${rating.score}/5 ${rating.comment ? `- "${rating.comment}"` : ""}`,
