@@ -28,11 +28,7 @@ const Feedback = () => {
     });
     
     console.log("Feedback submitted:", feedbackData);
-    
-    // In a real implementation, this would send the feedback to a database
-    setTimeout(() => {
-      setIsSubmitted(true);
-    }, 500);
+    setIsSubmitted(true);
   };
 
   if (isSubmitted) {
@@ -40,7 +36,10 @@ const Feedback = () => {
       <Layout>
         <div className="container max-w-2xl px-4 py-8">
           <FeedbackHeader isSubmitted={true} />
-          <SuccessConfirmation />
+          <SuccessConfirmation 
+            title="Vielen Dank für Ihr Feedback!"
+            message="Ihre Rückmeldung hilft uns, Whatsgonow kontinuierlich zu verbessern." 
+          />
         </div>
       </Layout>
     );

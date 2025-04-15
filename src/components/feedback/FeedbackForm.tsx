@@ -2,30 +2,37 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, MessageSquare, Bug, Star, HelpCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useFeedback } from "@/hooks/use-feedback";
+import FeedbackTypes from "./FeedbackTypes";
 
 export type FeedbackData = {
   feedbackType: "suggestion" | "bug" | "compliment" | "question";
   satisfaction: string;
   features: string[];
-  feedbackText: string;
+  content: string;
+  title?: string;
+  email?: string;
 };
 
-const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: FeedbackData) => void }) => {
+interface FeedbackFormProps {
+  onSubmit?: (data: FeedbackData) => void;
+}
+
+const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
   const { user } = useAuth();
+  const { submitFeedback, loading } = useFeedback();
+  
   const [feedbackType, setFeedbackType] = useState<"suggestion" | "bug" | "compliment" | "question">("suggestion");
   const [satisfaction, setSatisfaction] = useState("3");
   const [features, setFeatures] = useState<string[]>([]);
   const [feedbackText, setFeedbackText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
     setFeedbackType("suggestion");
@@ -44,43 +51,39 @@ const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: FeedbackData) => void })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Sicherheitscheck: Nutzer eingeloggt?
-    if (!user || !user.id) {
-      toast.error("Bitte zuerst einloggen.");
+    if (!feedbackText.trim()) {
+      toast.error("Bitte geben Sie Ihr Feedback ein.");
       return;
     }
 
+    const feedbackData: FeedbackData = {
+      feedbackType,
+      satisfaction,
+      features,
+      content: feedbackText,
+      title: `Feedback von ${user?.email || 'Benutzer'}`,
+      email: user?.email
+    };
+
     try {
-      setIsSubmitting(true);
-
-      const { error } = await supabase.from('feedback').insert({
-        user_id: user.id,
-        feedback_type: feedbackType,
-        title: `Feedback von ${user.email || 'Benutzer'}`,
-        content: feedbackText,
-        satisfaction_rating: parseInt(satisfaction),
-        features: features,
-        email: user.email,
-      });
-
-      if (error) {
-        console.error(error);
-        toast.error("Das Feedback konnte nicht gesendet werden.");
-      } else {
-        toast.success("Vielen Dank für dein Feedback!");
+      const success = await submitFeedback(feedbackData);
+      
+      if (success) {
         resetForm();
-        onSubmit?.({
-          feedbackType,
-          satisfaction,
-          features,
-          feedbackText,
-        });
+        onSubmit?.(feedbackData);
       }
     } catch (err) {
-      toast.error("Ein unerwarteter Fehler ist aufgetreten.");
       console.error(err);
-    } finally {
-      setIsSubmitting(false);
+    }
+  };
+
+  const getFeedbackTypeIcon = () => {
+    switch (feedbackType) {
+      case "suggestion": return <MessageSquare className="h-5 w-5" />;
+      case "bug": return <Bug className="h-5 w-5" />;
+      case "compliment": return <Star className="h-5 w-5" />;
+      case "question": return <HelpCircle className="h-5 w-5" />;
+      default: return <MessageSquare className="h-5 w-5" />;
     }
   };
 
@@ -94,31 +97,10 @@ const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: FeedbackData) => void })
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label>Welche Art von Feedback haben Sie?</Label>
-            <RadioGroup
-              value={feedbackType}
-              onValueChange={handleFeedbackTypeChange}
-              className="flex flex-col space-y-1"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="suggestion" id="suggestion" />
-                <Label htmlFor="suggestion">Vorschlag</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="bug" id="bug" />
-                <Label htmlFor="bug">Fehlerbericht</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="compliment" id="compliment" />
-                <Label htmlFor="compliment">Kompliment</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="question" id="question" />
-                <Label htmlFor="question">Frage</Label>
-              </div>
-            </RadioGroup>
-          </div>
+          <FeedbackTypes 
+            selectedType={feedbackType} 
+            onTypeChange={handleFeedbackTypeChange} 
+          />
 
           <div className="space-y-2">
             <Label>Wie zufrieden sind Sie?</Label>
@@ -168,10 +150,10 @@ const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: FeedbackData) => void })
         <CardFooter>
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading}
             className="w-full"
           >
-            {isSubmitting ? (
+            {loading ? (
               <>
                 Wird gesendet...
                 <Loader2 className="animate-spin ml-2" />
