@@ -1,0 +1,27 @@
+
+{
+  "common": {
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "orders": "Orders",
+    "newOrder": "New Order",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "analytics": {
+    "pageViews": "Page Views",
+    "uniqueVisitors": "Unique Visitors",
+    "activeUsers": "Active Users",
+    "todayStats": "Today's Statistics"
+  }
+}

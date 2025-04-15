@@ -1,0 +1,27 @@
+
+{
+  "common": {
+    "welcome": "Willkommen",
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "retry": "Erneut versuchen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "orders": "Aufträge",
+    "newOrder": "Neuer Auftrag",
+    "profile": "Profil",
+    "settings": "Einstellungen"
+  },
+  "analytics": {
+    "pageViews": "Seitenaufrufe",
+    "uniqueVisitors": "Eindeutige Besucher",
+    "activeUsers": "Aktive Nutzer",
+    "todayStats": "Heutige Statistiken"
+  }
+}

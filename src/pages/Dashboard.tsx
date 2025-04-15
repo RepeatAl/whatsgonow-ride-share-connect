@@ -1,4 +1,6 @@
-
+import { useTranslation } from 'react-i18next';
+import { useAnalytics } from '@/hooks/use-analytics';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, RefreshCw } from "lucide-react";
@@ -12,6 +14,9 @@ import { useSenderOrders } from "@/contexts/SenderOrdersContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
+  const { t } = useTranslation();
+  useAnalytics('/dashboard');
+  
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { orders, loading: ordersLoading } = useSenderOrders();
@@ -24,11 +29,11 @@ const Dashboard = () => {
           <div className="flex justify-center items-center h-64">
             <Card className="w-full max-w-md">
               <CardHeader>
-                <CardTitle className="text-lg text-center">Profilinformationen fehlen</CardTitle>
+                <CardTitle className="text-lg text-center">{t('common.error')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-center mb-4">
-                  Dein Benutzerprofil konnte nicht geladen werden. Dies kann bei einem neu erstellten Konto oder nach einer längeren Inaktivität vorkommen.
+                  {t('profile.missing')}
                 </p>
                 {retryProfileLoad ? (
                   <Button 
@@ -37,7 +42,7 @@ const Dashboard = () => {
                     onClick={retryProfileLoad}
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Profil neu laden
+                    {t('common.retry')}
                   </Button>
                 ) : null}
                 <Button 
@@ -45,7 +50,7 @@ const Dashboard = () => {
                   className="w-full"
                   onClick={() => navigate('/profile')}
                 >
-                  Zum Profil
+                  {t('profile.view')}
                 </Button>
               </CardContent>
             </Card>
@@ -79,38 +84,34 @@ const Dashboard = () => {
       <div className="container mx-auto max-w-6xl px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Willkommen, {profile?.name || 'Benutzer'}</h1>
+            <h1 className="text-3xl font-bold">
+              {t('common.welcome')}, {profile?.name || t('common.user')}
+            </h1>
             <p className="text-muted-foreground">
-              Dein Dashboard für {profile?.role === 'sender' ? 'Sendungen' : profile?.role === 'driver' ? 'Transporte' : 'Whatsgonow'}
+              {t('dashboard.roleSpecific', { role: profile?.role })}
             </p>
           </div>
           
-          {profile?.role === 'sender' && (
-            <Button 
-              variant="brand" 
-              className="flex items-center gap-2"
-              onClick={() => navigate('/create-order')}
-            >
-              <PlusCircle className="h-4 w-4" />
-              Neuen Auftrag erstellen
-            </Button>
-          )}
-          
-          {profile?.role === 'driver' && (
-            <Button 
-              variant="brand" 
-              onClick={() => navigate('/orders')}
-            >
-              Verfügbare Aufträge
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            {profile?.role === 'sender' && (
+              <Button 
+                variant="brand" 
+                className="flex items-center gap-2"
+                onClick={() => navigate('/create-order')}
+              >
+                <PlusCircle className="h-4 w-4" />
+                {t('dashboard.newOrder')}
+              </Button>
+            )}
+          </div>
         </div>
         
         <DashboardStats role={profile?.role} />
         
         {profile?.role === 'sender' && (
           <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Deine aktuellen Aufträge</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('dashboard.currentOrders')}</h2>
             
             {ordersLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

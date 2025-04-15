@@ -714,6 +714,7 @@ export type Database = {
           company_name: string | null
           created_at: string | null
           email: string
+          language: string | null
           name: string
           region: string | null
           role: string
@@ -724,6 +725,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string | null
           email: string
+          language?: string | null
           name: string
           region?: string | null
           role: string
@@ -734,6 +736,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string | null
           email?: string
+          language?: string | null
           name?: string
           region?: string | null
           role?: string
@@ -746,7 +749,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_view_sensitive_data: {
+        Args: { requesting_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
