@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
