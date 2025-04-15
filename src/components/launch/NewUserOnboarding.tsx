@@ -2,13 +2,8 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckSquare, Info, Star } from "lucide-react";
-
-interface OnboardingStep {
-  title: string;
-  description: string;
-  icon: JSX.Element;
-}
+import { getOnboardingSteps } from "@/components/onboarding/OnboardingContent";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NewUserOnboardingProps {
   onComplete: () => void;
@@ -17,24 +12,9 @@ interface NewUserOnboardingProps {
 const NewUserOnboarding = ({ onComplete }: NewUserOnboardingProps) => {
   const [open, setOpen] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
-
-  const steps: OnboardingStep[] = [
-    {
-      title: "Welcome to Whatsgonow!",
-      description: "Discover a new way to send packages and earn money while traveling.",
-      icon: <Star className="h-12 w-12 text-brand-purple mb-4" />,
-    },
-    {
-      title: "How it works",
-      description: "Connect with travelers heading to your destination and send packages easily and affordably.",
-      icon: <Info className="h-12 w-12 text-brand-blue mb-4" />,
-    },
-    {
-      title: "Ready to get started?",
-      description: "Start by creating an order or offering your transport services to others.",
-      icon: <CheckSquare className="h-12 w-12 text-green-500 mb-4" />,
-    },
-  ];
+  const { profile } = useAuth();
+  
+  const steps = getOnboardingSteps(profile?.role);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -76,10 +56,10 @@ const NewUserOnboarding = ({ onComplete }: NewUserOnboardingProps) => {
         
         <DialogFooter className="flex flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={handleSkip}>
-            Skip
+            Überspringen
           </Button>
           <Button onClick={handleNext}>
-            {currentStep < steps.length - 1 ? "Next" : "Get Started"}
+            {currentStep < steps.length - 1 ? "Weiter" : "Los geht's"}
           </Button>
         </DialogFooter>
       </DialogContent>
