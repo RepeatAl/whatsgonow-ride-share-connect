@@ -1,4 +1,3 @@
-
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +20,11 @@ interface AuthContextProps {
   profile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, metadata?: { 
+    name?: string;
+    role?: string;
+    company_name?: string;
+  }) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -72,13 +75,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
           
           if (currentSession?.user) {
-            // Benutzerprofile asynchron laden ohne den Auth-Prozess zu blockieren
             const userProfile = await fetchUserProfile(currentSession.user.id);
             setProfile(userProfile);
             
             if (!userProfile) {
               console.warn("⚠️ Kein Benutzerprofil gefunden für:", currentSession.user.id);
-              // Wir lassen den Benutzer trotzdem eingeloggt, da er authentifiziert ist
             }
           }
 
@@ -121,7 +122,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (!userProfile) {
           console.warn("⚠️ Kein Benutzerprofil gefunden für:", currentSession.user.id);
-          // Wir lassen den Benutzer trotzdem eingeloggt, da er authentifiziert ist
         }
       }
       
@@ -155,9 +155,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, metadata?: { 
+    name?: string;
+    role?: string;
+    company_name?: string;
+  }) => {
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata
+        }
+      });
       
       if (error) {
         throw error;

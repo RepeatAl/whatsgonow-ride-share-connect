@@ -711,6 +711,7 @@ export type Database = {
       users: {
         Row: {
           active: boolean | null
+          company_name: string | null
           created_at: string | null
           email: string
           name: string
@@ -720,6 +721,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          company_name?: string | null
           created_at?: string | null
           email: string
           name: string
@@ -729,6 +731,7 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          company_name?: string | null
           created_at?: string | null
           email?: string
           name?: string
