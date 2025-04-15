@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,32 +6,16 @@ import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Send, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFeedback } from "@/hooks/use-feedback";
-import FeedbackTypes from "./FeedbackTypes";
-import SatisfactionRating from "./SatisfactionRating";
+import { supabase } from "@/integrations/supabase/client";
 
-interface FeedbackFormProps {
-  onSubmit: (feedbackData: FeedbackData) => void;
-}
-
-export interface FeedbackData {
-  feedbackType: string;
-  satisfaction: string;
-  features: string[];
-  feedbackText: string;
-  email: string;
-}
-
-const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
+const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: any) => void }) => {
   const { user } = useAuth();
-  const { submitFeedback, loading } = useFeedback();
-  const [feedbackType, setFeedbackType] = useState("suggestion");
+  const [feedbackType, setFeedbackType] = useState<"suggestion" | "bug" | "compliment" | "question">("suggestion");
   const [satisfaction, setSatisfaction] = useState("3");
   const [features, setFeatures] = useState<string[]>([]);
   const [feedbackText, setFeedbackText] = useState("");
-  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
@@ -40,63 +23,46 @@ const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
     setSatisfaction("3");
     setFeatures([]);
     setFeedbackText("");
-    setEmail("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) {
-      toast({
-        title: "Nicht angemeldet",
-        description: "Bitte melden Sie sich an, um Feedback zu senden.",
-        variant: "destructive"
-      });
+    // Sicherheitscheck: Nutzer eingeloggt?
+    if (!user || !user.id) {
+      toast.error("Bitte zuerst einloggen.");
       return;
     }
-
-    if (!feedbackText.trim()) {
-      toast({
-        title: "Feedback fehlt",
-        description: "Bitte geben Sie Ihr Feedback ein.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
 
     try {
-      const success = await submitFeedback({
-        feedbackType,
-        title: "Feedback von " + (user.email || "Benutzer"),
+      setIsSubmitting(true);
+
+      const { error } = await supabase.from('feedback').insert({
+        user_id: user.id,
+        feedback_type: feedbackType,
+        title: `Feedback von ${user.email || 'Benutzer'}`,
         content: feedbackText,
-        satisfaction,
-        features,
-        email: user.email || email
+        satisfaction_rating: parseInt(satisfaction),
+        features: features,
+        email: user.email,
       });
 
-      if (success) {
-        toast({
-          title: "Feedback gesendet",
-          description: "Vielen Dank für Ihr Feedback!"
-        });
+      if (error) {
+        console.error(error);
+        toast.error("Das Feedback konnte nicht gesendet werden.");
+      } else {
+        toast.success("Vielen Dank für dein Feedback!");
         resetForm();
-        onSubmit({
+        onSubmit?.({
           feedbackType,
           satisfaction,
           features,
           feedbackText,
-          email: user.email || email
         });
       }
-    } catch (error) {
-      console.error("Fehler beim Senden des Feedbacks:", error);
-      toast({
-        title: "Fehler",
-        description: "Beim Senden des Feedbacks ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-        variant: "destructive"
-      });
+    } catch (err) {
+      toast.error("Ein unerwarteter Fehler ist aufgetreten.");
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
@@ -112,15 +78,47 @@ const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <FeedbackTypes 
-            selectedType={feedbackType} 
-            onTypeChange={setFeedbackType} 
-          />
+          <div className="space-y-2">
+            <Label>Welche Art von Feedback haben Sie?</Label>
+            <RadioGroup
+              value={feedbackType}
+              onValueChange={setFeedbackType}
+              className="flex flex-col space-y-1"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="suggestion" id="suggestion" />
+                <Label htmlFor="suggestion">Vorschlag</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="bug" id="bug" />
+                <Label htmlFor="bug">Fehlerbericht</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="compliment" id="compliment" />
+                <Label htmlFor="compliment">Kompliment</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="question" id="question" />
+                <Label htmlFor="question">Frage</Label>
+              </div>
+            </RadioGroup>
+          </div>
 
-          <SatisfactionRating 
-            satisfaction={satisfaction} 
-            onChange={setSatisfaction} 
-          />
+          <div className="space-y-2">
+            <Label>Wie zufrieden sind Sie?</Label>
+            <RadioGroup
+              value={satisfaction}
+              onValueChange={setSatisfaction}
+              className="flex flex-col space-y-1"
+            >
+              {[1, 2, 3, 4, 5].map((value) => (
+                <div key={value} className="flex items-center space-x-2">
+                  <RadioGroupItem value={String(value)} id={`satisfaction-${value}`} />
+                  <Label htmlFor={`satisfaction-${value}`}>{value} Sterne</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
 
           <div className="space-y-2">
             <Label>Welche Features haben Sie genutzt?</Label>
@@ -148,46 +146,18 @@ const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
               onChange={(e) => setFeedbackText(e.target.value)}
               rows={5}
               required
-              className={!feedbackText.trim() ? "border-red-500" : ""}
             />
           </div>
-
-          {!user && (
-            <div className="space-y-2">
-              <Label htmlFor="email">E-Mail (optional)</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="ihre@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Geben Sie Ihre E-Mail an, wenn Sie eine Antwort wünschen
-              </p>
-            </div>
-          )}
         </CardContent>
         <CardFooter>
-          <div className="w-full">
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isSubmitting || loading}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Wird gesendet...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Feedback senden
-                </>
-              )}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full"
+          >
+            {isSubmitting ? "Wird gesendet..." : "Feedback absenden"}
+            {isSubmitting && <Loader2 className="animate-spin ml-2" />}
+          </Button>
         </CardFooter>
       </form>
     </Card>
