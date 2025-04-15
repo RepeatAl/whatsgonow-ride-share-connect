@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +19,7 @@ import { DeliveryConfirmation } from "./components/delivery/DeliveryConfirmation
 import DeliveryConfirmationPage from "./pages/DeliveryConfirmationPage";
 import NotFound from "./pages/NotFound";
 import RLSTest from "./pages/RLSTest";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { ChatRealtimeProvider } from "./contexts/ChatRealtimeContext";
 import InvoiceDownload from "./pages/InvoiceDownload";

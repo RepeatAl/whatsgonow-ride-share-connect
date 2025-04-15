@@ -7,7 +7,7 @@ import OrderCard from "@/components/order/OrderCard";
 import OrderSkeleton from "@/components/order/OrderSkeleton";
 import OrderEmptyState from "@/components/order/OrderEmptyState";
 import { Toaster } from "@/components/ui/toaster";
-import { Order as SenderOrder } from "@/hooks/use-sender-orders";
+import { Order } from "@/types/order";
 
 const Orders = () => {
   const {
@@ -27,7 +27,7 @@ const Orders = () => {
   };
 
   // Helper function to adapt Order to SenderOrder format
-  const adaptOrderFormat = (order: any): SenderOrder => {
+  const adaptOrderFormat = (order: any): Order => {
     return {
       order_id: order.order_id,
       description: order.description,

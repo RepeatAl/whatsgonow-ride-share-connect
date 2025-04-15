@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Order } from "@/hooks/use-sender-orders";
+import { Order } from "@/types/order";
 import { formatDate } from "@/utils/pdfGenerator";
 import { MapPin, Calendar, Package, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
