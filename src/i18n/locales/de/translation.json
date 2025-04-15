@@ -59,6 +59,28 @@
       "response_added": "Antwort wurde gesendet.",
       "response_error": "Antwort konnte nicht gesendet werden.",
       "status_updated": "Feedback-Status wurde aktualisiert."
+    },
+    "status": {
+      "open": "Offen",
+      "in_progress": "In Bearbeitung",
+      "resolved": "Erledigt"
+    },
+    "filter": {
+      "all": "Alle",
+      "status": {
+        "label": "Status",
+        "open": "Nur Offene",
+        "in_progress": "In Bearbeitung",
+        "resolved": "Erledigte"
+      },
+      "type": {
+        "label": "Feedback-Typ",
+        "all": "Alle Typen",
+        "suggestion": "Vorschläge",
+        "bug": "Fehler",
+        "compliment": "Lob",
+        "question": "Fragen"
+      }
     }
   }
 }

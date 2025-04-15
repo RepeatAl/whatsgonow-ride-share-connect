@@ -1,18 +1,22 @@
-
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import ValidationDashboard from '@/components/admin/ValidationDashboard';
+import { FeedbackFilters } from '@/components/feedback/admin/FeedbackFilters';
 import Layout from '@/components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 const ValidationAdmin: React.FC = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("validation");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
+  const { t } = useTranslation();
 
   // Show loading state
   if (loading) {
@@ -43,18 +47,24 @@ const ValidationAdmin: React.FC = () => {
             onClick={() => navigate("/admin")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Zurück zum Admin-Bereich
+            {t("common.back_to_admin")}
           </Button>
-          <h1 className="text-2xl font-bold">Validierungs-Administration</h1>
+          <h1 className="text-2xl font-bold">{t("admin.validation.title")}</h1>
         </div>
 
         <Tabs defaultValue="validation" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="validation">Validierung</TabsTrigger>
-            <TabsTrigger value="xrechnung">XRechnung-Versand</TabsTrigger>
+            <TabsTrigger value="validation">{t("admin.validation.tab")}</TabsTrigger>
+            <TabsTrigger value="xrechnung">{t("admin.xrechnung.tab")}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="validation">
+            <FeedbackFilters
+              selectedStatus={selectedStatus}
+              selectedType={selectedType}
+              onStatusChange={setSelectedStatus}
+              onTypeChange={setSelectedType}
+            />
             <ValidationDashboard />
           </TabsContent>
           

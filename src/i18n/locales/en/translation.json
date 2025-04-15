@@ -59,6 +59,28 @@
       "response_added": "Response has been sent.",
       "response_error": "Failed to send response.",
       "status_updated": "Feedback status has been updated."
+    },
+    "status": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "resolved": "Resolved"
+    },
+    "filter": {
+      "all": "All",
+      "status": {
+        "label": "Status",
+        "open": "Open Only",
+        "in_progress": "In Progress",
+        "resolved": "Resolved"
+      },
+      "type": {
+        "label": "Feedback Type",
+        "all": "All Types",
+        "suggestion": "Suggestions",
+        "bug": "Bugs",
+        "compliment": "Compliments",
+        "question": "Questions"
+      }
     }
   }
 }
