@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Layout from "@/components/Layout";
@@ -15,7 +14,7 @@ import KPICards from '@/components/admin/dashboard/KPICards';
 import FilterOptions from '@/components/admin/dashboard/FilterOptions';
 import LogsTable from '@/components/admin/dashboard/LogsTable';
 import TransactionsTable from '@/components/admin/dashboard/TransactionsTable';
-import { UserActivityTable } from '@/components/admin/dashboard/UserActivityTable';
+import UserActivityTable from '@/components/admin/dashboard/UserActivityTable';
 
 const AdminDashboard = () => {
   const [timeRange, setTimeRange] = useState<number>(30);
@@ -150,4 +149,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
