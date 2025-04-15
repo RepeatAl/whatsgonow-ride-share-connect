@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -25,7 +25,6 @@ import AdminInvoiceTest from "./pages/AdminInvoiceTest";
 
 const Inbox = lazy(() => import("./pages/Inbox"));
 
-// Separate protected and public routes
 const publicRoutes = [
   '/admin/invoice-test',
   '/invoice-download',
@@ -48,17 +47,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <LoadingFallback />;
   }
   
-  // Check if the current path is public
   const isPublicPath = publicRoutes.some(route => 
     location.pathname.startsWith(route)
   );
   
-  // Allow access to public routes without authentication
   if (isPublicPath) {
     return <>{children}</>;
   }
   
-  // Require authentication for protected routes
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
@@ -73,14 +69,12 @@ function App() {
         <TooltipProvider>
           <div className="App">
             <Routes>
-              {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/admin/invoice-test" element={<AdminInvoiceTest />} />
               <Route path="/invoice-download/:token" element={<InvoiceDownload />} />
               
-              {/* Protected routes */}
               <Route 
                 path="/dashboard" 
                 element={
