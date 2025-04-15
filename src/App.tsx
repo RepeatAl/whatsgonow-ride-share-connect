@@ -76,7 +76,15 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/admin/invoice-test" element={<AdminInvoiceTest />} />
+              <Route 
+  path="/admin/invoice-test" 
+  element={
+    <ProtectedRoute>
+      <AdminInvoiceTest />
+    </ProtectedRoute>
+  }
+/>
+
               <Route path="/invoice-download/:token" element={<InvoiceDownload />} />
               
               <Route 
