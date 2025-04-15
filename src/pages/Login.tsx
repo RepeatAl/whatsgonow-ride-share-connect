@@ -9,13 +9,7 @@ import { AlertCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-
-// Liste der öffentlichen Routen für die Login-Seite
-const publicRoutes = [
-  '/admin/invoice-test',
-  '/invoice-download',
-  '/'
-];
+import { isPublicRoute } from "@/App"; // Importiere die zentrale Hilfsfunktion
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -33,11 +27,9 @@ const Login = () => {
   } = useAuth();
 
   // Überprüfen, ob der aktuelle Pfad öffentlich ist
-  const isPublicPath = publicRoutes.some(route => 
-    location.pathname.startsWith(route)
-  );
+  const isPublicPath = isPublicRoute(location.pathname);
 
-  // Determine if we should redirect based on query parameters
+  // Bestimme anhand von Abfrageparametern, ob wir weiterleiten sollen
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     if (searchParams.get('signup') === 'true') {
@@ -45,16 +37,25 @@ const Login = () => {
     }
   }, [location]);
 
-  // Handle redirect for authenticated users
+  // Handle Weiterleitung für authentifizierte Benutzer
   useEffect(() => {
+    // Debug-Log hinzufügen
+    console.log("Login - Überprüfe Redirect:", {
+      user: !!user,
+      redirecting,
+      isPublicPath,
+      location: location.pathname
+    });
+
     // Nur weiterleiten, wenn wir nicht auf einer öffentlichen Seite sind
     const from = location.state?.from?.pathname || '/dashboard';
     
     if (user && !redirecting && !isPublicPath) {
+      console.log("Login - Leite weiter zu:", from);
       setRedirecting(true);
       navigate(from);
     }
-  }, [user, navigate, redirecting, location.state, isPublicPath]);
+  }, [user, navigate, redirecting, location.state, isPublicPath, location.pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,14 +68,14 @@ const Login = () => {
         await signIn(email, password);
       }
     } catch (err) {
-      // Error is already handled in the auth context with toast
+      // Fehler wird bereits im Auth-Kontext mit Toast behandelt
       setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // If we're already redirecting, show a loading message
+  // Wenn wir bereits weiterleiten, zeige eine Lademeldung
   if (redirecting) {
     return <Layout>
         <div className="flex items-center justify-center min-h-screen bg-background p-4">

@@ -5,6 +5,11 @@ import { SendTestInvoiceSMSButton } from '@/components/admin/SendTestInvoiceSMSB
 import { TestInvoiceResults } from '@/components/admin/TestInvoiceResults';
 
 const AdminInvoiceTest = () => {
+  // Debug-Log beim Laden der Komponente
+  React.useEffect(() => {
+    console.log("🔍 AdminInvoiceTest-Komponente wurde geladen");
+  }, []);
+
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4">
@@ -26,6 +31,8 @@ const AdminInvoiceTest = () => {
             </div>
             
             <SendTestInvoiceSMSButton />
+            
+            <TestInvoiceResults />
           </div>
         </div>
       </div>

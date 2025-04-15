@@ -26,7 +26,8 @@ import AdminInvoiceTest from "./pages/AdminInvoiceTest";
 
 const Inbox = lazy(() => import("./pages/Inbox"));
 
-const publicRoutes = [
+// Zentrale Definition aller öffentlichen Routen
+export const publicRoutes = [
   '/admin/invoice-test',
   '/invoice-download',
   '/',
@@ -34,42 +35,45 @@ const publicRoutes = [
   '/register'
 ];
 
+// Hilfsfunktion zum Prüfen, ob eine Route öffentlich ist
+export const isPublicRoute = (pathname: string): boolean => {
+  return publicRoutes.some(route => pathname.startsWith(route));
+};
+
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
   </div>
 );
 
+// PublicRoute-Komponente, die explizit für öffentliche Routen gedacht ist
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  return <>{children}</>;
+};
+
+// ProtectedRoute für authentifizierte Routen
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
   
-  // Check if this is a public route - this is now the highest priority check
-  const isPublicPath = publicRoutes.some(route => 
-    location.pathname.startsWith(route)
-  );
-  
-  // Add console logging for debugging
-  console.log("🔍 current path:", location.pathname);
-  console.log("🟢 isPublicPath:", isPublicPath);
-  console.log("🔐 user:", user);
-  console.log("⏳ loading:", loading);
-  
-  // First, check if this is a public route
-  if (isPublicPath) {
+  // Prüfe zuerst, ob dies eine öffentliche Route ist (höchste Priorität)
+  if (isPublicRoute(location.pathname)) {
+    console.log("🔓 Öffentliche Route erkannt:", location.pathname);
     return <>{children}</>;
   }
   
-  // Then handle loading state
+  // Wenn noch geladen wird, zeige Ladeindikator
   if (loading) {
     return <LoadingFallback />;
   }
   
-  // Finally check authentication for non-public routes
+  // Wenn kein Benutzer angemeldet ist und Route nicht öffentlich, zum Login weiterleiten
   if (!user) {
+    console.log("🔒 Nicht angemeldet, Weiterleitung zum Login:", location.pathname);
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
   
+  // Angemeldet und autorisiert
   return <>{children}</>;
 };
 
@@ -80,27 +84,37 @@ function App() {
         <TooltipProvider>
           <div className="App">
             <Routes>
+              {/* Öffentlich zugängliche Routen ohne Auth-Prüfung */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               
-              {/* AdminInvoiceTest page WITHOUT ProtectedRoute wrapper */}
+              {/* AdminInvoiceTest - vollständig öffentlich zugänglich */}
               <Route 
                 path="/admin/invoice-test" 
                 element={
-                  <>
+                  <PublicRoute>
                     <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
                       <p className="text-yellow-700">
                         <strong>Hinweis:</strong> Diese Seite ist temporär öffentlich zugänglich für Testzwecke.
                       </p>
                     </div>
                     <AdminInvoiceTest />
-                  </>
+                  </PublicRoute>
                 }
               />
 
-              <Route path="/invoice-download/:token" element={<InvoiceDownload />} />
+              {/* InvoiceDownload - öffentlich zugänglich */}
+              <Route 
+                path="/invoice-download/:token" 
+                element={
+                  <PublicRoute>
+                    <InvoiceDownload />
+                  </PublicRoute>
+                } 
+              />
               
+              {/* Geschützte Routen mit Auth-Prüfung */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -165,7 +179,17 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route path="/delivery/:token" element={<DeliveryConfirmationPage />} />
+              
+              {/* DeliveryConfirmation - öffentlich zugänglich */}
+              <Route 
+                path="/delivery/:token" 
+                element={
+                  <PublicRoute>
+                    <DeliveryConfirmationPage />
+                  </PublicRoute>
+                } 
+              />
+              
               <Route 
                 path="/inbox" 
                 element={
@@ -194,7 +218,14 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route path="/admin/validation" element={<ValidationAdmin />} />
+              <Route 
+                path="/admin/validation" 
+                element={
+                  <ProtectedRoute>
+                    <ValidationAdmin />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
