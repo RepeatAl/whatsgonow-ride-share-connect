@@ -23,6 +23,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { ChatRealtimeProvider } from "./contexts/ChatRealtimeContext";
 import InvoiceDownload from "./pages/InvoiceDownload";
 import AdminInvoiceTest from "./pages/AdminInvoiceTest";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const Inbox = lazy(() => import("./pages/Inbox"));
 
@@ -203,6 +205,23 @@ function App() {
                     <ValidationAdmin />
                   </ProtectedRoute>
                 } 
+              />
+              <Route 
+                path="/forgot-password" 
+                element={
+                  <PublicRoute>
+                    <ForgotPassword />
+                  </PublicRoute>
+                }
+              />
+              
+              <Route 
+                path="/reset-password" 
+                element={
+                  <PublicRoute>
+                    <ResetPassword />
+                  </PublicRoute>
+                }
               />
               <Route path="*" element={<NotFound />} />
             </Routes>

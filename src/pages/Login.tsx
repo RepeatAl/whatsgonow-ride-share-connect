@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { isPublicRoute } from "@/routes/publicRoutes";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -103,6 +104,12 @@ const Login = () => {
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>}
+                
+                <div className="flex justify-end">
+                  <Button variant="link" asChild className="px-0">
+                    <Link to="/forgot-password">Passwort vergessen?</Link>
+                  </Button>
+                </div>
                 
                 <Button type="submit" className="w-full" disabled={isLoading} variant="brand">
                   {isLoading ? "Wird verarbeitet..." : isSignup ? "Registrieren" : "Einloggen"}

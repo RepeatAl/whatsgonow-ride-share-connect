@@ -7,7 +7,9 @@ export const publicRoutes = [
   '/invoice-download',
   '/',
   '/login',
-  '/register'
+  '/register',
+  '/forgot-password',
+  '/reset-password'
 ];
 
 // Helper function to check if a route is public
