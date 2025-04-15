@@ -94,6 +94,80 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          content: string
+          created_at: string | null
+          email: string | null
+          features: string[] | null
+          feedback_type: Database["public"]["Enums"]["feedback_type"]
+          id: string
+          satisfaction_rating: number | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          email?: string | null
+          features?: string[] | null
+          feedback_type: Database["public"]["Enums"]["feedback_type"]
+          id?: string
+          satisfaction_rating?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          email?: string | null
+          features?: string[] | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"]
+          id?: string
+          satisfaction_rating?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      feedback_responses: {
+        Row: {
+          admin_id: string | null
+          content: string
+          created_at: string | null
+          feedback_id: string | null
+          id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          content: string
+          created_at?: string | null
+          feedback_id?: string | null
+          id?: string
+        }
+        Update: {
+          admin_id?: string | null
+          content?: string
+          created_at?: string | null
+          feedback_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_responses_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_access_log: {
         Row: {
           access_time: string | null
@@ -777,9 +851,13 @@ export type Database = {
         Args: { requesting_user_id: string }
         Returns: boolean
       }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      feedback_type: "suggestion" | "bug" | "compliment" | "question"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -894,6 +972,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      feedback_type: ["suggestion", "bug", "compliment", "question"],
+    },
   },
 } as const

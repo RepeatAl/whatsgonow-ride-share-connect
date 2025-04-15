@@ -7,86 +7,85 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useLaunch } from "@/components/launch/LaunchProvider";
+import { useFeedback, FeedbackData } from "@/hooks/use-feedback";
 
 export const ContactForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const { trackEvent } = useLaunch();
-  const [supportType, setSupportType] = useState("question");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const { submitFeedback, loading } = useFeedback();
+  const [supportType, setSupportType] = useState<'question' | 'bug' | 'suggestion' | 'compliment'>('question');
+  const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     trackEvent("support_request_submitted", { supportType });
-    console.log("Support request submitted:", { supportType, name, email, message });
-    onSubmit();
+
+    const success = await submitFeedback({
+      feedbackType: supportType,
+      title,
+      content: message,
+      satisfaction: "3", // Default satisfaction for support requests
+      features: [],
+      email
+    });
+
+    if (success) {
+      onSubmit();
+    }
   };
 
   return (
     <Card>
       <form onSubmit={handleSubmit}>
         <CardHeader>
-          <CardTitle>Get in Touch</CardTitle>
+          <CardTitle>Kontaktieren Sie uns</CardTitle>
           <CardDescription>
-            Fill out the form below and we'll get back to you as soon as possible
+            Füllen Sie das Formular aus und wir melden uns schnellstmöglich bei Ihnen
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>What can we help you with?</Label>
+            <Label>Wie können wir Ihnen helfen?</Label>
             <RadioGroup
               value={supportType}
-              onValueChange={setSupportType}
+              onValueChange={(value: 'question' | 'bug' | 'suggestion' | 'compliment') => setSupportType(value)}
               className="flex flex-col space-y-1"
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="question" id="question" />
-                <Label htmlFor="question">General Question</Label>
+                <Label htmlFor="question">Allgemeine Frage</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="technical" id="technical" />
-                <Label htmlFor="technical">Technical Issue</Label>
+                <RadioGroupItem value="bug" id="bug" />
+                <Label htmlFor="bug">Technisches Problem</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="billing" id="billing" />
-                <Label htmlFor="billing">Billing Issue</Label>
+                <RadioGroupItem value="suggestion" id="suggestion" />
+                <Label htmlFor="suggestion">Verbesserungsvorschlag</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="other" id="other" />
-                <Label htmlFor="other">Other</Label>
+                <RadioGroupItem value="compliment" id="compliment" />
+                <Label htmlFor="compliment">Lob & Feedback</Label>
               </div>
             </RadioGroup>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="title">Betreff</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="message">Message</Label>
+            <Label htmlFor="message">Ihre Nachricht</Label>
             <Textarea
               id="message"
-              placeholder="How can we help you?"
+              placeholder="Wie können wir Ihnen helfen?"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={5}
@@ -94,8 +93,22 @@ export const ContactForm = ({ onSubmit }: { onSubmit: () => void }) => {
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            Submit Request
+          <div className="space-y-2">
+            <Label htmlFor="email">E-Mail</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="ihre@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Optional: Geben Sie Ihre E-Mail an, wenn Sie eine Antwort wünschen
+            </p>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Wird gesendet..." : "Anfrage senden"}
           </Button>
         </CardContent>
       </form>
