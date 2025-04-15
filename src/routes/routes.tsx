@@ -20,6 +20,7 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import Faq from "@/pages/Faq";
 import AdminAnalytics from "@/pages/AdminAnalytics";
+import FeedbackAdmin from "@/pages/FeedbackAdmin";
 
 const Inbox = lazy(() => import("@/pages/Inbox"));
 
@@ -50,6 +51,7 @@ export const routes: RouteConfig[] = [
   { path: "/rls-test", element: <RLSTest />, protected: true },
   { path: "/admin/validation", element: <ValidationAdmin />, protected: true },
   { path: "/admin/analytics", element: <AdminAnalytics />, protected: true },
+  { path: "/admin/feedback", element: <FeedbackAdmin />, protected: true },
   { path: "/forgot-password", element: <ForgotPassword />, public: true },
   { path: "/reset-password", element: <ResetPassword />, public: true },
   { path: "/faq", element: <Faq />, public: true },
