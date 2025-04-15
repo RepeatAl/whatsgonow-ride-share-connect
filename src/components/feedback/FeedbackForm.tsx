@@ -1,16 +1,25 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Send, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: any) => void }) => {
+export type FeedbackData = {
+  feedbackType: "suggestion" | "bug" | "compliment" | "question";
+  satisfaction: string;
+  features: string[];
+  feedbackText: string;
+};
+
+const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: FeedbackData) => void }) => {
   const { user } = useAuth();
   const [feedbackType, setFeedbackType] = useState<"suggestion" | "bug" | "compliment" | "question">("suggestion");
   const [satisfaction, setSatisfaction] = useState("3");
@@ -155,8 +164,17 @@ const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: any) => void }) => {
             disabled={isSubmitting}
             className="w-full"
           >
-            {isSubmitting ? "Wird gesendet..." : "Feedback absenden"}
-            {isSubmitting && <Loader2 className="animate-spin ml-2" />}
+            {isSubmitting ? (
+              <>
+                Wird gesendet...
+                <Loader2 className="animate-spin ml-2" />
+              </>
+            ) : (
+              <>
+                Feedback absenden
+                <Send className="ml-2" />
+              </>
+            )}
           </Button>
         </CardFooter>
       </form>

@@ -1,12 +1,12 @@
 
 import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type FeedbackData = {
   feedbackType: 'suggestion' | 'bug' | 'compliment' | 'question';
-  title: string;
+  title?: string;
   content: string;
   satisfaction: string;
   features: string[];
@@ -19,20 +19,12 @@ export function useFeedback() {
 
   const submitFeedback = async (data: FeedbackData): Promise<boolean> => {
     if (!user) {
-      toast({
-        title: "Nicht angemeldet",
-        description: "Bitte melden Sie sich an, um Feedback zu senden.",
-        variant: "destructive"
-      });
+      toast.error("Bitte melden Sie sich an, um Feedback zu senden.");
       return false;
     }
 
     if (!data.content.trim()) {
-      toast({
-        title: "Feedback fehlt",
-        description: "Bitte geben Sie Ihr Feedback ein.",
-        variant: "destructive"
-      });
+      toast.error("Bitte geben Sie Ihr Feedback ein.");
       return false;
     }
 
@@ -55,19 +47,11 @@ export function useFeedback() {
         throw error;
       }
 
-      toast({
-        title: "Feedback gesendet",
-        description: "Vielen Dank für Ihr Feedback!"
-      });
-
+      toast.success("Vielen Dank für Ihr Feedback!");
       return true;
     } catch (error: any) {
       console.error('Error submitting feedback:', error);
-      toast({
-        title: "Fehler",
-        description: error.message || "Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
-        variant: "destructive"
-      });
+      toast.error(error.message || "Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.");
       return false;
     } finally {
       setLoading(false);

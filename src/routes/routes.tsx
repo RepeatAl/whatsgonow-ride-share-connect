@@ -1,3 +1,4 @@
+
 import { lazy } from "react";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
@@ -21,6 +22,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import Faq from "@/pages/Faq";
 import AdminAnalytics from "@/pages/AdminAnalytics";
 import FeedbackAdmin from "@/pages/FeedbackAdmin";
+import Feedback from "@/pages/Feedback";
 
 const Inbox = lazy(() => import("@/pages/Inbox"));
 
@@ -52,6 +54,7 @@ export const routes: RouteConfig[] = [
   { path: "/admin/validation", element: <ValidationAdmin />, protected: true },
   { path: "/admin/analytics", element: <AdminAnalytics />, protected: true },
   { path: "/admin/feedback", element: <FeedbackAdmin />, protected: true },
+  { path: "/feedback", element: <Feedback />, protected: true },
   { path: "/forgot-password", element: <ForgotPassword />, public: true },
   { path: "/reset-password", element: <ResetPassword />, public: true },
   { path: "/faq", element: <Faq />, public: true },
