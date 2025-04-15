@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -84,20 +83,18 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               
-              {/* AdminInvoiceTest page with a notice banner */}
+              {/* AdminInvoiceTest page WITHOUT ProtectedRoute wrapper */}
               <Route 
                 path="/admin/invoice-test" 
                 element={
-                  <ProtectedRoute>
-                    <>
-                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                        <p className="text-yellow-700">
-                          <strong>Hinweis:</strong> Diese Seite ist temporär öffentlich zugänglich für Testzwecke.
-                        </p>
-                      </div>
-                      <AdminInvoiceTest />
-                    </>
-                  </ProtectedRoute>
+                  <>
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                      <p className="text-yellow-700">
+                        <strong>Hinweis:</strong> Diese Seite ist temporär öffentlich zugänglich für Testzwecke.
+                      </p>
+                    </div>
+                    <AdminInvoiceTest />
+                  </>
                 }
               />
 
