@@ -37,11 +37,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log("📍 Current path:", location.pathname);
         console.log("🔓 Is public route:", isPublicRoute(location.pathname));
 
-        if (isPublicRoute(location.pathname)) {
-          console.log("🚫 Keine Weiterleitung - öffentliche Route");
-          return;
-        }
-
         if (event === 'SIGNED_IN') {
           const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
           

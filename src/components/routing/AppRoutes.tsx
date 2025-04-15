@@ -1,15 +1,25 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Suspense } from "react";
 import { routes } from "@/routes/routes";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const AppRoutes = () => {
+  const { loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
+        {/* Standard Redirect für die Root-Route */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        
         {routes.map((route) => (
           <Route
             key={route.path}
