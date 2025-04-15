@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFeedbackAnalyticsDashboard, TimeRange } from '@/hooks/use-feedback-analytics-dashboard';
 import { SentimentAnalysisComingSoonCard } from '@/components/feedback/admin/SentimentAnalysisComingSoonCard';
-import { ArrowLeft, BarChart3, Download, LineChart, RefreshCw } from 'lucide-react';
+import { ArrowLeft, BarChart3, Download, LineChart as LineChartIcon, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/lib/utils';
 
@@ -42,15 +42,11 @@ const FeedbackAnalyticsPage = () => {
 
   // Chart configuration
   const chartConfig = {
-    bar: {
-      blue: { color: '#6366f1' },
-      orange: { color: '#f97316' },
-      green: { color: '#10b981' },
-      red: { color: '#ef4444' },
-    },
-    line: {
-      primary: { color: '#6366f1' },
-    }
+    "bar-blue": { color: '#6366f1' },
+    "bar-orange": { color: '#f97316' },
+    "bar-green": { color: '#10b981' },
+    "bar-red": { color: '#ef4444' },
+    "line-primary": { color: '#6366f1' },
   };
 
   // Format feedback type for display
@@ -179,7 +175,7 @@ const FeedbackAnalyticsPage = () => {
               <Card className="shadow-md">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <LineChart className="h-5 w-5 text-muted-foreground" />
+                    <LineChartIcon className="h-5 w-5 text-muted-foreground" />
                     Feedback-Trend über Zeit
                   </CardTitle>
                 </CardHeader>

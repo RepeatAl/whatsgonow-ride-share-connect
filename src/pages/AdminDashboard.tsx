@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserActivityTable } from '@/components/admin/dashboard/UserActivityTable';
-import { KPICards } from '@/components/admin/dashboard/KPICards';
-import { TransactionsTable } from '@/components/admin/dashboard/TransactionsTable';
-import { LogsTable } from '@/components/admin/dashboard/LogsTable';
-import { FilterOptions } from '@/components/admin/dashboard/FilterOptions';
+import UserActivityTable from '@/components/admin/dashboard/UserActivityTable';
+import KPICards from '@/components/admin/dashboard/KPICards';
+import TransactionsTable from '@/components/admin/dashboard/TransactionsTable';
+import LogsTable from '@/components/admin/dashboard/LogsTable';
+import FilterOptions from '@/components/admin/dashboard/FilterOptions';
 import { 
   BarChart3, 
   ChevronRight, 
