@@ -58,6 +58,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const getRoleBasedRedirectPath = (role: string): string => {
+    switch (role) {
+      case 'sender_private':
+      case 'sender_business':
+        return '/create-order';
+      case 'driver':
+        return '/orders';
+      case 'cm':
+        return '/community-manager';
+      case 'admin':
+      case 'admin_limited':
+        return '/admin-dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
   useEffect(() => {
     console.log("🔄 AuthProvider mounted, current path:", location.pathname);
     console.log("🔓 Is current path public?", isPublicRoute(location.pathname));
@@ -80,6 +97,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
             if (!userProfile) {
               console.warn("⚠️ Kein Benutzerprofil gefunden für:", currentSession.user.id);
+            } else {
+              const redirectPath = isAuthPage ? getRoleBasedRedirectPath(userProfile.role) : location.pathname;
+              navigate(redirectPath);
             }
           }
 
@@ -87,11 +107,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Angemeldet",
             description: "Du bist jetzt eingeloggt."
           });
-          
-          if (isAuthPage) {
-            const intendedPath = location.state?.from?.pathname || '/dashboard';
-            navigate(intendedPath);
-          }
         } else if (event === 'SIGNED_OUT') {
           setProfile(null);
           
