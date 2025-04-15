@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
@@ -9,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import OrderCard from "@/components/order/OrderCard";
 import OrderSkeleton from "@/components/order/OrderSkeleton";
-import { useSenderOrders } from "@/hooks/use-sender-orders";
+import { useSenderOrders } from "@/contexts/SenderOrdersContext";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);

@@ -18,13 +18,14 @@ import { DeliveryConfirmation } from "./components/delivery/DeliveryConfirmation
 import DeliveryConfirmationPage from "./pages/DeliveryConfirmationPage";
 import NotFound from "./pages/NotFound";
 import RLSTest from "./pages/RLSTest";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { ChatRealtimeProvider } from "./contexts/ChatRealtimeContext";
 import InvoiceDownload from "./pages/InvoiceDownload";
 import AdminInvoiceTest from "./pages/AdminInvoiceTest";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import { SenderOrdersProvider } from "./contexts/SenderOrdersContext";
 
 const Inbox = lazy(() => import("./pages/Inbox"));
 
@@ -71,163 +72,165 @@ function App() {
   return (
     <AuthProvider>
       <ChatRealtimeProvider>
-        <TooltipProvider>
-          <div className="App">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              
-              <Route 
-                path="/admin/invoice-test" 
-                element={
-                  <PublicRoute>
-                    <AdminInvoiceTest />
-                  </PublicRoute>
-                }
-              />
+        <SenderOrdersProvider>
+          <TooltipProvider>
+            <div className="App">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                
+                <Route 
+                  path="/admin/invoice-test" 
+                  element={
+                    <PublicRoute>
+                      <AdminInvoiceTest />
+                    </PublicRoute>
+                  }
+                />
 
-              <Route 
-                path="/invoice-download/:token" 
-                element={
-                  <PublicRoute>
-                    <InvoiceDownload />
-                  </PublicRoute>
-                } 
-              />
-              
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/orders" 
-                element={
-                  <ProtectedRoute>
-                    <Orders />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/create-order" 
-                element={
-                  <ProtectedRoute>
-                    <CreateOrder />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/community-manager" 
-                element={
-                  <ProtectedRoute>
-                    <CommunityManager />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute>
-                    <Admin />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin-dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/deal/:orderId" 
-                element={
-                  <ProtectedRoute>
-                    <Deal />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/delivery/:token" 
-                element={
-                  <PublicRoute>
-                    <DeliveryConfirmationPage />
-                  </PublicRoute>
-                } 
-              />
-              
-              <Route 
-                path="/inbox" 
-                element={
-                  <ProtectedRoute>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <Inbox />
-                    </Suspense>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/inbox/:orderId" 
-                element={
-                  <ProtectedRoute>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <Inbox />
-                    </Suspense>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/rls-test" 
-                element={
-                  <ProtectedRoute>
-                    <RLSTest />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin/validation" 
-                element={
-                  <ProtectedRoute>
-                    <ValidationAdmin />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/forgot-password" 
-                element={
-                  <PublicRoute>
-                    <ForgotPassword />
-                  </PublicRoute>
-                }
-              />
-              
-              <Route 
-                path="/reset-password" 
-                element={
-                  <PublicRoute>
-                    <ResetPassword />
-                  </PublicRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-          </div>
-        </TooltipProvider>
+                <Route 
+                  path="/invoice-download/:token" 
+                  element={
+                    <PublicRoute>
+                      <InvoiceDownload />
+                    </PublicRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/orders" 
+                  element={
+                    <ProtectedRoute>
+                      <Orders />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/create-order" 
+                  element={
+                    <ProtectedRoute>
+                      <CreateOrder />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/community-manager" 
+                  element={
+                    <ProtectedRoute>
+                      <CommunityManager />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute>
+                      <Admin />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin-dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/deal/:orderId" 
+                  element={
+                    <ProtectedRoute>
+                      <Deal />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/delivery/:token" 
+                  element={
+                    <PublicRoute>
+                      <DeliveryConfirmationPage />
+                    </PublicRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/inbox" 
+                  element={
+                    <ProtectedRoute>
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Inbox />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/inbox/:orderId" 
+                  element={
+                    <ProtectedRoute>
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Inbox />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/rls-test" 
+                  element={
+                    <ProtectedRoute>
+                      <RLSTest />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/validation" 
+                  element={
+                    <ProtectedRoute>
+                      <ValidationAdmin />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/forgot-password" 
+                  element={
+                    <PublicRoute>
+                      <ForgotPassword />
+                    </PublicRoute>
+                  }
+                />
+                
+                <Route 
+                  path="/reset-password" 
+                  element={
+                    <PublicRoute>
+                      <ResetPassword />
+                    </PublicRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Toaster />
+            </div>
+          </TooltipProvider>
+        </SenderOrdersProvider>
       </ChatRealtimeProvider>
     </AuthProvider>
   );
