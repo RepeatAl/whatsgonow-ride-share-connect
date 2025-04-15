@@ -9,16 +9,16 @@ export const useLanguage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const updateUserLanguage = async (lang: string) => {
-      if (user?.id) {
-        await supabase
-          .from('users')
-          .update({ language: lang })
-          .eq('user_id', user.id);
-      }
-    };
+  const updateUserLanguage = async (lang: string) => {
+    if (user?.id) {
+      await supabase
+        .from('users')
+        .update({ language: lang })
+        .eq('user_id', user.id);
+    }
+  };
 
+  useEffect(() => {
     const initLanguage = async () => {
       if (user?.id) {
         const { data } = await supabase

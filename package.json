@@ -42,6 +42,7 @@
     "@react-pdf/renderer": "^3.3.8",
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.56.2",
+    "@types/i18next-browser-languagedetector": "^3.0.0",
     "@types/uuid": "^9.0.8",
     "busboy": "^1.6.0",
     "class-variance-authority": "^0.7.1",
