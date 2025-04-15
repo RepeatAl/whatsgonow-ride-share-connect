@@ -17,14 +17,23 @@ export function useFeedback() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const submitFeedback = async (data: FeedbackData) => {
+  const submitFeedback = async (data: FeedbackData): Promise<boolean> => {
     if (!user) {
       toast({
         title: "Nicht angemeldet",
         description: "Bitte melden Sie sich an, um Feedback zu senden.",
         variant: "destructive"
       });
-      return;
+      return false;
+    }
+
+    if (!data.content.trim()) {
+      toast({
+        title: "Feedback fehlt",
+        description: "Bitte geben Sie Ihr Feedback ein.",
+        variant: "destructive"
+      });
+      return false;
     }
 
     setLoading(true);
@@ -38,10 +47,13 @@ export function useFeedback() {
           content: data.content,
           satisfaction_rating: parseInt(data.satisfaction),
           features: data.features,
-          email: data.email
+          email: data.email || user.email
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error submitting feedback:', error);
+        throw error;
+      }
 
       toast({
         title: "Feedback gesendet",
@@ -53,7 +65,7 @@ export function useFeedback() {
       console.error('Error submitting feedback:', error);
       toast({
         title: "Fehler",
-        description: "Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+        description: error.message || "Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
         variant: "destructive"
       });
       return false;

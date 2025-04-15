@@ -5,8 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFeedback } from "@/hooks/use-feedback";
 import FeedbackTypes from "./FeedbackTypes";
 import SatisfactionRating from "./SatisfactionRating";
 
@@ -23,31 +26,89 @@ export interface FeedbackData {
 }
 
 const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
+  const { user } = useAuth();
+  const { submitFeedback, loading } = useFeedback();
   const [feedbackType, setFeedbackType] = useState("suggestion");
   const [satisfaction, setSatisfaction] = useState("3");
   const [features, setFeatures] = useState<string[]>([]);
   const [feedbackText, setFeedbackText] = useState("");
   const [email, setEmail] = useState("");
-  
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resetForm = () => {
+    setFeedbackType("suggestion");
+    setSatisfaction("3");
+    setFeatures([]);
+    setFeedbackText("");
+    setEmail("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    onSubmit({
-      feedbackType,
-      satisfaction,
-      features,
-      feedbackText,
-      email,
-    });
+
+    if (!user) {
+      toast({
+        title: "Nicht angemeldet",
+        description: "Bitte melden Sie sich an, um Feedback zu senden.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!feedbackText.trim()) {
+      toast({
+        title: "Feedback fehlt",
+        description: "Bitte geben Sie Ihr Feedback ein.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const success = await submitFeedback({
+        feedbackType,
+        title: "Feedback von " + (user.email || "Benutzer"),
+        content: feedbackText,
+        satisfaction,
+        features,
+        email: user.email || email
+      });
+
+      if (success) {
+        toast({
+          title: "Feedback gesendet",
+          description: "Vielen Dank für Ihr Feedback!"
+        });
+        resetForm();
+        onSubmit({
+          feedbackType,
+          satisfaction,
+          features,
+          feedbackText,
+          email: user.email || email
+        });
+      }
+    } catch (error) {
+      console.error("Fehler beim Senden des Feedbacks:", error);
+      toast({
+        title: "Fehler",
+        description: "Beim Senden des Feedbacks ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Card>
       <form onSubmit={handleSubmit}>
         <CardHeader>
-          <CardTitle>Feedback Form</CardTitle>
+          <CardTitle>Feedback-Formular</CardTitle>
           <CardDescription>
-            Your feedback helps us build a better platform for everyone
+            Ihr Feedback hilft uns, die Plattform zu verbessern
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -62,7 +123,7 @@ const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
           />
 
           <div className="space-y-2">
-            <Label>Which features have you used?</Label>
+            <Label>Welche Features haben Sie genutzt?</Label>
             <ToggleGroup
               type="multiple"
               variant="outline"
@@ -70,45 +131,63 @@ const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
               value={features}
               onValueChange={setFeatures}
             >
-              <ToggleGroupItem value="find-transport">Find Transport</ToggleGroupItem>
-              <ToggleGroupItem value="offer-transport">Offer Transport</ToggleGroupItem>
+              <ToggleGroupItem value="find-transport">Transport finden</ToggleGroupItem>
+              <ToggleGroupItem value="offer-transport">Transport anbieten</ToggleGroupItem>
               <ToggleGroupItem value="messaging">Messaging</ToggleGroupItem>
               <ToggleGroupItem value="tracking">Tracking</ToggleGroupItem>
-              <ToggleGroupItem value="payments">Payments</ToggleGroupItem>
+              <ToggleGroupItem value="payments">Zahlungen</ToggleGroupItem>
             </ToggleGroup>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="feedback">Your Feedback</Label>
+            <Label htmlFor="feedback">Ihr Feedback</Label>
             <Textarea
               id="feedback"
-              placeholder="Please share your thoughts, ideas, or report issues..."
+              placeholder="Teilen Sie uns Ihre Gedanken, Ideen oder Probleme mit..."
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               rows={5}
               required
+              className={!feedbackText.trim() ? "border-red-500" : ""}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email (optional)</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <p className="text-xs text-gray-500">
-              Provide your email if you'd like us to follow up with you
-            </p>
-          </div>
+          {!user && (
+            <div className="space-y-2">
+              <Label htmlFor="email">E-Mail (optional)</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="ihre@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Geben Sie Ihre E-Mail an, wenn Sie eine Antwort wünschen
+              </p>
+            </div>
+          )}
         </CardContent>
         <CardFooter>
-          <Button type="submit" className="w-full">
-            <Send className="mr-2 h-4 w-4" />
-            Submit Feedback
-          </Button>
+          <div className="w-full">
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isSubmitting || loading}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wird gesendet...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Feedback senden
+                </>
+              )}
+            </Button>
+          </div>
         </CardFooter>
       </form>
     </Card>
