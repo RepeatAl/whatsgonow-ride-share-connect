@@ -44,11 +44,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
   
-  // First, check if this is a public route - highest priority
+  // Check if this is a public route - this is now the highest priority check
   const isPublicPath = publicRoutes.some(route => 
     location.pathname.startsWith(route)
   );
   
+  // Add console logging for debugging
+  console.log("🔍 current path:", location.pathname);
+  console.log("🟢 isPublicPath:", isPublicPath);
+  console.log("🔐 user:", user);
+  console.log("⏳ loading:", loading);
+  
+  // First, check if this is a public route
   if (isPublicPath) {
     return <>{children}</>;
   }
@@ -76,14 +83,23 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              
+              {/* AdminInvoiceTest page with a notice banner */}
               <Route 
-  path="/admin/invoice-test" 
-  element={
-    <ProtectedRoute>
-      <AdminInvoiceTest />
-    </ProtectedRoute>
-  }
-/>
+                path="/admin/invoice-test" 
+                element={
+                  <ProtectedRoute>
+                    <>
+                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                        <p className="text-yellow-700">
+                          <strong>Hinweis:</strong> Diese Seite ist temporär öffentlich zugänglich für Testzwecke.
+                        </p>
+                      </div>
+                      <AdminInvoiceTest />
+                    </>
+                  </ProtectedRoute>
+                }
+              />
 
               <Route path="/invoice-download/:token" element={<InvoiceDownload />} />
               
