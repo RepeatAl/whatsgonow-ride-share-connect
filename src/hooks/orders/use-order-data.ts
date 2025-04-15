@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Order } from '../types/order';
+import { Order } from "@/types/order";
 
 export const useOrderData = () => {
   const [orders, setOrders] = useState<Order[]>([]);

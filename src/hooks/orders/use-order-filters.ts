@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Order } from '../types/order';
+import { Order } from "@/types/order";
 
 export const useOrderFilters = (orders: Order[]) => {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>(orders);

@@ -2,7 +2,7 @@
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Order } from "../types/order";
+import { Order } from "@/types/order";
 
 export const setupOrderSubscription = (
   userRegion: string | null,
