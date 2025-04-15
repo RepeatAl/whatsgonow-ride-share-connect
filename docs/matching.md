@@ -1,3 +1,4 @@
+
 # Matching & Geo-Filters – Whatsgonow
 
 Dieses Dokument beschreibt die Matching-Logik sowie Geo-basierte Filtermechanismen, die das Herzstück der Whatsgonow-Plattform bilden. Ziel ist es, Angebot und Nachfrage für Transportaufträge möglichst präzise, schnell und nutzerfreundlich zu verbinden.
@@ -79,3 +80,4 @@ Fahrer können Vorschläge ignorieren oder blockieren. Dies wirkt sich auf künf
 ---
 
 **Letzte Änderung:** 2025-04-10
+

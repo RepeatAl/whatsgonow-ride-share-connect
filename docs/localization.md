@@ -1,3 +1,4 @@
+
 # Localization & Internationalization
 
 Diese Datei beschreibt das Lokalisierungskonzept für die Whatsgonow-Plattform. Ziel ist es, das Produkt für verschiedene Märkte sprachlich und kulturell zugänglich zu machen.
@@ -49,7 +50,7 @@ Diese Dateien liegen in `/locales/{lang}/translation.json`.
 
 ## 📌 To-Do für Post-MVP
 
-- Unterstützung für weitere Sprachen (z. B. Polnisch, Französisch, Spanisch)
+- Unterstützung für weitere Sprachen (z. B. Polnisch, Französisch, Spanisch)
 - Übersetzung von E-Mails und Push-Nachrichten
 - Kontextuelle Übersetzung von Systemtexten basierend auf User-Rolle
 
