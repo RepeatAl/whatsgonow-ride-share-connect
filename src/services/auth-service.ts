@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -42,7 +42,10 @@ export const authService = {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: metadata }
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
       });
       
       if (error) throw error;

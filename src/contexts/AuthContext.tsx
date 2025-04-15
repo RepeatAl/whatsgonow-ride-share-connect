@@ -1,18 +1,19 @@
 
-import { createContext, useContext, ReactNode, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth-service";
 import { useAuthSession } from "@/hooks/auth/useAuthSession";
 import { useProfile } from "@/hooks/auth/useProfile";
 import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client"; // Add this import
+import { supabase } from "@/lib/supabaseClient";
 import type { AuthContextProps } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   // Manage authentication state
@@ -20,7 +21,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user, 
     session, 
     loading: sessionLoading, 
-    error: sessionError
+    error: sessionError,
+    setUser,
+    setSession
   } = useAuthSession();
 
   // Fetch and manage user profile
@@ -35,21 +38,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle authentication-based redirects
   useAuthRedirect(user, profile, sessionLoading || profileLoading);
 
-  // Determine if we're still in initial loading state
-  if (isInitialLoad && !sessionLoading) {
-    setIsInitialLoad(false);
-  }
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        console.log("🔑 Auth event:", event);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (event === 'SIGNED_IN') {
+          toast({
+            title: "Erfolgreich angemeldet",
+            description: "Willkommen zurück!"
+          });
+        } else if (event === 'SIGNED_OUT') {
+          toast({
+            title: "Abgemeldet",
+            description: "Auf Wiedersehen!"
+          });
+          navigate('/login');
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setIsInitialLoad(false);
+      console.log("🔍 Auth session initialized, user authenticated:", !!currentSession?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, setSession, setUser]);
 
   // Sign in handler with proper error management
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
-      toast({
-        title: "Angemeldet",
-        description: "Du bist jetzt eingeloggt."
-      });
     } catch (error) {
       console.error("Login error:", error);
       toast({
@@ -61,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Enhanced sign up handler
+  // Enhanced sign up handler with better error handling
   const signUp = async (email: string, password: string, metadata?: { 
     name?: string;
     role?: string;
@@ -71,7 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: metadata }
+        options: { 
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
       });
       
       if (error) throw error;
@@ -80,6 +110,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         title: "Registrierung erfolgreich",
         description: "Dein Konto wurde erstellt. Bitte überprüfe deine E-Mails für die Bestätigung."
       });
+      
+      // Redirect to dashboard after successful signup
+      navigate('/dashboard');
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -91,16 +124,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Sign out handler
+  // Sign out handler with error handling
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
-      toast({
-        title: "Abgemeldet",
-        description: "Du wurdest erfolgreich abgemeldet."
-      });
     } catch (error) {
       console.error("Logout error:", error);
       toast({
@@ -112,7 +140,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Create context with all auth-related data and functions
   const authContextValue: AuthContextProps = {
     user,
     session,
