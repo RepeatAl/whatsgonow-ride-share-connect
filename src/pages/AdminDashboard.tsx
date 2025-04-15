@@ -21,10 +21,25 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAdminLogs } from '@/hooks/use-admin-logs';
 
 const AdminDashboard = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const { t } = useTranslation();
+  
+  const {
+    logs,
+    transactions,
+    userSummaries,
+    stats,
+    timeRange,
+    setTimeRange,
+    selectedRegion,
+    setSelectedRegion,
+    loading: dataLoading
+  } = useAdminLogs(30);
+  
+  const loading = authLoading || dataLoading;
   
   if (loading) {
     return (
@@ -55,7 +70,7 @@ const AdminDashboard = () => {
         <h1 className="text-2xl font-bold mb-6">{t('admin.dashboard.title', 'Admin Dashboard')}</h1>
         
         {/* KPI Cards Row */}
-        <KPICards />
+        <KPICards stats={stats} timeRange={parseInt(timeRange)} />
         
         {/* Admin Tools Section */}
         <div className="mt-8">
@@ -181,21 +196,27 @@ const AdminDashboard = () => {
         
         {/* Filter Options */}
         <div className="mt-8">
-          <FilterOptions />
+          <FilterOptions 
+            timeRange={timeRange}
+            setTimeRange={setTimeRange}
+            selectedRegion={selectedRegion}
+            setSelectedRegion={setSelectedRegion}
+            userSummaries={userSummaries}
+          />
         </div>
         
         {/* Data Tables */}
         <div className="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8">
-            <UserActivityTable />
+            <UserActivityTable userSummaries={userSummaries} />
             
             <div className="h-6"></div>
             
-            <TransactionsTable />
+            <TransactionsTable transactions={transactions} timeRange={parseInt(timeRange)} />
           </div>
           
           <div className="lg:col-span-4">
-            <LogsTable />
+            <LogsTable logs={logs} timeRange={parseInt(timeRange)} />
           </div>
         </div>
       </div>
