@@ -82,3 +82,4 @@ const LogsTable = ({ logs, timeRange }: LogsTableProps) => {
 };
 
 export default LogsTable;
+

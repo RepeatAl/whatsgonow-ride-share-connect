@@ -49,3 +49,4 @@ const KPICards = ({ stats, timeRange }: KPICardsProps) => (
 );
 
 export default KPICards;
+

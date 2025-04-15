@@ -64,3 +64,4 @@ const TransactionsTable = ({ transactions, timeRange }: TransactionsTableProps) 
 };
 
 export default TransactionsTable;
+
