@@ -34,6 +34,13 @@ const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: FeedbackData) => void })
     setFeedbackText("");
   };
 
+  // This handler safely converts the string to our union type
+  const handleFeedbackTypeChange = (value: string) => {
+    if (value === "suggestion" || value === "bug" || value === "compliment" || value === "question") {
+      setFeedbackType(value);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -91,7 +98,7 @@ const FeedbackForm = ({ onSubmit }: { onSubmit?: (data: FeedbackData) => void })
             <Label>Welche Art von Feedback haben Sie?</Label>
             <RadioGroup
               value={feedbackType}
-              onValueChange={setFeedbackType}
+              onValueChange={handleFeedbackTypeChange}
               className="flex flex-col space-y-1"
             >
               <div className="flex items-center space-x-2">
