@@ -8,6 +8,7 @@ export interface UserProfile {
   role: string;
   region?: string;
   active?: boolean;
+  company_name?: string;
 }
 
 export interface AuthContextProps {
@@ -15,6 +16,8 @@ export interface AuthContextProps {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  error: Error | null;
+  isInitialLoad: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, metadata?: { 
     name?: string;
@@ -22,4 +25,16 @@ export interface AuthContextProps {
     company_name?: string;
   }) => Promise<void>;
   signOut: () => Promise<void>;
+  retryProfileLoad: (() => void) | null;
 }
+
+export type UserRole = 
+  | "sender_private"
+  | "sender_business"
+  | "driver"
+  | "cm"
+  | "admin"
+  | "admin_limited";
+
+// Super admin ID (should be in an env variable in production)
+export const SUPER_ADMIN_ID = "0ddb52f9-0e7a-4c53-8ae7-fca1209cd300";

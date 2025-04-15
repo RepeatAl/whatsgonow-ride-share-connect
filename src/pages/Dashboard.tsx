@@ -1,7 +1,7 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, RefreshCw } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -15,7 +15,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { orders, loading: ordersLoading } = useSenderOrders();
-  const { profile } = useAuth();
+  const { profile, retryProfileLoad } = useAuth();
 
   if (!profile) {
     return (
@@ -28,8 +28,18 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-center mb-4">
-                  Dein Benutzerprofil konnte nicht geladen werden. Dies kann bei einem neu erstellten Konto oder einem Administratorkonto vorkommen.
+                  Dein Benutzerprofil konnte nicht geladen werden. Dies kann bei einem neu erstellten Konto oder nach einer längeren Inaktivität vorkommen.
                 </p>
+                {retryProfileLoad ? (
+                  <Button 
+                    variant="default" 
+                    className="w-full mb-2"
+                    onClick={retryProfileLoad}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Profil neu laden
+                  </Button>
+                ) : null}
                 <Button 
                   variant="outline" 
                   className="w-full"
