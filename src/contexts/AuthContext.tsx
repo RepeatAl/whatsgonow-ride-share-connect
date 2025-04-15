@@ -16,6 +16,20 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
+// Liste der öffentlichen Routen, die keine Authentifizierung erfordern
+const publicRoutes = [
+  '/admin/invoice-test',
+  '/invoice-download',
+  '/',
+  '/login',
+  '/register'
+];
+
+// Hilfsfunktion zum Prüfen, ob eine Route öffentlich ist
+const isPublicRoute = (pathname: string): boolean => {
+  return publicRoutes.some(route => pathname.startsWith(route));
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -30,6 +44,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
+
+        // Logging für Debugging
+        console.log("🔑 Auth event:", event);
+        console.log("📍 Current path:", location.pathname);
+        console.log("🔓 Is public route:", isPublicRoute(location.pathname));
 
         // Handle navigation based on auth state changes with path checks to prevent loops
         if (event === 'SIGNED_IN') {
@@ -50,8 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: "Du wurdest erfolgreich abgemeldet."
           });
           
-          // Don't redirect if we're already on login/home
-          if (location.pathname !== "/login" && location.pathname !== "/") {
+          // Don't redirect if we're already on login/home or on a public route
+          if (location.pathname !== "/login" && location.pathname !== "/" && !isPublicRoute(location.pathname)) {
             navigate('/login');
           }
         }

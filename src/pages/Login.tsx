@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,14 @@ import { AlertCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
+// Liste der öffentlichen Routen für die Login-Seite
+const publicRoutes = [
+  '/admin/invoice-test',
+  '/invoice-download',
+  '/'
+];
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +32,11 @@ const Login = () => {
     user
   } = useAuth();
 
+  // Überprüfen, ob der aktuelle Pfad öffentlich ist
+  const isPublicPath = publicRoutes.some(route => 
+    location.pathname.startsWith(route)
+  );
+
   // Determine if we should redirect based on query parameters
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -33,11 +47,15 @@ const Login = () => {
 
   // Handle redirect for authenticated users
   useEffect(() => {
-    if (user && !redirecting) {
+    // Nur weiterleiten, wenn wir nicht auf einer öffentlichen Seite sind
+    const from = location.state?.from?.pathname || '/dashboard';
+    
+    if (user && !redirecting && !isPublicPath) {
       setRedirecting(true);
-      navigate("/dashboard");
+      navigate(from);
     }
-  }, [user, navigate, redirecting]);
+  }, [user, navigate, redirecting, location.state, isPublicPath]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -67,6 +85,7 @@ const Login = () => {
         </div>
       </Layout>;
   }
+  
   return <Layout>
       <TooltipProvider>
         <div className="flex items-center justify-center min-h-screen p-4 bg-neutral-50">
@@ -108,4 +127,5 @@ const Login = () => {
       </TooltipProvider>
     </Layout>;
 };
+
 export default Login;
