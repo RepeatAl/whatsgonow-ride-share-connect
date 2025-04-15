@@ -63,10 +63,24 @@ const handler = async (req: Request): Promise<Response> => {
       to: [recipientEmail],
       subject: `XRechnung für Auftrag ${orderNumber}`,
       html: `
-        <h1>XRechnung für Auftrag ${orderNumber}</h1>
-        <p>Sehr geehrte/r ${recipientName},</p>
-        <p>Im Anhang finden Sie die XRechnung im XML-Format für Ihren Auftrag.</p>
-        <p>Bei Fragen kontaktieren Sie uns unter support@whatsgonow.de</p>
+        <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #f4f4f4; padding: 20px; text-align: center;">
+              <img src="https://whatsgonow.de/logo.png" alt="Whatsgonow Logo" style="max-width: 150px;">
+            </div>
+            <div style="padding: 20px;">
+              <h1>XRechnung für Auftrag ${orderNumber}</h1>
+              <p>Sehr geehrte/r ${recipientName},</p>
+              <p>Im Anhang finden Sie die XRechnung im XML-Format für Ihren Auftrag.</p>
+              <p>Bei Fragen kontaktieren Sie uns unter support@whatsgonow.de</p>
+              <hr>
+              <p style="font-size: 0.8em; color: #666;">
+                Whatsgonow GmbH | Rechnungsabteilung<br>
+                Kontakt: support@whatsgonow.de
+              </p>
+            </div>
+          </body>
+        </html>
       `,
       attachments: xmlBase64 ? [{
         filename: `XRechnung-${orderNumber}.xml`,
