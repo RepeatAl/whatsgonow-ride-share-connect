@@ -20,7 +20,6 @@ interface InvoiceSMSRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -32,28 +31,24 @@ const handler = async (req: Request): Promise<Response> => {
       includePin = false 
     }: InvoiceSMSRequest = await req.json();
 
-    // Initialize Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Generate secure token
     const token = randomUUID();
     const pin = includePin 
       ? Math.floor(1000 + Math.random() * 9000).toString() 
       : null;
 
-    // Create signed URL for invoice
     const { data: storageData, error: storageError } = await supabase
       .storage
       .from('invoices')
-      .createSignedUrl(`${invoiceId}/invoice.pdf`, 3600); // 1-hour expiry
+      .createSignedUrl(`${invoiceId}/invoice.pdf`, 3600);
 
     if (storageError || !storageData) {
       throw new Error('Failed to generate signed invoice URL');
     }
 
-    // Insert token record
     const { error: tokenError } = await supabase
       .from('invoice_sms_tokens')
       .insert({
@@ -61,17 +56,16 @@ const handler = async (req: Request): Promise<Response> => {
         token: token,
         recipient_phone: recipientPhone,
         pin: pin,
-        expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours
+        expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours
+        used: false
       });
 
     if (tokenError) {
       throw new Error('Failed to create SMS token');
     }
 
-    // Construct secure download link
     const downloadLink = `https://app.whatsgonow.com/invoice-download/${token}`;
 
-    // Send SMS via Twilio
     const smsBody = pin
       ? `Ihre Rechnung ist verfügbar. Link: ${downloadLink}. PIN: ${pin}`
       : `Ihre Rechnung ist verfügbar. Link: ${downloadLink} (gültig 48h)`;
@@ -94,6 +88,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     const smsResult = await smsResponse.json();
     console.log('SMS sent:', smsResult);
+
+    // Log the SMS delivery attempt
+    await supabase
+      .from('invoice_audit_log')
+      .insert({
+        invoice_id: invoiceId,
+        action: 'sms_sent',
+        new_state: { 
+          recipient_phone: recipientPhone, 
+          status: smsResult.status === 'sent' ? 'success' : 'failed' 
+        }
+      });
 
     return new Response(
       JSON.stringify({ 

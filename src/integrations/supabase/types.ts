@@ -70,6 +70,54 @@ export type Database = {
           },
         ]
       }
+      invoice_access_log: {
+        Row: {
+          access_time: string | null
+          details: Json | null
+          invoice_id: string | null
+          ip_address: string | null
+          log_id: string
+          status: string
+          token_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_time?: string | null
+          details?: Json | null
+          invoice_id?: string | null
+          ip_address?: string | null
+          log_id?: string
+          status: string
+          token_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_time?: string | null
+          details?: Json | null
+          invoice_id?: string | null
+          ip_address?: string | null
+          log_id?: string
+          status?: string
+          token_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_access_log_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["invoice_id"]
+          },
+          {
+            foreignKeyName: "invoice_access_log_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_sms_tokens"
+            referencedColumns: ["token_id"]
+          },
+        ]
+      }
       invoice_addresses: {
         Row: {
           address_id: string
