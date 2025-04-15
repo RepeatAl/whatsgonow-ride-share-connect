@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,10 +44,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
   
-  if (loading) {
-    return <LoadingFallback />;
-  }
-  
+  // First, check if this is a public route - highest priority
   const isPublicPath = publicRoutes.some(route => 
     location.pathname.startsWith(route)
   );
@@ -55,6 +53,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <>{children}</>;
   }
   
+  // Then handle loading state
+  if (loading) {
+    return <LoadingFallback />;
+  }
+  
+  // Finally check authentication for non-public routes
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
