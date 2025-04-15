@@ -21,8 +21,8 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { ChatRealtimeProvider } from "./contexts/ChatRealtimeContext";
 import InvoiceDownload from "./pages/InvoiceDownload";
+import AdminInvoiceTest from "./pages/AdminInvoiceTest";
 
-// Lazy-loaded components
 const Inbox = lazy(() => import("./pages/Inbox"));
 
 const LoadingFallback = () => (
