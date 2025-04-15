@@ -1,7 +1,7 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import * as nodemailer from "npm:nodemailer";
 import Busboy from "npm:busboy";
+import { Resend } from "npm:resend@2.0.0";
 
 // CORS headers to allow cross-origin requests
 const corsHeaders = {
@@ -103,32 +103,46 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Create SMTP transporter
-    const transporter = nodemailer.createTransport({
-      host: "kundencenter.dd-c.com",
-      port: 465,
-      secure: true, // Use SSL
-      auth: {
-        user: "admin@whatsgonow.com",
-        pass: Deno.env.get("SMTP_PASS")
-      }
-    });
+    // Initialize Resend
+    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-    // Send email
-    const info = await transporter.sendMail({
-      from: "admin@whatsgonow.com",
-      to: to,
-      subject: subject,
-      text: body,
-      attachments: attachments
-    });
+    // Implement retry logic for email sending
+    const maxRetries = 3;
+    let attempt = 0;
+    let emailResponse;
+
+    while (attempt < maxRetries) {
+      try {
+        emailResponse = await resend.emails.send({
+          from: "Whatsgonow <noreply@whatsgonow.de>",
+          to: [to],
+          subject: subject,
+          html: body,
+          attachments: attachments.map(attachment => ({
+            filename: attachment.filename,
+            content: attachment.content,
+            contentType: attachment.contentType
+          }))
+        });
+        break; // Success, exit retry loop
+      } catch (retryError: any) {
+        attempt++;
+        console.error(`Retry attempt ${attempt} failed:`, retryError);
+        
+        if (attempt === maxRetries) {
+          throw retryError;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
 
     // Return success response
     return new Response(
       JSON.stringify({ 
         status: "sent", 
         to: to,
-        messageId: info.messageId 
+        messageId: emailResponse.id 
       }), 
       { 
         status: 200, 

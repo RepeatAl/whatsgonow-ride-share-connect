@@ -54,13 +54,32 @@ const handler = async (req: Request): Promise<Response> => {
       </p>
     `;
 
-    // Send the email
-    const emailResponse = await resend.emails.send({
-      from: "Whatsgonow Feedback <feedback@whatsgonow.app>",
-      to: ["admin@whatsgonow.com"],
-      subject: "Neues Feedback eingegangen",
-      html: htmlContent,
-    });
+    // Send the email with retry logic
+    const maxRetries = 3;
+    let attempt = 0;
+    let emailResponse;
+
+    while (attempt < maxRetries) {
+      try {
+        emailResponse = await resend.emails.send({
+          from: "Whatsgonow Feedback <feedback@whatsgonow.app>",
+          to: ["admin@whatsgonow.com"],
+          subject: "Neues Feedback eingegangen",
+          html: htmlContent,
+        });
+        break; // Success, exit retry loop
+      } catch (retryError: any) {
+        attempt++;
+        console.error(`Retry attempt ${attempt} failed:`, retryError);
+        
+        if (attempt === maxRetries) {
+          throw retryError; // Throw on final attempt
+        }
+        
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
 
     console.log("Email sent successfully:", emailResponse);
 
@@ -73,12 +92,6 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error sending feedback notification:", error);
-    
-    // Implement retry logic for transient errors
-    if (error.status === 429 || error.status === 503) {
-      // You could implement retry logic here
-      console.log("Retry logic would be triggered here");
-    }
     
     return new Response(
       JSON.stringify({ 

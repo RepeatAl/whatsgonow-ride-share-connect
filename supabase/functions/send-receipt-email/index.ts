@@ -1,6 +1,6 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,19 +14,19 @@ interface ReceiptEmailRequest {
   filename: string;
 }
 
-serve(async (req) => {
-  // Handle CORS preflight request
+const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     // Get email service credentials from environment variables
-    const emailApiKey = Deno.env.get("EMAIL_API_KEY");
+    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
     const fromEmail = Deno.env.get("FROM_EMAIL") || "no-reply@whatsgonow.com";
     
-    if (!emailApiKey) {
-      throw new Error("EMAIL_API_KEY environment variable is not set");
+    if (!resend) {
+      throw new Error("RESEND_API_KEY environment variable is not set");
     }
 
     // Create a Supabase client
@@ -56,14 +56,40 @@ serve(async (req) => {
     // Log email request
     console.log(`Sending receipt email for order ${orderId} to ${email}`);
 
-    // For now, we'll simulate sending an email since we don't have an actual email service integrated
-    // In a real application, you would use a service like SendGrid, Mailgun, or AWS SES
+    // Implement retry logic for email sending
+    const maxRetries = 3;
+    let attempt = 0;
+    let emailResponse;
 
-    // Simulate API call to email service
-    const emailResponse = {
-      success: true,
-      messageId: `mock-${Date.now()}`,
-    };
+    while (attempt < maxRetries) {
+      try {
+        emailResponse = await resend.emails.send({
+          from: fromEmail,
+          to: [email],
+          subject: `Quittung für Auftrag ${orderId}`,
+          html: `
+            <h1>Ihre Quittung von Whatsgonow</h1>
+            <p>Vielen Dank für Ihren Auftrag. Im Anhang finden Sie Ihre Quittung.</p>
+            <p>Mit freundlichen Grüßen,<br>Ihr Whatsgonow Team</p>
+          `,
+          attachments: [{
+            filename: filename,
+            content: pdfBase64,
+            contentType: 'application/pdf'
+          }]
+        });
+        break; // Success, exit retry loop
+      } catch (retryError: any) {
+        attempt++;
+        console.error(`Retry attempt ${attempt} failed:`, retryError);
+        
+        if (attempt === maxRetries) {
+          throw retryError;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
 
     // Log receipt email in delivery_logs
     await supabase
@@ -89,19 +115,17 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error sending receipt email:", error);
-    
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
+      JSON.stringify({ error: error.message }),
       {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          ...corsHeaders,
-        },
+          ...corsHeaders
+        }
       }
     );
   }
-});
+};
+
+serve(handler);
