@@ -1,10 +1,9 @@
-
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
-import { isPublicRoute } from "@/routes/publicRoutes"; // Use the centralized helper
+import { isPublicRoute } from "@/routes/publicRoutes";
 
 interface AuthContextProps {
   user: User | null;
@@ -28,25 +27,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log("🔄 AuthProvider mounted, current path:", location.pathname);
     console.log("🔓 Is current path public?", isPublicRoute(location.pathname));
 
-    // Listener für Auth-Zustandsänderungen ZUERST einrichten
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
 
-        // Ausführliche Logging für Debugging
         console.log("🔑 Auth event:", event);
         console.log("📍 Current path:", location.pathname);
         console.log("🔓 Is public route:", isPublicRoute(location.pathname));
 
-        // WICHTIG: Wenn wir auf einer öffentlichen Route sind, KEINE Weiterleitung
         if (isPublicRoute(location.pathname)) {
           console.log("🚫 Keine Weiterleitung - öffentliche Route");
-          return; // Früher Return, um alle weiteren Weiterleitungslogiken zu überspringen
+          return;
         }
 
-        // Auth-Zustandsbasierte Navigation NUR für geschützte Routen
         if (event === 'SIGNED_IN') {
           const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
           
@@ -55,9 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: "Du bist jetzt eingeloggt."
           });
           
-          // Nur zum Dashboard weiterleiten, wenn auf einer Auth-Seite
           if (isAuthPage) {
-            navigate('/dashboard');
+            const intendedPath = location.state?.from?.pathname || '/dashboard';
+            navigate(intendedPath);
           }
         } else if (event === 'SIGNED_OUT') {
           toast({
@@ -65,13 +60,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: "Du wurdest erfolgreich abgemeldet."
           });
           
-          // Öffentliche Routen bereits oben abgefangen, hier nur noch geschützte Routen
-          navigate('/login');
+          if (!isPublicRoute(location.pathname)) {
+            navigate('/login', { state: { from: location } });
+          }
         }
       }
     );
 
-    // DANN nach bestehender Sitzung suchen
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
@@ -79,13 +74,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       console.log("🔍 Initial session check complete");
       console.log("👤 User authenticated:", !!currentSession?.user);
-      console.log("📍 Current path:", location.pathname);
-      console.log("🔓 Is public route:", isPublicRoute(location.pathname));
       
-      // Keine automatische Weiterleitung beim initialen Laden, wenn auf öffentlicher Route
       if (!currentSession?.user && !isPublicRoute(location.pathname)) {
         console.log("🔒 No session, redirecting to login");
-        navigate('/login');
+        navigate('/login', { state: { from: location } });
       }
     });
 
@@ -101,7 +93,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         throw error;
       }
-      // Navigation wird durch den Auth-Zustandsänderungslistener abgewickelt
     } catch (error) {
       toast({
         title: "Anmeldung fehlgeschlagen",
@@ -124,7 +115,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         title: "Registrierung erfolgreich",
         description: "Dein Konto wurde erstellt. Bitte überprüfe deine E-Mails für die Bestätigung."
       });
-      // Navigation wird durch den Auth-Zustandsänderungslistener abgewickelt
     } catch (error) {
       toast({
         title: "Registrierung fehlgeschlagen",
@@ -142,7 +132,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         throw error;
       }
-      // Navigation wird durch den Auth-Zustandsänderungslistener abgewickelt
     } catch (error) {
       toast({
         title: "Abmeldung fehlgeschlagen",

@@ -20,11 +20,7 @@ const Login = () => {
   const [redirecting, setRedirecting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    signIn,
-    signUp,
-    user
-  } = useAuth();
+  const { signIn, signUp, user } = useAuth();
 
   const isPublicPath = isPublicRoute(location.pathname);
 
