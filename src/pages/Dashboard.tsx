@@ -1,6 +1,6 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient";
 import { PlusCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -9,40 +9,41 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import OrderCard from "@/components/order/OrderCard";
 import OrderSkeleton from "@/components/order/OrderSkeleton";
 import { useSenderOrders } from "@/contexts/SenderOrdersContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { orders, loading: ordersLoading } = useSenderOrders();
+  const { profile } = useAuth();
 
-  useEffect(() => {
-    const getUserProfile = async () => {
-      setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/login");
-        return;
-      }
-      
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .single();
-      
-      if (error) {
-        console.error("Error loading user profile", error);
-        return;
-      }
-      
-      setUser(data);
-      setLoading(false);
-    };
-    
-    getUserProfile();
-  }, [navigate]);
+  if (!profile) {
+    return (
+      <Layout>
+        <div className="container mx-auto max-w-6xl px-4 py-8">
+          <div className="flex justify-center items-center h-64">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle className="text-lg text-center">Profilinformationen fehlen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-center mb-4">
+                  Dein Benutzerprofil konnte nicht geladen werden. Dies kann bei einem neu erstellten Konto oder einem Administratorkonto vorkommen.
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/profile')}
+                >
+                  Zum Profil
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
   
   if (loading) {
     return (
@@ -68,13 +69,13 @@ const Dashboard = () => {
       <div className="container mx-auto max-w-6xl px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Willkommen, {user?.name || 'Benutzer'}</h1>
+            <h1 className="text-3xl font-bold">Willkommen, {profile?.name || 'Benutzer'}</h1>
             <p className="text-muted-foreground">
-              Dein Dashboard für {user?.role === 'sender' ? 'Sendungen' : user?.role === 'driver' ? 'Transporte' : 'Whatsgonow'}
+              Dein Dashboard für {profile?.role === 'sender' ? 'Sendungen' : profile?.role === 'driver' ? 'Transporte' : 'Whatsgonow'}
             </p>
           </div>
           
-          {user?.role === 'sender' && (
+          {profile?.role === 'sender' && (
             <Button 
               variant="brand" 
               className="flex items-center gap-2"
@@ -85,7 +86,7 @@ const Dashboard = () => {
             </Button>
           )}
           
-          {user?.role === 'driver' && (
+          {profile?.role === 'driver' && (
             <Button 
               variant="brand" 
               onClick={() => navigate('/orders')}
@@ -95,9 +96,9 @@ const Dashboard = () => {
           )}
         </div>
         
-        <DashboardStats role={user?.role} />
+        <DashboardStats role={profile?.role} />
         
-        {user?.role === 'sender' && (
+        {profile?.role === 'sender' && (
           <div className="mt-8">
             <h2 className="text-xl font-semibold mb-4">Deine aktuellen Aufträge</h2>
             

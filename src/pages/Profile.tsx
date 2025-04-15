@@ -1,6 +1,8 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
+import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +16,6 @@ import {
   Package,
   CreditCard,
   Bell,
-  ChevronRight,
   MessageCircle,
   MapPin,
   Settings,
@@ -23,30 +24,144 @@ import {
 import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
   
-  // Mock user data
-  const user = {
-    name: "Alex Johnson",
-    email: "alex.johnson@example.com",
-    phone: "+49 123 4567890",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    memberSince: "January 2025",
-    verificationStatus: {
-      phone: true,
-      email: true,
-      identity: true,
-      payment: true
-    },
-    stats: {
-      transportsCompleted: 12,
-      requestsFulfilled: 8,
-      rating: 4.9,
-      reviews: 18
+  useEffect(() => {
+    const loadUserData = async () => {
+      setLoading(true);
+      
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+
+      if (profile) {
+        // Verwende das vorhandene Profil aus dem AuthContext
+        setUserData({
+          name: profile.name,
+          email: profile.email,
+          role: profile.role,
+          region: profile.region,
+          memberSince: new Date(user.created_at || Date.now()).toLocaleDateString('de-DE', {
+            year: 'numeric',
+            month: 'long'
+          }),
+          // Mock Daten für die Ansicht
+          avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+          phone: "+49 123 4567890",
+          verificationStatus: {
+            phone: true,
+            email: true,
+            identity: profile.role === 'driver',
+            payment: true
+          },
+          stats: {
+            transportsCompleted: 12,
+            requestsFulfilled: 8,
+            rating: 4.9,
+            reviews: 18
+          }
+        });
+      } else {
+        // Fallback, falls kein Profil vorhanden ist
+        setUserData({
+          name: "Neuer Benutzer",
+          email: user.email,
+          role: "unbekannt",
+          memberSince: new Date(user.created_at || Date.now()).toLocaleDateString('de-DE', {
+            year: 'numeric',
+            month: 'long'
+          }),
+          avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+          phone: "",
+          verificationStatus: {
+            phone: false,
+            email: true,
+            identity: false,
+            payment: false
+          },
+          stats: {
+            transportsCompleted: 0,
+            requestsFulfilled: 0,
+            rating: 0,
+            reviews: 0
+          }
+        });
+      }
+      
+      setLoading(false);
+    };
+    
+    loadUserData();
+  }, [user, profile, navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
     }
   };
+
+  const handleSaveChanges = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          name: userData.name,
+          email: userData.email,
+        })
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Profil aktualisiert",
+        description: "Deine Änderungen wurden gespeichert."
+      });
+    } catch (error) {
+      console.error("Fehler beim Aktualisieren des Profils:", error);
+      toast({
+        title: "Fehler",
+        description: "Profil konnte nicht aktualisiert werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !userData) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto px-4 pt-6 pb-16">
+          <div className="animate-pulse">
+            <div className="h-20 w-20 bg-gray-200 rounded-full mb-4"></div>
+            <div className="h-8 w-1/3 bg-gray-200 rounded mb-2"></div>
+            <div className="h-4 w-1/4 bg-gray-200 rounded mb-8"></div>
+            
+            <div className="h-12 w-full bg-gray-200 rounded mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="h-64 bg-gray-200 rounded"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -56,26 +171,26 @@ const Profile = () => {
             <div className="flex items-center">
               <div className="h-20 w-20 rounded-full overflow-hidden mr-4 border-2 border-brand-purple">
                 <img
-                  src={user.avatar}
-                  alt={user.name}
+                  src={userData.avatar}
+                  alt={userData.name}
                   className="h-full w-full object-cover"
                 />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  {user.name}
-                  {Object.values(user.verificationStatus).every(v => v) && (
+                  {userData.name}
+                  {Object.values(userData.verificationStatus).every(v => v) && (
                     <Shield className="h-5 w-5 ml-2 text-green-500" />
                   )}
                 </h1>
                 <p className="text-gray-600">
-                  Member since {user.memberSince}
+                  Member since {userData.memberSince}
                 </p>
                 <div className="flex items-center mt-1">
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="ml-1 text-gray-700">{user.stats.rating}</span>
+                  <span className="ml-1 text-gray-700">{userData.stats.rating}</span>
                   <span className="mx-1 text-gray-500">•</span>
-                  <span className="text-gray-500">{user.stats.reviews} reviews</span>
+                  <span className="text-gray-500">{userData.stats.reviews} reviews</span>
                 </div>
               </div>
             </div>
@@ -132,17 +247,17 @@ const Profile = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="name">Full Name</Label>
-                          <Input id="name" defaultValue={user.name} />
+                          <Input id="name" defaultValue={userData.name} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="email">Email</Label>
-                          <Input id="email" defaultValue={user.email} />
+                          <Input id="email" defaultValue={userData.email} />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="phone">Phone Number</Label>
-                          <Input id="phone" defaultValue={user.phone} />
+                          <Input id="phone" defaultValue={userData.phone} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="location">Location</Label>
@@ -150,7 +265,7 @@ const Profile = () => {
                         </div>
                       </div>
                       <div className="pt-2">
-                        <Button className="w-full md:w-auto">Save Changes</Button>
+                        <Button className="w-full md:w-auto" onClick={handleSaveChanges}>Save Changes</Button>
                       </div>
                     </div>
                   </div>
