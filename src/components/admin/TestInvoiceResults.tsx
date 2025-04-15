@@ -2,8 +2,8 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 
-interface TestInvoiceResultsProps {
-  result: {
+export interface TestInvoiceResultsProps {
+  result?: {
     invoiceId?: string;
     downloadLink?: string;
     pin?: string;

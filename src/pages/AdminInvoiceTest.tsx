@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { SendTestInvoiceSMSButton } from '@/components/admin/SendTestInvoiceSMSButton';
 import { TestInvoiceResults } from '@/components/admin/TestInvoiceResults';
 
 const AdminInvoiceTest = () => {
+  const [result, setResult] = useState(null);
+  
   // Debug-Log beim Laden der Komponente
   React.useEffect(() => {
     console.log("🔍 AdminInvoiceTest-Komponente wurde geladen");
@@ -32,7 +34,7 @@ const AdminInvoiceTest = () => {
             
             <SendTestInvoiceSMSButton />
             
-            <TestInvoiceResults />
+            <TestInvoiceResults result={result} />
           </div>
         </div>
       </div>

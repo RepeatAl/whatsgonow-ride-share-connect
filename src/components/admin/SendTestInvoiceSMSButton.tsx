@@ -86,7 +86,7 @@ export const SendTestInvoiceSMSButton = () => {
         )}
       </Button>
 
-      <TestInvoiceResults result={result} />
+      {result && <TestInvoiceResults result={result} />}
     </div>
   );
 };
