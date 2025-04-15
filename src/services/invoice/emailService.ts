@@ -99,26 +99,15 @@ export const emailService = {
    * Send invoice via SMS
    */
   sendInvoiceSMS: async (
-    orderId: string, 
+    invoiceId: string, 
     recipientPhone: string, 
     includePin: boolean = false
   ): Promise<boolean> => {
     try {
-      // Find the invoice for this order
-      const { data: invoiceData, error: invoiceError } = await supabase
-        .from('invoices')
-        .select('invoice_id')
-        .eq('order_id', orderId)
-        .single();
-      
-      if (invoiceError || !invoiceData) {
-        throw new Error("Keine Rechnung für diesen Auftrag gefunden");
-      }
-      
       // Call the SMS edge function
       const { data, error } = await supabase.functions.invoke('send-invoice-sms', {
         body: {
-          invoiceId: invoiceData.invoice_id,
+          invoiceId: invoiceId,
           recipientPhone,
           includePin
         }

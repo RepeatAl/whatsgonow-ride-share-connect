@@ -25,11 +25,15 @@ const InvoiceDownload: React.FC = () => {
         setLoading(true);
         setError(null);
 
+        if (!token) {
+          throw new Error('Kein Token vorhanden');
+        }
+
         const { data, error } = await supabase
           .from('invoice_sms_tokens')
           .select('*')
           .eq('token', token)
-          .single();
+          .maybeSingle();
 
         if (error || !data) {
           throw new Error('Ungültiger oder abgelaufener Link');
@@ -58,7 +62,7 @@ const InvoiceDownload: React.FC = () => {
             .from('invoices')
             .select('*, orders(*)')
             .eq('invoice_id', data.invoice_id)
-            .single();
+            .maybeSingle();
             
           if (!invoiceError && invoiceData) {
             setInvoiceDetails(invoiceData);
@@ -70,6 +74,7 @@ const InvoiceDownload: React.FC = () => {
           await fetchInvoiceUrl(data.invoice_id);
         }
       } catch (error) {
+        console.error('Error fetching token details:', error);
         setError(error.message);
         toast({
           title: "Fehler",
@@ -188,6 +193,11 @@ const InvoiceDownload: React.FC = () => {
             <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-md">
               <h2 className="text-xl font-semibold mb-2 text-red-600 dark:text-red-400">Zugriff nicht möglich</h2>
               <p>{error}</p>
+            </div>
+          ) : loading && !downloadUrl ? (
+            <div className="flex flex-col items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="mt-2">Verifizierung läuft...</p>
             </div>
           ) : requirePin && !downloadUrl ? (
             <div className="space-y-4">

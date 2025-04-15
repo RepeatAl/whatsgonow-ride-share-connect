@@ -49,7 +49,7 @@ export const SendTestInvoiceSMSButton = () => {
 
       setResult({
         invoiceId: invoice.invoice_id,
-        downloadLink: `https://app.whatsgonow.com/invoice-download/${tokenData.token}`,
+        downloadLink: `${window.location.origin}/invoice-download/${tokenData.token}`,
         pin: tokenData.pin
       });
 
