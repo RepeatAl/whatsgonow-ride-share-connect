@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FeedbackStatusBadge } from "./FeedbackStatusBadge";
+import { FeedbackStatusBadge, FeedbackStatus } from "./FeedbackStatusBadge";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import type { FeedbackItem } from "@/hooks/use-feedback-admin";
@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 
 interface FeedbackCardProps {
   item: FeedbackItem;
-  onUpdateStatus: (id: string, status: string) => Promise<void>;
+  onUpdateStatus: (id: string, status: FeedbackStatus) => Promise<void>;
   onAddResponse: (id: string, content: string) => Promise<boolean>;
 }
 
@@ -87,7 +87,7 @@ export const FeedbackCard = ({ item, onUpdateStatus, onAddResponse }: FeedbackCa
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onUpdateStatus(item.id, 'in_progress')}
+              onClick={() => onUpdateStatus(item.id, "in_progress")}
               disabled={item.status === 'in_progress' || isSubmitting}
             >
               {t("feedback.status.in_progress")}
@@ -95,7 +95,7 @@ export const FeedbackCard = ({ item, onUpdateStatus, onAddResponse }: FeedbackCa
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onUpdateStatus(item.id, 'resolved')}
+              onClick={() => onUpdateStatus(item.id, "resolved")}
               disabled={item.status === 'resolved' || isSubmitting}
             >
               {t("feedback.status.resolved")}

@@ -3,14 +3,19 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Clock, MessageCircle, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-type FeedbackStatus = "open" | "in_progress" | "resolved";
+export type FeedbackStatus = "open" | "in_progress" | "resolved";
 
 interface FeedbackStatusBadgeProps {
-  status: FeedbackStatus;
+  status: FeedbackStatus | string;
 }
 
 export const FeedbackStatusBadge = ({ status }: FeedbackStatusBadgeProps) => {
   const { t } = useTranslation();
+
+  // Ensure status is one of the valid types
+  const validStatus = (status === "open" || status === "in_progress" || status === "resolved") 
+    ? status as FeedbackStatus 
+    : "open";
 
   const statusConfig = {
     open: {
@@ -30,7 +35,7 @@ export const FeedbackStatusBadge = ({ status }: FeedbackStatusBadgeProps) => {
     },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[validStatus];
 
   return (
     <Badge className={`flex items-center gap-1 ${config.className}`}>

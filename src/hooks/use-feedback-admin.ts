@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { FeedbackStatus } from '@/components/feedback/admin/FeedbackStatusBadge';
 
 export type FeedbackItem = {
   id: string;
@@ -9,7 +11,7 @@ export type FeedbackItem = {
   content: string;
   feedback_type: string;
   created_at: string;
-  status: string;
+  status: FeedbackStatus;
   email?: string;
   satisfaction_rating?: number;
   responses?: FeedbackResponse[];
@@ -72,7 +74,7 @@ export function useFeedbackAdmin() {
 
   const { t } = useTranslation();
 
-  const updateFeedbackStatus = async (id: string, newStatus: string) => {
+  const updateFeedbackStatus = async (id: string, newStatus: FeedbackStatus) => {
     const { error } = await supabase
       .from('feedback')
       .update({ status: newStatus })
