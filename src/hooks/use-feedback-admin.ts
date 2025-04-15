@@ -12,6 +12,15 @@ export type FeedbackItem = {
   status: string;
   email?: string;
   satisfaction_rating?: number;
+  responses?: FeedbackResponse[];
+};
+
+export type FeedbackResponse = {
+  id: string;
+  feedback_id: string;
+  admin_id: string;
+  content: string;
+  created_at: string;
 };
 
 export function useFeedbackAdmin() {
@@ -21,27 +30,36 @@ export function useFeedbackAdmin() {
 
   useEffect(() => {
     const fetchFeedback = async () => {
-      const { data, error } = await supabase
+      const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback')
-        .select('*')
+        .select(`
+          *,
+          responses:feedback_responses(*)
+        `)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching feedback:', error);
+      if (feedbackError) {
+        console.error('Error fetching feedback:', feedbackError);
         toast.error("Feedback konnte nicht geladen werden.");
         return;
       }
 
-      setFeedbackItems(data || []);
+      setFeedbackItems(feedbackData || []);
       setLoading(false);
     };
 
     fetchFeedback();
 
+    // Subscribe to realtime changes
     const channel = supabase
       .channel('feedback_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'feedback' },
+        () => {
+          fetchFeedback();
+      })
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'feedback_responses' },
         () => {
           fetchFeedback();
       })
@@ -66,6 +84,24 @@ export function useFeedbackAdmin() {
     toast.success("Feedback-Status wurde aktualisiert.");
   };
 
+  const addResponse = async (feedbackId: string, content: string) => {
+    const { error } = await supabase
+      .from('feedback_responses')
+      .insert({
+        feedback_id: feedbackId,
+        content,
+        admin_id: supabase.auth.getUser().then(({ data }) => data.user?.id)
+      });
+
+    if (error) {
+      toast.error("Antwort konnte nicht gesendet werden.");
+      return false;
+    }
+
+    toast.success("Antwort wurde gesendet.");
+    return true;
+  };
+
   const filteredFeedback = feedbackItems.filter(item => 
     filter === 'all' ? true : item.status === filter
   );
@@ -75,6 +111,7 @@ export function useFeedbackAdmin() {
     loading,
     filter,
     setFilter,
-    updateFeedbackStatus
+    updateFeedbackStatus,
+    addResponse
   };
 }

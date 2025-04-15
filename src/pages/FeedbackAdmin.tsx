@@ -5,7 +5,14 @@ import { FeedbackCard } from '@/components/feedback/admin/FeedbackCard';
 import { useFeedbackAdmin } from '@/hooks/use-feedback-admin';
 
 const FeedbackAdmin = () => {
-  const { feedbackItems, loading, filter, setFilter, updateFeedbackStatus } = useFeedbackAdmin();
+  const { 
+    feedbackItems, 
+    loading, 
+    filter, 
+    setFilter, 
+    updateFeedbackStatus,
+    addResponse 
+  } = useFeedbackAdmin();
 
   if (loading) {
     return (
@@ -45,6 +52,7 @@ const FeedbackAdmin = () => {
               key={item.id}
               item={item}
               onUpdateStatus={updateFeedbackStatus}
+              onAddResponse={addResponse}
             />
           ))}
         </div>
