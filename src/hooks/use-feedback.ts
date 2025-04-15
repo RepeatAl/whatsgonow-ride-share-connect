@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +41,8 @@ export function useFeedback(): UseFeedbackResult {
     setError(null);
 
     try {
-      const { error: supabaseError } = await supabase
+      // Insert feedback into the database
+      const { data: feedbackData, error: supabaseError } = await supabase
         .from('feedback')
         .insert({
           user_id: user.id,
@@ -51,13 +53,32 @@ export function useFeedback(): UseFeedbackResult {
           features: data.features,
           email: data.email || user.email,
           status: 'open'
-        });
+        })
+        .select()
+        .single();
 
       if (supabaseError) {
         console.error('Error submitting feedback:', supabaseError);
         setError(supabaseError);
         toast.error(t("feedback.toast.error"));
         return false;
+      }
+
+      // Send email notification to admin
+      try {
+        await supabase.functions.invoke('send-feedback-notification', {
+          body: {
+            feedbackId: feedbackData.id,
+            title: feedbackData.title,
+            content: feedbackData.content,
+            feedbackType: feedbackData.feedback_type,
+            satisfactionRating: feedbackData.satisfaction_rating,
+            email: feedbackData.email
+          }
+        });
+      } catch (emailError) {
+        // Log error but don't fail the feedback submission
+        console.error('Error sending feedback notification email:', emailError);
       }
 
       toast.success(t("feedback.toast.success"));
