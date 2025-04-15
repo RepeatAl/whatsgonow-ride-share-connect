@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { handleAuthError } from "@/utils/auth-utils";
+import { toast } from "@/hooks/use-toast";
 
 export const authService = {
   async fetchUserProfile(userId: string) {
