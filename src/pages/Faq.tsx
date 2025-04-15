@@ -1,12 +1,16 @@
 
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Search, HelpCircle } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface FAQItem {
   question: string;
@@ -19,45 +23,30 @@ const Faq = () => {
   
   const faqItems: FAQItem[] = [
     {
-      question: "How does the package delivery process work?",
-      answer: "You can create a delivery request, and travelers heading to your destination can offer to transport your package. Once you accept an offer, you'll arrange a handoff, and the traveler will deliver your package to the recipient.",
-      category: "General",
+      category: "Allgemein",
+      question: "Was ist Whatsgonow?",
+      answer: "Whatsgonow ist eine Crowd-Logistikplattform, die spontane oder geplante Lieferungen durch Privatpersonen oder lokale Fahrer ermöglicht. Die Plattform vermittelt Aufträge, ermöglicht Preisverhandlungen und bietet ein sicheres Zahlungs- und Bewertungssystem."
     },
     {
-      question: "How much does it cost to send a package?",
-      answer: "The cost depends on the size, weight, and destination of your package. Travelers set their own rates, and you can choose the offer that works best for you.",
-      category: "Pricing",
+      category: "Registrierung & Sicherheit",
+      question: "Ist eine Registrierung notwendig?",
+      answer: "Ja, sowohl Fahrer als auch Auftraggeber müssen sich registrieren. Für Fahrer ist zudem eine Verifizierung (KYC) erforderlich."
     },
     {
-      question: "Is my package insured during transportation?",
-      answer: "Yes, all packages are covered by our basic insurance policy. You can also purchase additional insurance for high-value items.",
-      category: "Insurance",
+      category: "Aufträge & Matching",
+      question: "Wie finde ich passende Transportaufträge?",
+      answer: "Als Fahrer erhältst du Vorschläge basierend auf deiner Route, deinem Umkreis und deinem Transportprofil."
     },
     {
-      question: "How do I track my package?",
-      answer: "You can track your package in real-time through our app. The traveler will update the status as they progress, and you'll receive notifications at key milestones.",
-      category: "Tracking",
+      category: "Bezahlung & Sicherheit",
+      question: "Wie funktioniert die Bezahlung?",
+      answer: "Die Zahlung wird bei Deal-Bestätigung vorgemerkt (z. B. via PayPal) und nach erfolgreicher Lieferung freigegeben."
     },
     {
-      question: "Can I cancel a delivery request?",
-      answer: "Yes, you can cancel a delivery request at any time before a traveler accepts your offer. If a traveler has already accepted, cancellation fees may apply.",
-      category: "Cancellation",
-    },
-    {
-      question: "How do I become a transport provider?",
-      answer: "Visit the 'Offer Transport' page to sign up as a traveler. You'll need to verify your identity and provide information about your travel plans.",
-      category: "Travelers",
-    },
-    {
-      question: "What items are prohibited from being transported?",
-      answer: "Prohibited items include but are not limited to: illegal substances, weapons, hazardous materials, and perishable goods without proper packaging. Check our terms for a complete list.",
-      category: "Restrictions",
-    },
-    {
-      question: "How do payments work?",
-      answer: "Payments are processed through our secure platform. Funds are held in escrow until the package is delivered successfully, ensuring protection for both parties.",
-      category: "Payments",
-    },
+      category: "Support & Community",
+      question: "Was mache ich bei Problemen?",
+      answer: "Nutze den Support-Button oder melde einen Vorfall im Deal-Chat. Community Manager unterstützen dich in deiner Region."
+    }
   ];
 
   const filteredFAQs = faqItems.filter(
@@ -82,19 +71,22 @@ const Faq = () => {
           <Link to="/">
             <Button variant="outline" size="sm" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
+              Zurück
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold mb-2">Frequently Asked Questions</h1>
-          <p className="text-gray-600 mb-6">
-            Find answers to common questions about our platform
+          <div className="flex items-center gap-2 mb-2">
+            <HelpCircle className="h-8 w-8 text-brand-primary" />
+            <h1 className="text-3xl font-bold">Häufig gestellte Fragen</h1>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Hier findest du Antworten auf die häufigsten Fragen zu unserer Plattform
           </p>
           
           <div className="relative mb-8">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
             <Input
               type="search"
-              placeholder="Search FAQs..."
+              placeholder="Suche in den FAQs..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -105,7 +97,7 @@ const Faq = () => {
         {Object.keys(groupedFAQs).length > 0 ? (
           Object.entries(groupedFAQs).map(([category, items]) => (
             <div key={category} className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">{category}</h2>
+              <h2 className="text-xl font-semibold mb-4 text-brand-primary">{category}</h2>
               <Accordion type="single" collapsible className="mb-4">
                 {items.map((item, index) => (
                   <AccordionItem key={index} value={`item-${category}-${index}`}>
@@ -113,7 +105,7 @@ const Faq = () => {
                       {item.question}
                     </AccordionTrigger>
                     <AccordionContent>
-                      <p className="text-gray-700">{item.answer}</p>
+                      <p className="text-muted-foreground">{item.answer}</p>
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -122,22 +114,22 @@ const Faq = () => {
           ))
         ) : (
           <div className="text-center py-10">
-            <p className="text-gray-500 mb-4">No results found for "{searchQuery}"</p>
+            <p className="text-muted-foreground mb-4">
+              Keine Ergebnisse gefunden für "{searchQuery}"
+            </p>
             <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Clear Search
+              Suche zurücksetzen
             </Button>
           </div>
         )}
 
-        <Separator className="my-8" />
-
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4">Still have questions?</h2>
-          <p className="text-gray-600 mb-6">
-            If you couldn't find the answer you were looking for, our support team is here to help.
+        <div className="mt-12 p-6 bg-muted rounded-lg text-center">
+          <h2 className="text-xl font-semibold mb-4">Noch Fragen?</h2>
+          <p className="text-muted-foreground mb-6">
+            Falls du keine Antwort auf deine Frage gefunden hast, kontaktiere unseren Support.
           </p>
           <Button asChild>
-            <Link to="/support">Contact Support</Link>
+            <Link to="/support">Support kontaktieren</Link>
           </Button>
         </div>
       </div>
