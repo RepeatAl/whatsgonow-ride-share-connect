@@ -20,6 +20,7 @@ import {
 import LogoutButton from "@/components/auth/LogoutButton";
 import NavLink from "./NavLink";
 import { ThemeToggle } from "./ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 interface DesktopMenuProps {
   user: any;
@@ -68,6 +69,7 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
   return (
     <div className="flex items-center gap-4">
       <ThemeToggle />
+      <LanguageToggle />
       
       {user ? (
         <>

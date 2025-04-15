@@ -5,21 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Package, Car, MessageCircle, User, LayoutDashboard, Shield, Database, LogIn, LogOut, Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
+
 interface MobileMenuProps {
   user: any;
   userRole: string | null;
   unreadMessagesCount: number;
 }
+
 const MobileMenu = ({
   user,
   userRole,
   unreadMessagesCount
 }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const {
-    theme,
-    toggleTheme
-  } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+
   const navLinks = [{
     name: "Find Transport",
     path: "/find-transport",
@@ -33,6 +34,7 @@ const MobileMenu = ({
     path: "/inbox",
     icon: <MessageCircle className="h-5 w-5 mr-2" />
   }];
+
   const adminLinks = [{
     name: "User Management",
     path: "/admin",
@@ -42,6 +44,7 @@ const MobileMenu = ({
     path: "/admin/dashboard",
     icon: <Database className="h-5 w-5 mr-2" />
   }];
+
   const signOut = async () => {
     try {
       const {
@@ -52,6 +55,7 @@ const MobileMenu = ({
       console.error('Error signing out:', error);
     }
   };
+
   return <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={isMenuOpen ? "Close menu" : "Open menu"} className="text-orange-500">
@@ -60,15 +64,18 @@ const MobileMenu = ({
       </SheetTrigger>
       <SheetContent side="right" className="w-[250px] sm:w-[300px]">
         <div className="flex flex-col gap-4 mt-8">
-          <button onClick={toggleTheme} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-            {theme === "light" ? <>
+          <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+              {theme === "light" ? <>
                 <Moon className="h-5 w-5 mr-2" />
                 <span>Dark Mode</span>
               </> : <>
                 <Sun className="h-5 w-5 mr-2" />
                 <span>Light Mode</span>
               </>}
-          </button>
+            </button>
+            <LanguageToggle />
+          </div>
 
           {!user ? <Link to="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
               <LogIn className="h-5 w-5 mr-2" />
@@ -113,4 +120,5 @@ const MobileMenu = ({
       </SheetContent>
     </Sheet>;
 };
+
 export default MobileMenu;
