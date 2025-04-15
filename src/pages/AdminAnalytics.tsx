@@ -1,110 +1,59 @@
+import React, { useState, useEffect } from 'react';
+import { supabase } from "@/lib/supabaseClient";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Layout from "@/components/Layout";
 
-import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
-import Layout from '@/components/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
-
-interface AnalyticsData {
+interface PageView {
   page: string;
   count: number;
 }
 
 const AdminAnalytics = () => {
-  const { user } = useAuth();
-  const [timeRange, setTimeRange] = useState('30');
-  const [pageViews, setPageViews] = useState<AnalyticsData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pageViews, setPageViews] = useState<PageView[]>([]);
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      const { data, error } = await supabase
-        .from('analytics')
-        .select('page')
-        .gte('timestamp', new Date(Date.now() - parseInt(timeRange) * 24 * 60 * 60 * 1000).toISOString());
+    const fetchPageViews = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('analytics')
+          .select('page, count')
+          .order('count', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching analytics:', error);
-        return;
+        if (error) {
+          console.error('Error fetching page view data:', error);
+          return;
+        }
+
+        setPageViews(data.map(item => ({
+          page: item.page,
+          count: item.count as number
+        })));
+      } catch (error) {
+        console.error('Error fetching page view data:', error);
       }
-
-      const pageCounts = data.reduce((acc: { [key: string]: number }, curr) => {
-        acc[curr.page] = (acc[curr.page] || 0) + 1;
-        return acc;
-      }, {});
-
-      const formattedData = Object.entries(pageCounts).map(([page, count]) => ({
-        page,
-        count,
-      }));
-
-      setPageViews(formattedData);
-      setLoading(false);
     };
 
-    fetchAnalytics();
-  }, [timeRange]);
-
-  if (!user || !['admin', 'admin_limited'].includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
-  }
+    fetchPageViews();
+  }, []);
 
   return (
     <Layout>
-      <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select time range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7">Last 7 days</SelectItem>
-              <SelectItem value="30">Last 30 days</SelectItem>
-              <SelectItem value="90">Last 90 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Page Views</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              {loading ? (
-                <div className="h-full flex items-center justify-center">
-                  Loading...
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={pageViews}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="page" 
-                      angle={-45} 
-                      textAnchor="end"
-                      height={70}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-4">Admin Analytics</h1>
+        {pageViews.length > 0 ? (
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={pageViews}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="page" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p>No data available.</p>
+        )}
       </div>
     </Layout>
   );
