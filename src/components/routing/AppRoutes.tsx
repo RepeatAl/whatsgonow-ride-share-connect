@@ -4,16 +4,11 @@ import { Suspense } from "react";
 import { routes } from "@/routes/routes";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
-
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-  </div>
-);
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export const AppRoutes = () => {
   return (
-    <Suspense fallback={<LoadingFallback />}>
+    <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         {routes.map((route) => (
           <Route
@@ -32,4 +27,3 @@ export const AppRoutes = () => {
     </Suspense>
   );
 };
-

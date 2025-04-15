@@ -8,4 +8,3 @@ interface PublicRouteProps {
 export const PublicRoute = ({ children }: PublicRouteProps) => {
   return <>{children}</>;
 };
-
