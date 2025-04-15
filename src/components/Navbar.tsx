@@ -1,82 +1,38 @@
 
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Inbox } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import React from "react";
 import { Link } from "react-router-dom";
-import UnreadBadge from "./navbar/UnreadBadge";
-import NavbarLogo from "./navbar/NavbarLogo";
-import MobileMenu from "./navbar/MobileMenu";
-import DesktopMenu from "./navbar/DesktopMenu";
-import { ThemeToggle } from "./navbar/ThemeToggle";
-import { useChatRealtime } from "@/contexts/ChatRealtimeContext";
+import { Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Navbar = () => {
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const isMobile = useIsMobile();
-  const location = useLocation();
-  const { user } = useAuth();
-  const { unreadCount } = useChatRealtime();
-  
-  useEffect(() => {
-    const checkUserRole = async () => {
-      if (user) {
-        try {
-          const { data, error } = await supabase
-            .from('users')
-            .select('role')
-            .eq('user_id', user.id)
-            .single();
-            
-          if (error) {
-            console.error('Error fetching user role:', error);
-            return;
-          }
-          setUserRole(data?.role || null);
-        } catch (error) {
-          console.error('Error in Navbar role check:', error);
-        }
-      } else {
-        setUserRole(null);
-      }
-    };
-    
-    checkUserRole();
-  }, [location.pathname, user]);
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <nav className="w-full py-4 px-4 md:px-6 flex items-center justify-between border-b shadow-sm fixed top-0 z-50 bg-slate-50">
-      <div className="flex items-center">
-        <NavbarLogo />
-      </div>
+    <nav className="w-full py-4 px-4 md:px-6 border-b shadow-sm fixed top-0 z-50 bg-background/80 backdrop-blur-lg">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <img 
+            src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" 
+            alt="whatsgonow logo" 
+            className="h-8 mr-2" 
+          />
+          <span className="text-xl font-bold text-slate-950 dark:text-white">
+            whats<span className="text-brand-orange">go</span>now
+          </span>
+        </Link>
 
-      {isMobile ? (
-        <div className="flex items-center gap-2">
-          {!isMobile && <ThemeToggle />}
-          {user && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link to="/inbox">
-                  <Button variant="ghost" size="icon" className="relative" aria-label="Messages">
-                    <Inbox className="h-5 w-5" />
-                    <UnreadBadge count={unreadCount} />
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Messages ({unreadCount} unread)</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-          <MobileMenu user={user} userRole={userRole} unreadMessagesCount={unreadCount} />
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
         </div>
-      ) : (
-        <DesktopMenu user={user} userRole={userRole} unreadMessagesCount={unreadCount} />
-      )}
+      </div>
     </nav>
   );
 };
