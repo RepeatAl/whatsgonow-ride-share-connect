@@ -24,6 +24,7 @@ import AdminAnalytics from "@/pages/AdminAnalytics";
 import FeedbackAdmin from "@/pages/FeedbackAdmin";
 import Feedback from "@/pages/Feedback";
 import Support from "@/pages/Support";
+import FeedbackAnalyticsPage from "@/pages/admin/FeedbackAnalyticsPage";
 
 const Inbox = lazy(() => import("@/pages/Inbox"));
 
@@ -55,6 +56,7 @@ export const routes: RouteConfig[] = [
   { path: "/admin/validation", element: <ValidationAdmin />, protected: true },
   { path: "/admin/analytics", element: <AdminAnalytics />, protected: true },
   { path: "/admin/feedback", element: <FeedbackAdmin />, protected: true },
+  { path: "/admin/feedback-analytics", element: <FeedbackAnalyticsPage />, protected: true },
   { path: "/feedback", element: <Feedback />, protected: true },
   { path: "/support", element: <Support />, public: true },
   { path: "/forgot-password", element: <ForgotPassword />, public: true },
