@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export type FeedbackData = {
   feedbackType: 'suggestion' | 'bug' | 'compliment' | 'question';
@@ -23,15 +23,16 @@ export function useFeedback(): UseFeedbackResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const submitFeedback = async (data: FeedbackData): Promise<boolean> => {
     if (!user) {
-      toast.error("Bitte melden Sie sich an, um Feedback zu senden.");
+      toast.error(t("feedback.toast.auth_error"));
       return false;
     }
 
     if (!data.content.trim()) {
-      toast.error("Bitte geben Sie Ihr Feedback ein.");
+      toast.error(t("feedback.toast.content_required"));
       return false;
     }
 
@@ -44,27 +45,27 @@ export function useFeedback(): UseFeedbackResult {
         .insert({
           user_id: user.id,
           feedback_type: data.feedbackType,
-          title: data.title || 'Allgemeines Feedback',
+          title: data.title || t("feedback.form.default_title"),
           content: data.content,
           satisfaction_rating: parseInt(data.satisfaction),
           features: data.features,
           email: data.email || user.email,
-          status: 'open' // Explizit den Anfangsstatus setzen
+          status: 'open'
         });
 
       if (supabaseError) {
         console.error('Error submitting feedback:', supabaseError);
         setError(supabaseError);
-        toast.error("Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.");
+        toast.error(t("feedback.toast.error"));
         return false;
       }
 
-      toast.success("Vielen Dank für Ihr Feedback! Wir werden es sorgfältig prüfen.");
+      toast.success(t("feedback.toast.success"));
       return true;
     } catch (err: any) {
       console.error('Error submitting feedback:', err);
       setError(err);
-      toast.error(err.message || "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+      toast.error(t("feedback.toast.error"));
       return false;
     } finally {
       setLoading(false);

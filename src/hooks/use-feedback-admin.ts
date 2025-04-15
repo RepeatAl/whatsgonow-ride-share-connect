@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export type FeedbackItem = {
   id: string;
@@ -70,6 +70,8 @@ export function useFeedbackAdmin() {
     };
   }, []);
 
+  const { t } = useTranslation();
+
   const updateFeedbackStatus = async (id: string, newStatus: string) => {
     const { error } = await supabase
       .from('feedback')
@@ -77,11 +79,11 @@ export function useFeedbackAdmin() {
       .eq('id', id);
 
     if (error) {
-      toast.error("Status konnte nicht aktualisiert werden.");
+      toast.error(t("feedback.toast.status_error"));
       return;
     }
 
-    toast.success("Feedback-Status wurde aktualisiert.");
+    toast.success(t("feedback.toast.status_updated"));
   };
 
   const addResponse = async (feedbackId: string, content: string) => {
@@ -94,11 +96,11 @@ export function useFeedbackAdmin() {
       });
 
     if (error) {
-      toast.error("Antwort konnte nicht gesendet werden.");
+      toast.error(t("feedback.toast.response_error"));
       return false;
     }
 
-    toast.success("Antwort wurde gesendet.");
+    toast.success(t("feedback.toast.response_added"));
     return true;
   };
 
