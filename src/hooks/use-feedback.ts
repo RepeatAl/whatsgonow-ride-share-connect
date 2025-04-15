@@ -13,8 +13,15 @@ export type FeedbackData = {
   email?: string;
 };
 
-export function useFeedback() {
+export type UseFeedbackResult = {
+  submitFeedback: (data: FeedbackData) => Promise<boolean>;
+  loading: boolean;
+  error: Error | null;
+};
+
+export function useFeedback(): UseFeedbackResult {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const { user } = useAuth();
 
   const submitFeedback = async (data: FeedbackData): Promise<boolean> => {
@@ -29,8 +36,10 @@ export function useFeedback() {
     }
 
     setLoading(true);
+    setError(null);
+
     try {
-      const { error } = await supabase
+      const { error: supabaseError } = await supabase
         .from('feedback')
         .insert({
           user_id: user.id,
@@ -39,19 +48,23 @@ export function useFeedback() {
           content: data.content,
           satisfaction_rating: parseInt(data.satisfaction),
           features: data.features,
-          email: data.email || user.email
+          email: data.email || user.email,
+          status: 'open' // Explizit den Anfangsstatus setzen
         });
 
-      if (error) {
-        console.error('Error submitting feedback:', error);
-        throw error;
+      if (supabaseError) {
+        console.error('Error submitting feedback:', supabaseError);
+        setError(supabaseError);
+        toast.error("Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.");
+        return false;
       }
 
-      toast.success("Vielen Dank für Ihr Feedback!");
+      toast.success("Vielen Dank für Ihr Feedback! Wir werden es sorgfältig prüfen.");
       return true;
-    } catch (error: any) {
-      console.error('Error submitting feedback:', error);
-      toast.error(error.message || "Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.");
+    } catch (err: any) {
+      console.error('Error submitting feedback:', err);
+      setError(err);
+      toast.error(err.message || "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
       return false;
     } finally {
       setLoading(false);
@@ -60,6 +73,7 @@ export function useFeedback() {
 
   return {
     submitFeedback,
-    loading
+    loading,
+    error
   };
 }
