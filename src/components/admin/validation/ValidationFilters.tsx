@@ -1,22 +1,8 @@
 
-import { Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from 'date-fns';
+import { SearchInput } from "./filters/SearchInput";
+import { FilterSelect } from "./filters/FilterSelect";
+import { DatePickerField } from "./filters/DatePickerField";
 
 interface ValidationFiltersProps {
   searchTerm: string;
@@ -45,102 +31,56 @@ export const ValidationFilters = ({
   onEndDateChange,
   onReset
 }: ValidationFiltersProps) => {
+  const validationTypeOptions = [
+    { value: "digital_signature", label: "Digitale Signatur" },
+    { value: "xrechnung", label: "XRechnung" },
+    { value: "gobd", label: "GoBD" },
+    { value: "format", label: "Format" },
+    { value: "tax", label: "Steuer" }
+  ];
+
+  const statusOptions = [
+    { value: "passed", label: "Bestanden" },
+    { value: "failed", label: "Nicht bestanden" }
+  ];
+
   return (
     <div className="bg-white p-4 rounded-md shadow-sm mb-6">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Rechnungs-ID</label>
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Suche nach ID..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-        </div>
+        <SearchInput
+          value={searchTerm}
+          onChange={onSearchChange}
+        />
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Validierungstyp</label>
-          <Select
-            value={selectedValidationType}
-            onValueChange={onValidationTypeChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Alle Typen" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="digital_signature">Digitale Signatur</SelectItem>
-              <SelectItem value="xrechnung">XRechnung</SelectItem>
-              <SelectItem value="gobd">GoBD</SelectItem>
-              <SelectItem value="format">Format</SelectItem>
-              <SelectItem value="tax">Steuer</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <FilterSelect
+          label="Validierungstyp"
+          value={selectedValidationType}
+          onValueChange={onValidationTypeChange}
+          options={validationTypeOptions}
+          placeholder="Alle Typen"
+        />
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Status</label>
-          <Select
-            value={selectedStatus}
-            onValueChange={onStatusChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Alle Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="passed">Bestanden</SelectItem>
-              <SelectItem value="failed">Nicht bestanden</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <FilterSelect
+          label="Status"
+          value={selectedStatus}
+          onValueChange={onStatusChange}
+          options={statusOptions}
+          placeholder="Alle Status"
+        />
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Startdatum</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, 'dd.MM.yyyy') : 'Startdatum wählen'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={onStartDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+        <DatePickerField
+          label="Startdatum"
+          date={startDate}
+          onDateChange={onStartDateChange}
+          placeholder="Startdatum wählen"
+        />
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Enddatum</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, 'dd.MM.yyyy') : 'Enddatum wählen'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={onEndDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+        <DatePickerField
+          label="Enddatum"
+          date={endDate}
+          onDateChange={onEndDateChange}
+          placeholder="Enddatum wählen"
+        />
       </div>
       
       <div className="flex justify-end">
