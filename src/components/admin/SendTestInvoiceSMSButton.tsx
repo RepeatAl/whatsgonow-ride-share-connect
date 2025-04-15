@@ -6,6 +6,7 @@ import { emailService } from '@/services/invoice/emailService';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { TestInvoiceResults } from './TestInvoiceResults';
+import { supabase } from '@/lib/supabaseClient';
 
 export const SendTestInvoiceSMSButton = () => {
   const [loading, setLoading] = useState(false);
