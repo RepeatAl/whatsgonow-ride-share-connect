@@ -1,12 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, ArrowLeft } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,7 +13,6 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,14 +50,6 @@ const ForgotPassword = () => {
       <div className="flex items-center justify-center min-h-screen p-4 bg-neutral-50">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <Button 
-              variant="ghost" 
-              className="w-fit mb-4" 
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Zurück
-            </Button>
             <CardTitle>Passwort zurücksetzen</CardTitle>
             <CardDescription>
               Gib deine E-Mail-Adresse ein, um dein Passwort zurückzusetzen.

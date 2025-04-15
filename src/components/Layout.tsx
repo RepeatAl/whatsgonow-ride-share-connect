@@ -3,6 +3,7 @@ import React from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useTheme } from "@/contexts/ThemeContext";
+import { BackButton } from "./navigation/BackButton";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ const Layout = ({ children, minimal = false }: LayoutProps) => {
         
         {/* Main content area with responsive padding */}
         <main className="flex-grow w-full px-4 sm:px-6 lg:px-8">
+          {!minimal && <BackButton />}
           {children}
         </main>
 
