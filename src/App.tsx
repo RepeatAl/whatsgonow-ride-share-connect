@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -146,6 +145,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <RLSTest />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/invoice-test" 
+                element={
+                  <ProtectedRoute>
+                    <AdminInvoiceTest />
                   </ProtectedRoute>
                 } 
               />
