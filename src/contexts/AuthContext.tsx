@@ -6,6 +6,7 @@ import { useAuthSession } from "@/hooks/auth/useAuthSession";
 import { useProfile } from "@/hooks/auth/useProfile";
 import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client"; // Add this import
 import type { AuthContextProps } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
