@@ -1,79 +1,29 @@
-import { createContext, useState, useEffect, useContext, ReactNode } from "react";
+
+import { createContext, useContext, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
+import { useAuthState } from "@/hooks/use-auth-state";
+import { authService } from "@/services/auth-service";
+import { getRoleBasedRedirectPath } from "@/utils/auth-utils";
 import { toast } from "@/hooks/use-toast";
 import { isPublicRoute } from "@/routes/publicRoutes";
-
-interface UserProfile {
-  user_id: string;
-  name: string;
-  email: string;
-  role: string;
-  region?: string;
-  active?: boolean;
-}
-
-interface AuthContextProps {
-  user: User | null;
-  session: Session | null;
-  profile: UserProfile | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, metadata?: { 
-    name?: string;
-    role?: string;
-    company_name?: string;
-  }) => Promise<void>;
-  signOut: () => Promise<void>;
-}
+import type { AuthContextProps } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-      
-      if (error) {
-        console.error("Fehler beim Laden des Benutzerprofils:", error);
-        return null;
-      }
-      
-      return data;
-    } catch (error) {
-      console.error("Exception beim Laden des Benutzerprofils:", error);
-      return null;
-    }
-  };
-
-  const getRoleBasedRedirectPath = (role: string): string => {
-    switch (role) {
-      case 'sender_private':
-      case 'sender_business':
-        return '/create-order';
-      case 'driver':
-        return '/orders';
-      case 'cm':
-        return '/community-manager';
-      case 'admin':
-      case 'admin_limited':
-        return '/admin-dashboard';
-      default:
-        return '/dashboard';
-    }
-  };
+  const {
+    user,
+    setUser,
+    session,
+    setSession,
+    profile,
+    setProfile,
+    loading,
+    setLoading
+  } = useAuthState();
 
   useEffect(() => {
     console.log("🔄 AuthProvider mounted, current path:", location.pathname);
@@ -86,13 +36,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         console.log("🔑 Auth event:", event);
         console.log("📍 Current path:", location.pathname);
-        console.log("🔓 Is public route:", isPublicRoute(location.pathname));
+        
+        const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
         if (event === 'SIGNED_IN') {
-          const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
-          
           if (currentSession?.user) {
-            const userProfile = await fetchUserProfile(currentSession.user.id);
+            const userProfile = await authService.fetchUserProfile(currentSession.user.id);
             setProfile(userProfile);
             
             if (!userProfile) {
@@ -132,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("👤 User authenticated:", !!currentSession?.user);
       
       if (currentSession?.user) {
-        const userProfile = await fetchUserProfile(currentSession.user.id);
+        const userProfile = await authService.fetchUserProfile(currentSession.user.id);
         setProfile(userProfile);
         
         if (!userProfile) {
@@ -153,72 +102,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [navigate, location.pathname]);
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      toast({
-        title: "Anmeldung fehlgeschlagen",
-        description: `${(error as Error).message}`,
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
-
-  const signUp = async (email: string, password: string, metadata?: { 
-    name?: string;
-    role?: string;
-    company_name?: string;
-  }) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata
-        }
-      });
-      
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Registrierung erfolgreich",
-        description: "Dein Konto wurde erstellt. Bitte überprüfe deine E-Mails für die Bestätigung."
-      });
-    } catch (error) {
-      toast({
-        title: "Registrierung fehlgeschlagen",
-        description: `${(error as Error).message}`,
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      toast({
-        title: "Abmeldung fehlgeschlagen",
-        description: `${(error as Error).message}`,
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -226,9 +109,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         profile,
         loading,
-        signIn,
-        signUp,
-        signOut
+        signIn: authService.signIn,
+        signUp: authService.signUp,
+        signOut: authService.signOut
       }}
     >
       {children}
