@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
-import { isPublicRoute } from "@/App"; // Importiere die zentrale Hilfsfunktion
+import { isPublicRoute } from "@/routes/publicRoutes"; // Use the centralized helper
 
 interface AuthContextProps {
   user: User | null;
@@ -25,6 +25,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
+    console.log("🔄 AuthProvider mounted, current path:", location.pathname);
+    console.log("🔓 Is current path public?", isPublicRoute(location.pathname));
+
     // Listener für Auth-Zustandsänderungen ZUERST einrichten
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
@@ -32,18 +35,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentSession?.user ?? null);
         setLoading(false);
 
-        // Logging für Debugging
+        // Ausführliche Logging für Debugging
         console.log("🔑 Auth event:", event);
         console.log("📍 Current path:", location.pathname);
         console.log("🔓 Is public route:", isPublicRoute(location.pathname));
 
-        // Wenn wir auf einer öffentlichen Route sind, keine Weiterleitung
+        // WICHTIG: Wenn wir auf einer öffentlichen Route sind, KEINE Weiterleitung
         if (isPublicRoute(location.pathname)) {
           console.log("🚫 Keine Weiterleitung - öffentliche Route");
-          return;
+          return; // Früher Return, um alle weiteren Weiterleitungslogiken zu überspringen
         }
 
-        // Auth-Zustandsbasierte Navigation mit Pfadüberprüfungen
+        // Auth-Zustandsbasierte Navigation NUR für geschützte Routen
         if (event === 'SIGNED_IN') {
           const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
           
@@ -62,10 +65,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: "Du wurdest erfolgreich abgemeldet."
           });
           
-          // Nicht weiterleiten, wenn bereits auf Login/Home oder öffentlicher Route
-          if (location.pathname !== "/login" && location.pathname !== "/" && !isPublicRoute(location.pathname)) {
-            navigate('/login');
-          }
+          // Öffentliche Routen bereits oben abgefangen, hier nur noch geschützte Routen
+          navigate('/login');
         }
       }
     );
@@ -75,6 +76,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
+      
+      console.log("🔍 Initial session check complete");
+      console.log("👤 User authenticated:", !!currentSession?.user);
+      console.log("📍 Current path:", location.pathname);
+      console.log("🔓 Is public route:", isPublicRoute(location.pathname));
+      
+      // Keine automatische Weiterleitung beim initialen Laden, wenn auf öffentlicher Route
+      if (!currentSession?.user && !isPublicRoute(location.pathname)) {
+        console.log("🔒 No session, redirecting to login");
+        navigate('/login');
+      }
     });
 
     return () => {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { AlertCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { isPublicRoute } from "@/App"; // Importiere die zentrale Hilfsfunktion
+import { isPublicRoute } from "@/routes/publicRoutes";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -26,10 +25,8 @@ const Login = () => {
     user
   } = useAuth();
 
-  // Überprüfen, ob der aktuelle Pfad öffentlich ist
   const isPublicPath = isPublicRoute(location.pathname);
 
-  // Bestimme anhand von Abfrageparametern, ob wir weiterleiten sollen
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     if (searchParams.get('signup') === 'true') {
@@ -37,9 +34,7 @@ const Login = () => {
     }
   }, [location]);
 
-  // Handle Weiterleitung für authentifizierte Benutzer
   useEffect(() => {
-    // Debug-Log hinzufügen
     console.log("Login - Überprüfe Redirect:", {
       user: !!user,
       redirecting,
@@ -47,10 +42,8 @@ const Login = () => {
       location: location.pathname
     });
 
-    // Nur weiterleiten, wenn wir nicht auf einer öffentlichen Seite sind
-    const from = location.state?.from?.pathname || '/dashboard';
-    
     if (user && !redirecting && !isPublicPath) {
+      const from = location.state?.from?.pathname || '/dashboard';
       console.log("Login - Leite weiter zu:", from);
       setRedirecting(true);
       navigate(from);
@@ -68,14 +61,12 @@ const Login = () => {
         await signIn(email, password);
       }
     } catch (err) {
-      // Fehler wird bereits im Auth-Kontext mit Toast behandelt
       setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Wenn wir bereits weiterleiten, zeige eine Lademeldung
   if (redirecting) {
     return <Layout>
         <div className="flex items-center justify-center min-h-screen bg-background p-4">
@@ -86,7 +77,7 @@ const Login = () => {
         </div>
       </Layout>;
   }
-  
+
   return <Layout>
       <TooltipProvider>
         <div className="flex items-center justify-center min-h-screen p-4 bg-neutral-50">

@@ -5,8 +5,6 @@ import { SendTestInvoiceSMSButton } from '@/components/admin/SendTestInvoiceSMSB
 import { TestInvoiceResults } from '@/components/admin/TestInvoiceResults';
 
 const AdminInvoiceTest = () => {
-  const [result, setResult] = useState(null);
-  
   // Debug-Log beim Laden der Komponente
   React.useEffect(() => {
     console.log("🔍 AdminInvoiceTest-Komponente wurde geladen");
@@ -34,7 +32,7 @@ const AdminInvoiceTest = () => {
             
             <SendTestInvoiceSMSButton />
             
-            <TestInvoiceResults result={result} />
+            {/* TestInvoiceResults wird direkt innerhalb der SendTestInvoiceSMSButton-Komponente gerendert */}
           </div>
         </div>
       </div>
