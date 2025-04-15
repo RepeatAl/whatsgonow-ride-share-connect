@@ -15,7 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  useAnalytics('/dashboard');
+  useAnalytics();
   
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();

@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import Layout from "@/components/Layout";
 import { 
   Card, 
@@ -54,6 +55,7 @@ const AdminDashboard = () => {
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(undefined);
   const { user } = useAuth();
   const { users, loading: loadingUsers } = useAdminUsers();
+  const navigate = useNavigate();
   const { 
     logs, 
     transactions, 
