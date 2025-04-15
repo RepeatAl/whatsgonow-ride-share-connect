@@ -1,7 +1,7 @@
 
 import { detailedInvoiceService } from './detailedInvoiceService';
 import { emailService } from './emailService';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient'; // Added this import
 
 export const testInvoiceService = {
   createTestInvoice: async () => {
