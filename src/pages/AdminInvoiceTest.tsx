@@ -2,6 +2,7 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import { SendTestInvoiceSMSButton } from '@/components/admin/SendTestInvoiceSMSButton';
+import { TestInvoiceResults } from '@/components/admin/TestInvoiceResults';
 
 const AdminInvoiceTest = () => {
   return (
