@@ -17,6 +17,11 @@ const AdminInvoiceTest = () => {
                 Dieser Test erstellt eine Beispielrechnung und versendet sie per SMS mit PIN-Schutz.
                 Sie können den erhaltenen Link dann auf einem Mobilgerät testen.
               </p>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <p className="text-yellow-700">
+                  <strong>Hinweis:</strong> Diese Seite ist temporär öffentlich zugänglich für Testzwecke.
+                </p>
+              </div>
             </div>
             
             <SendTestInvoiceSMSButton />

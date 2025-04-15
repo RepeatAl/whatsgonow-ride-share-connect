@@ -25,6 +25,15 @@ import AdminInvoiceTest from "./pages/AdminInvoiceTest";
 
 const Inbox = lazy(() => import("./pages/Inbox"));
 
+// Separate protected and public routes
+const publicRoutes = [
+  '/admin/invoice-test',
+  '/invoice-download',
+  '/',
+  '/login',
+  '/register'
+];
+
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -33,13 +42,25 @@ const LoadingFallback = () => (
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   
   if (loading) {
     return <LoadingFallback />;
   }
   
+  // Check if the current path is public
+  const isPublicPath = publicRoutes.some(route => 
+    location.pathname.startsWith(route)
+  );
+  
+  // Allow access to public routes without authentication
+  if (isPublicPath) {
+    return <>{children}</>;
+  }
+  
+  // Require authentication for protected routes
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   
   return <>{children}</>;
@@ -52,7 +73,14 @@ function App() {
         <TooltipProvider>
           <div className="App">
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/admin/invoice-test" element={<AdminInvoiceTest />} />
+              <Route path="/invoice-download/:token" element={<InvoiceDownload />} />
+              
+              {/* Protected routes */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -77,8 +105,6 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
               <Route 
                 path="/profile" 
                 element={
@@ -148,16 +174,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route 
-                path="/admin/invoice-test" 
-                element={
-                  <ProtectedRoute>
-                    <AdminInvoiceTest />
-                  </ProtectedRoute>
-                } 
-              />
               <Route path="/admin/validation" element={<ValidationAdmin />} />
-              <Route path="/invoice-download/:token" element={<InvoiceDownload />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
