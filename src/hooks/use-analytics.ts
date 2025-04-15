@@ -1,24 +1,29 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useLocation } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
 
-interface PageView {
-  page: string;
-  timestamp: string;
-  user_id?: string;
-  session_id: string;
-}
+const getOrCreateSessionId = () => {
+  let sessionId = localStorage.getItem('analytics_session_id');
+  if (!sessionId) {
+    sessionId = uuidv4();
+    localStorage.setItem('analytics_session_id', sessionId);
+  }
+  return sessionId;
+};
 
-export const useAnalytics = (page: string) => {
+export const useAnalytics = () => {
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const trackPageView = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      const sessionId = session?.access_token.slice(-12) || 'anonymous';
+      const sessionId = getOrCreateSessionId();
 
       await supabase.from('analytics').insert({
-        page,
+        page: location.pathname,
         user_id: session?.user?.id,
         session_id: sessionId,
         timestamp: new Date().toISOString()
@@ -28,7 +33,7 @@ export const useAnalytics = (page: string) => {
     };
 
     trackPageView();
-  }, [page]);
+  }, [location.pathname]);
 
   return { loading };
 };

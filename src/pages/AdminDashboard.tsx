@@ -324,7 +324,15 @@ const AdminDashboard = () => {
             Admin Dashboard
           </h1>
           
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/admin/analytics")}
+              className="flex items-center gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              View Analytics
+            </Button>
             <Badge 
               variant={monitoringActive ? "default" : "outline"}
               className="flex items-center gap-1 mr-4"
