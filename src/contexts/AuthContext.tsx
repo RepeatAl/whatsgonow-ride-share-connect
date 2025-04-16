@@ -1,10 +1,8 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { authService } from "@/services/auth-service";
+import { useLocation } from "react-router-dom";
 import { useAuthSession } from "@/hooks/auth/useAuthSession";
 import { useProfile } from "@/hooks/auth/useProfile";
-import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import type { AuthContextProps } from "@/types/auth";
@@ -12,8 +10,6 @@ import type { AuthContextProps } from "@/types/auth";
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   // Manage authentication state
@@ -35,13 +31,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     retryProfileLoad
   } = useProfile(user, sessionLoading);
 
-  // Handle authentication-based redirects
-  useAuthRedirect(user, profile, sessionLoading || profileLoading);
-
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         console.log("🔑 Auth event:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
@@ -52,27 +45,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: "Willkommen zurück!"
           });
         } else if (event === 'SIGNED_OUT') {
+          setProfile(null);
           toast({
             title: "Abgemeldet",
             description: "Auf Wiedersehen!"
           });
-          navigate('/index');
         }
       }
     );
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("🔍 Checking initial session:", currentSession ? "Found" : "None");
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsInitialLoad(false);
-      console.log("🔍 Auth session initialized, user authenticated:", !!currentSession?.user);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, setSession, setUser]);
+  }, [setSession, setUser, setProfile]);
 
-  // Sign in handler with proper error management
+  // Enhanced sign in handler
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -88,14 +81,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Enhanced sign up handler with better error handling
+  // Enhanced sign up handler
   const signUp = async (email: string, password: string, metadata?: { 
     name?: string;
     role?: string;
     company_name?: string;
   }) => {
     try {
-      // Explizit die metadata mit Standardwerten setzen, falls sie fehlen
       const enhancedMetadata = {
         name: metadata?.name || "Neuer Benutzer",
         role: metadata?.role || "sender_private",
@@ -115,11 +107,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       toast({
         title: "Registrierung erfolgreich",
-        description: "Dein Konto wurde erstellt. Bitte überprüfe deine E-Mails für die Bestätigung."
+        description: "Bitte überprüfe deine E-Mails für die Bestätigung."
       });
-      
-      // Redirect to dashboard after successful signup
-      navigate('/dashboard');
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -131,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Sign out handler with error handling
+  // Sign out handler
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -147,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const authContextValue: AuthContextProps = {
+  const value: AuthContextProps = {
     user,
     session,
     profile,
@@ -161,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={authContextValue}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

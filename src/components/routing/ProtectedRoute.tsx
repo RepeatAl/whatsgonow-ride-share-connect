@@ -1,6 +1,6 @@
 
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "react-router-dom";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -14,20 +14,26 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, profile, loading, error, retryProfileLoad } = useAuth();
   const location = useLocation();
   
-  // Show loading spinner while authentication is in progress
+  // Show loading spinner while checking auth
   if (loading) {
     return <LoadingSpinner />;
   }
   
+  // If not authenticated, redirect to login
+  if (!user) {
+    console.log("🔒 Protected route access denied, redirecting to login");
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
   // Show error message if there's an error loading the profile
-  if (error && user) {
+  if (error) {
     return (
       <div className="container max-w-md mx-auto py-8">
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Fehler beim Laden des Benutzerprofils</AlertTitle>
           <AlertDescription>
-            {error.message || "Dein Benutzerprofil konnte nicht geladen werden. Bitte versuche es erneut."}
+            {error.message || "Dein Benutzerprofil konnte nicht geladen werden."}
           </AlertDescription>
         </Alert>
         
@@ -43,6 +49,5 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
-  // Render children if authentication is successful
   return <>{children}</>;
 };
