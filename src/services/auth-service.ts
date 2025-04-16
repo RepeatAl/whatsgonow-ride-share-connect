@@ -4,8 +4,11 @@ import { handleAuthError } from "@/utils/auth-utils";
 import { toast } from "@/hooks/use-toast";
 
 export const authService = {
+  // Verbesserte Version mit zusätzlicher Fehlerbehandlung und logging
   async fetchUserProfile(userId: string) {
     try {
+      console.log("📊 Fetching profile for user:", userId);
+      
       const { data, error } = await supabase
         .from("users")
         .select("*")
@@ -13,13 +16,69 @@ export const authService = {
         .single();
       
       if (error) {
-        console.error("Fehler beim Laden des Benutzerprofils:", error);
+        console.error("❌ Error fetching user profile:", error);
+        
+        // Wenn Profil nicht gefunden wurde, versuchen ein neues zu erstellen
+        if (error.code === 'PGRST116') {
+          console.log("🔄 Profile not found, attempting to create one");
+          return await authService.createDefaultUserProfile(userId);
+        }
+        
         return null;
       }
       
+      console.log("✅ User profile loaded successfully");
       return data;
     } catch (error) {
-      console.error("Exception beim Laden des Benutzerprofils:", error);
+      console.error("❌ Exception when loading user profile:", error);
+      return null;
+    }
+  },
+  
+  // Neue Methode, um ein Standardprofil zu erstellen, wenn keines existiert
+  async createDefaultUserProfile(userId: string) {
+    try {
+      console.log("🆕 Creating default profile for user:", userId);
+      
+      // Benutzer-Email Adresse holen
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error("❌ Error getting user data:", userError);
+        return null;
+      }
+      
+      const userEmail = userData?.user?.email || 'no-email';
+      
+      // Neuen Eintrag in der users-Tabelle erstellen
+      const { data, error } = await supabase
+        .from("users")
+        .insert([
+          { 
+            user_id: userId,
+            name: "Neuer Benutzer",
+            email: userEmail,
+            role: "sender_private",
+            active: true
+          }
+        ])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error("❌ Error creating default user profile:", error);
+        return null;
+      }
+      
+      console.log("✅ Default profile created successfully:", data);
+      toast({
+        title: "Profil erstellt",
+        description: "Ein Standardprofil wurde für dich angelegt. Bitte vervollständige deine Daten im Profil-Bereich."
+      });
+      
+      return data;
+    } catch (error) {
+      console.error("❌ Exception when creating default user profile:", error);
       return null;
     }
   },

@@ -36,6 +36,7 @@ export interface RouteConfig {
 }
 
 export const routes: RouteConfig[] = [
+  { path: "/index", element: <Index />, public: true },
   { path: "/", element: <Index />, public: true },
   { path: "/login", element: <Login />, public: true },
   { path: "/register", element: <Register />, public: true },

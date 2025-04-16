@@ -21,10 +21,11 @@ export function useAuthRedirect(
     const currentPath = location.pathname;
     console.log("📍 Auth redirect check at path:", currentPath);
     
-    // For root path, redirect to dashboard if authenticated
-    if (currentPath === "/" && user) {
+    // Für Index/Root-Pfad keine automatische Weiterleitung, damit der Nutzer die Landingpage sieht
+    if ((currentPath === "/" || currentPath === "/index") && user) {
+      // Nur wenn der Nutzer auf / oder /index und eingeloggt ist, weiterleiten zum Dashboard
       const redirectPath = profile ? getRoleBasedRedirectPath(profile.role) : "/dashboard";
-      console.log("🔀 Root path, redirecting to:", redirectPath);
+      console.log("🔀 Root path with logged in user, redirecting to:", redirectPath);
       navigate(redirectPath);
       return;
     }

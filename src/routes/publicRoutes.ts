@@ -6,11 +6,14 @@ export const publicRoutes = [
   '/delivery', // Diese Route ist öffentlich für QR-Code-Bestätigungen
   '/admin/invoice-test',
   '/invoice-download',
-  '/',           // Wichtig: Die Hauptseite muss öffentlich sein
+  '/',          // Wichtig: Die Hauptseite muss öffentlich sein
+  '/index',     // Die neue Landing-Page-Route
   '/login',
   '/register',
   '/forgot-password',
-  '/reset-password'
+  '/reset-password',
+  '/support',
+  '/faq'
 ];
 
 // Helper function to check if a route is public

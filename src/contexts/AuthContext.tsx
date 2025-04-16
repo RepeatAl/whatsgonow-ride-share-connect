@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Abgemeldet",
             description: "Auf Wiedersehen!"
           });
-          navigate('/login');
+          navigate('/index');
         }
       }
     );
@@ -95,11 +95,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     company_name?: string;
   }) => {
     try {
+      // Explizit die metadata mit Standardwerten setzen, falls sie fehlen
+      const enhancedMetadata = {
+        name: metadata?.name || "Neuer Benutzer",
+        role: metadata?.role || "sender_private",
+        company_name: metadata?.company_name
+      };
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: { 
-          data: metadata,
+          data: enhancedMetadata,
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
