@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -57,9 +58,9 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
 
   return {
     profile,
-    loading,
-    error,
+    profileLoading: loading,  // Renamed to match expected property in AuthContext
+    profileError: error,      // Renamed to match expected property in AuthContext
     setProfile,
-    retry: user ? () => fetchProfile(user.id) : undefined
+    retryProfileLoad: user ? () => fetchProfile(user.id) : null  // Renamed to match expected property in AuthContext
   };
 }

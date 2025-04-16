@@ -1,8 +1,9 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/auth/useAuthSession";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/hooks/auth/useProfile"; // Fixed the import path
 import type { UserProfile } from "@/types/auth";
 
 interface AuthContextProps {

@@ -1,7 +1,7 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { useAuthSession } from "@/hooks/auth/useAuthSession";
-import { useProfile } from "@/hooks/auth/useProfile";
+import { useProfile } from "@/hooks/auth/useProfile"; // Fixed import path
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import type { AuthContextProps } from "@/types/auth";
