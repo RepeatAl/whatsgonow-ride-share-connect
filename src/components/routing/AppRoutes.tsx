@@ -17,9 +17,6 @@ export const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
-        {/* Standard Redirect für die Root-Route zur Landing Page */}
-        <Route path="/" element={<Navigate to="/index" replace />} />
-        
         {routes.map((route) => (
           <Route
             key={route.path}
