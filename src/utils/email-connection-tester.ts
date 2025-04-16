@@ -7,12 +7,23 @@ import { toast } from "@/hooks/use-toast";
  */
 export const testEmailConnection = async (email: string = "test@example.com"): Promise<boolean> => {
   try {
-    toast({
-      title: "E-Mail-Service nicht verfügbar",
-      description: "Der E-Mail-Service ist temporär nicht verfügbar. Bitte versuchen Sie es später erneut.",
-      variant: "destructive"
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: { 
+        to: email,
+        subject: 'Whatsgonow - Test E-Mail',
+        text: 'Dies ist eine Test-E-Mail von Whatsgonow.'
+      }
     });
-    return false;
+    
+    if (error) throw error;
+    
+    toast({
+      title: "E-Mail-Test erfolgreich",
+      description: "Die Verbindung zum E-Mail-Service funktioniert.",
+      variant: "default"
+    });
+    
+    return true;
   } catch (error) {
     console.error("❌ Error in email connection test:", error);
     toast({
@@ -28,5 +39,15 @@ export const testEmailConnection = async (email: string = "test@example.com"): P
  * Hilfsfunktion um den Status der E-Mail-Integration zu prüfen
  */
 export const checkResendApiKey = async (): Promise<boolean> => {
-  return false; // Resend ist nicht mehr konfiguriert
+  try {
+    const { data, error } = await supabase.functions.invoke('check-env-vars', {
+      body: { checkVar: 'RESEND_API_KEY' }
+    });
+    
+    if (error) throw error;
+    return data?.exists ?? false;
+  } catch (error) {
+    console.error("Error checking Resend API key:", error);
+    return false;
+  }
 };
