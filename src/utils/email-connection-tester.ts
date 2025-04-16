@@ -7,46 +7,12 @@ import { toast } from "@/hooks/use-toast";
  */
 export const testEmailConnection = async (email: string = "test@example.com"): Promise<boolean> => {
   try {
-    console.log("🧪 Testing email connection to:", email);
-    
-    // Direkt die Edge Function aufrufen, ohne die Funktionsliste zu prüfen
-    console.log("📞 Calling send-email Edge Function");
-    
-    // Erstelle FormData für den Test
-    const formData = new FormData();
-    formData.append("to", email);
-    formData.append("subject", "Whatsgonow – Verbindungstest");
-    formData.append("body", "<h1>Test der E-Mail-Verbindung</h1><p>Diese E-Mail bestätigt, dass die Verbindung zwischen der Whatsgonow-App und dem E-Mail-Dienst funktioniert.</p>");
-    
-    // Testdatei anhängen
-    const testFile = new Blob(["Dies ist ein Test"], { type: "text/plain" });
-    formData.append("attachment_1", new File([testFile], "test.txt", { type: "text/plain" }));
-    
-    // Rufe die Edge Function auf
-    const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/send-email", {
-      method: "POST",
-      body: formData,
-    });
-    
-    const result = await response.json();
-    
-    if (!response.ok) {
-      console.error("❌ Email test failed:", result);
-      toast({
-        title: "E-Mail-Test fehlgeschlagen",
-        description: result.error || "Unbekannter Fehler beim E-Mail-Versand",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    console.log("✅ Email test succeeded:", result);
     toast({
-      title: "E-Mail-Test erfolgreich",
-      description: `Test-E-Mail an ${email} gesendet (${result.messageId})`,
+      title: "E-Mail-Service nicht verfügbar",
+      description: "Der E-Mail-Service ist temporär nicht verfügbar. Bitte versuchen Sie es später erneut.",
+      variant: "destructive"
     });
-    
-    return true;
+    return false;
   } catch (error) {
     console.error("❌ Error in email connection test:", error);
     toast({
@@ -59,23 +25,8 @@ export const testEmailConnection = async (email: string = "test@example.com"): P
 };
 
 /**
- * Hilfsfunktion um den Status der Resend-Integration zu prüfen
+ * Hilfsfunktion um den Status der E-Mail-Integration zu prüfen
  */
 export const checkResendApiKey = async (): Promise<boolean> => {
-  try {
-    // Diese Funktion prüft, ob der RESEND_API_KEY im Supabase-Projekt konfiguriert ist
-    const { data, error } = await supabase.functions.invoke("check-env-vars", {
-      body: { checkVar: "RESEND_API_KEY" }
-    });
-    
-    if (error) {
-      console.error("❌ Error checking Resend API key:", error);
-      return false;
-    }
-    
-    return data?.exists === true;
-  } catch (error) {
-    console.error("❌ Error checking Resend configuration:", error);
-    return false;
-  }
+  return false; // Resend ist nicht mehr konfiguriert
 };
