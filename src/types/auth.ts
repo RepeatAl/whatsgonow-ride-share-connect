@@ -23,7 +23,7 @@ export interface AuthContextProps {
     name?: string;
     role?: string;
     company_name?: string;
-  }) => Promise<void>;
+  }) => Promise<{user: User | null; session: Session | null} | void>;
   signOut: () => Promise<void>;
   retryProfileLoad: (() => void) | null;
 }
