@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Mail, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
@@ -7,10 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { checkResendApiKey, testEmailConnection } from "@/utils/email-connection-tester";
+import { supabase } from "@/lib/supabaseClient";
 
-// Function to generate a simple PDF as Blob
 const generateTestPDF = (): Blob => {
-  // Simple PDF structure
   const pdfContent = `
     %PDF-1.4
     1 0 obj
@@ -68,9 +66,7 @@ const generateTestPDF = (): Blob => {
   return new Blob([pdfContent], { type: 'application/pdf' });
 };
 
-// Function to generate a simple XML as Blob
 const generateTestXML = (): Blob => {
-  // Simplified XRechnung structure
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
              xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
@@ -117,8 +113,7 @@ const generateTestXML = (): Blob => {
           <cbc:IdentificationCode>DE</cbc:IdentificationCode>
         </cac:Country>
       </cac:PostalAddress>
-    </cac:Party>
-  </cac:AccountingCustomerParty>
+    </cac:AccountingCustomerParty>
   
   <cac:LegalMonetaryTotal>
     <cbc:LineExtensionAmount currencyID="EUR">100.00</cbc:LineExtensionAmount>
@@ -142,6 +137,19 @@ const generateTestXML = (): Blob => {
   return new Blob([xmlContent], { type: 'application/xml' });
 };
 
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      const base64 = base64String.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
 const TestEmailSender: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState<{success: boolean, message: string} | null>(null);
@@ -149,7 +157,6 @@ const TestEmailSender: React.FC = () => {
   const [checking, setChecking] = useState(false);
   const [resendApiKeyExists, setResendApiKeyExists] = useState<boolean | null>(null);
 
-  // Überprüfe die Konfiguration beim Laden der Komponente
   useEffect(() => {
     checkConfiguration();
   }, []);
@@ -179,47 +186,58 @@ const TestEmailSender: React.FC = () => {
     setLastResult(null);
     
     try {
-      // Generate test attachments
+      const testResult = await testEmailConnection(emailTo);
+      
+      if (!testResult) {
+        throw new Error("Basis-E-Mail-Versand fehlgeschlagen");
+      }
+      
       const pdfBlob = generateTestPDF();
       const xmlBlob = generateTestXML();
       
-      // Create FormData object
-      const formData = new FormData();
-      formData.append('to', emailTo);
-      formData.append('subject', 'Whatsgonow – Testmail mit Anhang');
-      formData.append('body', 'Dies ist ein automatischer Testversand aus der Whatsgonow-App. Im Anhang findest du eine Test-PDF und eine Test-XRechnung.');
+      console.log("Generated PDF size:", pdfBlob.size, "bytes");
+      console.log("Generated XML size:", xmlBlob.size, "bytes");
       
-      // Add attachments with unique keys
-      formData.append('attachment_1', new File([pdfBlob], 'whatsgonow_test.pdf', { type: 'application/pdf' }));
-      formData.append('attachment_2', new File([xmlBlob], 'whatsgonow_xrechnung.xml', { type: 'application/xml' }));
+      const pdfBase64 = await blobToBase64(pdfBlob);
+      const xmlBase64 = await blobToBase64(xmlBlob);
       
-      // Send request to edge function
-      const response = await fetch('https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/send-email', {
-        method: 'POST',
-        body: formData,
+      const response = await supabase.functions.invoke('send-email', {
+        body: {
+          to: emailTo,
+          subject: 'Whatsgonow – Testmail mit Anhang',
+          html: 'Dies ist ein automatischer Testversand aus der Whatsgonow-App. Im Anhang findest du eine Test-PDF und eine Test-XRechnung.',
+          attachments: [
+            {
+              filename: 'whatsgonow_test.pdf',
+              content: pdfBase64,
+              type: 'application/pdf'
+            },
+            {
+              filename: 'whatsgonow_xrechnung.xml',
+              content: xmlBase64,
+              type: 'application/xml'
+            }
+          ]
+        }
       });
       
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Fehler beim Senden der Test-E-Mail');
+      if (response.error) {
+        throw new Error(response.error.message || 'Fehler beim Senden der E-Mail mit Anhängen');
       }
       
-      // Show success toast
       toast({
         title: "E-Mail versendet",
-        description: `Die Test-E-Mail wurde erfolgreich an ${result.to} versendet.`,
+        description: `Die Test-E-Mail wurde erfolgreich an ${emailTo} versendet.`,
       });
       
       setLastResult({
         success: true,
-        message: `E-Mail erfolgreich versendet an ${result.to} (Message-ID: ${result.messageId})`
+        message: `E-Mail erfolgreich versendet an ${emailTo}`
       });
       
     } catch (error) {
       console.error('Error sending test email:', error);
       
-      // Show error toast
       toast({
         title: "Fehler beim Senden",
         description: error instanceof Error ? error.message : 'Unbekannter Fehler beim E-Mail-Versand',

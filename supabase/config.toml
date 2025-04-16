@@ -19,5 +19,12 @@ enabled = true
 [auth]
 enabled = true
 
+[functions]
 [functions.auth-email-handler]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.check-env-vars]
 verify_jwt = false

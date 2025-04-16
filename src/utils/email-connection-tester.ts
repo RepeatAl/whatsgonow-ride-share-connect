@@ -7,6 +7,8 @@ import { toast } from "@/hooks/use-toast";
  */
 export const testEmailConnection = async (email: string = "admin@whatsgonow.com"): Promise<boolean> => {
   try {
+    console.log("Testing email connection to:", email);
+    
     const { data, error } = await supabase.functions.invoke('send-email', {
       body: { 
         to: email,
@@ -16,7 +18,12 @@ export const testEmailConnection = async (email: string = "admin@whatsgonow.com"
       }
     });
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error invoking send-email function:", error);
+      throw error;
+    }
+    
+    console.log("Email test response:", data);
     
     toast({
       title: "E-Mail-Test erfolgreich",
@@ -41,11 +48,18 @@ export const testEmailConnection = async (email: string = "admin@whatsgonow.com"
  */
 export const checkResendApiKey = async (): Promise<boolean> => {
   try {
+    console.log("Checking if RESEND_API_KEY is configured...");
+    
     const { data, error } = await supabase.functions.invoke('check-env-vars', {
       body: { checkVar: 'RESEND_API_KEY' }
     });
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error checking Resend API key:", error);
+      throw error;
+    }
+    
+    console.log("API key check result:", data);
     return data?.exists ?? false;
   } catch (error) {
     console.error("Error checking Resend API key:", error);
