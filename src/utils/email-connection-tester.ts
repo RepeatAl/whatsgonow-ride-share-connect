@@ -5,13 +5,14 @@ import { toast } from "@/hooks/use-toast";
 /**
  * Dieses Utility testet die Verbindung zur E-Mail-Versandfunktion
  */
-export const testEmailConnection = async (email: string = "test@example.com"): Promise<boolean> => {
+export const testEmailConnection = async (email: string = "admin@whatsgonow.com"): Promise<boolean> => {
   try {
     const { data, error } = await supabase.functions.invoke('send-email', {
       body: { 
         to: email,
         subject: 'Whatsgonow - Test E-Mail',
-        text: 'Dies ist eine Test-E-Mail von Whatsgonow.'
+        text: 'Dies ist eine Test-E-Mail von Whatsgonow.',
+        html: '<p>Dies ist eine Test-E-Mail von Whatsgonow.</p>'
       }
     });
     
