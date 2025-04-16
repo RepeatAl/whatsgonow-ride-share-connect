@@ -38,3 +38,7 @@ enabled = true
 
 [functions.send-feedback-notification]
 verify_jwt = true
+
+[functions.check-env-vars]
+verify_jwt = true
+

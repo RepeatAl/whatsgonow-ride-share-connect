@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import * as nodemailer from "npm:nodemailer";
 import Busboy from "npm:busboy";
@@ -31,8 +32,29 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("📧 Email function called with method:", req.method);
+    
+    // Check if RESEND_API_KEY is set
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    if (!apiKey) {
+      console.error("❌ RESEND_API_KEY is not set in environment variables");
+      return new Response(
+        JSON.stringify({ 
+          error: "Server configuration error: RESEND_API_KEY not set" 
+        }), 
+        { 
+          status: 500, 
+          headers: { 
+            "Content-Type": "application/json", 
+            ...corsHeaders 
+          } 
+        }
+      );
+    }
+    
     // Parse multipart form data
     const formData = await req.formData();
+    console.log("📋 Form data keys:", [...formData.keys()]);
     
     // Extract email details
     const to = formData.get("to") as string;
@@ -40,6 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
     const body = formData.get("body") as string;
 
     if (!to || !subject || !body) {
+      console.error("❌ Missing required fields:", { to: !!to, subject: !!subject, body: !!body });
       return new Response(
         JSON.stringify({ 
           error: "Missing required email fields" 
@@ -54,6 +77,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    console.log(`📧 Preparing to send email to: ${to}`);
+
     // Prepare attachments
     const attachments: EmailAttachment[] = [];
     
@@ -61,9 +86,11 @@ const handler = async (req: Request): Promise<Response> => {
     for (const [key, value] of formData.entries()) {
       if (key.startsWith("attachment_")) {
         const file = value as File;
+        console.log(`📎 Processing attachment: ${file.name} (${file.type})`);
         
         // Validate file type and size
         if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+          console.error(`❌ Unsupported file type: ${file.type}`);
           return new Response(
             JSON.stringify({ 
               error: `Unsupported file type: ${file.type}` 
@@ -79,6 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         if (file.size > MAX_FILE_SIZE) {
+          console.error(`❌ File size exceeds limit: ${file.size} bytes`);
           return new Response(
             JSON.stringify({ 
               error: "File size exceeds 5MB limit" 
@@ -100,19 +128,25 @@ const handler = async (req: Request): Promise<Response> => {
           content: Buffer.from(buffer),
           contentType: file.type
         });
+        console.log(`✅ Attachment processed: ${file.name}`);
       }
     }
 
     // Initialize Resend
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    console.log("🔑 Initializing Resend with API key");
+    const resend = new Resend(apiKey);
 
     // Implement retry logic for email sending
     const maxRetries = 3;
     let attempt = 0;
     let emailResponse;
+    let lastError = null;
+
+    console.log(`🔄 Starting to send email with up to ${maxRetries} retries`);
 
     while (attempt < maxRetries) {
       try {
+        console.log(`📧 Attempt ${attempt + 1} to send email to ${to}`);
         emailResponse = await resend.emails.send({
           from: "Whatsgonow <noreply@whatsgonow.de>",
           to: [to],
@@ -124,25 +158,32 @@ const handler = async (req: Request): Promise<Response> => {
             contentType: attachment.contentType
           }))
         });
+        
+        console.log(`✅ Email sent successfully on attempt ${attempt + 1}:`, emailResponse);
         break; // Success, exit retry loop
       } catch (retryError: any) {
         attempt++;
-        console.error(`Retry attempt ${attempt} failed:`, retryError);
+        lastError = retryError;
+        console.error(`❌ Retry attempt ${attempt} failed:`, retryError);
         
         if (attempt === maxRetries) {
+          console.error("❌ All retry attempts failed");
           throw retryError;
         }
         
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        const backoffTime = Math.pow(2, attempt) * 1000;
+        console.log(`⏱️ Waiting ${backoffTime}ms before next attempt`);
+        await new Promise(resolve => setTimeout(resolve, backoffTime));
       }
     }
 
     // Return success response
+    console.log("📧 Email function completed successfully");
     return new Response(
       JSON.stringify({ 
         status: "sent", 
         to: to,
-        messageId: emailResponse.id 
+        messageId: emailResponse?.id || "unknown"
       }), 
       { 
         status: 200, 
@@ -153,12 +194,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-  } catch (error) {
-    console.error("Email sending error:", error);
+  } catch (error: any) {
+    console.error("❌ Email sending error:", error);
     return new Response(
       JSON.stringify({ 
         error: "Failed to send email", 
-        details: error.message 
+        details: error.message,
+        stack: error.stack
       }), 
       { 
         status: 500, 
@@ -171,4 +213,5 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
+console.log("📧 Email function initialized and ready to handle requests");
 serve(handler);

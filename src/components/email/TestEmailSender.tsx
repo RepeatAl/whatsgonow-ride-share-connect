@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { checkResendApiKey, testEmailConnection } from "@/utils/email-connection-tester";
 
 // Function to generate a simple PDF as Blob
 const generateTestPDF = (): Blob => {
@@ -143,6 +145,34 @@ const generateTestXML = (): Blob => {
 const TestEmailSender: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState<{success: boolean, message: string} | null>(null);
+  const [emailTo, setEmailTo] = useState("admin@whatsgonow.com");
+  const [checking, setChecking] = useState(false);
+  const [resendApiKeyExists, setResendApiKeyExists] = useState<boolean | null>(null);
+
+  // Überprüfe die Konfiguration beim Laden der Komponente
+  useEffect(() => {
+    checkConfiguration();
+  }, []);
+
+  const checkConfiguration = async () => {
+    setChecking(true);
+    try {
+      const hasResendKey = await checkResendApiKey();
+      setResendApiKeyExists(hasResendKey);
+      
+      if (!hasResendKey) {
+        toast({
+          title: "Konfigurationsproblem",
+          description: "RESEND_API_KEY ist in den Supabase-Funktionen nicht konfiguriert",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Fehler bei der Konfigurationsprüfung:", error);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const sendTestEmail = async () => {
     setSending(true);
@@ -155,9 +185,9 @@ const TestEmailSender: React.FC = () => {
       
       // Create FormData object
       const formData = new FormData();
-      formData.append('to', 'admin@whatsgonow.com');
+      formData.append('to', emailTo);
       formData.append('subject', 'Whatsgonow – Testmail mit Anhang');
-      formData.append('body', 'Dies ist ein automatischer Testversand aus Lovable. Im Anhang findest du eine Test-PDF und eine Test-XRechnung.');
+      formData.append('body', 'Dies ist ein automatischer Testversand aus der Whatsgonow-App. Im Anhang findest du eine Test-PDF und eine Test-XRechnung.');
       
       // Add attachments with unique keys
       formData.append('attachment_1', new File([pdfBlob], 'whatsgonow_test.pdf', { type: 'application/pdf' }));
@@ -210,13 +240,35 @@ const TestEmailSender: React.FC = () => {
       <CardHeader>
         <CardTitle>E-Mail-Versand Tester</CardTitle>
         <CardDescription>
-          Versendet eine Test-E-Mail mit PDF- und XML-Anhang an admin@whatsgonow.com
+          Versendet eine Test-E-Mail mit PDF- und XML-Anhang
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {resendApiKeyExists === false && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Konfigurationsproblem</AlertTitle>
+            <AlertDescription>
+              Der RESEND_API_KEY ist nicht in den Supabase-Funktionen konfiguriert. 
+              E-Mail-Versand wird nicht funktionieren, bis dies behoben ist.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <div className="space-y-2">
+          <label htmlFor="emailTo" className="text-sm font-medium">E-Mail-Empfänger</label>
+          <Input 
+            id="emailTo" 
+            type="email" 
+            value={emailTo} 
+            onChange={(e) => setEmailTo(e.target.value)} 
+            placeholder="empfaenger@example.com" 
+          />
+        </div>
+        
         <Button 
           onClick={sendTestEmail} 
-          disabled={sending}
+          disabled={sending || resendApiKeyExists === false}
           className="w-full"
         >
           {sending ? (
@@ -232,6 +284,25 @@ const TestEmailSender: React.FC = () => {
           )}
         </Button>
         
+        <Button 
+          onClick={checkConfiguration} 
+          disabled={checking}
+          variant="outline"
+          className="w-full"
+        >
+          {checking ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Prüfe Konfiguration...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Konfiguration prüfen
+            </>
+          )}
+        </Button>
+        
         {lastResult && (
           <Alert variant={lastResult.success ? "default" : "destructive"}>
             <AlertDescription>
@@ -240,6 +311,9 @@ const TestEmailSender: React.FC = () => {
           </Alert>
         )}
       </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        Bei der Registrierung wird die gleiche Supabase Edge Function verwendet.
+      </CardFooter>
     </Card>
   );
 };
