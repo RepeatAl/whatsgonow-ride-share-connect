@@ -1,22 +1,19 @@
+
 import { createClient } from "@supabase/supabase-js";
 
-// 🛡️ Sicherstellen, dass ENV-Variablen vorhanden sind
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("❌ Supabase-Umgebungsvariablen fehlen. Bitte VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY setzen.");
-}
-
-// ✅ Supabase-Client initialisieren
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storage: localStorage,
-    debug: true,
+// Initialize Supabase client with your project details
+export const supabase = createClient(
+  "https://orgcruwmxqiwnjnkxpjb.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ2NydXdteHFpd25qbmt4cGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzQ1ODYsImV4cCI6MjA2MDExMDU4Nn0.M90DOOmOg2E58oSWnX49wbRqnO6Od9RrfcUvgJpzGMI",
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storage: localStorage,
+      debug: true,
+    }
   }
-});
+);
 
 // 🔍 Initialisierungs-Check
 export const initSupabase = async () => {
