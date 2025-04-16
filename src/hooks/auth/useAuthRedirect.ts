@@ -1,8 +1,10 @@
+
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { isPublicRoute } from "@/routes/publicRoutes";
 import { getRoleBasedRedirectPath } from "@/utils/auth-utils";
+import { isProfileIncomplete } from "@/utils/profile-check";
 import type { UserProfile } from "@/types/auth";
 
 export function useAuthRedirect(
@@ -19,6 +21,7 @@ export function useAuthRedirect(
     const currentPath = location.pathname;
     const isAuthPage = ["/login", "/register"].includes(currentPath);
     const isRootPage = ["/", "/index"].includes(currentPath);
+    const isProfilePage = currentPath === "/profile";
 
     console.log("📍 useAuthRedirect check:", {
       path: currentPath,
@@ -27,6 +30,13 @@ export function useAuthRedirect(
     });
 
     if (user) {
+      // Profilprüfung - Leite zur Profilseite weiter, wenn unvollständig
+      if (profile && !isProfilePage && isProfileIncomplete(profile)) {
+        console.log("⚠️ Unvollständiges Profil, Weiterleitung zu /profile");
+        navigate("/profile", { replace: true });
+        return;
+      }
+
       if (isRootPage) {
         const redirectTo = profile
           ? getRoleBasedRedirectPath(profile.role)
