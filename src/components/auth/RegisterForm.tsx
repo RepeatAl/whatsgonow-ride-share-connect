@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,22 +33,29 @@ export const RegisterForm = () => {
   const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterFormData) => {
+    console.log('🔍 Registration form submitted', { 
+      email: data.email, 
+      name: data.name, 
+      role: data.role 
+    });
+    
     setError('');
     setIsLoading(true);
     setIsSuccess(false);
     
     try {
+      console.log('🚀 Attempting sign up');
       await signUp(data.email, data.password, {
         name: data.name,
         role: data.role,
         company_name: data.company_name || undefined
       });
       
+      console.log('✅ Sign up successful');
       setIsSuccess(true);
-      // Weiterleitung wird vom AuthContext gehandhabt
     } catch (err) {
+      console.error('❌ Registration error:', err);
       setError((err as Error).message);
-      console.error('Registrierungsfehler:', err);
     } finally {
       setIsLoading(false);
     }
