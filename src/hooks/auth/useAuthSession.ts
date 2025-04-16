@@ -1,51 +1,61 @@
-
 import { useState, useEffect } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 
+/**
+ * Hook zur Verwaltung von Authentifizierungs-Session und Benutzerstatus
+ */
 export function useAuthSession() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    console.log("🔄 AuthSession: Initializing auth session");
-    
-    // First set up the auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        console.log("🔑 Auth event:", event);
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-      }
-    );
+    console.log("🔄 useAuthSession: Initializing...");
 
-    // Then check for current session
-    supabase.auth.getSession().then(({ data: { session: currentSession }, error: sessionError }) => {
-      if (sessionError) {
-        console.error("❌ Error fetching session:", sessionError);
-        setError(sessionError);
-      }
-      
+    // Auth-Änderungen überwachen
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      console.log("🔑 Auth event:", event);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
-      setLoading(false);
-      
-      console.log("🔍 Auth session initialized, user authenticated:", !!currentSession?.user);
     });
 
+    // Aktuelle Session einmalig beim Mount holen
+    supabase.auth
+      .getSession()
+      .then(({ data, error: sessionError }) => {
+        if (sessionError) {
+          console.error("❌ Fehler beim Abrufen der Session:", sessionError);
+          setError(sessionError);
+        }
+
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+        console.log("✅ Aktuelle Session geladen:", !!data.session?.user);
+      })
+      .catch((err) => {
+        console.error("❌ Unerwarteter Fehler bei Session-Init:", err);
+        setError(err instanceof Error ? err : new Error("Unbekannter Fehler bei Session"));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    // Cleanup
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
-  return { 
-    user, 
-    session, 
-    loading, 
-    error, 
-    setUser, 
-    setSession 
+  return {
+    user,
+    session,
+    loading,
+    error,
+    setUser,
+    setSession,
   };
 }
