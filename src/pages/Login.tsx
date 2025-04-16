@@ -130,8 +130,12 @@ const Login = () => {
                 </form>
               </CardContent>
               <CardFooter className="flex justify-center">
-                <Button variant="link" onClick={() => setIsSignup(!isSignup)} className="text-sm">
-                  {isSignup ? "Schon registriert? Login" : "Noch kein Konto? Jetzt registrieren"}
+                <Button 
+                  variant="link" 
+                  onClick={() => setIsSignup(!isSignup)} 
+                  className="text-sm"
+                >
+                  Noch kein Konto? Jetzt registrieren
                 </Button>
               </CardFooter>
             </Card>

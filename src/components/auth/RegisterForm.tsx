@@ -4,17 +4,19 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { registerSchema, type RegisterFormData } from '@/lib/validators/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const RegisterForm = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { signUp } = useAuth();
   
   const form = useForm<RegisterFormData>({
@@ -24,7 +26,7 @@ export const RegisterForm = () => {
       password: '',
       name: '',
       role: 'sender_private',
-      company_name: null
+      company_name: ''
     }
   });
 
@@ -34,20 +36,51 @@ export const RegisterForm = () => {
   const onSubmit = async (data: RegisterFormData) => {
     setError('');
     setIsLoading(true);
+    setIsSuccess(false);
     
     try {
       await signUp(data.email, data.password, {
         name: data.name,
         role: data.role,
-        company_name: data.company_name
+        company_name: data.company_name || undefined
       });
       
+      setIsSuccess(true);
       // Weiterleitung wird vom AuthContext gehandhabt
     } catch (err) {
       setError((err as Error).message);
+      console.error('Registrierungsfehler:', err);
+    } finally {
       setIsLoading(false);
     }
   };
+
+  if (isSuccess) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Registrierung erfolgreich</CardTitle>
+          <CardDescription>
+            Dein Konto wurde erstellt
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert className="mb-4">
+            <AlertDescription>
+              Es kann vorkommen, dass keine Bestätigungs-E-Mail versendet wird, da wir uns in der Testphase befinden. 
+              Du kannst dich trotzdem mit deinen Anmeldedaten einloggen.
+            </AlertDescription>
+          </Alert>
+          <Button 
+            asChild 
+            className="w-full"
+          >
+            <Link to="/login">Zum Login</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -133,7 +166,7 @@ export const RegisterForm = () => {
                   <FormItem>
                     <FormLabel>Firmenname</FormLabel>
                     <FormControl>
-                      <Input placeholder="Firma GmbH" {...field} />
+                      <Input placeholder="Firma GmbH" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,6 +187,11 @@ export const RegisterForm = () => {
           </form>
         </Form>
       </CardContent>
+      <CardFooter className="flex justify-center">
+        <Button variant="link" asChild className="text-sm">
+          <Link to="/login">Schon registriert? Login</Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

@@ -1,6 +1,5 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { useAuthSession } from "@/hooks/auth/useAuthSession";
 import { useProfile } from "@/hooks/auth/useProfile";
 import { toast } from "@/hooks/use-toast";
@@ -94,23 +93,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         company_name: metadata?.company_name
       };
       
-      const { error } = await supabase.auth.signUp({
+      console.log("Starte Registrierung mit Daten:", { email, metadata: enhancedMetadata });
+      
+      // Für Testzwecke: direkte Anmeldung ohne E-Mail-Bestätigung
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { 
           data: enhancedMetadata,
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         }
       });
       
       if (error) throw error;
+      
+      console.log("Registrierungsergebnis:", data);
 
-      toast({
-        title: "Registrierung erfolgreich",
-        description: "Bitte überprüfe deine E-Mails für die Bestätigung."
-      });
+      // Automatisch anmelden, wenn die E-Mail bereits bestätigt ist
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Registrierung erfolgreich",
+          description: "In der Testumgebung ist keine E-Mail-Bestätigung erforderlich. Du kannst dich direkt anmelden."
+        });
+      }
+      
+      return data;
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Registrierungsfehler:", error);
       toast({
         title: "Registrierung fehlgeschlagen",
         description: (error as Error).message,

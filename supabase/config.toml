@@ -4,41 +4,20 @@ project_id = "orgcruwmxqiwnjnkxpjb"
 [api]
 enabled = true
 port = 54321
-schemas = ["public", "storage", "graphql_public"]
+schemas = ["public", "storage"]
 
 [db]
 port = 54322
-shadow_port = 54320
-major_version = 15
-
-[realtime]
-enabled = true
 
 [studio]
 enabled = true
 port = 54323
-api_url = "http://localhost"
-
-[inbucket]
-enabled = true
-port = 54324
 
 [storage]
 enabled = true
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
 
-[auth.email]
-enabled = true
-
-[auth.sms]
-enabled = true
-
-[functions.send-feedback-notification]
-verify_jwt = true
-
-[functions.check-env-vars]
-verify_jwt = true
-
+[functions.auth-email-handler]
+verify_jwt = false
