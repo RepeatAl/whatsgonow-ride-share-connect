@@ -9,29 +9,8 @@ export const testEmailConnection = async (email: string = "test@example.com"): P
   try {
     console.log("🧪 Testing email connection to:", email);
     
-    // Prüfe, ob die Edge Function verfügbar ist
-    const { data: functionsList, error: functionsError } = await supabase.functions.listFunctions();
-    
-    if (functionsError) {
-      console.error("❌ Error getting functions list:", functionsError);
-      toast({
-        title: "Verbindungsfehler",
-        description: "Konnte keine Verbindung zu Supabase Edge Functions herstellen",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    const emailFunctionExists = functionsList?.find(f => f.name === "send-email");
-    if (!emailFunctionExists) {
-      console.error("❌ send-email function not found in Supabase");
-      toast({
-        title: "Konfigurationsfehler",
-        description: "Die E-Mail-Versandfunktion wurde nicht gefunden",
-        variant: "destructive"
-      });
-      return false;
-    }
+    // Direkt die Edge Function aufrufen, ohne die Funktionsliste zu prüfen
+    console.log("📞 Calling send-email Edge Function");
     
     // Erstelle FormData für den Test
     const formData = new FormData();
@@ -44,7 +23,6 @@ export const testEmailConnection = async (email: string = "test@example.com"): P
     formData.append("attachment_1", new File([testFile], "test.txt", { type: "text/plain" }));
     
     // Rufe die Edge Function auf
-    console.log("📞 Calling send-email Edge Function");
     const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/send-email", {
       method: "POST",
       body: formData,
