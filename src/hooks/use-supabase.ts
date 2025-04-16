@@ -1,3 +1,4 @@
+// ❌ VERALTET – Nicht mehr verwenden. Ersetzt durch AuthContext-System.
 
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
