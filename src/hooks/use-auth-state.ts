@@ -10,22 +10,23 @@ export function useAuthState() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      const { data, error } = await supabase.auth.getSession();
+    console.log("🔄 useAuthState initialized");
+
+    // Initial Session Fetch
+    supabase.auth.getSession().then(({ data, error }) => {
       if (error) {
-        console.error("Fehler beim Laden der Sitzung:", error);
+        console.error("❌ Fehler beim Laden der Sitzung:", error);
       } else {
         setSession(data.session);
         setUser(data.session?.user ?? null);
       }
       setLoading(false);
-    };
+    });
 
-    initAuth();
-
+    // Auth state listener
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("🔄 Auth State Changed:", event);
+        console.log("📡 Auth event:", event);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
