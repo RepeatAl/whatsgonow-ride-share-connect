@@ -1,6 +1,5 @@
-
 import { supabase } from "@/lib/supabaseClient";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 type UserRole = 'driver' | 'sender' | 'cm' | 'admin';
 

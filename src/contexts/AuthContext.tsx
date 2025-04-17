@@ -1,6 +1,5 @@
-
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import type { AuthContextProps } from "@/types/auth";
 import type { Session, User } from "@supabase/supabase-js";
@@ -15,7 +14,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<Error | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Hole Profil mit eigenem Hook
   const {
     profile,
     profileLoading,

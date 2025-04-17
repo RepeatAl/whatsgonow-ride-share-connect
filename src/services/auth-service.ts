@@ -1,7 +1,6 @@
-
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export const authService = {
   // Verbesserte Version mit zusätzlicher Fehlerbehandlung und logging
