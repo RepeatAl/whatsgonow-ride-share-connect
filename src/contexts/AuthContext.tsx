@@ -1,18 +1,27 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
-import type { AuthContextProps, UserProfile } from "@/types/auth";
+import type { AuthContextProps } from "@/types/auth";
 import type { Session, User } from "@supabase/supabase-js";
+import { useProfile } from "@/hooks/auth/useProfile"; // ← wieder einfügen!
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Hole Profil mit eigenem Hook
+  const {
+    profile,
+    profileLoading,
+    profileError,
+    setProfile,
+    retryProfileLoad,
+  } = useProfile(user, loading);
 
   useEffect(() => {
     const getInitialSession = async () => {
@@ -95,14 +104,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const retryProfileLoad = null;
-
   const value: AuthContextProps = {
     user,
     session,
     profile,
-    loading,
-    error,
+    loading: loading || profileLoading,
+    error: error || profileError,
     isInitialLoad,
     signIn,
     signUp,
