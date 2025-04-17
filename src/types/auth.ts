@@ -24,7 +24,7 @@ export interface AuthContextProps {
     name?: string;
     role?: string;
     company_name?: string;
-    region?: string;  // Added region property
+    region?: string;
   }) => Promise<{user: User | null; session: Session | null} | void>;
   signOut: () => Promise<void>;
   retryProfileLoad: (() => void) | null;
