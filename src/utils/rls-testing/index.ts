@@ -14,7 +14,7 @@ export const runRLSTests = async (): Promise<AllResults> => {
     const usersCreated = await createTestUsers();
     if (!usersCreated) {
       // Return a properly formatted error result
-      return { error: "Failed to create or verify test users" } as AllResults;
+      return { error: "Failed to create or verify test users" };
     }
     
     // Test each role
@@ -50,7 +50,7 @@ export const runRLSTests = async (): Promise<AllResults> => {
     });
     
     // Return a properly formatted error result
-    return { error: (error as Error).message } as AllResults;
+    return { error: (error as Error).message };
   }
 };
 

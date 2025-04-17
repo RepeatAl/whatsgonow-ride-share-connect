@@ -37,9 +37,9 @@ export interface RoleResults {
   [key: string]: TestResult | TableResults;
 }
 
-// AllResults interface with proper error handling
+// Modified AllResults interface to correctly handle error cases
 export interface AllResults {
-  [key: string]: RoleResults;
+  [key: string]: RoleResults | string;
   error?: string;
 }
 
