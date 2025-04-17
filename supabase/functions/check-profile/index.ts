@@ -21,13 +21,45 @@ interface UserProfile {
 function isProfileIncomplete(profile: UserProfile | null): boolean {
   if (!profile) return true;
 
-  const { name, region, role, company_name, profile_complete } = profile;
+  // If profile_complete flag is explicitly set to true, trust it
+  if (profile.profile_complete === true) return false;
 
-  if (!profile_complete) return true;
+  const { name, region, role, company_name } = profile;
+
+  // Base validation for all users
   if (!name || !region || !role) return true;
-  if (role === 'sender_business' && !company_name) return true;
+
+  // Role-specific validation
+  switch (role) {
+    case 'sender_business':
+      if (!company_name) return true;
+      break;
+    case 'cm':
+      // Additional CM validation could go here
+      break;
+    // Add other role-specific validations as needed
+  }
 
   return false;
+}
+
+function getMissingProfileFields(profile: UserProfile | null): string[] {
+  if (!profile) return ['all fields'];
+
+  const missingFields: string[] = [];
+  const { name, region, role, company_name } = profile;
+
+  // Check basic fields all users need
+  if (!name) missingFields.push('name');
+  if (!region) missingFields.push('region');
+  if (!role) missingFields.push('role');
+
+  // Role-specific fields
+  if (role === 'sender_business' && !company_name) {
+    missingFields.push('company_name');
+  }
+
+  return missingFields;
 }
 
 serve(async (req) => {
@@ -37,7 +69,7 @@ serve(async (req) => {
   }
 
   try {
-    // Erstelle einen Supabase-Client mit den Auth-Credentials aus dem Request
+    // Create a Supabase client with auth credentials from the request
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -46,10 +78,10 @@ serve(async (req) => {
       );
     }
 
-    // Extrahiere den JWT token
+    // Extract JWT token
     const token = authHeader.replace('Bearer ', '');
     
-    // Initialisiere Supabase-Client
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') as string;
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -59,7 +91,7 @@ serve(async (req) => {
       },
     });
 
-    // Setze den Auth Token
+    // Set auth token
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
     if (userError || !user) {
@@ -69,7 +101,7 @@ serve(async (req) => {
       );
     }
 
-    // Profil abrufen
+    // Fetch profile
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
@@ -83,15 +115,17 @@ serve(async (req) => {
       );
     }
 
-    // Überprüfe Profilvollständigkeit
+    // Check profile completeness
     const incomplete = isProfileIncomplete(profile);
+    const missingFields = getMissingProfileFields(profile);
 
     return new Response(
       JSON.stringify({ 
         profile,
         isComplete: !incomplete,
         redirectRequired: incomplete,
-        redirectTo: incomplete ? '/profile' : null
+        redirectTo: incomplete ? '/profile' : null,
+        missingFields: missingFields
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

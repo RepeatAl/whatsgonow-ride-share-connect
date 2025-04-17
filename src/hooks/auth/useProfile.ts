@@ -4,6 +4,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
 import { authService } from "@/services/auth-service";
 import type { UserProfile } from "@/types/auth";
+import { isProfileIncomplete, getMissingProfileFields } from "@/utils/profile-check";
 
 /**
  * Hook zur Verwaltung des Benutzerprofils
@@ -22,12 +23,25 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       setError(null);
 
       const userProfile = await authService.fetchUserProfile(userId);
-      setProfile(userProfile);
-
+      
       if (!userProfile) {
         console.warn("⚠️ Kein Benutzerprofil gefunden für:", userId);
         throw new Error("Benutzerprofil konnte nicht gefunden werden");
       }
+      
+      // Check profile completeness and notify user if incomplete
+      if (isProfileIncomplete(userProfile)) {
+        const missingFields = getMissingProfileFields(userProfile);
+        if (missingFields.length > 0) {
+          toast({
+            title: "Profil unvollständig",
+            description: `Bitte vervollständige dein Profil: ${missingFields.join(', ')} fehlen noch.`,
+            variant: "default"
+          });
+        }
+      }
+      
+      setProfile(userProfile);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unbekannter Fehler beim Laden des Profils";
       console.error("❌ Fehler beim Laden des Profils:", err);
@@ -44,13 +58,13 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
   };
 
   useEffect(() => {
-    // Lade kein Profil während die Session noch initialisiert wird
+    // Don't load profile while session is initializing
     if (isSessionLoading) return;
 
     if (user) {
       fetchProfile(user.id);
     } else {
-      // Reset bei Logout
+      // Reset on logout
       setProfile(null);
       setLoading(false);
     }
@@ -58,9 +72,9 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
 
   return {
     profile,
-    profileLoading: loading,  // Renamed to match expected property in AuthContext
-    profileError: error,      // Renamed to match expected property in AuthContext
+    profileLoading: loading,
+    profileError: error,
     setProfile,
-    retryProfileLoad: user ? () => fetchProfile(user.id) : null  // Renamed to match expected property in AuthContext
+    retryProfileLoad: user ? () => fetchProfile(user.id) : null
   };
 }

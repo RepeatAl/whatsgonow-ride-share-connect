@@ -1,10 +1,10 @@
-
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
 import { toast } from "@/components/ui/use-toast";
+import { getMissingProfileFields } from "@/utils/profile-check";
 
 export const authService = {
-  // Verbesserte Version mit zusätzlicher Fehlerbehandlung und logging
+  // Improved user profile fetching with better error handling and logging
   async fetchUserProfile(userId: string) {
     try {
       console.log("📊 Fetching profile for user:", userId);
@@ -18,48 +18,59 @@ export const authService = {
       if (error) {
         console.error("❌ Error fetching user profile:", error);
         
-        // Wenn Profil nicht gefunden wurde, versuchen ein neues zu erstellen
+        // If profile not found, attempt to create a default one
         if (error.code === 'PGRST116') {
           console.log("🔄 Profile not found, attempting to create one");
           return await authService.createDefaultUserProfile(userId);
         }
         
-        return null;
+        throw error;
       }
       
       console.log("✅ User profile loaded successfully");
       return data;
     } catch (error) {
       console.error("❌ Exception when loading user profile:", error);
-      return null;
+      throw error;
     }
   },
   
-  // Neue Methode, um ein Standardprofil zu erstellen, wenn keines existiert
+  // Enhanced method to create a default profile with better data handling
   async createDefaultUserProfile(userId: string) {
     try {
       console.log("🆕 Creating default profile for user:", userId);
       
-      // Benutzer-Email Adresse holen
+      // Get user email and metadata
       const { data: userData, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
         console.error("❌ Error getting user data:", userError);
-        return null;
+        throw userError;
       }
       
-      const userEmail = userData?.user?.email || 'no-email';
+      const user = userData?.user;
+      const userEmail = user?.email || 'no-email';
       
-      // Neuen Eintrag in der users-Tabelle erstellen
+      // Extract any available metadata
+      const metadata = user?.user_metadata || {};
+      const userName = metadata.name || "Neuer Benutzer";
+      const userRole = metadata.role || "sender_private";
+      const companyName = userRole === 'sender_business' ? metadata.company_name : null;
+      const userRegion = metadata.region || null;
+      
+      // Create new entry in users table
       const { data, error } = await supabase
         .from("users")
         .insert([
           { 
             user_id: userId,
-            name: "Neuer Benutzer",
+            name: userName,
             email: userEmail,
-            role: "sender_private",
-            active: true
+            role: userRole,
+            company_name: companyName,
+            region: userRegion,
+            active: true,
+            profile_complete: false
           }
         ])
         .select()
@@ -67,19 +78,30 @@ export const authService = {
       
       if (error) {
         console.error("❌ Error creating default user profile:", error);
-        return null;
+        throw error;
       }
+      
+      // Get missing fields to inform the user
+      const missingFields = getMissingProfileFields(data);
+      const missingFieldsText = missingFields.length > 0 
+        ? `Fehlende Felder: ${missingFields.join(', ')}`
+        : '';
       
       console.log("✅ Default profile created successfully:", data);
       toast({
         title: "Profil erstellt",
-        description: "Ein Standardprofil wurde für dich angelegt. Bitte vervollständige deine Daten im Profil-Bereich."
+        description: `Ein Standardprofil wurde für dich angelegt. ${missingFieldsText} Bitte vervollständige deine Daten im Profil-Bereich.`
       });
       
       return data;
     } catch (error) {
       console.error("❌ Exception when creating default user profile:", error);
-      return null;
+      toast({
+        title: "Fehler beim Erstellen des Profils",
+        description: `Ein Fehler ist aufgetreten: ${(error as Error).message}`,
+        variant: "destructive"
+      });
+      throw error;
     }
   },
 
