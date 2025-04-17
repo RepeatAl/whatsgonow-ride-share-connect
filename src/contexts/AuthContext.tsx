@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import type { AuthContextProps } from "@/types/auth";
 import type { Session, User } from "@supabase/supabase-js";
 import { useProfile } from "@/hooks/auth/useProfile";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
@@ -14,6 +15,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const navigate = useNavigate();
 
   const {
     profile,
@@ -57,7 +59,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (event === "SIGNED_OUT") {
           setProfile(null);
-          toast({ title: "Abgemeldet", description: "Auf Wiedersehen!" });
+          toast({ 
+            title: "Auf Wiedersehen und bis bald in Ihrer Mobilitäts-Community", 
+            description: "Sie wurden erfolgreich abgemeldet." 
+          });
         } else if (event === "SIGNED_IN") {
           toast({ title: "Erfolgreich angemeldet", description: "Willkommen zurück!" });
         }
@@ -139,6 +144,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       setProfile(null);
+      
+      // Navigate to homepage after successful logout
+      navigate("/");
     } catch (err) {
       console.error("❌ SignOut exception:", err);
       toast({ 
