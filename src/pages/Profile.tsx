@@ -8,40 +8,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  User,
-  Shield,
-  Star,
-  Car,
-  Package,
-  CreditCard,
-  Bell,
-  MessageCircle,
-  MapPin,
-  Settings,
-  LogOut
-} from "lucide-react";
+import { User, Shield, Star, Car, Package, CreditCard, Bell, MessageCircle, MapPin, Settings, LogOut } from "lucide-react";
 import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
-
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
-  
+  const {
+    user,
+    profile,
+    signOut
+  } = useAuth();
   useEffect(() => {
     const loadUserData = async () => {
       setLoading(true);
-      
       if (!user) {
         navigate("/login");
         return;
       }
-
       if (profile) {
         // Verwende das vorhandene Profil aus dem AuthContext
         setUserData({
@@ -95,13 +83,10 @@ const Profile = () => {
           }
         });
       }
-      
       setLoading(false);
     };
-    
     loadUserData();
   }, [user, profile, navigate]);
-
   const handleLogout = async () => {
     try {
       await signOut();
@@ -110,22 +95,17 @@ const Profile = () => {
       console.error("Logout error:", error);
     }
   };
-
   const handleSaveChanges = async () => {
     if (!user) return;
-    
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("users")
-        .update({
-          name: userData.name,
-          email: userData.email,
-        })
-        .eq("user_id", user.id);
-      
+      const {
+        error
+      } = await supabase.from("users").update({
+        name: userData.name,
+        email: userData.email
+      }).eq("user_id", user.id);
       if (error) throw error;
-      
       toast({
         title: "Profil aktualisiert",
         description: "Deine Änderungen wurden gespeichert."
@@ -141,10 +121,8 @@ const Profile = () => {
       setLoading(false);
     }
   };
-
   if (loading || !userData) {
-    return (
-      <Layout>
+    return <Layout>
         <div className="max-w-7xl mx-auto px-4 pt-6 pb-16">
           <div className="animate-pulse">
             <div className="h-20 w-20 bg-gray-200 rounded-full mb-4"></div>
@@ -159,29 +137,20 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      </Layout>
-    );
+      </Layout>;
   }
-
-  return (
-    <Layout>
+  return <Layout>
       <div className="max-w-7xl mx-auto px-4 pt-6 pb-16">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div className="flex items-center">
               <div className="h-20 w-20 rounded-full overflow-hidden mr-4 border-2 border-brand-purple">
-                <img
-                  src={userData.avatar}
-                  alt={userData.name}
-                  className="h-full w-full object-cover"
-                />
+                <img src={userData.avatar} alt={userData.name} className="h-full w-full object-cover" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center">
                   {userData.name}
-                  {Object.values(userData.verificationStatus).every(v => v) && (
-                    <Shield className="h-5 w-5 ml-2 text-green-500" />
-                  )}
+                  {Object.values(userData.verificationStatus).every(v => v) && <Shield className="h-5 w-5 ml-2 text-green-500" />}
                 </h1>
                 <p className="text-gray-600">
                   Member since {userData.memberSince}
@@ -299,7 +268,7 @@ const Profile = () => {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="bg-white rounded-lg shadow-sm border p-6">
+                  <div className="rounded-lg shadow-sm border p-6 bg-orange-500">
                     <h2 className="text-xl font-semibold mb-4">Verification Status</h2>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -307,33 +276,33 @@ const Profile = () => {
                           <Shield className="h-5 w-5 mr-2 text-green-500" />
                           <span>Phone Number</span>
                         </div>
-                        <span className="text-green-500 text-sm font-medium">Verified</span>
+                        <span className="text-sm font-medium text-slate-950">Verified</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <Shield className="h-5 w-5 mr-2 text-green-500" />
                           <span>Email Address</span>
                         </div>
-                        <span className="text-green-500 text-sm font-medium">Verified</span>
+                        <span className="text-sm font-medium text-slate-950">Verified</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <Shield className="h-5 w-5 mr-2 text-green-500" />
                           <span>ID Verification</span>
                         </div>
-                        <span className="text-green-500 text-sm font-medium">Verified</span>
+                        <span className="text-sm font-medium text-slate-950">Verified</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <Shield className="h-5 w-5 mr-2 text-green-500" />
                           <span>Payment Method</span>
                         </div>
-                        <span className="text-green-500 text-sm font-medium">Verified</span>
+                        <span className="text-sm font-medium text-slate-950">Verified</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow-sm border p-6">
+                  <div className="rounded-lg shadow-sm border p-6 bg-orange-500">
                     <h2 className="text-xl font-semibold mb-4">Preferences</h2>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -375,9 +344,7 @@ const Profile = () => {
                   </p>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {mockTransports.slice(0, 3).map((transport) => (
-                    <TransportCard key={transport.id} transport={transport} />
-                  ))}
+                  {mockTransports.slice(0, 3).map(transport => <TransportCard key={transport.id} transport={transport} />)}
                 </div>
               </div>
             </TabsContent>
@@ -391,9 +358,7 @@ const Profile = () => {
                   </p>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {mockRequests.slice(0, 3).map((request) => (
-                    <RequestCard key={request.id} request={request} />
-                  ))}
+                  {mockRequests.slice(0, 3).map(request => <RequestCard key={request.id} request={request} />)}
                 </div>
               </div>
             </TabsContent>
@@ -448,8 +413,6 @@ const Profile = () => {
           </Tabs>
         </div>
       </div>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Profile;
