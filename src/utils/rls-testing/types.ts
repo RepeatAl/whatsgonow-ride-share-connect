@@ -32,9 +32,11 @@ export interface TableResults {
   [operation: string]: TestResult;
 }
 
+// Updated RoleResults interface to properly handle both table results and special properties
 export interface RoleResults {
   [table: string]: TableResults;
   regionFiltering?: TestResult;
+  error?: string; // Adding the error property with correct type
 }
 
 // Update AllResults to include a top-level error property
