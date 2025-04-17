@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/use-toast";
 import { authService } from "@/services/auth-service";
@@ -11,8 +11,9 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     try {
       console.log("🔄 Attempting to fetch profile for:", userId);
       setLoading(true);
@@ -47,7 +48,7 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       setError(new Error(message));
       
       // Limit toast notifications to prevent spam
-      if (retryCount < 3) {
+      if (retryCount < 2) {
         toast({
           title: "Fehler",
           description: message,
@@ -58,15 +59,18 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       setRetryCount(prev => prev + 1);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
-  };
+  }, [retryCount]);
 
   // Manual retry function that resets retry count
-  const retryProfileLoad = user ? () => {
+  const retryProfileLoad = useCallback(() => {
+    if (!user) return null;
+    
     console.log("🔄 Manually retrying profile load");
     setRetryCount(0);
     return fetchProfile(user.id);
-  } : null;
+  }, [user, fetchProfile]);
 
   useEffect(() => {
     if (isSessionLoading) {
@@ -83,14 +87,16 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       setLoading(false);
       setError(null);
       setRetryCount(0);
+      setIsInitialLoad(false);
     }
-  }, [user, isSessionLoading]);
+  }, [user, isSessionLoading, fetchProfile]);
 
   return {
     profile,
     profileLoading: loading,
     profileError: error,
     setProfile,
-    retryProfileLoad
+    retryProfileLoad,
+    isInitialLoad
   };
 }

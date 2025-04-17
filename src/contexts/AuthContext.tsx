@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profileError,
     setProfile,
     retryProfileLoad,
+    isInitialLoad: isProfileInitialLoad
   } = useProfile(user, loading);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setError(err instanceof Error ? err : new Error("Unknown session error"));
       } finally {
         setLoading(false);
-        setIsInitialLoad(false);
+        // Don't set initialLoad to false here, wait for profile
       }
     };
 
@@ -71,6 +72,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Update isInitialLoad when both auth and profile loading are complete
+  useEffect(() => {
+    if (!loading && !profileLoading && isInitialLoad) {
+      console.log("🔄 Initial loading completed");
+      setIsInitialLoad(false);
+    }
+  }, [loading, profileLoading, isInitialLoad]);
 
   const signIn = async (email: string, password: string) => {
     try {

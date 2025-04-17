@@ -14,22 +14,20 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, profile, loading, error, retryProfileLoad } = useAuth();
   const location = useLocation();
   
+  // Show loading spinner only during initial load
   if (loading) {
     return <LoadingSpinner />;
   }
   
+  // If no user, redirect to login with current location preserved
   if (!user) {
     console.log("🔒 Protected route access denied, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // If there's no profile, redirect to profile page unless we're already there
-  if (!profile && location.pathname !== "/profile") {
-    console.log("⚠️ No profile found, redirecting to profile page");
-    return <Navigate to="/profile" state={{ from: location }} replace />;
-  }
-  
-  if (error) {
+  // If we're already on the profile page and there's an error, show the error
+  // This prevents redirect loops when profile has errors
+  if (error && location.pathname === "/profile") {
     return (
       <div className="container max-w-md mx-auto py-8">
         <Alert variant="destructive" className="mb-4">
@@ -52,5 +50,18 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
+  // If profile error and not on profile page, redirect to profile page
+  if (error && location.pathname !== "/profile") {
+    console.log("⚠️ Profile error, redirecting to profile page:", error.message);
+    return <Navigate to="/profile" state={{ from: location }} replace />;
+  }
+  
+  // If there's no profile and we're not already on the profile page, redirect to profile
+  if (!profile && location.pathname !== "/profile") {
+    console.log("⚠️ No profile found, redirecting to profile page");
+    return <Navigate to="/profile" state={{ from: location }} replace />;
+  }
+  
+  // If all checks pass, render the protected content
   return <>{children}</>;
 };

@@ -10,13 +10,18 @@ import type { UserProfile } from "@/types/auth";
 export function useAuthRedirect(
   user: User | null,
   profile: UserProfile | null,
-  loading: boolean
+  loading: boolean,
+  isInitialLoad: boolean = false
 ) {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) return;
+    // Don't redirect if still loading authentication state
+    if (loading) {
+      console.log("⏳ Auth state loading, skipping redirect check");
+      return;
+    }
 
     const currentPath = location.pathname;
     const isAuthPage = ["/login", "/register"].includes(currentPath);
@@ -27,30 +32,39 @@ export function useAuthRedirect(
       user: !!user,
       profile: !!profile,
       isAuthPage,
-      isProfilePage
+      isProfilePage,
+      hasError: !!location.state?.profileError
     });
 
+    // When we have a logged-in user
     if (user) {
-      // If no profile exists or profile is incomplete, redirect to profile page
-      // unless we're already on the profile page
-      if (!isProfilePage && (!profile || isProfileIncomplete(profile))) {
-        console.log("⚠️ Profile missing or incomplete, redirecting to /profile");
-        navigate("/profile", { 
-          replace: true,
-          state: { from: location }  // Preserve original destination
-        });
-        return;
-      }
-
+      // Case 1: User is on auth page (login/register) but already authenticated
       if (isAuthPage) {
         const redirectTo = profile
           ? getRoleBasedRedirectPath(profile.role)
-          : "/dashboard";
+          : "/profile";
         console.log("✅ Auth page redirect:", redirectTo);
         navigate(redirectTo, { replace: true });
         return;
       }
-    } else {
+      
+      // Case 2: User doesn't have a profile or profile is incomplete
+      // Only redirect if not already on the profile page to prevent loops
+      if (!isProfilePage && (!profile || isProfileIncomplete(profile))) {
+        console.log("⚠️ Profile missing or incomplete, redirecting to /profile");
+        navigate("/profile", { 
+          replace: true,
+          state: { 
+            from: location,  // Preserve original destination
+            reason: "incomplete_profile" 
+          }
+        });
+        return;
+      }
+    } 
+    // When user is not logged in
+    else {
+      // Only redirect if on a protected route and not already on an auth page
       if (!isPublicRoute(currentPath) && !isAuthPage) {
         console.log("🔒 Protected route access denied → /login");
         navigate("/login", { 
@@ -60,5 +74,5 @@ export function useAuthRedirect(
         return;
       }
     }
-  }, [user, profile, loading, location, navigate]);
+  }, [user, profile, loading, location, navigate, isInitialLoad]);
 }

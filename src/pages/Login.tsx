@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -27,6 +28,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn, user, loading: authLoading, profile } = useAuth();
+  const from = location.state?.from?.pathname || '/dashboard';
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -36,18 +38,22 @@ const Login = () => {
   }, [location]);
 
   useEffect(() => {
+    // Only redirect after successful authentication is complete
     if (user && !authLoading) {
+      // If no profile, redirect to profile page
       if (!profile) {
         console.log("🔄 No profile found after login, redirecting to /profile");
-        navigate("/profile", { replace: true });
+        navigate("/profile", { 
+          replace: true,
+          state: { from: location }
+        });
         return;
       }
       
-      const from = location.state?.from?.pathname || '/dashboard';
       console.log("✅ Login successful, redirecting to:", from);
       navigate(from, { replace: true });
     }
-  }, [user, profile, authLoading, navigate, location.state]);
+  }, [user, profile, authLoading, navigate, location, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
