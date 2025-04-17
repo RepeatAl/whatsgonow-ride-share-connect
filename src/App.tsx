@@ -2,7 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatRealtimeProvider } from "@/contexts/ChatRealtimeContext"; 
 import { AppRoutes as Routes } from "@/components/routing/AppRoutes";
-import { Toaster } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster"; // Using the toaster component directly
 
 function App() {
   return (
