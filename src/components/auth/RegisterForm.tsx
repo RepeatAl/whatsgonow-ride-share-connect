@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,28 +34,43 @@ export const RegisterForm = () => {
   const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterFormData) => {
-    console.log('🔍 Registration form submitted', { 
-      email: data.email, 
-      name: data.name, 
-      role: data.role 
-    });
+    if (import.meta.env.DEV) {
+      console.log('🧪 Registration form data:', { 
+        email: data.email, 
+        name: data.name, 
+        role: data.role,
+        company_name: data.company_name
+      });
+    }
     
     setError('');
     setIsLoading(true);
     setIsSuccess(false);
     
     try {
-      console.log('🚀 Attempting sign up');
+      if (import.meta.env.DEV) {
+        console.log('🚀 Attempting sign up with:', { 
+          email: data.email, 
+          name: data.name,
+          role: data.role 
+        });
+      }
+
       await signUp(data.email, data.password, {
         name: data.name,
         role: data.role,
         company_name: data.company_name || undefined
       });
       
-      console.log('✅ Sign up successful');
+      if (import.meta.env.DEV) {
+        console.log('✅ Sign up successful');
+      }
+      
       setIsSuccess(true);
     } catch (err) {
-      console.error('❌ Registration error:', err);
+      if (import.meta.env.DEV) {
+        console.error('❌ Registration error:', err);
+      }
       setError((err as Error).message);
     } finally {
       setIsLoading(false);
