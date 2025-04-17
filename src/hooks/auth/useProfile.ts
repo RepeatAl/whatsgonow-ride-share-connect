@@ -13,6 +13,7 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   /**
    * Lädt das Benutzerprofil aus Supabase oder zeigt Fehler an
@@ -42,20 +43,35 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       }
       
       setProfile(userProfile);
+      // Reset retry count on success
+      setRetryCount(0);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unbekannter Fehler beim Laden des Profils";
       console.error("❌ Fehler beim Laden des Profils:", err);
 
       setError(new Error(message));
-      toast({
-        title: "Fehler",
-        description: message,
-        variant: "destructive"
-      });
+      
+      // Limit toast notifications to prevent spam
+      if (retryCount < 1) {
+        toast({
+          title: "Fehler",
+          description: message,
+          variant: "destructive"
+        });
+      }
+      
+      // Increment retry count to track failed attempts
+      setRetryCount(prev => prev + 1);
     } finally {
       setLoading(false);
     }
   };
+
+  // Attempt to retry profile loading when requested
+  const retryProfileLoad = user ? () => {
+    setRetryCount(0); // Reset retry count on manual retry
+    return fetchProfile(user.id);
+  } : null;
 
   useEffect(() => {
     // Don't load profile while session is initializing
@@ -67,6 +83,7 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       // Reset on logout
       setProfile(null);
       setLoading(false);
+      setRetryCount(0);
     }
   }, [user, isSessionLoading]);
 
@@ -75,6 +92,6 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
     profileLoading: loading,
     profileError: error,
     setProfile,
-    retryProfileLoad: user ? () => fetchProfile(user.id) : null
+    retryProfileLoad
   };
 }

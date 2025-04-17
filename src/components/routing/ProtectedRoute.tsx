@@ -37,6 +37,17 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           </AlertDescription>
         </Alert>
         
+        <div className="p-4 bg-muted/40 rounded-md mb-4">
+          <p className="text-sm text-muted-foreground mb-2">
+            Mögliche Ursachen:
+          </p>
+          <ul className="list-disc pl-4 text-sm text-muted-foreground">
+            <li>Netzwerkprobleme</li>
+            <li>Datenbankzugriffsfehler</li>
+            <li>Profilkonfigurationsprobleme</li>
+          </ul>
+        </div>
+        
         {retryProfileLoad && (
           <Button 
             onClick={retryProfileLoad} 
