@@ -56,7 +56,8 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
         console.log('🚀 Attempting sign up with:', { 
           email: data.email, 
           name: data.name,
-          role: data.role 
+          role: data.role,
+          company_name: data.company_name || undefined
         });
       }
 

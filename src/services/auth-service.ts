@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
 import { toast } from "@/components/ui/use-toast";
@@ -84,10 +85,19 @@ export const authService = {
 
   async signIn(email: string, password: string) {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      console.log("🔑 Attempting sign in for:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        console.error("❌ Sign in error:", error);
+        throw error;
+      }
+      
+      console.log("✅ Sign in successful");
+      return data;
     } catch (error) {
       handleAuthError(error as Error, "Anmeldung");
+      throw error;
     }
   },
 
@@ -97,7 +107,9 @@ export const authService = {
     company_name?: string;
   }) {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("🔐 Attempting sign up for:", email, "with metadata:", metadata);
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -106,23 +118,38 @@ export const authService = {
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Sign up error:", error);
+        throw error;
+      }
 
+      console.log("✅ Sign up successful:", data);
       toast({
         title: "Registrierung erfolgreich",
         description: "Dein Konto wurde erstellt. Bitte überprüfe deine E-Mails für die Bestätigung."
       });
+      
+      return data;
     } catch (error) {
       handleAuthError(error as Error, "Registrierung");
+      throw error;
     }
   },
 
   async signOut() {
     try {
+      console.log("🚪 Attempting sign out");
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      
+      if (error) {
+        console.error("❌ Sign out error:", error);
+        throw error;
+      }
+      
+      console.log("✅ Sign out successful");
     } catch (error) {
       handleAuthError(error as Error, "Abmeldung");
+      throw error;
     }
   }
 };

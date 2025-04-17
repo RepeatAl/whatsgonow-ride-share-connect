@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabaseClient";
@@ -23,24 +24,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   } = useProfile(user, loading);
 
   useEffect(() => {
+    console.log("🔄 AuthContext initialized");
+    
     const getInitialSession = async () => {
-      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-      if (error) {
-        setError(error);
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("❌ Error fetching initial session:", error);
+          setError(error);
+        } else {
+          console.log("🔑 Initial session loaded:", !!data.session);
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+        }
+      } catch (err) {
+        console.error("❌ Unexpected error during session init:", err);
+        setError(err instanceof Error ? err : new Error("Unknown session error"));
+      } finally {
         setLoading(false);
         setIsInitialLoad(false);
-        return;
       }
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setLoading(false);
-      setIsInitialLoad(false);
     };
 
     getInitialSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log("📡 Auth state change event:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
@@ -58,12 +69,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log("🔑 SignIn requested for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      
+      if (error) {
+        console.error("❌ SignIn error:", error);
+        throw error;
+      }
+      
+      console.log("✅ SignIn successful");
       setUser(data.user);
       setSession(data.session);
+      return data;
     } catch (err) {
-      toast({ title: "Anmeldung fehlgeschlagen", description: (err as Error).message, variant: "destructive" });
+      console.error("❌ SignIn exception:", err);
+      toast({ 
+        title: "Anmeldung fehlgeschlagen", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
       throw err;
     }
   };
@@ -74,6 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     company_name?: string;
   }) => {
     try {
+      console.log("🔐 SignUp requested for:", email, "with metadata:", metadata);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -82,23 +107,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error("❌ SignUp error:", error);
+        throw error;
+      }
+      
+      console.log("✅ SignUp successful:", data);
       return data;
     } catch (err) {
-      toast({ title: "Registrierung fehlgeschlagen", description: (err as Error).message, variant: "destructive" });
+      console.error("❌ SignUp exception:", err);
+      toast({ 
+        title: "Registrierung fehlgeschlagen", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
       throw err;
     }
   };
 
   const signOut = async () => {
     try {
+      console.log("🚪 SignOut requested");
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      
+      if (error) {
+        console.error("❌ SignOut error:", error);
+        throw error;
+      }
+      
+      console.log("✅ SignOut successful");
       setUser(null);
       setSession(null);
       setProfile(null);
     } catch (err) {
-      toast({ title: "Abmeldung fehlgeschlagen", description: (err as Error).message, variant: "destructive" });
+      console.error("❌ SignOut exception:", err);
+      toast({ 
+        title: "Abmeldung fehlgeschlagen", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
       throw err;
     }
   };

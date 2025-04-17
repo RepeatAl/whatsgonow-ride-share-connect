@@ -1,12 +1,12 @@
 
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { User } from "@supabase/supabase-js";
 
 /**
  * Handle authentication errors and display appropriate toast messages
  */
 export const handleAuthError = (error: Error, context: string = "Aktion") => {
-  console.error(`${context} error:`, error);
+  console.error(`❌ ${context} error:`, error);
   
   // Check for specific Supabase error messages
   let errorMessage = error.message;
@@ -24,6 +24,8 @@ export const handleAuthError = (error: Error, context: string = "Aktion") => {
     errorMessage = "Zu viele Versuche. Bitte warte einen Moment und versuche es später erneut.";
   } else if (error.message.includes("Password should be at least 6 characters")) {
     errorMessage = "Das Passwort muss mindestens 6 Zeichen lang sein.";
+  } else if (error.message.includes("Signup")) {
+    errorMessage = "Fehler bei der Registrierung. Bitte versuche es später noch einmal.";
   }
   
   toast({
