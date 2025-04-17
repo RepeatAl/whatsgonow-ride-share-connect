@@ -34,13 +34,13 @@ export interface TableResults {
 
 export interface RoleResults {
   [table: string]: TableResults;
-  error?: string;
   regionFiltering?: TestResult;
 }
 
+// Update AllResults to include a top-level error property
 export interface AllResults {
   [role: string]: RoleResults;
-  error?: string;
+  error?: string; // Adding explicit error property at top level
 }
 
 // Test users for different roles

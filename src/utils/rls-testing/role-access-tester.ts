@@ -1,6 +1,6 @@
 
 import { supabase } from "@/lib/supabaseClient";
-import { UserRole, testUsers, TableResults, RoleResults } from "./types";
+import { UserRole, testUsers, TableResults, RoleResults, tableTests } from "./types";
 import { testInsertOrder, testInsertOffer, testInsertRating, testUpdateOrder, testUpdateOffer } from "./test-operations";
 
 /**
@@ -19,7 +19,9 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     
     if (signInError) {
       console.error(`Error signing in as ${role}:`, signInError);
-      return { error: `Failed to sign in as ${role}: ${signInError.message}` };
+      const errorResults: RoleResults = {};
+      errorResults.error = `Failed to sign in as ${role}: ${signInError.message}`;
+      return errorResults;
     }
     
     console.log(`Successfully signed in as ${role}`);
@@ -109,6 +111,8 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     return results;
   } catch (error) {
     console.error(`Error testing ${role} access:`, error);
-    return { error: `Test failed for ${role}: ${(error as Error).message}` };
+    const errorResults: RoleResults = {};
+    errorResults.error = `Test failed for ${role}: ${(error as Error).message}`;
+    return errorResults;
   }
 };
