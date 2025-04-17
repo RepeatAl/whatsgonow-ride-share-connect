@@ -32,12 +32,12 @@ export interface TableResults {
   [operation: string]: TestResult;
 }
 
-// Fixed interface definition to handle special properties properly
+// Role results interface that supports error messages
 export interface RoleResults {
   [key: string]: TestResult | TableResults;
 }
 
-// Fixed interface definition for AllResults 
+// AllResults interface with proper error handling
 export interface AllResults {
   [key: string]: RoleResults;
   error?: string;

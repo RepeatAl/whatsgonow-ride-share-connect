@@ -20,7 +20,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     if (signInError) {
       console.error(`Error signing in as ${role}:`, signInError);
       const errorResult: RoleResults = {};
-      errorResult["error"] = {
+      errorResult["auth_error"] = {
         success: false,
         error: `Failed to sign in as ${role}: ${signInError.message}`
       };
@@ -115,7 +115,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
   } catch (error) {
     console.error(`Error testing ${role} access:`, error);
     const errorResult: RoleResults = {};
-    errorResult["error"] = {
+    errorResult["testing_error"] = {
       success: false,
       error: `Test failed for ${role}: ${(error as Error).message}`
     };
