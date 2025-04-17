@@ -14,18 +14,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<Error | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Session + Profile holen
   useEffect(() => {
     const getInitialSession = async () => {
       const { data: { session: currentSession }, error } = await supabase.auth.getSession();
       if (error) {
         setError(error);
         setLoading(false);
+        setIsInitialLoad(false);
         return;
       }
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
+      setIsInitialLoad(false);
     };
 
     getInitialSession();
@@ -94,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const retryProfileLoad = null; // Placeholder, ggf. später hinzufügen
+  const retryProfileLoad = null;
 
   const value: AuthContextProps = {
     user,
