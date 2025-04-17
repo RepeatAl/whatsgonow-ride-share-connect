@@ -1,3 +1,11 @@
+
+import type { UserProfile } from "@/types/auth";
+
+/**
+ * Checks if a user profile is incomplete
+ * @param user User profile object to check
+ * @returns Boolean indicating if the profile is incomplete
+ */
 export const isProfileIncomplete = (user: any) => {
   if (!user) return true;
 
@@ -26,6 +34,8 @@ export const isProfileIncomplete = (user: any) => {
 
 /**
  * Returns missing profile fields based on user role
+ * @param user User profile object to check
+ * @returns Array of field names that are missing
  */
 export const getMissingProfileFields = (user: any): string[] => {
   if (!user) return ['all fields'];

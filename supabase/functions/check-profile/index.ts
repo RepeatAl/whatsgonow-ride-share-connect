@@ -101,7 +101,15 @@ serve(async (req) => {
       );
     }
 
-    // Fetch profile
+    // Check if profile is complete using SQL function
+    const { data: profileCompleteData, error: profileCompleteError } = await supabase
+      .rpc('is_profile_complete', { user_id: user.id });
+      
+    if (profileCompleteError) {
+      console.error("Error checking profile completeness:", profileCompleteError);
+    }
+      
+    // Fetch profile anyway for detailed information
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
@@ -115,16 +123,16 @@ serve(async (req) => {
       );
     }
 
-    // Check profile completeness
-    const incomplete = isProfileIncomplete(profile);
+    // Check profile completeness using both SQL function and JS validation
+    const isComplete = profileCompleteData === true || !isProfileIncomplete(profile);
     const missingFields = getMissingProfileFields(profile);
 
     return new Response(
       JSON.stringify({ 
         profile,
-        isComplete: !incomplete,
-        redirectRequired: incomplete,
-        redirectTo: incomplete ? '/profile' : null,
+        isComplete: isComplete,
+        redirectRequired: !isComplete,
+        redirectTo: !isComplete ? '/profile' : null,
         missingFields: missingFields
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

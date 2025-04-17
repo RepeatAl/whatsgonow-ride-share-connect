@@ -30,7 +30,7 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       }
       
       // Check profile completeness and notify user if incomplete
-      if (isProfileIncomplete(userProfile)) {
+      if (userProfile.profile_complete !== true && isProfileIncomplete(userProfile)) {
         const missingFields = getMissingProfileFields(userProfile);
         if (missingFields.length > 0) {
           toast({

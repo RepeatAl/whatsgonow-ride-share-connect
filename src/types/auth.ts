@@ -1,4 +1,3 @@
-
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -9,7 +8,7 @@ export interface UserProfile {
   region?: string;
   active?: boolean;
   company_name?: string;
-  profile_complete?: boolean; // Added this property which is used in profile-check.ts
+  profile_complete?: boolean; 
 }
 
 export interface AuthContextProps {

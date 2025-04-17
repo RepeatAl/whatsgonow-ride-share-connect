@@ -806,6 +806,33 @@ export type Database = {
           },
         ]
       }
+      user_profile_creation_log: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          log_id: string
+          metadata: Json | null
+          success: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          log_id?: string
+          metadata?: Json | null
+          success?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          log_id?: string
+          metadata?: Json | null
+          success?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           active: boolean | null
@@ -814,6 +841,7 @@ export type Database = {
           email: string
           language: string | null
           name: string
+          profile_complete: boolean | null
           region: string | null
           role: string
           user_id: string
@@ -825,6 +853,7 @@ export type Database = {
           email: string
           language?: string | null
           name: string
+          profile_complete?: boolean | null
           region?: string | null
           role: string
           user_id?: string
@@ -836,6 +865,7 @@ export type Database = {
           email?: string
           language?: string | null
           name?: string
+          profile_complete?: boolean | null
           region?: string | null
           role?: string
           user_id?: string
@@ -853,6 +883,10 @@ export type Database = {
       }
       is_admin: {
         Args: { requesting_user_id: string }
+        Returns: boolean
+      }
+      is_profile_complete: {
+        Args: { user_id: string }
         Returns: boolean
       }
     }
