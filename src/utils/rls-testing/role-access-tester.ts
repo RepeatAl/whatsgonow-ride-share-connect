@@ -19,9 +19,12 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     
     if (signInError) {
       console.error(`Error signing in as ${role}:`, signInError);
-      return {
+      const errorResult: RoleResults = {};
+      errorResult["error"] = {
+        success: false,
         error: `Failed to sign in as ${role}: ${signInError.message}`
       };
+      return errorResult;
     }
     
     console.log(`Successfully signed in as ${role}`);
@@ -99,7 +102,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
         .select('*')
         .eq('region', testUser.region!);
       
-      results.regionFiltering = {
+      results["regionFiltering"] = {
         success: !regionError,
         count: usersInRegion?.length || 0,
         error: regionError ? regionError.message : null
@@ -111,8 +114,11 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     return results;
   } catch (error) {
     console.error(`Error testing ${role} access:`, error);
-    return {
+    const errorResult: RoleResults = {};
+    errorResult["error"] = {
+      success: false,
       error: `Test failed for ${role}: ${(error as Error).message}`
     };
+    return errorResult;
   }
 };

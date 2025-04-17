@@ -32,15 +32,14 @@ export interface TableResults {
   [operation: string]: TestResult;
 }
 
-// Redefine the interfaces to properly handle special properties
+// Fixed interface definition to handle special properties properly
 export interface RoleResults {
-  [table: string]: TableResults | TestResult; 
-  regionFiltering?: TestResult;
-  error?: string;
+  [key: string]: TestResult | TableResults;
 }
 
+// Fixed interface definition for AllResults 
 export interface AllResults {
-  [role in UserRole]?: RoleResults;
+  [key: string]: RoleResults;
   error?: string;
 }
 
