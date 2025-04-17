@@ -19,6 +19,9 @@ export const registerSchema = z.object({
     .max(100, "Firmenname darf maximal 100 Zeichen lang sein")
     .optional()
     .nullable(),
+  region: z.string()
+    .min(2, "Region ist erforderlich")
+    .max(100, "Region darf maximal 100 Zeichen lang sein"),
 });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;

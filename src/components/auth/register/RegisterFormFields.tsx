@@ -1,40 +1,30 @@
 
-import React from 'react';
-import { Control } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Mail, Lock, Building } from 'lucide-react';
-import { RegisterFormData } from './RegisterFormSchema';
+import { Control } from "react-hook-form";
+import { RegisterFormData } from "./RegisterFormSchema";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface RegisterFormFieldsProps {
   control: Control<RegisterFormData>;
   selectedRole: string;
 }
 
-export const RegisterFormFields: React.FC<RegisterFormFieldsProps> = ({ 
-  control, 
-  selectedRole 
-}) => {
+export const RegisterFormFields = ({ control, selectedRole }: RegisterFormFieldsProps) => {
   return (
     <>
-      <FormField
-        control={control}
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Name</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input placeholder="Max Mustermann" {...field} className="pl-10" />
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <FormField
         control={control}
         name="email"
@@ -42,10 +32,7 @@ export const RegisterFormFields: React.FC<RegisterFormFieldsProps> = ({
           <FormItem>
             <FormLabel>E-Mail</FormLabel>
             <FormControl>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input type="email" placeholder="max@beispiel.de" {...field} className="pl-10" />
-              </div>
+              <Input placeholder="deine@email.de" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -59,11 +46,47 @@ export const RegisterFormFields: React.FC<RegisterFormFieldsProps> = ({
           <FormItem>
             <FormLabel>Passwort</FormLabel>
             <FormControl>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
-              </div>
+              <Input type="password" placeholder="••••••••" {...field} />
             </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Max Mustermann" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="region"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Region</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Wähle deine Region" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="berlin">Berlin</SelectItem>
+                <SelectItem value="hamburg">Hamburg</SelectItem>
+                <SelectItem value="munich">München</SelectItem>
+                <SelectItem value="cologne">Köln</SelectItem>
+                <SelectItem value="frankfurt">Frankfurt</SelectItem>
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}
@@ -82,8 +105,8 @@ export const RegisterFormFields: React.FC<RegisterFormFieldsProps> = ({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="sender_private">Privater Versender</SelectItem>
-                <SelectItem value="sender_business">Geschäftlicher Versender</SelectItem>
+                <SelectItem value="sender_private">Privater Sender</SelectItem>
+                <SelectItem value="sender_business">Geschäftlicher Sender</SelectItem>
                 <SelectItem value="driver">Fahrer</SelectItem>
               </SelectContent>
             </Select>
@@ -100,10 +123,7 @@ export const RegisterFormFields: React.FC<RegisterFormFieldsProps> = ({
             <FormItem>
               <FormLabel>Firmenname</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input placeholder="Firma GmbH" {...field} value={field.value || ''} className="pl-10" />
-                </div>
+                <Input placeholder="Firma GmbH" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +27,8 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
       password: '',
       name: '',
       role: 'sender_private',
-      company_name: ''
+      company_name: '',
+      region: ''
     }
   });
 
@@ -37,12 +37,7 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
 
   const onSubmit = async (data: RegisterFormData) => {
     if (import.meta.env.DEV) {
-      console.log('🧪 Registration form data:', { 
-        email: data.email, 
-        name: data.name, 
-        role: data.role,
-        company_name: data.company_name
-      });
+      console.log('🧪 Registration form data:', data);
     }
     
     setError('');
@@ -50,19 +45,11 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
     setIsSuccess(false);
     
     try {
-      if (import.meta.env.DEV) {
-        console.log('🚀 Attempting sign up with:', { 
-          email: data.email, 
-          name: data.name,
-          role: data.role,
-          company_name: data.company_name || undefined
-        });
-      }
-
       await signUp(data.email, data.password, {
         name: data.name,
         role: data.role,
-        company_name: data.company_name || undefined
+        company_name: data.company_name || undefined,
+        region: data.region
       });
       
       if (import.meta.env.DEV) {
