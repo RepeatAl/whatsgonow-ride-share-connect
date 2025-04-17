@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -27,7 +26,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signIn, user, loading: authLoading, profile } = useAuth();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -36,14 +35,19 @@ const Login = () => {
     }
   }, [location]);
 
-  // Handle authentication state changes
   useEffect(() => {
     if (user && !authLoading) {
+      if (!profile) {
+        console.log("🔄 No profile found after login, redirecting to /profile");
+        navigate("/profile", { replace: true });
+        return;
+      }
+      
       const from = location.state?.from?.pathname || '/dashboard';
-      console.log("🔄 Redirecting authenticated user to:", from);
+      console.log("✅ Login successful, redirecting to:", from);
       navigate(from, { replace: true });
     }
-  }, [user, authLoading, navigate, location.state]);
+  }, [user, profile, authLoading, navigate, location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +69,6 @@ const Login = () => {
     setError(""); // Clear any existing errors when toggling
   };
 
-  // Show loading state while checking auth
   if (authLoading) {
     return <Layout>
       <div className="flex items-center justify-center min-h-screen bg-background p-4">

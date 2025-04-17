@@ -20,48 +20,45 @@ export function useAuthRedirect(
 
     const currentPath = location.pathname;
     const isAuthPage = ["/login", "/register"].includes(currentPath);
-    const isRootPage = ["/", "/index"].includes(currentPath);
     const isProfilePage = currentPath === "/profile";
-
-    console.log("📍 useAuthRedirect check:", {
+    
+    console.log("🔄 Redirect check:", {
       path: currentPath,
       user: !!user,
-      profileLoaded: !!profile
+      profile: !!profile,
+      isAuthPage,
+      isProfilePage
     });
 
     if (user) {
-      // Profilprüfung - Leite zur Profilseite weiter, wenn unvollständig
-      if (profile && !isProfilePage && isProfileIncomplete(profile)) {
-        console.log("⚠️ Unvollständiges Profil, Weiterleitung zu /profile");
-        navigate("/profile", { replace: true });
-        return;
-      }
-
-      if (isRootPage) {
-        const redirectTo = profile
-          ? getRoleBasedRedirectPath(profile.role)
-          : "/dashboard";
-        console.log("✅ Eingeloggt auf Root, weiterleiten zu:", redirectTo);
-        navigate(redirectTo, { replace: true });
+      // If no profile exists or profile is incomplete, redirect to profile page
+      // unless we're already on the profile page
+      if (!isProfilePage && (!profile || isProfileIncomplete(profile))) {
+        console.log("⚠️ Profile missing or incomplete, redirecting to /profile");
+        navigate("/profile", { 
+          replace: true,
+          state: { from: location }  // Preserve original destination
+        });
         return;
       }
 
       if (isAuthPage) {
-        const redirectTo =
-          (location.state as any)?.from?.pathname ||
-          (profile ? getRoleBasedRedirectPath(profile.role) : "/dashboard");
-        console.log("✅ Eingeloggt auf Login/Register, redirect to:", redirectTo);
+        const redirectTo = profile
+          ? getRoleBasedRedirectPath(profile.role)
+          : "/dashboard";
+        console.log("✅ Auth page redirect:", redirectTo);
         navigate(redirectTo, { replace: true });
         return;
       }
-
-      // Kein Redirect, wenn bereits korrekt eingeloggt
     } else {
       if (!isPublicRoute(currentPath) && !isAuthPage) {
-        console.log("🔒 Nicht eingeloggt auf geschützter Route → Weiterleitung zu /login");
-        navigate("/login", { state: { from: location }, replace: true });
+        console.log("🔒 Protected route access denied → /login");
+        navigate("/login", { 
+          state: { from: location }, 
+          replace: true 
+        });
         return;
       }
     }
-  }, [user, profile, loading, location.pathname, navigate]);
+  }, [user, profile, loading, location, navigate]);
 }

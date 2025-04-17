@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { User } from "@supabase/supabase-js";
 
@@ -36,9 +35,11 @@ export const handleAuthError = (error: Error, context: string = "Aktion") => {
 };
 
 /**
- * Get the appropriate redirect path based on user role
+ * Get the appropriate redirect path based on user role and profile status
  */
-export const getRoleBasedRedirectPath = (role: string): string => {
+export const getRoleBasedRedirectPath = (role?: string): string => {
+  if (!role) return "/profile";  // Send to profile if no role set
+  
   switch (role) {
     case "admin":
     case "admin_limited":

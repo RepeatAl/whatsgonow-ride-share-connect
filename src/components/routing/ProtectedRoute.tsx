@@ -23,6 +23,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
+  // If there's no profile, redirect to profile page unless we're already there
+  if (!profile && location.pathname !== "/profile") {
+    console.log("⚠️ No profile found, redirecting to profile page");
+    return <Navigate to="/profile" state={{ from: location }} replace />;
+  }
+  
   if (error) {
     return (
       <div className="container max-w-md mx-auto py-8">
@@ -33,17 +39,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             {error.message || "Dein Benutzerprofil konnte nicht geladen werden."}
           </AlertDescription>
         </Alert>
-        
-        <div className="p-4 bg-muted/40 rounded-md mb-4">
-          <p className="text-sm text-muted-foreground mb-2">
-            Mögliche Ursachen:
-          </p>
-          <ul className="list-disc pl-4 text-sm text-muted-foreground">
-            <li>Netzwerkprobleme</li>
-            <li>Datenbankzugriffsfehler</li>
-            <li>Profilkonfigurationsprobleme</li>
-          </ul>
-        </div>
         
         {retryProfileLoad && (
           <Button 
