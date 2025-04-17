@@ -9,17 +9,18 @@ import { testRoleAccess } from "./role-access-tester";
  * Runs all RLS tests and returns the results
  */
 export const runRLSTests = async (): Promise<AllResults> => {
-  const results: AllResults = {};
-  
   try {
     // Create test users if needed
     const usersCreated = await createTestUsers();
     if (!usersCreated) {
-      const errorResult: AllResults = { error: "Failed to create or verify test users" };
-      return errorResult;
+      return {
+        error: "Failed to create or verify test users"
+      };
     }
     
     // Test each role
+    const results: AllResults = {};
+    
     for (const role of Object.keys(testUsers) as UserRole[]) {
       toast({
         title: `Testing RLS for ${role} role`,
@@ -49,8 +50,9 @@ export const runRLSTests = async (): Promise<AllResults> => {
       variant: "destructive"
     });
     
-    const errorResult: AllResults = { error: (error as Error).message };
-    return errorResult;
+    return {
+      error: (error as Error).message
+    };
   }
 };
 

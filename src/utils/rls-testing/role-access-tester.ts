@@ -1,6 +1,6 @@
 
 import { supabase } from "@/lib/supabaseClient";
-import { UserRole, testUsers, TableResults, RoleResults, tableTests } from "./types";
+import { UserRole, testUsers, RoleResults, tableTests } from "./types";
 import { testInsertOrder, testInsertOffer, testInsertRating, testUpdateOrder, testUpdateOffer } from "./test-operations";
 
 /**
@@ -19,9 +19,9 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     
     if (signInError) {
       console.error(`Error signing in as ${role}:`, signInError);
-      const errorResults: RoleResults = {};
-      errorResults.error = `Failed to sign in as ${role}: ${signInError.message}`;
-      return errorResults;
+      return {
+        error: `Failed to sign in as ${role}: ${signInError.message}`
+      };
     }
     
     console.log(`Successfully signed in as ${role}`);
@@ -37,7 +37,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
           .select('*')
           .limit(5);
         
-        results[table].SELECT = {
+        (results[table] as any).SELECT = {
           success: !error,
           count: data?.length || 0,
           error: error ? error.message : null
@@ -66,7 +66,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
         }
         
         if (insertResult) {
-          results[table].INSERT = insertResult;
+          (results[table] as any).INSERT = insertResult;
         }
       }
       
@@ -87,7 +87,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
         }
         
         if (updateResult) {
-          results[table].UPDATE = updateResult;
+          (results[table] as any).UPDATE = updateResult;
         }
       }
     }
@@ -111,8 +111,8 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     return results;
   } catch (error) {
     console.error(`Error testing ${role} access:`, error);
-    const errorResults: RoleResults = {};
-    errorResults.error = `Test failed for ${role}: ${(error as Error).message}`;
-    return errorResults;
+    return {
+      error: `Test failed for ${role}: ${(error as Error).message}`
+    };
   }
 };

@@ -32,17 +32,16 @@ export interface TableResults {
   [operation: string]: TestResult;
 }
 
-// Updated RoleResults interface to properly handle both table results and special properties
+// Redefine the interfaces to properly handle special properties
 export interface RoleResults {
-  [table: string]: TableResults;
+  [table: string]: TableResults | TestResult; 
   regionFiltering?: TestResult;
-  error?: string; // Adding the error property with correct type
+  error?: string;
 }
 
-// Update AllResults to include a top-level error property
 export interface AllResults {
-  [role: string]: RoleResults;
-  error?: string; // Adding explicit error property at top level
+  [role in UserRole]?: RoleResults;
+  error?: string;
 }
 
 // Test users for different roles
