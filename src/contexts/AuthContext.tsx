@@ -80,7 +80,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("✅ SignIn successful");
       setUser(data.user);
       setSession(data.session);
-      return data;
     } catch (err) {
       console.error("❌ SignIn exception:", err);
       toast({ 
