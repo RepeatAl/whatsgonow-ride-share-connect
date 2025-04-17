@@ -1,28 +1,33 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
+import { RegisterForm } from "@/components/auth/RegisterForm";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  
+  const { user, loading } = useAuth();
+  const [showForm, setShowForm] = useState(false);
+
   useEffect(() => {
-    // If user is already logged in, redirect to dashboard
-    if (user) {
-      navigate("/dashboard");
-      return;
+    if (!loading) {
+      if (user) {
+        navigate("/dashboard"); // ✅ Eingeloggt? → weiterleiten
+      } else {
+        setShowForm(true); // ✅ Nicht eingeloggt? → Formular anzeigen
+      }
     }
-    
-    // Otherwise redirect to login page with signup mode
-    navigate("/login?signup=true");
-  }, [navigate, user]);
-  
+  }, [user, loading, navigate]);
+
+  if (loading || !showForm) {
+    return <LoadingScreen message="Lade Registrierungsseite..." />;
+  }
+
   return (
     <Layout>
-      <div className="container py-12 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-        <p>Weiterleitung zur Registrierungsseite...</p>
+      <div className="container py-12">
+        <RegisterForm />
       </div>
     </Layout>
   );
