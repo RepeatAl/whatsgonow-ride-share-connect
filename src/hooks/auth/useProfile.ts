@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { authService } from "@/services/auth-service";
 import type { UserProfile } from "@/types/auth";
 import { isProfileIncomplete, getMissingProfileFields } from "@/utils/profile-check";
@@ -14,15 +14,18 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log("🔄 Attempting to fetch profile for:", userId);
       setLoading(true);
       setError(null);
 
       const userProfile = await authService.fetchUserProfile(userId);
       
       if (!userProfile) {
-        console.warn("⚠️ Kein Benutzerprofil gefunden für:", userId);
-        throw new Error("Benutzerprofil konnte nicht gefunden werden");
+        console.warn("⚠️ No profile found for user:", userId);
+        throw new Error("Profil konnte nicht gefunden werden");
       }
+      
+      console.log("✅ Profile loaded successfully:", userProfile);
       
       // Check profile completeness and notify user if incomplete
       if (userProfile.profile_complete !== true && isProfileIncomplete(userProfile)) {
@@ -39,8 +42,8 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       setProfile(userProfile);
       setRetryCount(0); // Reset retry count on success
     } catch (err) {
+      console.error("❌ Profile fetch error:", err);
       const message = err instanceof Error ? err.message : "Unbekannter Fehler beim Laden des Profils";
-      console.error("❌ Fehler beim Laden des Profils:", err);
       setError(new Error(message));
       
       // Limit toast notifications to prevent spam
@@ -60,17 +63,22 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
 
   // Manual retry function that resets retry count
   const retryProfileLoad = user ? () => {
+    console.log("🔄 Manually retrying profile load");
     setRetryCount(0);
     return fetchProfile(user.id);
   } : null;
 
   useEffect(() => {
-    if (isSessionLoading) return;
+    if (isSessionLoading) {
+      console.log("⏳ Session still loading, waiting...");
+      return;
+    }
 
     if (user) {
+      console.log("👤 User present, fetching profile...");
       fetchProfile(user.id);
     } else {
-      // Reset states on logout
+      console.log("👤 No user, resetting profile state");
       setProfile(null);
       setLoading(false);
       setError(null);

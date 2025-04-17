@@ -12,29 +12,22 @@ export const authService = {
         .from("users")
         .select("*")
         .eq("user_id", userId)
-        .maybeSingle();  // Using maybeSingle instead of single to handle null case gracefully
+        .maybeSingle();  // Using maybeSingle instead of single for better error handling
       
       if (error) {
-        console.error("❌ Error fetching user profile:", error);
-        
-        // If profile not found, attempt to create a default one
-        if (error.code === 'PGRST116') {
-          console.log("🔄 Profile not found, attempting to create one");
-          return await authService.createDefaultUserProfile(userId);
-        }
-        
+        console.error("❌ Profile fetch error:", error);
         throw error;
       }
       
       if (!data) {
-        console.log("⚠️ No profile data found, creating default profile");
+        console.log("⚠️ No profile found, attempting to create default");
         return await authService.createDefaultUserProfile(userId);
       }
       
-      console.log("✅ User profile loaded successfully");
+      console.log("✅ Profile loaded:", data);
       return data;
     } catch (error) {
-      console.error("❌ Exception when loading user profile:", error);
+      console.error("❌ Profile fetch exception:", error);
       throw error;
     }
   },
