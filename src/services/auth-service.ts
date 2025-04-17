@@ -4,7 +4,6 @@ import { toast } from "@/components/ui/use-toast";
 import { getMissingProfileFields } from "@/utils/profile-check";
 
 export const authService = {
-  // Improved user profile fetching with better error handling and logging
   async fetchUserProfile(userId: string) {
     try {
       console.log("📊 Fetching profile for user:", userId);
@@ -13,7 +12,7 @@ export const authService = {
         .from("users")
         .select("*")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();  // Using maybeSingle instead of single to handle null case gracefully
       
       if (error) {
         console.error("❌ Error fetching user profile:", error);
@@ -27,6 +26,11 @@ export const authService = {
         throw error;
       }
       
+      if (!data) {
+        console.log("⚠️ No profile data found, creating default profile");
+        return await authService.createDefaultUserProfile(userId);
+      }
+      
       console.log("✅ User profile loaded successfully");
       return data;
     } catch (error) {
@@ -35,7 +39,6 @@ export const authService = {
     }
   },
   
-  // Enhanced method to create a default profile with better data handling
   async createDefaultUserProfile(userId: string) {
     try {
       console.log("🆕 Creating default profile for user:", userId);

@@ -6,18 +6,12 @@ import { authService } from "@/services/auth-service";
 import type { UserProfile } from "@/types/auth";
 import { isProfileIncomplete, getMissingProfileFields } from "@/utils/profile-check";
 
-/**
- * Hook zur Verwaltung des Benutzerprofils
- */
 export function useProfile(user: User | null, isSessionLoading: boolean) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  /**
-   * Lädt das Benutzerprofil aus Supabase oder zeigt Fehler an
-   */
   const fetchProfile = async (userId: string) => {
     try {
       setLoading(true);
@@ -43,16 +37,14 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
       }
       
       setProfile(userProfile);
-      // Reset retry count on success
-      setRetryCount(0);
+      setRetryCount(0); // Reset retry count on success
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unbekannter Fehler beim Laden des Profils";
       console.error("❌ Fehler beim Laden des Profils:", err);
-
       setError(new Error(message));
       
       // Limit toast notifications to prevent spam
-      if (retryCount < 1) {
+      if (retryCount < 3) {
         toast({
           title: "Fehler",
           description: message,
@@ -60,29 +52,28 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
         });
       }
       
-      // Increment retry count to track failed attempts
       setRetryCount(prev => prev + 1);
     } finally {
       setLoading(false);
     }
   };
 
-  // Attempt to retry profile loading when requested
+  // Manual retry function that resets retry count
   const retryProfileLoad = user ? () => {
-    setRetryCount(0); // Reset retry count on manual retry
+    setRetryCount(0);
     return fetchProfile(user.id);
   } : null;
 
   useEffect(() => {
-    // Don't load profile while session is initializing
     if (isSessionLoading) return;
 
     if (user) {
       fetchProfile(user.id);
     } else {
-      // Reset on logout
+      // Reset states on logout
       setProfile(null);
       setLoading(false);
+      setError(null);
       setRetryCount(0);
     }
   }, [user, isSessionLoading]);

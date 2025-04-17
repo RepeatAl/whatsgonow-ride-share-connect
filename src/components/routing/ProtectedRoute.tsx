@@ -14,18 +14,15 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, profile, loading, error, retryProfileLoad } = useAuth();
   const location = useLocation();
   
-  // Show loading spinner while checking auth
   if (loading) {
     return <LoadingSpinner />;
   }
   
-  // If not authenticated, redirect to login
   if (!user) {
     console.log("🔒 Protected route access denied, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // Show error message if there's an error loading the profile
   if (error) {
     return (
       <div className="container max-w-md mx-auto py-8">
