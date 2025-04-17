@@ -1,3 +1,8 @@
+
+import { useAuth } from "@/contexts/AuthContext";
+import { ChatRealtimeProvider } from "@/contexts/ChatRealtimeContext"; 
+import { AppRoutes as Routes } from "@/components/routing/AppRoutes";
+
 function App() {
   return <AppContent />;
 }
