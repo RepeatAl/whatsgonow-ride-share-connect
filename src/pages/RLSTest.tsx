@@ -1,15 +1,13 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { runRLSTests } from "@/utils/rls-tester";
+import { runRLSTests } from "@/utils/rls-testing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, AlertTriangle, Shield, Database, UserCog } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type UserRole = 'driver' | 'sender' | 'cm' | 'admin';
+import { UserRole } from "@/utils/rls-testing/types";
 
 const RLSTest = () => {
   const [results, setResults] = useState<Record<string, any> | null>(null);
