@@ -100,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     name?: string;
     role?: string;
     company_name?: string;
+    region?: string;  // Added region property
   }) => {
     try {
       console.log("🔐 SignUp requested for:", email, "with metadata:", metadata);

@@ -1,3 +1,4 @@
+
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -23,6 +24,7 @@ export interface AuthContextProps {
     name?: string;
     role?: string;
     company_name?: string;
+    region?: string;  // Added region property
   }) => Promise<{user: User | null; session: Session | null} | void>;
   signOut: () => Promise<void>;
   retryProfileLoad: (() => void) | null;
