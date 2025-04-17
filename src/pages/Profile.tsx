@@ -309,25 +309,25 @@ const Profile = () => {
                         <Label htmlFor="emailNotifications" className="cursor-pointer">
                           Email Notifications
                         </Label>
-                        <Switch id="emailNotifications" checked={true} />
+                        <Switch id="emailNotifications" checked={true} className="bg-sky-500 hover:bg-sky-400" />
                       </div>
                       <div className="flex items-center justify-between">
                         <Label htmlFor="smsNotifications" className="cursor-pointer">
                           SMS Notifications
                         </Label>
-                        <Switch id="smsNotifications" checked={true} />
+                        <Switch id="smsNotifications" checked={true} className="bg-sky-500 hover:bg-sky-400" />
                       </div>
                       <div className="flex items-center justify-between">
                         <Label htmlFor="locationServices" className="cursor-pointer">
                           Location Services
                         </Label>
-                        <Switch id="locationServices" checked={true} />
+                        <Switch id="locationServices" checked={true} className="bg-sky-500 hover:bg-sky-400" />
                       </div>
                       <div className="flex items-center justify-between">
                         <Label htmlFor="darkMode" className="cursor-pointer">
                           Dark Mode
                         </Label>
-                        <Switch id="darkMode" checked={false} />
+                        <Switch id="darkMode" checked={false} className="bg-sky-500 hover:bg-sky-400" />
                       </div>
                     </div>
                   </div>
