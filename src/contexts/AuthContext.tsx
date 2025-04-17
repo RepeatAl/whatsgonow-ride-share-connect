@@ -1,9 +1,10 @@
+
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import type { AuthContextProps } from "@/types/auth";
 import type { Session, User } from "@supabase/supabase-js";
-import { useProfile } from "@/hooks/auth/useProfile"; // ← wieder einfügen!
+import { useProfile } from "@/hooks/auth/useProfile";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 

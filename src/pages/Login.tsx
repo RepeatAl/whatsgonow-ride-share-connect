@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Login = () => {
@@ -60,6 +60,11 @@ const Login = () => {
     }
   };
 
+  const toggleSignup = () => {
+    setIsSignup(!isSignup);
+    setError(""); // Clear any existing errors when toggling
+  };
+
   // Show loading state while checking auth
   if (authLoading) {
     return <Layout>
@@ -77,7 +82,7 @@ const Login = () => {
       <TooltipProvider>
         <div className="flex items-center justify-center min-h-screen p-4 bg-neutral-50">
           {isSignup ? (
-            <RegisterForm />
+            <RegisterForm onSwitchToLogin={toggleSignup} />
           ) : (
             <Card className="w-full max-w-md">
               <CardHeader>
@@ -90,27 +95,35 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">E-Mail</label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="deine@email.de" 
-                      value={email} 
-                      onChange={e => setEmail(e.target.value)} 
-                      required 
-                      disabled={isLoading}
-                    />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="deine@email.de" 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)} 
+                        required 
+                        disabled={isLoading}
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="password" className="text-sm font-medium">Passwort</label>
-                    <Input 
-                      id="password" 
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                      disabled={isLoading}
-                    />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input 
+                        id="password" 
+                        type="password" 
+                        placeholder="••••••••" 
+                        value={password} 
+                        onChange={e => setPassword(e.target.value)} 
+                        required 
+                        disabled={isLoading}
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
                   
                   {error && <Alert variant="destructive">
@@ -132,7 +145,7 @@ const Login = () => {
               <CardFooter className="flex justify-center">
                 <Button 
                   variant="link" 
-                  onClick={() => setIsSignup(!isSignup)} 
+                  onClick={toggleSignup} 
                   className="text-sm"
                 >
                   Noch kein Konto? Jetzt registrieren

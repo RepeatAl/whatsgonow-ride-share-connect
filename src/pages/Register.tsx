@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,7 +28,7 @@ const Register = () => {
   return (
     <Layout>
       <div className="container py-12">
-        <RegisterForm />
+        <RegisterForm onSwitchToLogin={() => navigate("/login")} />
       </div>
     </Layout>
   );

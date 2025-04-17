@@ -2,9 +2,15 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatRealtimeProvider } from "@/contexts/ChatRealtimeContext"; 
 import { AppRoutes as Routes } from "@/components/routing/AppRoutes";
+import { Toaster } from "@/hooks/use-toast";
 
 function App() {
-  return <AppContent />;
+  return (
+    <>
+      <Toaster />
+      <AppContent />
+    </>
+  );
 }
 
 // Inner component that can access the auth context
@@ -27,7 +33,7 @@ function AppContent() {
 
   return (
     <ChatRealtimeProvider>
-      <Routes /> {/* oder dein Router-Baum */}
+      <Routes />
     </ChatRealtimeProvider>
   );
 }

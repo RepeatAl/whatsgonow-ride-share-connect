@@ -10,10 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, User, Mail, Lock, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export const RegisterForm = () => {
+interface RegisterFormProps {
+  onSwitchToLogin?: () => void;
+}
+
+export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -96,6 +100,7 @@ export const RegisterForm = () => {
           <Button 
             asChild 
             className="w-full"
+            variant="brand"
           >
             <Link to="/login">Zum Login</Link>
           </Button>
@@ -122,7 +127,10 @@ export const RegisterForm = () => {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Max Mustermann" {...field} />
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input placeholder="Max Mustermann" {...field} className="pl-10" />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,7 +144,10 @@ export const RegisterForm = () => {
                 <FormItem>
                   <FormLabel>E-Mail</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="max@beispiel.de" {...field} />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input type="email" placeholder="max@beispiel.de" {...field} className="pl-10" />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,7 +161,10 @@ export const RegisterForm = () => {
                 <FormItem>
                   <FormLabel>Passwort</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,7 +202,10 @@ export const RegisterForm = () => {
                   <FormItem>
                     <FormLabel>Firmenname</FormLabel>
                     <FormControl>
-                      <Input placeholder="Firma GmbH" {...field} value={field.value || ''} />
+                      <div className="relative">
+                        <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Input placeholder="Firma GmbH" {...field} value={field.value || ''} className="pl-10" />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -203,15 +220,19 @@ export const RegisterForm = () => {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading} variant="brand">
               {isLoading ? "Wird verarbeitet..." : "Registrieren"}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <Button variant="link" asChild className="text-sm">
-          <Link to="/login">Schon registriert? Login</Link>
+        <Button 
+          variant="link" 
+          onClick={onSwitchToLogin} 
+          className="text-sm"
+        >
+          Schon registriert? Login
         </Button>
       </CardFooter>
     </Card>
