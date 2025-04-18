@@ -1,4 +1,3 @@
-
 // src/hooks/auth/useProfile.ts
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
@@ -18,32 +17,30 @@ export function useProfile() {
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
-      console.log("🔄 Lade Profil für:", userId);
+      console.log("🔄 Loading profile for:", userId);
       setLoading(true);
       setError(null);
 
-      const userProfile = await authService.fetchUserProfile(userId);
+      const { data: userProfile, error: profileError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
 
+      if (profileError) throw profileError;
       if (!userProfile) {
-        throw new Error("Profil konnte nicht geladen werden.");
+        throw new Error("Profile could not be loaded.");
       }
 
       setProfile(userProfile);
       setRetryCount(0);
     } catch (err) {
-      console.error("❌ Fehler beim Laden des Profils:", err);
-      const message = err instanceof Error ? err.message : "Unbekannter Fehler beim Laden";
-      setError(new Error(message));
-
+      console.error("❌ Error loading profile:", err);
+      setError(err instanceof Error ? err : new Error("Unknown error loading profile"));
+      
       if (retryCount < 2) {
-        toast({
-          title: "Fehler beim Laden des Profils",
-          description: message,
-          variant: "destructive"
-        });
+        setRetryCount((prev) => prev + 1);
       }
-
-      setRetryCount((prev) => prev + 1);
     } finally {
       setLoading(false);
       setIsInitialLoad(false);

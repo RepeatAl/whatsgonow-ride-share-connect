@@ -1,4 +1,3 @@
-
 // src/pages/Profile.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +14,8 @@ import { mockTransports, mockRequests } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
+import UserProfileHeader from "@/components/profile/UserProfileHeader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -54,14 +55,6 @@ const Profile = () => {
       setOnboardingComplete(!!profile.onboarding_complete);
     }
   }, [loading, profile]);
-
-  // 2) Guard‑Rendering
-  if (loading) {
-    return <Layout><div className="p-8 text-center text-gray-500">Lade Profil…</div></Layout>;
-  }
-  if (error || !profile) {
-    return <Layout><div className="p-8 text-center text-red-500">Profil konnte nicht geladen werden.</div></Layout>;
-  }
 
   const missingFields = getMissingProfileFields(profile);
   const profileIsComplete = !isProfileIncomplete(profile);
@@ -104,12 +97,44 @@ const Profile = () => {
     if (!onErr) setOnboardingComplete(true);
   };
 
+  // 1) Loading state for profile data
+  if (loading) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-20 w-20 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // 2) Error state
+  if (error || !profile) {
+    return (
+      <Layout>
+        <div className="p-8 text-center text-red-500">
+          Profil konnte nicht geladen werden.
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboarding} />}
-
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold mb-4">Mein Profil</h1>
+        <UserProfileHeader profile={profile} userId={user!.id} />
+
+        {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboarding} />}
+
         {!profileIsComplete && (
           <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
             Bitte vervollständige dein Profil!<br/>
