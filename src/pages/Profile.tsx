@@ -11,13 +11,18 @@ import { Label } from "@/components/ui/label";
 import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/auth/useProfile";
 import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
 
 const Profile = () => {
+  const navigate = useNavigate();
+  const { user, profile, loading, error, refreshProfile } = useProfile();
   const [activeTab, setActiveTab] = useState("profile");
-  const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
+
+  // lokale States für die Inputs
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,18 +34,14 @@ const Profile = () => {
   const [houseNumber, setHouseNumber] = useState("");
   const [addressExtra, setAddressExtra] = useState("");
   const [nameAffix, setNameAffix] = useState("");
-  const [onboardingComplete, setOnboardingComplete] = useState(true);
 
-  const navigate = useNavigate();
-  const { user, profile, refreshProfile } = useAuth();
-
+  // 1) Lade Profil in lokale States
   useEffect(() => {
-    if (!user) return navigate("/login");
-    if (profile) {
-      const parts = (profile.name || "").split(" ");
-      setFirstName(parts[0] || "");
-      setLastName(parts.slice(1).join(" ") || "");
-      setEmail(profile.email || user.email || "");
+    if (!loading && profile) {
+      const [vor, ...rest] = (profile.name || "").split(" ");
+      setFirstName(vor || "");
+      setLastName(rest.join(" ") || "");
+      setEmail(profile.email || "");
       setPhone(profile.phone || "");
       setRegion(profile.region || "");
       setPostalCode(profile.postal_code || "");
@@ -49,74 +50,72 @@ const Profile = () => {
       setHouseNumber(profile.house_number || "");
       setAddressExtra(profile.address_extra || "");
       setNameAffix(profile.name_affix || "");
-      setOnboardingComplete(Boolean(profile.onboarding_complete));
+      setOnboardingComplete(!!profile.onboarding_complete);
     }
-  }, [user, profile]);
+  }, [loading, profile]);
 
-  const handleSaveChanges = async () => {
-    if (!user) return;
-    setLoading(true);
+  // 2) Guard‑Rendering
+  if (loading) {
+    return <Layout><div className="p-8 text-center text-gray-500">Lade Profil…</div></Layout>;
+  }
+  if (error || !profile) {
+    return <Layout><div className="p-8 text-center text-red-500">Profil konnte nicht geladen werden.</div></Layout>;
+  }
+
+  const missingFields = getMissingProfileFields(profile);
+  const profileIsComplete = !isProfileIncomplete(profile);
+
+  // 3) Speichern & ggf. Weiterleitung
+  const handleSave = async () => {
+    setLoadingSave(true);
     const fullName = `${firstName} ${lastName}`.trim();
-    const isComplete = !isProfileIncomplete({
-      ...profile!,
-      name: fullName,
-      email, phone, region, postal_code: postalCode, city
-    } as any);
-
-    const { error } = await supabase
+    const { error: upErr } = await supabase
       .from("users")
       .update({
         name: fullName,
         name_affix: nameAffix,
         email, phone, region,
-        postal_code: postalCode,
-        city, street, house_number: houseNumber, address_extra: addressExtra,
-        profile_complete: isComplete
+        postal_code: postalCode, city,
+        street, house_number: houseNumber,
+        address_extra: addressExtra,
       })
-      .eq("user_id", user.id);
+      .eq("user_id", user!.id);
 
-    if (error) {
+    if (upErr) {
       toast({ title: "Fehler", description: "Profil konnte nicht gespeichert werden.", variant: "destructive" });
     } else {
-      toast({ title: "Profil aktualisiert", description: "Deine Änderungen wurden gespeichert." });
-      // ** Redirect, sobald alle Pflichtfelder gefüllt sind **
-      if (isComplete) {
-        navigate("/profile", { replace: true });
-        return;
+      toast({ title: "Gespeichert", description: "Dein Profil wurde aktualisiert." });
+      await refreshProfile?.();
+      // **Hier**: Wenn Nutzer gerade sein Profil zum ersten Mal vervollständigt:
+      if (!onboardingComplete && profileIsComplete) {
+        navigate("/profile");
       }
-      refreshProfile?.();
     }
-    setLoading(false);
+    setLoadingSave(false);
   };
 
-  const handleOnboardingComplete = async () => {
-    if (!user) return;
-    setOnboardingComplete(true);
-    await supabase.from("users").update({ onboarding_complete: true }).eq("user_id", user.id);
+  // 4) Onboarding abschließen
+  const handleOnboarding = async () => {
+    const { error: onErr } = await supabase
+      .from("users")
+      .update({ onboarding_complete: true })
+      .eq("user_id", user!.id);
+    if (!onErr) setOnboardingComplete(true);
   };
-
-  if (!profile || loading) {
-    return (
-      <Layout>
-        <div className="p-8 text-center text-gray-500">Lade Profil…</div>
-      </Layout>
-    );
-  }
-
-  const missingFields = getMissingProfileFields(profile);
-  const isComplete = !isProfileIncomplete(profile);
 
   return (
     <Layout>
-      {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboardingComplete} />}
+      {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboarding} />}
+
       <div className="max-w-4xl mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-4">Mein Profil</h1>
-        {!isComplete && (
+        {!profileIsComplete && (
           <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
-            Bitte vervollständige dein Profil.<br />
+            Bitte vervollständige dein Profil!<br/>
             Fehlende Angaben: {missingFields.join(", ")}
           </div>
         )}
+
         <Tabs defaultValue="profile" onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="profile">Profil</TabsTrigger>
@@ -125,9 +124,18 @@ const Profile = () => {
           </TabsList>
 
           <TabsContent value="profile">
-            {/* … deine Formfelder … */}
-            <div className="mt-4">
-              <Button onClick={handleSaveChanges} disabled={loading}>Speichern</Button>
+            <div className="grid gap-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* hier alle Label+Input-Felder mit den useState‑Werten */}
+                <div>
+                  <Label>Vorname</Label>
+                  <Input value={firstName} onChange={e => setFirstName(e.target.value)} />
+                </div>
+                {/* … Rest analog … */}
+              </div>
+              <div className="mt-4">
+                <Button onClick={handleSave} disabled={loadingSave}>Speichern</Button>
+              </div>
             </div>
           </TabsContent>
 
