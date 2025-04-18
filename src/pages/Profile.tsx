@@ -14,6 +14,7 @@ import { TransportsTab } from "@/components/profile/TransportsTab";
 import { RequestsTab } from "@/components/profile/RequestsTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
+import { UserProfile } from "@/types/auth"; // Added import for UserProfile type
 
 const Profile = () => {
   const navigate = useNavigate();
