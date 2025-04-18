@@ -11,6 +11,12 @@ import DashboardDriver from "@/pages/dashboard/DashboardDriver";
 import DashboardCM from "@/pages/dashboard/DashboardCM";
 import DashboardAdmin from "@/pages/dashboard/DashboardAdmin";
 
+export interface RouteConfig {
+  path: string;
+  element: React.ReactNode;
+  protected?: boolean;
+  public?: boolean;
+}
 
 export const AppRoutes = () => {
   const { loading } = useAuth();

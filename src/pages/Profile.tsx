@@ -1,5 +1,5 @@
+
 // src/pages/Profile.tsx
-// ✅ Vollständig aktualisierte Profile.tsx mit zentraler Profilprüfung, UI-Erweiterung & dauerhaftem Onboarding-Status
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -179,15 +179,26 @@ const Profile = () => {
                   <Input id="address_extra" value={addressExtra} onChange={e => setAddressExtra(e.target.value)} />
                 </div>
               </div>
+              <div className="mt-4">
+                <Button onClick={handleSaveChanges} disabled={loading}>Speichern</Button>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="transports">
-            <TransportCard transports={mockTransports} />
+            <div className="grid grid-cols-1 gap-4 mt-6">
+              {mockTransports.map(transport => (
+                <TransportCard key={transport.id} transport={transport} />
+              ))}
+            </div>
           </TabsContent>
 
           <TabsContent value="requests">
-            <RequestCard requests={mockRequests} />
+            <div className="grid grid-cols-1 gap-4 mt-6">
+              {mockRequests.map(request => (
+                <RequestCard key={request.id} request={request} />
+              ))}
+            </div>
           </TabsContent>
         </Tabs>
       </div>

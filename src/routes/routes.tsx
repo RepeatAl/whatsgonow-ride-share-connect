@@ -14,11 +14,11 @@ import Orders from "@/pages/Orders";
 import CreateOrder from "@/pages/CreateOrder";
 import Deal from "@/pages/Deal";
 import Feedback from "@/pages/Feedback";
-// Fixing dashboard imports
-import DashboardSender from "@/pages/DashboardSender";
-import DashboardDriver from "@/pages/DashboardDriver";
-import DashboardCM from "@/pages/DashboardCM";
-import DashboardAdmin from "@/pages/DashboardAdmin";
+// Dashboard imports with corrected paths
+import DashboardSender from "@/pages/dashboard/DashboardSender";
+import DashboardDriver from "@/pages/dashboard/DashboardDriver";
+import DashboardCM from "@/pages/dashboard/DashboardCM";
+import DashboardAdmin from "@/pages/dashboard/DashboardAdmin";
 import CommunityManager from "@/pages/CommunityManager";
 import Admin from "@/pages/Admin";
 import AdminDashboard from "@/pages/AdminDashboard";
