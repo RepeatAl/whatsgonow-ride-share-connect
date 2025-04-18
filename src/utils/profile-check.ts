@@ -1,57 +1,62 @@
-
 import type { UserProfile } from "@/types/auth";
 
 /**
- * Checks if a user profile is incomplete
- * @param user User profile object to check
- * @returns Boolean indicating if the profile is incomplete
+ * Prüft, ob ein Nutzerprofil unvollständig ist
  */
-export const isProfileIncomplete = (user: any) => {
+export const isProfileIncomplete = (user: UserProfile | null): boolean => {
   if (!user) return true;
 
-  // If profile_complete flag is explicitly set to true, trust it
   if (user.profile_complete === true) return false;
 
-  // Otherwise, perform detailed validation
-  const { name, region, role, company_name } = user;
+  const requiredFields: (keyof UserProfile)[] = [
+    "name",
+    "email",
+    "phone",
+    "region",
+    "postal_code",
+    "city"
+  ];
 
-  // Base validation for all users
-  if (!name || !region || !role) return true;
+  if (user.role === "sender_business") {
+    requiredFields.push("company_name");
+  }
 
-  // Role-specific validation
-  switch (role) {
-    case 'sender_business':
-      if (!company_name) return true;
-      break;
-    case 'cm':
-      // Additional CM validation could go here
-      break;
-    // Add other role-specific validations as needed
+  for (const field of requiredFields) {
+    const value = user[field];
+    if (!value || typeof value === "string" && value.trim() === "") {
+      return true;
+    }
+  }
+
+  if (user.street && !user.house_number) {
+    return true;
   }
 
   return false;
 };
 
 /**
- * Returns missing profile fields based on user role
- * @param user User profile object to check
- * @returns Array of field names that are missing
+ * Gibt eine Liste aller fehlenden Pflichtfelder für das Profil zurück
  */
-export const getMissingProfileFields = (user: any): string[] => {
-  if (!user) return ['all fields'];
+export const getMissingProfileFields = (user: UserProfile | null): string[] => {
+  if (!user) return ["alle Felder"];
 
-  const missingFields: string[] = [];
-  const { name, region, role, company_name } = user;
+  const missing: string[] = [];
 
-  // Check basic fields all users need
-  if (!name) missingFields.push('name');
-  if (!region) missingFields.push('region');
-  if (!role) missingFields.push('role');
+  if (!user.name) missing.push("Name");
+  if (!user.email) missing.push("E-Mail");
+  if (!user.phone) missing.push("Telefonnummer");
+  if (!user.region) missing.push("Region");
+  if (!user.postal_code) missing.push("Postleitzahl");
+  if (!user.city) missing.push("Stadt");
 
-  // Role-specific fields
-  if (role === 'sender_business' && !company_name) {
-    missingFields.push('company_name');
+  if (user.role === "sender_business" && !user.company_name) {
+    missing.push("Firmenname");
   }
 
-  return missingFields;
+  if (user.street && !user.house_number) {
+    missing.push("Hausnummer (wenn Straße angegeben)");
+  }
+
+  return missing;
 };
