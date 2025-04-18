@@ -20,7 +20,11 @@ export function VehicleTypeSelector({ register }: Props) {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-1">
             {["S", "M", "L", "XL", "XXL"].map((size) => (
               <div key={size} className="flex items-center space-x-2">
-                <Checkbox id={`car-${size}`} {...register(`vehicle_types.car.${size}`)} />
+                <Checkbox 
+                  id={`car-${size}`} 
+                  {...register(`vehicle_types.car` as const)}
+                  value={size}
+                />
                 <Label htmlFor={`car-${size}`}>{size}</Label>
               </div>
             ))}
@@ -35,7 +39,10 @@ export function VehicleTypeSelector({ register }: Props) {
             { id: "plane", label: "Flugzeug" }
           ].map(({ id, label }) => (
             <div key={id} className="flex items-center space-x-2">
-              <Checkbox id={id} {...register(`vehicle_types.${id}`)} />
+              <Checkbox 
+                id={id} 
+                {...register(`vehicle_types.${id}` as "vehicle_types.motorcycle" | "vehicle_types.bicycle" | "vehicle_types.ship" | "vehicle_types.plane")} 
+              />
               <Label htmlFor={id}>{label}</Label>
             </div>
           ))}
@@ -43,7 +50,7 @@ export function VehicleTypeSelector({ register }: Props) {
 
         <div>
           <Label htmlFor="other">Sonstige</Label>
-          <Input id="other" {...register("vehicle_types.other")} />
+          <Input id="other" {...register("vehicle_types.other" as const)} />
         </div>
       </div>
     </div>

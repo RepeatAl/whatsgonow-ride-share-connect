@@ -19,7 +19,7 @@ const preRegisterSchema = z.object({
   wants_cm: z.boolean().default(false),
   wants_sender: z.boolean().default(false),
   vehicle_types: z.object({
-    car: z.array(z.enum(["S", "M", "L", "XL", "XXL"])).optional(),
+    car: z.array(z.string()).optional(),
     motorcycle: z.boolean().optional(),
     bicycle: z.boolean().optional(),
     ship: z.boolean().optional(),

@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { preRegistrationSchema, type PreRegistrationFormData } from "@/lib/validators/pre-registration";
 import { VehicleTypeSelector } from "./VehicleTypeSelector";
-import { supabase } from "@/lib/supabaseClient";
 
 export function PreRegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,8 +24,7 @@ export function PreRegistrationForm() {
       const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
         method: "POST",
         headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabase.auth.anon}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(data),
       });
