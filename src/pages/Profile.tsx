@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
-import { useProfile } from "@/hooks/useProfile";
-import { getMissingProfileFields } from "@/utils/profile-check";
+import { useAuth } from "@/contexts/AuthContext";
+import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
 
 const Profile = () => {
@@ -32,7 +32,7 @@ const Profile = () => {
   const [onboardingComplete, setOnboardingComplete] = useState(true);
 
   const navigate = useNavigate();
-  const { user, profile, signOut, refreshProfile, isProfileComplete } = useProfile();
+  const { user, profile, refreshProfile } = useAuth();
 
   useEffect(() => {
     if (!user) return navigate("/login");
@@ -97,6 +97,7 @@ const Profile = () => {
   }
 
   const missingFields = getMissingProfileFields(profile);
+  const isProfileComplete = !isProfileIncomplete(profile);
 
   return <Layout>
     {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboardingComplete} />}
