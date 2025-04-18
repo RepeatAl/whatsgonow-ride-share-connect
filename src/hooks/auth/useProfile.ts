@@ -1,137 +1,81 @@
-// ✅ Vollständig aktualisierte Profile.tsx mit zentraler Profilprüfung
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import Layout from "@/components/Layout";
+// ✅ Aktualisierte useProfile.ts mit Vollintegration von Onboarding, Profilfeldern und Zustand
+import { useState, useEffect, useCallback } from "react";
+import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import TransportCard from "@/components/transport/TransportCard";
-import RequestCard from "@/components/transport/RequestCard";
-import { mockTransports, mockRequests } from "@/data/mockData";
-import { useProfile } from "@/hooks/useProfile";
+import { authService } from "@/services/auth-service";
+import type { UserProfile } from "@/types/auth";
+import { isProfileIncomplete } from "@/utils/profile-check";
 
-const Profile = () => {
-  const [activeTab, setActiveTab] = useState("profile");
-  const [loading, setLoading] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [region, setRegion] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [city, setCity] = useState("");
-  const [street, setStreet] = useState("");
-  const [houseNumber, setHouseNumber] = useState("");
-  const [addressExtra, setAddressExtra] = useState("");
-  const [nameAffix, setNameAffix] = useState("");
+export function useProfile(user: User | null, isSessionLoading: boolean) {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const navigate = useNavigate();
-  const { user, profile, signOut, refreshProfile, isProfileComplete } = useProfile();
+  const fetchProfile = useCallback(async (userId: string) => {
+    try {
+      console.log("🔄 Lade Profil für:", userId);
+      setLoading(true);
+      setError(null);
+
+      const userProfile = await authService.fetchUserProfile(userId);
+
+      if (!userProfile) {
+        throw new Error("Profil konnte nicht geladen werden.");
+      }
+
+      setProfile(userProfile);
+      setRetryCount(0);
+    } catch (err) {
+      console.error("❌ Fehler beim Laden des Profils:", err);
+      const message = err instanceof Error ? err.message : "Unbekannter Fehler beim Laden";
+      setError(new Error(message));
+
+      if (retryCount < 2) {
+        toast({
+          title: "Fehler beim Laden des Profils",
+          description: message,
+          variant: "destructive"
+        });
+      }
+
+      setRetryCount((prev) => prev + 1);
+    } finally {
+      setLoading(false);
+      setIsInitialLoad(false);
+    }
+  }, [retryCount]);
+
+  const retryProfileLoad = useCallback(() => {
+    if (!user) return;
+    console.log("🔁 Erneuter Profil-Ladeversuch");
+    setRetryCount(0);
+    fetchProfile(user.id);
+  }, [user, fetchProfile]);
 
   useEffect(() => {
-    if (!user) return navigate("/login");
-    if (profile) {
-      const nameParts = (profile.name || "").split(" ");
-      setFirstName(nameParts[0] || "");
-      setLastName(nameParts.slice(1).join(" ") || "");
-      setEmail(profile.email || user.email || "");
-      setPhone(profile.phone || "");
-      setRegion(profile.region || "");
-      setPostalCode(profile.postal_code || "");
-      setCity(profile.city || "");
-      setStreet(profile.street || "");
-      setHouseNumber(profile.house_number || "");
-      setAddressExtra(profile.address_extra || "");
-      setNameAffix(profile.name_affix || "");
-    }
-  }, [user, profile]);
+    if (isSessionLoading) return;
 
-  const handleSaveChanges = async () => {
-    if (!user) return;
-    setLoading(true);
-
-    const fullName = `${firstName} ${lastName}`.trim();
-    const isComplete = fullName && email && phone && region && postalCode && city;
-
-    const { error } = await supabase.from("users").update({
-      name: fullName,
-      name_affix: nameAffix,
-      email,
-      phone,
-      region,
-      postal_code: postalCode,
-      city,
-      street,
-      house_number: houseNumber,
-      address_extra: addressExtra,
-      profile_complete: isComplete
-    }).eq("user_id", user.id);
-
-    if (error) {
-      toast({ title: "Fehler", description: "Profil konnte nicht aktualisiert werden.", variant: "destructive" });
+    if (user) {
+      fetchProfile(user.id);
     } else {
-      toast({ title: "Profil aktualisiert", description: "Deine Änderungen wurden gespeichert." });
-      refreshProfile?.();
+      setProfile(null);
+      setError(null);
+      setLoading(false);
+      setRetryCount(0);
+      setIsInitialLoad(false);
     }
-    setLoading(false);
+  }, [user, isSessionLoading, fetchProfile]);
+
+  return {
+    profile,
+    profileLoading: loading,
+    profileError: error,
+    setProfile,
+    retryProfileLoad,
+    isInitialLoad,
+    isProfileComplete: profile ? !isProfileIncomplete(profile) : false,
+    user
   };
-
-  if (!profile || loading) {
-    return <Layout><div className="p-8 text-center text-gray-500">Lade Profil...</div></Layout>;
-  }
-
-  return <Layout>
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold mb-4">Mein Profil</h1>
-      {!isProfileComplete && (
-        <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
-          Bitte vervollständige dein Profil, um alle Funktionen zu nutzen.
-        </div>
-      )}
-      <Tabs defaultValue="profile" onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="profile">Profil</TabsTrigger>
-          <TabsTrigger value="transports">Transporte</TabsTrigger>
-          <TabsTrigger value="requests">Anfragen</TabsTrigger>
-        </TabsList>
-        <TabsContent value="profile">
-          <div className="grid gap-4 mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><Label htmlFor="first_name">Vorname</Label><Input id="first_name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
-              <div><Label htmlFor="last_name">Nachname</Label><Input id="last_name" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
-              <div><Label htmlFor="name_affix">Namenszusatz</Label><Input id="name_affix" value={nameAffix} onChange={(e) => setNameAffix(e.target.value)} /></div>
-              <div><Label htmlFor="email">E-Mail</Label><Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-              <div><Label htmlFor="phone">Telefon</Label><Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
-              <div><Label htmlFor="region">Region</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} required /></div>
-              <div><Label htmlFor="postal_code">Postleitzahl</Label><Input id="postal_code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required /></div>
-              <div><Label htmlFor="city">Stadt</Label><Input id="city" value={city} onChange={(e) => setCity(e.target.value)} required /></div>
-              <div><Label htmlFor="street">Straße</Label><Input id="street" value={street} onChange={(e) => setStreet(e.target.value)} /></div>
-              <div><Label htmlFor="house_number">Hausnummer</Label><Input id="house_number" value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} /></div>
-              <div><Label htmlFor="address_extra">Adresszusatz</Label><Input id="address_extra" value={addressExtra} onChange={(e) => setAddressExtra(e.target.value)} /></div>
-            </div>
-            <div className="mt-4">
-              <Button onClick={handleSaveChanges} disabled={loading}>Speichern</Button>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="transports">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            {mockTransports.map((t) => <TransportCard key={t.id} transport={t} />)}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="requests">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            {mockRequests.map((r) => <RequestCard key={r.id} request={r} />)}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  </Layout>;
-};
-
-export default Profile;
+}
