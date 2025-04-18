@@ -1,4 +1,3 @@
-// ✅ Vollständig aktualisierte auth.ts – inkl. neuer Felder
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -6,18 +5,18 @@ export interface UserProfile {
   name: string;
   email: string;
   role: string;
-  region: string;
-  phone: string;
-  postal_code: string;
-  city: string;
+  region?: string;
+  active?: boolean;
+  company_name?: string;
+  profile_complete?: boolean;
+  onboarding_complete?: boolean;
+  phone?: string;
+  postal_code?: string;
+  city?: string;
   street?: string;
   house_number?: string;
   address_extra?: string;
   name_affix?: string;
-  company_name?: string;
-  profile_complete?: boolean;
-  onboarding_complete?: boolean;
-  active?: boolean;
 }
 
 export interface AuthContextProps {
@@ -31,7 +30,20 @@ export interface AuthContextProps {
   signUp: (
     email: string,
     password: string,
-    metadata?: Partial<UserProfile>
+    metadata?: {
+      first_name?: string;
+      last_name?: string;
+      name_affix?: string;
+      phone?: string;
+      region?: string;
+      postal_code?: string;
+      city?: string;
+      street?: string;
+      house_number?: string;
+      address_extra?: string;
+      role?: string;
+      company_name?: string;
+    }
   ) => Promise<{ user: User | null; session: Session | null } | void>;
   signOut: () => Promise<void>;
   retryProfileLoad: (() => void) | null;
