@@ -1,101 +1,81 @@
-
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
 import { toast } from "@/components/ui/use-toast";
 import { getMissingProfileFields } from "@/utils/profile-check";
+import { UserProfile } from "@/types/auth";
 
 export const authService = {
-  async fetchUserProfile(userId: string) {
+  async fetchUserProfile(userId: string): Promise<UserProfile | null> {
     try {
       console.log("📊 Fetching profile for user:", userId);
-      
+
       const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("user_id", userId)
-        .maybeSingle();  // Using maybeSingle instead of single for better error handling
-      
-      if (error) {
-        console.error("❌ Profile fetch error:", error);
-        throw error;
-      }
-      
+        .maybeSingle();
+
+      if (error) throw error;
+
       if (!data) {
-        console.log("⚠️ No profile found, attempting to create default");
+        console.log("⚠️ No profile found, creating default...");
         return await authService.createDefaultUserProfile(userId);
       }
-      
+
       console.log("✅ Profile loaded:", data);
       return data;
     } catch (error) {
-      console.error("❌ Profile fetch exception:", error);
+      console.error("❌ Profile fetch failed:", error);
       throw error;
     }
   },
-  
-  async createDefaultUserProfile(userId: string) {
+
+  async createDefaultUserProfile(userId: string): Promise<UserProfile> {
     try {
-      console.log("🆕 Creating default profile for user:", userId);
-      
-      // Get user email and metadata
       const { data: userData, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        console.error("❌ Error getting user data:", userError);
-        throw userError;
-      }
-      
+      if (userError) throw userError;
+
       const user = userData?.user;
-      const userEmail = user?.email || 'no-email';
-      
-      // Extract any available metadata
-      const metadata = user?.user_metadata || {};
-      const userName = metadata.name || "Neuer Benutzer";
-      const userRole = metadata.role || "sender_private";
-      const companyName = userRole === 'sender_business' ? metadata.company_name : null;
-      const userRegion = metadata.region || null;
-      
-      // Create new entry in users table
+      const email = user?.email ?? "no-email";
+      const meta = user?.user_metadata ?? {};
+
+      const insertData = {
+        user_id: userId,
+        email,
+        name: `${meta.first_name ?? ""} ${meta.last_name ?? ""}`.trim() || meta.name || "Neuer Benutzer",
+        name_affix: meta.name_affix || null,
+        phone: meta.phone || null,
+        role: meta.role || "sender_private",
+        company_name: meta.company_name || null,
+        region: meta.region || null,
+        postal_code: meta.postal_code || null,
+        city: meta.city || null,
+        street: meta.street || null,
+        house_number: meta.house_number || null,
+        address_extra: meta.address_extra || null,
+        active: true,
+        profile_complete: false
+      };
+
       const { data, error } = await supabase
         .from("users")
-        .insert([
-          { 
-            user_id: userId,
-            name: userName,
-            email: userEmail,
-            role: userRole,
-            company_name: companyName,
-            region: userRegion,
-            active: true,
-            profile_complete: false
-          }
-        ])
+        .insert([insertData])
         .select()
         .single();
-      
-      if (error) {
-        console.error("❌ Error creating default user profile:", error);
-        throw error;
-      }
-      
-      // Get missing fields to inform the user
+
+      if (error) throw error;
+
       const missingFields = getMissingProfileFields(data);
-      const missingFieldsText = missingFields.length > 0 
-        ? `Fehlende Felder: ${missingFields.join(', ')}`
-        : '';
-      
-      console.log("✅ Default profile created successfully:", data);
       toast({
         title: "Profil erstellt",
-        description: `Ein Standardprofil wurde für dich angelegt. ${missingFieldsText} Bitte vervollständige deine Daten im Profil-Bereich.`
+        description: `Ein Standardprofil wurde angelegt. Bitte ergänze noch: ${missingFields.join(", ")}.`
       });
-      
+
       return data;
     } catch (error) {
-      console.error("❌ Exception when creating default user profile:", error);
       toast({
         title: "Fehler beim Erstellen des Profils",
-        description: `Ein Fehler ist aufgetreten: ${(error as Error).message}`,
+        description: (error as Error).message,
         variant: "destructive"
       });
       throw error;
@@ -104,14 +84,9 @@ export const authService = {
 
   async signIn(email: string, password: string) {
     try {
-      console.log("🔑 Attempting sign in for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        console.error("❌ Sign in error:", error);
-        throw error;
-      }
-      
+      if (error) throw error;
+
       console.log("✅ Sign in successful");
       return data;
     } catch (error) {
@@ -120,14 +95,25 @@ export const authService = {
     }
   },
 
-  async signUp(email: string, password: string, metadata?: { 
-    name?: string;
-    role?: string;
-    company_name?: string;
-  }) {
+  async signUp(
+    email: string,
+    password: string,
+    metadata?: {
+      first_name?: string;
+      last_name?: string;
+      name_affix?: string;
+      phone?: string;
+      region?: string;
+      postal_code?: string;
+      city?: string;
+      street?: string;
+      house_number?: string;
+      address_extra?: string;
+      role?: string;
+      company_name?: string;
+    }
+  ) {
     try {
-      console.log("🔐 Attempting sign up for:", email, "with metadata:", metadata);
-      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -136,18 +122,14 @@ export const authService = {
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
-      
-      if (error) {
-        console.error("❌ Sign up error:", error);
-        throw error;
-      }
 
-      console.log("✅ Sign up successful:", data);
+      if (error) throw error;
+
       toast({
         title: "Registrierung erfolgreich",
-        description: "Dein Konto wurde erstellt. Bitte überprüfe deine E-Mails für die Bestätigung."
+        description: "Bestätige deine E-Mail-Adresse, um fortzufahren."
       });
-      
+
       return data;
     } catch (error) {
       handleAuthError(error as Error, "Registrierung");
@@ -157,14 +139,8 @@ export const authService = {
 
   async signOut() {
     try {
-      console.log("🚪 Attempting sign out");
       const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error("❌ Sign out error:", error);
-        throw error;
-      }
-      
+      if (error) throw error;
       console.log("✅ Sign out successful");
     } catch (error) {
       handleAuthError(error as Error, "Abmeldung");
