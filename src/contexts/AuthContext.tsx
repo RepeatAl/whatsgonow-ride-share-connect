@@ -46,13 +46,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Hook for user profile
   const { 
     profile, 
-    profileLoading, 
-    profileError, 
-    setProfile, 
+    loading: profileLoading, 
+    error: profileError, 
     retryProfileLoad, 
     isInitialLoad,
-    isProfileComplete 
-  } = useProfileHook(user, loading);
+    isProfileComplete, 
+    refreshProfile
+  } = useProfileHook();
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
@@ -70,12 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     setLoading(true);
     await authService.signOut();
-    setProfile(null);
     setLoading(false);
-  };
-
-  const refreshProfile = () => {
-    retryProfileLoad?.();
   };
 
   const value = {

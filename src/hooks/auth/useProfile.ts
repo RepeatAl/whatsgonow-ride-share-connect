@@ -1,18 +1,20 @@
 
-// ✅ Aktualisierte useProfile.ts mit Vollintegration von Onboarding, Profilfeldern und Zustand
+// src/hooks/auth/useProfile.ts
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
 import { authService } from "@/services/auth-service";
+import { supabase } from "@/integrations/supabase/client";
 import type { UserProfile } from "@/types/auth";
 import { isProfileIncomplete } from "@/utils/profile-check";
 
-export function useProfile(user: User | null, isSessionLoading: boolean) {
+export function useProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
@@ -56,27 +58,37 @@ export function useProfile(user: User | null, isSessionLoading: boolean) {
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    if (isSessionLoading) return;
+    // Get the current user from Supabase
+    const getUserAndFetchProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+        
+        if (currentUser) {
+          fetchProfile(currentUser.id);
+        } else {
+          setLoading(false);
+          setIsInitialLoad(false);
+        }
+      } catch (err) {
+        console.error("Error getting user session:", err);
+        setLoading(false);
+        setIsInitialLoad(false);
+      }
+    };
 
-    if (user) {
-      fetchProfile(user.id);
-    } else {
-      setProfile(null);
-      setError(null);
-      setLoading(false);
-      setRetryCount(0);
-      setIsInitialLoad(false);
-    }
-  }, [user, isSessionLoading, fetchProfile]);
+    getUserAndFetchProfile();
+  }, [fetchProfile]);
 
   return {
     profile,
-    profileLoading: loading,
-    profileError: error,
-    setProfile,
+    loading,
+    error,
     retryProfileLoad,
     isInitialLoad,
     isProfileComplete: profile ? !isProfileIncomplete(profile) : false,
-    user
+    user,
+    refreshProfile: user ? () => fetchProfile(user.id) : null
   };
 }

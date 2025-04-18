@@ -1,3 +1,4 @@
+
 // src/pages/Profile.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,13 +12,13 @@ import { Label } from "@/components/ui/label";
 import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
-import { useProfile } from "@/hooks/auth/useProfile";
+import { useAuth } from "@/contexts/AuthContext";
 import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, profile, loading, error, refreshProfile } = useProfile();
+  const { user, profile, loading, error, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const [loadingSave, setLoadingSave] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(true);
@@ -126,12 +127,50 @@ const Profile = () => {
           <TabsContent value="profile">
             <div className="grid gap-4 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* hier alle Label+Input-Felder mit den useState‑Werten */}
                 <div>
-                  <Label>Vorname</Label>
-                  <Input value={firstName} onChange={e => setFirstName(e.target.value)} />
+                  <Label htmlFor="firstName">Vorname</Label>
+                  <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} />
                 </div>
-                {/* … Rest analog … */}
+                <div>
+                  <Label htmlFor="lastName">Nachname</Label>
+                  <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="email">E-Mail</Label>
+                  <Input id="email" value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Telefon</Label>
+                  <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="region">Region</Label>
+                  <Input id="region" value={region} onChange={e => setRegion(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="postalCode">Postleitzahl</Label>
+                  <Input id="postalCode" value={postalCode} onChange={e => setPostalCode(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="city">Stadt</Label>
+                  <Input id="city" value={city} onChange={e => setCity(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="street">Straße</Label>
+                  <Input id="street" value={street} onChange={e => setStreet(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="houseNumber">Hausnummer</Label>
+                  <Input id="houseNumber" value={houseNumber} onChange={e => setHouseNumber(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="addressExtra">Adresszusatz</Label>
+                  <Input id="addressExtra" value={addressExtra} onChange={e => setAddressExtra(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="nameAffix">Namenszusatz</Label>
+                  <Input id="nameAffix" value={nameAffix} onChange={e => setNameAffix(e.target.value)} />
+                </div>
               </div>
               <div className="mt-4">
                 <Button onClick={handleSave} disabled={loadingSave}>Speichern</Button>

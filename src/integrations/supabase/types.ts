@@ -660,41 +660,68 @@ export type Database = {
       }
       orders: {
         Row: {
+          category: string
           deadline: string
           description: string
+          fragile: boolean
           from_address: string
+          item_name: string
+          load_assistance: boolean
+          negotiable: boolean
           order_id: string
+          preferred_vehicle_type: string
+          price: number
           qr_code_token: string | null
+          security_measures: string
           sender_id: string | null
           status: string
           to_address: string
           token_expires_at: string | null
+          tools_required: string
           verified_at: string | null
           weight: number
         }
         Insert: {
+          category?: string
           deadline: string
           description: string
+          fragile?: boolean
           from_address: string
+          item_name?: string
+          load_assistance?: boolean
+          negotiable?: boolean
           order_id?: string
+          preferred_vehicle_type?: string
+          price?: number
           qr_code_token?: string | null
+          security_measures?: string
           sender_id?: string | null
           status: string
           to_address: string
           token_expires_at?: string | null
+          tools_required?: string
           verified_at?: string | null
           weight: number
         }
         Update: {
+          category?: string
           deadline?: string
           description?: string
+          fragile?: boolean
           from_address?: string
+          item_name?: string
+          load_assistance?: boolean
+          negotiable?: boolean
           order_id?: string
+          preferred_vehicle_type?: string
+          price?: number
           qr_code_token?: string | null
+          security_measures?: string
           sender_id?: string | null
           status?: string
           to_address?: string
           token_expires_at?: string | null
+          tools_required?: string
           verified_at?: string | null
           weight?: number
         }
