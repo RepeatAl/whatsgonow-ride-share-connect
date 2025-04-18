@@ -1,121 +1,104 @@
-// ✅ Updated RegisterForm.tsx to match latest RegisterFormSchema
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/contexts/AuthContext';
-import { registerSchema, type RegisterFormData } from '@/components/auth/register/RegisterFormSchema';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { RegisterFormFields } from '@/components/auth/register/RegisterFormFields';
-import { SuccessMessage } from '@/components/auth/register/SuccessMessage';
-import { ErrorDisplay } from '@/components/auth/register/ErrorDisplay';
+// ✅ Vollständiger AuthContext mit Supabase-Session, Profile, Login/Logout/SignUp
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/auth-service";
+import { useProfile } from "@/hooks/useProfile";
+import type { AuthContextProps, UserProfile } from "@/types/auth";
 
-interface RegisterFormProps {
-  onSwitchToLogin?: () => void;
-}
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const { signUp } = useAuth();
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      first_name: '',
-      last_name: '',
-      name_affix: '',
-      phone: '',
-      region: '',
-      postal_code: '',
-      city: '',
-      street: '',
-      house_number: '',
-      address_extra: '',
-      role: 'sender_private',
-      company_name: '',
-    },
-  });
+  // Initial session fetch
+  useEffect(() => {
+    const getInitialSession = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
 
-  const { watch } = form;
-  const selectedRole = watch('role');
+      if (error) console.warn("Session error:", error);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    };
 
-  const onSubmit = async (data: RegisterFormData) => {
-    if (import.meta.env.DEV) {
-      console.log('🧪 Registration form data:', data);
-    }
+    getInitialSession();
 
-    setError('');
-    setIsLoading(true);
-    setIsSuccess(false);
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
 
-    try {
-      await signUp(data.email, data.password, {
-        first_name: data.first_name,
-        last_name: data.last_name,
-        name_affix: data.name_affix,
-        phone: data.phone,
-        region: data.region,
-        postal_code: data.postal_code,
-        city: data.city,
-        street: data.street,
-        house_number: data.house_number,
-        address_extra: data.address_extra,
-        role: data.role,
-        ...(data.company_name ? { company_name: data.company_name } : {}),
-      });
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
-      if (import.meta.env.DEV) {
-        console.log('✅ Sign up successful');
-      }
+  // Hook für Benutzerprofil laden
+  const {
+    profile,
+    profileLoading,
+    profileError,
+    setProfile,
+    retryProfileLoad,
+    isInitialLoad
+  } = useProfile(user, loading);
 
-      setIsSuccess(true);
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('❌ Registration error:', err);
-      }
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
+  const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    await authService.signIn(email, password);
+    setLoading(false);
   };
 
-  if (isSuccess) {
-    return <SuccessMessage />;
-  }
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata?: Record<string, string>
+  ) => {
+    setLoading(true);
+    const result = await authService.signUp(email, password, metadata);
+    setLoading(false);
+    return result;
+  };
 
-  return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Registrieren</CardTitle>
-        <CardDescription>
-          Erstelle ein neues Konto bei Whatsgonow
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <RegisterFormFields control={form.control} selectedRole={selectedRole} />
-            <ErrorDisplay error={error} />
-            <Button type="submit" className="w-full" disabled={isLoading} variant="brand">
-              {isLoading ? "Wird verarbeitet..." : "Registrieren"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <Button 
-          variant="link" 
-          onClick={onSwitchToLogin} 
-          className="text-sm"
-        >
-          Schon registriert? Login
-        </Button>
-      </CardFooter>
-    </Card>
-  );
+  const signOut = async () => {
+    setLoading(true);
+    await authService.signOut();
+    setProfile(null);
+    setLoading(false);
+  };
+
+  const refreshProfile = () => {
+    retryProfileLoad?.();
+  };
+
+  const value: AuthContextProps = {
+    user,
+    session,
+    profile,
+    loading: loading || profileLoading,
+    error: error || profileError,
+    isInitialLoad,
+    signIn,
+    signUp,
+    signOut,
+    retryProfileLoad,
+    refreshProfile
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
