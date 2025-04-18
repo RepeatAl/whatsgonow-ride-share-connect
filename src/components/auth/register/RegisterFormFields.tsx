@@ -57,12 +57,124 @@ export const RegisterFormFields = ({
 
       <FormField
         control={control}
-        name="name"
+        name="first_name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Ansprechpartner</FormLabel>
+            <FormLabel>Vorname</FormLabel>
             <FormControl>
-              <Input placeholder="Max Mustermann" {...field} />
+              <Input placeholder="Max" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="last_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nachname</FormLabel>
+            <FormControl>
+              <Input placeholder="Mustermann" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="name_affix"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Namenszusatz (optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="z. B. Dr." {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="phone"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Telefonnummer</FormLabel>
+            <FormControl>
+              <Input placeholder="z. B. +49 123 4567890" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="postal_code"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Postleitzahl</FormLabel>
+            <FormControl>
+              <Input placeholder="z. B. 10115" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="city"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Stadt</FormLabel>
+            <FormControl>
+              <Input placeholder="z. B. Berlin" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="street"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Straße (optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="z. B. Hauptstraße" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="house_number"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Hausnummer (wenn Straße angegeben)</FormLabel>
+            <FormControl>
+              <Input placeholder="z. B. 12a" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="address_extra"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Adresszusatz (optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="z. B. 3. Etage links" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
