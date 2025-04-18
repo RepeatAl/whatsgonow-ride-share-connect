@@ -24,7 +24,6 @@ const Profile = () => {
   const [loadingSave, setLoadingSave] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(true);
 
-  // lokale States für die Inputs
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,7 +36,6 @@ const Profile = () => {
   const [addressExtra, setAddressExtra] = useState("");
   const [nameAffix, setNameAffix] = useState("");
 
-  // 1) Lade Profil in lokale States
   useEffect(() => {
     if (!loading && profile) {
       const [vor, ...rest] = (profile.name || "").split(" ");
@@ -59,7 +57,6 @@ const Profile = () => {
   const missingFields = getMissingProfileFields(profile);
   const profileIsComplete = !isProfileIncomplete(profile);
 
-  // 3) Speichern & ggf. Weiterleitung
   const handleSave = async () => {
     setLoadingSave(true);
     const fullName = `${firstName} ${lastName}`.trim();
@@ -80,7 +77,6 @@ const Profile = () => {
     } else {
       toast({ title: "Gespeichert", description: "Dein Profil wurde aktualisiert." });
       await refreshProfile?.();
-      // **Hier**: Wenn Nutzer gerade sein Profil zum ersten Mal vervollständigt:
       if (!onboardingComplete && profileIsComplete) {
         navigate("/profile");
       }
@@ -88,7 +84,6 @@ const Profile = () => {
     setLoadingSave(false);
   };
 
-  // 4) Onboarding abschließen
   const handleOnboarding = async () => {
     const { error: onErr } = await supabase
       .from("users")
@@ -97,7 +92,6 @@ const Profile = () => {
     if (!onErr) setOnboardingComplete(true);
   };
 
-  // 1) Loading state for profile data
   if (loading) {
     return (
       <Layout>
@@ -117,12 +111,11 @@ const Profile = () => {
     );
   }
 
-  // 2) Error state
   if (error || !profile) {
     return (
       <Layout>
         <div className="p-8 text-center text-red-500">
-          Profil konnte nicht geladen werden.
+          Profil konnte nicht geladen werden. Bitte versuche es später erneut.
         </div>
       </Layout>
     );
@@ -132,7 +125,7 @@ const Profile = () => {
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-6">
         <UserProfileHeader profile={profile} userId={user!.id} />
-
+        
         {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboarding} />}
 
         {!profileIsComplete && (

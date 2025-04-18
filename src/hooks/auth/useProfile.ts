@@ -1,11 +1,9 @@
-// src/hooks/auth/useProfile.ts
+
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
-import { authService } from "@/services/auth-service";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabaseClient";
 import type { UserProfile } from "@/types/auth";
-import { isProfileIncomplete } from "@/utils/profile-check";
 
 export function useProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -29,14 +27,15 @@ export function useProfile() {
 
       if (profileError) throw profileError;
       if (!userProfile) {
-        throw new Error("Profile could not be loaded.");
+        throw new Error("Profile konnte nicht geladen werden.");
       }
 
       setProfile(userProfile);
       setRetryCount(0);
+      console.log("✅ Profile loaded:", userProfile);
     } catch (err) {
       console.error("❌ Error loading profile:", err);
-      setError(err instanceof Error ? err : new Error("Unknown error loading profile"));
+      setError(err instanceof Error ? err : new Error("Unbekannter Fehler beim Laden des Profils"));
       
       if (retryCount < 2) {
         setRetryCount((prev) => prev + 1);
@@ -55,7 +54,6 @@ export function useProfile() {
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    // Get the current user from Supabase
     const getUserAndFetchProfile = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -63,7 +61,8 @@ export function useProfile() {
         setUser(currentUser);
         
         if (currentUser) {
-          fetchProfile(currentUser.id);
+          console.log("📥 Fetching profile for user:", currentUser.id);
+          await fetchProfile(currentUser.id);
         } else {
           setLoading(false);
           setIsInitialLoad(false);
@@ -84,7 +83,6 @@ export function useProfile() {
     error,
     retryProfileLoad,
     isInitialLoad,
-    isProfileComplete: profile ? !isProfileIncomplete(profile) : false,
     user,
     refreshProfile: user ? () => fetchProfile(user.id) : null
   };
