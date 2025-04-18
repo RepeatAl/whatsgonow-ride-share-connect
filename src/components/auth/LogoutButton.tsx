@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface LogoutButtonProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "accent";
@@ -17,14 +18,23 @@ const LogoutButton = ({
   className = ""
 }: LogoutButtonProps) => {
   const { signOut } = useAuth();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
   const handleLogout = async () => {
     try {
       setLoading(true);
       await signOut();
+      toast({
+        description: "Erfolgreich abgemeldet",
+      });
     } catch (error) {
       console.error("Logout error:", error);
+      toast({
+        variant: "destructive",
+        title: "Fehler beim Abmelden",
+        description: "Bitte versuche es erneut",
+      });
     } finally {
       setLoading(false);
     }

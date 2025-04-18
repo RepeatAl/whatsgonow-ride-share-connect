@@ -1,5 +1,3 @@
-
-// src/contexts/AuthContext.tsx
 import React, {
   createContext,
   useContext,
@@ -20,8 +18,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  // Initial session fetch
   useEffect(() => {
     const getInitialSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -43,9 +41,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // Hook for user profile
   const { 
-    profile, 
+    profile: profileHook,
     loading: profileLoading, 
     error: profileError, 
     retryProfileLoad, 
@@ -69,8 +66,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     setLoading(true);
-    await authService.signOut();
-    setLoading(false);
+    try {
+      await authService.signOut();
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+    } catch (error) {
+      console.error("Sign out error:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {
@@ -95,7 +101,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Export hook for consumers
 export const useAuth = (): AuthContextProps => {
   const context = useContext(AuthContext);
   if (!context) {

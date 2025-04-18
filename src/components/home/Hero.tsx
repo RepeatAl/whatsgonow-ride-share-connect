@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Package, Car } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Hero = () => {
+  const { user } = useAuth();
+
   return (
     <div className="relative overflow-hidden bg-white">
       <div className="max-w-7xl mx-auto">
@@ -29,30 +32,35 @@ const Hero = () => {
                 Whatsgonow transforms everyday mobility into a decentralized, flexible logistics network. Send and receive packages through people who are already traveling your route.
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                <div className="rounded-md shadow">
-                  <Link to="/find-transport">
-                    <Button className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
-                      <Package className="mr-2 h-5 w-5" />
-                      Send Something
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </Link>
-                </div>
-                <div className="mt-3 sm:mt-0 sm:ml-3">
-                  <Link to="/offer-transport">
-                    <Button variant="outline" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
-                      <Car className="mr-2 h-5 w-5" />
-                      Become a Driver
-                    </Button>
-                  </Link>
-                </div>
-                <div className="mt-3 sm:mt-0 sm:ml-3">
-                  <Link to="/pre-register">
-                    <Button variant="secondary" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
-                      Join Waiting List
-                    </Button>
-                  </Link>
-                </div>
+                {user ? (
+                  <>
+                    <div className="rounded-md shadow">
+                      <Link to="/find-transport">
+                        <Button className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                          <Package className="mr-2 h-5 w-5" />
+                          Send Something
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                      </Link>
+                    </div>
+                    <div className="mt-3 sm:mt-0 sm:ml-3">
+                      <Link to="/offer-transport">
+                        <Button variant="outline" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                          <Car className="mr-2 h-5 w-5" />
+                          Become a Driver
+                        </Button>
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-md shadow">
+                    <Link to="/pre-register">
+                      <Button variant="brand" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                        Join Waiting List
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </main>
