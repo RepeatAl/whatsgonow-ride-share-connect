@@ -31,7 +31,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 const MAX_FILES = 4;
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const CreateOrderForm = () => {
@@ -60,7 +60,7 @@ const CreateOrderForm = () => {
     },
   });
 
-  // 1) Auswahl & Validierung der Bilder
+  // 1) Handler für File-Input und Validierung
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + selectedFiles.length > MAX_FILES) {
@@ -69,7 +69,7 @@ const CreateOrderForm = () => {
     }
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} ist größer als 2 MB.`);
+        toast.error(`${file.name} ist größer als 2 MB.`);
         return;
       }
       if (!ALLOWED_TYPES.includes(file.type)) {
@@ -84,39 +84,24 @@ const CreateOrderForm = () => {
     });
   };
 
-  // 2) Entfernen eines ausgewählten Bildes
+  // 2) Entfernen eines Bildes aus der Vorschau
   const removeFile = (idx: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
     setPreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // 3) Submission
+  // 3) Submit-Handler
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
     try {
-      // 3.1) Neuer Auftrag in DB
+      // a) Neuer Auftrag in DB anlegen
       const orderId = uuidv4();
       const { error: insertError } = await supabase
         .from("orders")
-        .insert([{
-          id: orderId,
-          item_name: data.title,               // <-- hier _muss_ das NOT NULL-Feld gefüllt werden
-          description: data.description,
-          pickup_address: data.pickupAddress,
-          delivery_address: data.deliveryAddress,
-          weight: data.weight,
-          dimensions: data.dimensions,
-          value: data.value,
-          insurance: data.insurance,
-          pickup_time_start: data.pickupTimeStart,
-          pickup_time_end: data.pickupTimeEnd,
-          delivery_time_start: data.deliveryTimeStart,
-          delivery_time_end: data.deliveryTimeEnd,
-          deadline: data.deadline,
-        }]);
+        .insert([{ id: orderId, ...data }]);
       if (insertError) throw insertError;
 
-      // 3.2) Bilder hochladen mit Metadata
+      // b) Bilder hochladen mit Metadata (user_id, published=true)
       for (const file of selectedFiles) {
         const path = `${orderId}/${file.name}`;
         const { error: uploadError } = await supabase
@@ -127,7 +112,7 @@ const CreateOrderForm = () => {
             upsert: false,
             metadata: {
               user_id: user!.id,
-              published: "false",
+              published: "true",
             },
           });
         if (uploadError) throw uploadError;
@@ -146,7 +131,7 @@ const CreateOrderForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* === Titel === */}
+        {/* ---------- Felder (Titel, Beschreibung, Adressen etc.) ---------- */}
         <FormItem>
           <FormLabel>Titel*</FormLabel>
           <FormControl>
@@ -155,7 +140,6 @@ const CreateOrderForm = () => {
           <FormMessage>{form.formState.errors.title?.message}</FormMessage>
         </FormItem>
 
-        {/* === Beschreibung === */}
         <FormItem>
           <FormLabel>Beschreibung*</FormLabel>
           <FormControl>
@@ -168,7 +152,6 @@ const CreateOrderForm = () => {
           <FormMessage>{form.formState.errors.description?.message}</FormMessage>
         </FormItem>
 
-        {/* === Abhol‑ & Zieladresse === */}
         <FormItem>
           <FormLabel>Abholadresse*</FormLabel>
           <FormControl>
@@ -193,7 +176,6 @@ const CreateOrderForm = () => {
           <FormMessage>{form.formState.errors.deliveryAddress?.message}</FormMessage>
         </FormItem>
 
-        {/* === Gewicht, Maße & Wert === */}
         <FormItem>
           <FormLabel>Gewicht (kg)*</FormLabel>
           <FormControl>
@@ -218,7 +200,6 @@ const CreateOrderForm = () => {
           <FormMessage>{form.formState.errors.value?.message}</FormMessage>
         </FormItem>
 
-        {/* === Versicherung === */}
         <FormItem className="flex items-center space-x-3">
           <FormControl>
             <Checkbox {...form.register("insurance")} />
@@ -229,16 +210,17 @@ const CreateOrderForm = () => {
           </div>
         </FormItem>
 
-        {/* === Abholzeitfenster === */}
-        {/* (hier kannst Du Deine Popover‑Blöcke für pickupTimeStart/pickupTimeEnd einfügen) */}
+        {/* Zeitfenster & Deadline */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Abholung: Von / Bis */}
+          {/* ... Popover für pickupTimeStart & pickupTimeEnd ... */}
+          {/* Lieferung: Von / Bis */}
+          {/* ... Popover für deliveryTimeStart & deliveryTimeEnd ... */}
+          {/* Deadline */}
+          {/* ... Popover für deadline ... */}
+        </div>
 
-        {/* === Lieferzeitfenster === */}
-        {/* (hier Deine Popover‑Blöcke für deliveryTimeStart/deliveryTimeEnd) */}
-
-        {/* === Deadline === */}
-        {/* (Deine Popover‑Blöcke für deadline) */}
-
-        {/* === Bilder‑Upload === */}
+        {/* ---------- Bilder-Upload ---------- */}
         <FormItem>
           <FormLabel>Bilder (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
           <FormControl>
@@ -253,7 +235,7 @@ const CreateOrderForm = () => {
           <FormMessage />
         </FormItem>
 
-        {/* === Vorschau === */}
+        {/* Vorschau */}
         {previews.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {previews.map((src, idx) => (
@@ -263,22 +245,17 @@ const CreateOrderForm = () => {
                   type="button"
                   onClick={() => removeFile(idx)}
                   className="absolute top-1 right-1 bg-white rounded-full p-1 opacity-0 group-hover:opacity-80"
-                >
-                  &times;
-                </button>
+                >&times;</button>
               </div>
             ))}
           </div>
         )}
 
-        {/* === Submit === */}
+        {/* Submit */}
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={isSubmitting}>
             {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Wird erstellt...
-              </>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Wird erstellt...</>
             ) : (
               "Transportauftrag erstellen"
             )}
