@@ -31,7 +31,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 const MAX_FILES = 4;
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const CreateOrderForm = () => {
@@ -48,19 +48,9 @@ const CreateOrderForm = () => {
       description: "",
       pickupAddress: "",
       deliveryAddress: "",
-      // neue Felder vorbefüllen:
-      itemName: "",
-      category: "",
-      fragile: false,
-      loadAssistance: false,
-      toolsRequired: "",
-      securityMeasures: "",
       weight: undefined,
       dimensions: "",
       value: undefined,
-      price: undefined,
-      negotiable: false,
-      preferredVehicleType: "",
       insurance: false,
       pickupTimeStart: undefined,
       pickupTimeEnd: undefined,
@@ -70,8 +60,7 @@ const CreateOrderForm = () => {
     },
   });
 
-  // Datei‐Handling wie gehabt…
-
+  // 1) Handler für File-Input und Validierung
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + selectedFiles.length > MAX_FILES) {
@@ -80,7 +69,7 @@ const CreateOrderForm = () => {
     }
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} ist größer als 2 MB.`);
+        toast.error(`${file.name} ist größer als 2 MB.`);
         return;
       }
       if (!ALLOWED_TYPES.includes(file.type)) {
@@ -95,32 +84,35 @@ const CreateOrderForm = () => {
     });
   };
 
+  // 2) Entfernen eines Bildes aus der Vorschau
   const removeFile = (idx: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
     setPreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
+  // 3) Submit-Handler
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
     try {
+      // a) Neuer Auftrag in DB anlegen
       const orderId = uuidv4();
-      // Auftrag anlegen
       const { error: insertError } = await supabase
         .from("orders")
         .insert([{ id: orderId, ...data }]);
       if (insertError) throw insertError;
 
-      // Bilder (mit Metadata!) hochladen
+      // b) Bilder hochladen mit Metadata (user_id, published=true)
       for (const file of selectedFiles) {
         const path = `${orderId}/${file.name}`;
         const { error: uploadError } = await supabase
-          .storage.from("orders-images")
+          .storage
+          .from("items-images")
           .upload(path, file, {
             cacheControl: "3600",
             upsert: false,
             metadata: {
               user_id: user!.id,
-              published: "false",
+              published: "true",
             },
           });
         if (uploadError) throw uploadError;
@@ -139,105 +131,131 @@ const CreateOrderForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* — Bestehende Felder (Titel, Beschreibung, Adressen) — */}
-        {/* … */}
-
-        {/* — Neue Artikelfelder — */}
+        {/* ---------- Felder (Titel, Beschreibung, Adressen etc.) ---------- */}
         <FormItem>
-          <FormLabel>Artikelname*</FormLabel>
+          <FormLabel>Titel*</FormLabel>
           <FormControl>
-            <Input {...form.register("itemName")} placeholder="z.B. Fernseher" />
+            <Input placeholder="z.B. Transport von Möbeln" {...form.register("title")} />
           </FormControl>
-          <FormMessage>{form.formState.errors.itemName?.message}</FormMessage>
+          <FormMessage>{form.formState.errors.title?.message}</FormMessage>
         </FormItem>
 
         <FormItem>
-          <FormLabel>Kategorie*</FormLabel>
+          <FormLabel>Beschreibung*</FormLabel>
           <FormControl>
-            <Input {...form.register("category")} placeholder="z.B. Elektronik" />
+            <Textarea
+              placeholder="Beschreiben Sie Ihren Transportauftrag..."
+              className="min-h-[120px]"
+              {...form.register("description")}
+            />
           </FormControl>
-          <FormMessage>{form.formState.errors.category?.message}</FormMessage>
+          <FormMessage>{form.formState.errors.description?.message}</FormMessage>
         </FormItem>
 
-        <FormItem className="flex items-center space-x-2">
-          <FormControl><Checkbox {...form.register("fragile")} /></FormControl>
-          <FormLabel>zerbrechlich</FormLabel>
-        </FormItem>
-        <FormItem className="flex items-center space-x-2">
-          <FormControl><Checkbox {...form.register("loadAssistance")} /></FormControl>
-          <FormLabel>Belade‑Hilfe benötigt</FormLabel>
-        </FormItem>
         <FormItem>
-          <FormLabel>Werkzeuge benötigt (optional)</FormLabel>
+          <FormLabel>Abholadresse*</FormLabel>
           <FormControl>
-            <Input {...form.register("toolsRequired")} placeholder="z.B. Schraubenzieher" />
+            <Textarea
+              placeholder="Straße, Hausnummer, PLZ, Ort"
+              className="min-h-[80px]"
+              {...form.register("pickupAddress")}
+            />
           </FormControl>
-        </FormItem>
-        <FormItem>
-          <FormLabel>Sicherungsmaßnahmen (optional)</FormLabel>
-          <FormControl>
-            <Input {...form.register("securityMeasures")} placeholder="z.B. Spanngurte" />
-          </FormControl>
+          <FormMessage>{form.formState.errors.pickupAddress?.message}</FormMessage>
         </FormItem>
 
-        {/* — Preisfelder — */}
         <FormItem>
-          <FormLabel>Preis (€)*</FormLabel>
+          <FormLabel>Zieladresse*</FormLabel>
           <FormControl>
-            <Input type="number" step="0.01" {...form.register("price")} />
+            <Textarea
+              placeholder="Straße, Hausnummer, PLZ, Ort"
+              className="min-h-[80px]"
+              {...form.register("deliveryAddress")}
+            />
           </FormControl>
-          <FormMessage>{form.formState.errors.price?.message}</FormMessage>
-        </FormItem>
-        <FormItem className="flex items-center space-x-2">
-          <FormControl><Checkbox {...form.register("negotiable")} /></FormControl>
-          <FormLabel>verhandelbar</FormLabel>
-        </FormItem>
-        <FormItem>
-          <FormLabel>Wunsch‑Fahrzeugtyp (optional)</FormLabel>
-          <FormControl>
-            <Input {...form.register("preferredVehicleType")} placeholder="z.B. LKW" />
-          </FormControl>
+          <FormMessage>{form.formState.errors.deliveryAddress?.message}</FormMessage>
         </FormItem>
 
-        {/* — Bildupload & Vorschau — */}
         <FormItem>
-          <FormLabel>Bilder (max. 4, 2 MB)</FormLabel>
+          <FormLabel>Gewicht (kg)*</FormLabel>
+          <FormControl>
+            <Input type="number" step="0.1" placeholder="z.B. 15.5" {...form.register("weight")} />
+          </FormControl>
+          <FormMessage>{form.formState.errors.weight?.message}</FormMessage>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel>Maße (optional)</FormLabel>
+          <FormControl>
+            <Input placeholder="z.B. 100 x 50 x 30 cm" {...form.register("dimensions")} />
+          </FormControl>
+          <FormMessage>{form.formState.errors.dimensions?.message}</FormMessage>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel>Warenwert (€, optional)</FormLabel>
+          <FormControl>
+            <Input type="number" step="0.01" placeholder="z.B. 499.99" {...form.register("value")} />
+          </FormControl>
+          <FormMessage>{form.formState.errors.value?.message}</FormMessage>
+        </FormItem>
+
+        <FormItem className="flex items-center space-x-3">
+          <FormControl>
+            <Checkbox {...form.register("insurance")} />
+          </FormControl>
+          <div>
+            <FormLabel>Versicherung</FormLabel>
+            <FormMessage>{form.formState.errors.insurance?.message}</FormMessage>
+          </div>
+        </FormItem>
+
+        {/* Zeitfenster & Deadline */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Abholung: Von / Bis */}
+          {/* ... Popover für pickupTimeStart & pickupTimeEnd ... */}
+          {/* Lieferung: Von / Bis */}
+          {/* ... Popover für deliveryTimeStart & deliveryTimeEnd ... */}
+          {/* Deadline */}
+          {/* ... Popover für deadline ... */}
+        </div>
+
+        {/* ---------- Bilder-Upload ---------- */}
+        <FormItem>
+          <FormLabel>Bilder (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
           <FormControl>
             <input
               type="file"
               multiple
               accept={ALLOWED_TYPES.join(",")}
               onChange={handleFileChange}
-              className="block w-full"
+              className="block w-full text-sm text-gray-700"
             />
           </FormControl>
+          <FormMessage />
         </FormItem>
 
+        {/* Vorschau */}
         {previews.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {previews.map((src, i) => (
-              <div key={i} className="relative group">
+            {previews.map((src, idx) => (
+              <div key={idx} className="relative group">
                 <img src={src} className="w-full h-24 object-cover rounded" />
                 <button
                   type="button"
-                  onClick={() => removeFile(i)}
-                  className="absolute top-1 right-1 bg-white p-1 opacity-0 group-hover:opacity-80"
-                >
-                  &times;
-                </button>
+                  onClick={() => removeFile(idx)}
+                  className="absolute top-1 right-1 bg-white rounded-full p-1 opacity-0 group-hover:opacity-80"
+                >&times;</button>
               </div>
             ))}
           </div>
         )}
 
-        {/* — Submit — */}
+        {/* Submit */}
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={isSubmitting}>
             {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Wird erstellt…
-              </>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Wird erstellt...</>
             ) : (
               "Transportauftrag erstellen"
             )}
