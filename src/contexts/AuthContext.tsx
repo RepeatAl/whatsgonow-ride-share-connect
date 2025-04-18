@@ -1,4 +1,4 @@
-// ✅ Vollständiger AuthContext mit Supabase-Session, Profil-Logik und zentraler Authentifizierung
+// ✅ Vollständiger AuthContext mit Supabase-Session, Profile, Login/Logout/SignUp & OnboardingStatus
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,36 +11,36 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // 1. Hole initiale Session
+  // Initial session fetch
   useEffect(() => {
-    const loadInitialSession = async () => {
+    const getInitialSession = async () => {
       const {
         data: { session },
-        error
+        error,
       } = await supabase.auth.getSession();
 
-      if (error) console.warn("⚠️ Session error:", error);
+      if (error) console.warn("Session error:", error);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     };
 
-    loadInitialSession();
+    getInitialSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
     });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      listener.subscription.unsubscribe();
     };
   }, []);
 
-  // 2. Profil laden über Hook
+  // Hook für Benutzerprofil laden
   const {
     profile,
     profileLoading,
@@ -50,7 +50,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isInitialLoad
   } = useProfile(user, loading);
 
-  // 3. Auth-Funktionen
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     await authService.signIn(email, password);
@@ -60,20 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (
     email: string,
     password: string,
-    metadata?: {
-      first_name?: string;
-      last_name?: string;
-      name_affix?: string;
-      phone?: string;
-      region?: string;
-      postal_code?: string;
-      city?: string;
-      street?: string;
-      house_number?: string;
-      address_extra?: string;
-      role?: string;
-      company_name?: string;
-    }
+    metadata?: Record<string, string>
   ) => {
     setLoading(true);
     const result = await authService.signUp(email, password, metadata);
@@ -92,7 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     retryProfileLoad?.();
   };
 
-  // 4. Zusammenführung
   const value: AuthContextProps = {
     user,
     session,
@@ -113,7 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("❌ useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
