@@ -1,5 +1,11 @@
 // src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import type { UserProfile, AuthContextProps } from "@/types/auth";
@@ -14,7 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<Error | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Lädt das Profil aus deiner "users"-Tabelle
+  // Lädt das UserProfile aus deiner Supabase-Tabelle "users"
   const fetchProfile = async (u: User) => {
     try {
       const { data, error: e } = await supabase
@@ -30,9 +36,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Initiale Session & Listener
+  // Initiale Session laden und Listener einrichten
   useEffect(() => {
-    const init = async () => {
+    (async () => {
       const { data, error: e } = await supabase.auth.getSession();
       if (e) setError(e);
       if (data.session) {
@@ -42,47 +48,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       setLoading(false);
       setIsInitialLoad(false);
-    };
-    init();
+    })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, sess) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      if (sess?.user) {
-        await fetchProfile(sess.user);
-      } else {
-        setProfile(null);
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, sess) => {
+        setSession(sess);
+        setUser(sess?.user ?? null);
+        if (sess?.user) {
+          await fetchProfile(sess.user);
+        } else {
+          setProfile(null);
+        }
       }
-    });
-    return () => {
-      listener.subscription.unsubscribe();
-    };
+    );
+    return () => listener.subscription.unsubscribe();
   }, []);
 
-  // Auth‑Methoden
+  // Anmelden
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) throw error;
     if (data.session?.user) {
+      setSession(data.session);
       setUser(data.session.user);
       await fetchProfile(data.session.user);
     }
   };
 
+  // Registrieren
   const signUp = async (
     email: string,
     password: string,
     metadata?: Record<string, any>
-  ) => {
+  ): Promise<{ user: User | null; session: Session | null } | void> => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: metadata },
     });
     if (error) throw error;
+    // Supabase sendet E‑Mail, wir warten auf Bestätigung
     return data;
   };
 
+  // Abmelden
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -91,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(null);
   };
 
-  // Ermöglicht manuelles Nachladen des Profils
+  // Manuelles Nachladen des Profils
   const retryProfileLoad = () => {
     if (user) fetchProfile(user);
   };
@@ -116,7 +128,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// **Wichtig**: Hiermit stellst du das Hook `useAuth` zur Verfügung
-export const useAuth = () => {
+// Export des Hooks für Verbraucher
+export const useAuth = (): AuthContextProps => {
   return useContext(AuthContext);
 };
