@@ -1,14 +1,15 @@
+// src/services/auth-service.ts
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
 import { toast } from "@/components/ui/use-toast";
 import { getMissingProfileFields } from "@/utils/profile-check";
-import { UserProfile } from "@/types/auth";
+import type { UserProfile } from "@/types/auth";
 
 export const authService = {
+  // Profil laden oder neu anlegen
   async fetchUserProfile(userId: string): Promise<UserProfile | null> {
     try {
       console.log("📊 Fetching profile for user:", userId);
-
       const { data, error } = await supabase
         .from("users")
         .select("*")
@@ -16,10 +17,9 @@ export const authService = {
         .maybeSingle();
 
       if (error) throw error;
-
       if (!data) {
         console.log("⚠️ No profile found, creating default...");
-        return await authService.createDefaultUserProfile(userId);
+        return await this.createDefaultUserProfile(userId);
       }
 
       console.log("✅ Profile loaded:", data);
@@ -30,6 +30,7 @@ export const authService = {
     }
   },
 
+  // Standard-Profil anlegen
   async createDefaultUserProfile(userId: string): Promise<UserProfile> {
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -54,7 +55,8 @@ export const authService = {
         house_number: meta.house_number || null,
         address_extra: meta.address_extra || null,
         active: true,
-        profile_complete: false
+        profile_complete: false,
+        onboarding_complete: false
       };
 
       const { data, error } = await supabase
@@ -62,7 +64,6 @@ export const authService = {
         .insert([insertData])
         .select()
         .single();
-
       if (error) throw error;
 
       const missingFields = getMissingProfileFields(data);
@@ -70,7 +71,6 @@ export const authService = {
         title: "Profil erstellt",
         description: `Ein Standardprofil wurde angelegt. Bitte ergänze noch: ${missingFields.join(", ")}.`
       });
-
       return data;
     } catch (error) {
       toast({
@@ -82,11 +82,11 @@ export const authService = {
     }
   },
 
+  // Einloggen
   async signIn(email: string, password: string) {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
       console.log("✅ Sign in successful");
       return data;
     } catch (error) {
@@ -95,6 +95,7 @@ export const authService = {
     }
   },
 
+  // Registrierung inklusive Anlage eines separaten Profils
   async signUp(
     email: string,
     password: string,
@@ -114,6 +115,7 @@ export const authService = {
     }
   ) {
     try {
+      console.log("🔐 Attempting sign up for:", email, "with metadata:", metadata);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -122,45 +124,35 @@ export const authService = {
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
-
       if (error) throw error;
 
       toast({
         title: "Registrierung erfolgreich",
-        description: "Bestätige deine E-Mail-Adresse, um fortzufahren."
+        description: "Bestätige deine E‑Mail-Adresse, um fortzufahren."
       });
-      // src/services/auth-service.ts
-async signUp(email: string, password: string, metadata?: { /* ... */ }) {
-  // … bestehender SignUp-Code …
-  const { data, error } = await supabase.auth.signUp({ /* … */ });
-  if (error) throw error;
 
-  toast({ title: "Registrierung erfolgreich", /* … */ });
+      // **Hier neues Profil in eigener Tabelle anlegen**
+      await supabase
+        .from("profiles")
+        .insert([{
+          user_id: data.user!.id,
+          email,
+          first_name: metadata?.first_name ?? "",
+          last_name: metadata?.last_name ?? "",
+          name_affix: metadata?.name_affix ?? null,
+          phone: metadata?.phone ?? "",
+          role: metadata?.role ?? "sender_private",
+          company_name: metadata?.company_name ?? null,
+          region: metadata?.region ?? "",
+          postal_code: metadata?.postal_code ?? "",
+          city: metadata?.city ?? "",
+          street: metadata?.street ?? null,
+          house_number: metadata?.house_number ?? null,
+          address_extra: metadata?.address_extra ?? null,
+          profile_complete: false,
+          onboarding_complete: false
+        }]);
 
-  // **HIER einfügen: neues Profil anlegen**
-  await supabase
-    .from("profiles")
-    .insert([{
-      user_id: data.user!.id,
-      email,
-      first_name: metadata?.first_name ?? "",
-      last_name: metadata?.last_name ?? "",
-      name_affix: metadata?.name_affix ?? null,
-      phone: metadata?.phone ?? "",
-      role: metadata?.role ?? "sender_private",
-      company_name: metadata?.company_name ?? null,
-      region: metadata?.region ?? "",
-      postal_code: metadata?.postal_code ?? "",
-      city: metadata?.city ?? "",
-      street: metadata?.street ?? null,
-      house_number: metadata?.house_number ?? null,
-      address_extra: metadata?.address_extra ?? null,
-      profile_complete: false,
-      onboarding_complete: false
-    }]);
-
-  return data;
-}
       return data;
     } catch (error) {
       handleAuthError(error as Error, "Registrierung");
@@ -168,6 +160,7 @@ async signUp(email: string, password: string, metadata?: { /* ... */ }) {
     }
   },
 
+  // Ausloggen
   async signOut() {
     try {
       const { error } = await supabase.auth.signOut();
