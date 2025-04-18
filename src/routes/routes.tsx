@@ -1,4 +1,3 @@
-
 import { RouteConfig } from "@/components/routing/AppRoutes";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -14,7 +13,8 @@ import Orders from "@/pages/Orders";
 import CreateOrder from "@/pages/CreateOrder";
 import Deal from "@/pages/Deal";
 import Feedback from "@/pages/Feedback";
-// Dashboard imports with corrected paths
+import PreRegister from "@/pages/PreRegister";
+import PreRegisterSuccess from "@/pages/PreRegisterSuccess";
 import DashboardSender from "@/pages/dashboard/DashboardSender";
 import DashboardDriver from "@/pages/dashboard/DashboardDriver";
 import DashboardCM from "@/pages/dashboard/DashboardCM";
@@ -39,6 +39,8 @@ export const routes: RouteConfig[] = [
   { path: "/support", element: <Support />, public: true },
   { path: "/delivery/:token", element: <DeliveryConfirmationPage />, public: true },
   { path: "/invoice-download/:token", element: <InvoiceDownload />, public: true },
+  { path: "/pre-register", element: <PreRegister />, public: true },
+  { path: "/pre-register/success", element: <PreRegisterSuccess />, public: true },
 
   // Dashboard redirect entry (evaluates role)
   { path: "/dashboard", element: <DashboardSender />, protected: true },

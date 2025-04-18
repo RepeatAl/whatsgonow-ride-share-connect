@@ -735,6 +735,60 @@ export type Database = {
           },
         ]
       }
+      pre_registrations: {
+        Row: {
+          consent_version: string
+          created_at: string
+          email: string
+          first_name: string
+          gdpr_consent: boolean
+          id: string
+          last_name: string
+          notes: string | null
+          notification_sent: boolean
+          postal_code: string
+          source: string | null
+          vehicle_types: Json | null
+          wants_cm: boolean
+          wants_driver: boolean
+          wants_sender: boolean
+        }
+        Insert: {
+          consent_version?: string
+          created_at?: string
+          email: string
+          first_name: string
+          gdpr_consent?: boolean
+          id?: string
+          last_name: string
+          notes?: string | null
+          notification_sent?: boolean
+          postal_code: string
+          source?: string | null
+          vehicle_types?: Json | null
+          wants_cm?: boolean
+          wants_driver?: boolean
+          wants_sender?: boolean
+        }
+        Update: {
+          consent_version?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          gdpr_consent?: boolean
+          id?: string
+          last_name?: string
+          notes?: string | null
+          notification_sent?: boolean
+          postal_code?: string
+          source?: string | null
+          vehicle_types?: Json | null
+          wants_cm?: boolean
+          wants_driver?: boolean
+          wants_sender?: boolean
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address_extra: string | null

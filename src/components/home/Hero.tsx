@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Package, Car } from "lucide-react";
@@ -44,6 +43,13 @@ const Hero = () => {
                     <Button variant="outline" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
                       <Car className="mr-2 h-5 w-5" />
                       Become a Driver
+                    </Button>
+                  </Link>
+                </div>
+                <div className="mt-3 sm:mt-0 sm:ml-3">
+                  <Link to="/pre-register">
+                    <Button variant="secondary" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                      Join Waiting List
                     </Button>
                   </Link>
                 </div>
