@@ -1,3 +1,4 @@
+
 // src/pages/Profile.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +17,7 @@ import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-ch
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
 import UserProfileHeader from "@/components/profile/UserProfileHeader";
 import { Skeleton } from "@/components/ui/skeleton";
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/profile/ImageUploader";
 
 const Profile = () => {
   const navigate = useNavigate();
