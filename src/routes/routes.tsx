@@ -27,6 +27,7 @@ import FeedbackAdmin from "@/pages/FeedbackAdmin";
 import AdminInvoiceTest from "@/pages/AdminInvoiceTest";
 import EmailTest from "@/pages/EmailTest";
 import NotFound from "@/pages/NotFound";
+import OfferTransport from "@/pages/OfferTransport";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -57,6 +58,11 @@ export const routes: RouteConfig[] = [
   { path: "/create-order", element: <CreateOrder />, protected: true },
   { path: "/deal/:orderId", element: <Deal />, protected: true },
   { path: "/feedback", element: <Feedback />, protected: true },
+  { 
+    path: "/offer-transport", 
+    element: <OfferTransport />, 
+    protected: true 
+  },
 
   // Admin & CM tools
   { path: "/community-manager", element: <CommunityManager />, protected: true },
