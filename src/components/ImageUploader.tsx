@@ -1,3 +1,4 @@
+
 // src/components/ImageUploader.tsx
 import { ChangeEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,9 +17,9 @@ export default function ImageUploader({ onUploadComplete }: Props) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // Max. 2 MB pro Datei
+    // Max. 2 MB pro Datei
     if (file.size > 2 * 1024 * 1024) {
-      setError("Datei darf maximal 2 MB groß sein.");
+      setError("Datei darf maximal 2 MB groß sein.");
       return;
     }
     // Erlaubte MIME‑Typen
@@ -55,23 +56,24 @@ export default function ImageUploader({ onUploadComplete }: Props) {
     }
 
     // Public URL holen – Benutzer sehen das Bild dann nur, wenn published = 'true'
-    const { publicUrl, error: urlError } = supabase
+    // Fix: The getPublicUrl method returns an object with a 'data' property that contains the publicUrl
+    const { data: urlData } = supabase
       .storage
       .from("items-images")
       .getPublicUrl(data.path);
 
-    if (urlError) {
-      console.error("Public URL failed:", urlError);
+    if (!urlData) {
+      console.error("Could not get public URL");
       setError("Kann URL nicht abrufen.");
       return;
     }
 
-    onUploadComplete(publicUrl);
+    onUploadComplete(urlData.publicUrl);
   };
 
   return (
     <div>
-      <label className="block mb-2 font-medium">Artikelbild hochladen (max. 2 MB)</label>
+      <label className="block mb-2 font-medium">Artikelbild hochladen (max. 2 MB)</label>
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp"
