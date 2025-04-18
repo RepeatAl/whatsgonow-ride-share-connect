@@ -7,8 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { User, Shield, Star, Car, Package, CreditCard, Bell, MessageCircle, Settings, LogOut } from "lucide-react";
 import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
@@ -17,37 +15,65 @@ import { useAuth } from "@/contexts/AuthContext";
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
+  const [street, setStreet] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [addressExtra, setAddressExtra] = useState("");
+  const [nameAffix, setNameAffix] = useState("");
+
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
 
   useEffect(() => {
     if (!user) return navigate("/login");
     if (profile) {
-      setName(profile.name || "");
+      const nameParts = (profile.name || "").split(" ");
+      setFirstName(nameParts[0] || "");
+      setLastName(nameParts.slice(1).join(" ") || "");
       setEmail(profile.email || user.email || "");
-      setPhone("+49 123 4567890");
+      setPhone(profile.phone || "");
       setRegion(profile.region || "");
+      setPostalCode(profile.postal_code || "");
+      setCity(profile.city || "");
+      setStreet(profile.street || "");
+      setHouseNumber(profile.house_number || "");
+      setAddressExtra(profile.address_extra || "");
+      setNameAffix(profile.name_affix || "");
     }
   }, [user, profile]);
 
   const handleSaveChanges = async () => {
     if (!user) return;
     setLoading(true);
+
+    const fullName = `${firstName} ${lastName}`.trim();
+    const isComplete = fullName && email && phone && region && postalCode && city;
+
     const { error } = await supabase.from("users").update({
-      name,
+      name: fullName,
+      name_affix,
       email,
       phone,
-      region
+      region,
+      postal_code: postalCode,
+      city,
+      street,
+      house_number: houseNumber,
+      address_extra: addressExtra,
+      profile_complete: isComplete
     }).eq("user_id", user.id);
 
     if (error) {
       toast({ title: "Fehler", description: "Profil konnte nicht aktualisiert werden.", variant: "destructive" });
     } else {
       toast({ title: "Profil aktualisiert", description: "Deine Änderungen wurden gespeichert." });
+      refreshProfile?.();
     }
     setLoading(false);
   };
@@ -59,6 +85,11 @@ const Profile = () => {
   return <Layout>
     <div className="max-w-4xl mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-4">Mein Profil</h1>
+      {!profile.profile_complete && (
+        <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
+          Bitte vervollständige dein Profil, um alle Funktionen zu nutzen.
+        </div>
+      )}
       <Tabs defaultValue="profile" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="profile">Profil</TabsTrigger>
@@ -68,22 +99,17 @@ const Profile = () => {
         <TabsContent value="profile">
           <div className="grid gap-4 mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="email">E-Mail</Label>
-                <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="phone">Telefon</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="region">Region</Label>
-                <Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} />
-              </div>
+              <div><Label htmlFor="first_name">Vorname</Label><Input id="first_name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
+              <div><Label htmlFor="last_name">Nachname</Label><Input id="last_name" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
+              <div><Label htmlFor="name_affix">Namenszusatz</Label><Input id="name_affix" value={nameAffix} onChange={(e) => setNameAffix(e.target.value)} /></div>
+              <div><Label htmlFor="email">E-Mail</Label><Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+              <div><Label htmlFor="phone">Telefon</Label><Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
+              <div><Label htmlFor="region">Region</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} required /></div>
+              <div><Label htmlFor="postal_code">Postleitzahl</Label><Input id="postal_code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required /></div>
+              <div><Label htmlFor="city">Stadt</Label><Input id="city" value={city} onChange={(e) => setCity(e.target.value)} required /></div>
+              <div><Label htmlFor="street">Straße</Label><Input id="street" value={street} onChange={(e) => setStreet(e.target.value)} /></div>
+              <div><Label htmlFor="house_number">Hausnummer</Label><Input id="house_number" value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} /></div>
+              <div><Label htmlFor="address_extra">Adresszusatz</Label><Input id="address_extra" value={addressExtra} onChange={(e) => setAddressExtra(e.target.value)} /></div>
             </div>
             <div className="mt-4">
               <Button onClick={handleSaveChanges} disabled={loading}>Speichern</Button>
