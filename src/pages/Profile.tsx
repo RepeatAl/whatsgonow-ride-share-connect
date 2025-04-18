@@ -1,3 +1,4 @@
+// ✅ Vollständig aktualisierte Profile.tsx mit zentraler Profilprüfung
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -28,7 +29,7 @@ const Profile = () => {
   const [nameAffix, setNameAffix] = useState("");
 
   const navigate = useNavigate();
-  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { user, profile, signOut, refreshProfile, isProfileComplete } = useProfile();
 
   useEffect(() => {
     if (!user) return navigate("/login");
@@ -57,7 +58,7 @@ const Profile = () => {
 
     const { error } = await supabase.from("users").update({
       name: fullName,
-      name_affix,
+      name_affix: nameAffix,
       email,
       phone,
       region,
@@ -85,7 +86,7 @@ const Profile = () => {
   return <Layout>
     <div className="max-w-4xl mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-4">Mein Profil</h1>
-      {!profile.profile_complete && (
+      {!isProfileComplete && (
         <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
           Bitte vervollständige dein Profil, um alle Funktionen zu nutzen.
         </div>
