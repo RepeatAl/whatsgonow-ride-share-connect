@@ -1,5 +1,7 @@
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
@@ -14,6 +16,7 @@ import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-ch
 import { useUploadVisibility } from "@/hooks/use-upload-visibility";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const { user, loading, error, profile } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const {
@@ -92,7 +95,12 @@ const Profile = () => {
             <TabsTrigger value="transports">Transporte</TabsTrigger>
             <TabsTrigger value="requests">Anfragen</TabsTrigger>
             {canUploadItems && (
-              <TabsTrigger value="upload">Upload Item</TabsTrigger>
+              <TabsTrigger 
+                value="upload" 
+                onClick={() => navigate('/create-order')}
+              >
+                Transportauftrag erstellen
+              </TabsTrigger>
             )}
           </TabsList>
 
