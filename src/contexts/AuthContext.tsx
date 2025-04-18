@@ -1,105 +1,122 @@
-
-// ✅ Vollständiger AuthContext mit Supabase-Session, Profile, Login/Logout/SignUp & OnboardingStatus
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { Session, User } from "@supabase/supabase-js";
+// src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { authService } from "@/services/auth-service";
-import { useProfile } from "@/hooks/auth/useProfile";
-import type { AuthContextProps, UserProfile } from "@/types/auth";
+import { User, Session } from "@supabase/supabase-js";
+import type { UserProfile, AuthContextProps } from "@/types/auth";
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Initial session fetch
+  // Lädt das Profil aus deiner "users"-Tabelle
+  const fetchProfile = async (u: User) => {
+    try {
+      const { data, error: e } = await supabase
+        .from<UserProfile>("users")
+        .select("*")
+        .eq("user_id", u.id)
+        .single();
+      if (e) throw e;
+      setProfile(data);
+    } catch (e) {
+      setError(e as Error);
+      setProfile(null);
+    }
+  };
+
+  // Initiale Session & Listener
   useEffect(() => {
-    const getInitialSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      if (error) console.warn("Session error:", error);
-      setSession(session);
-      setUser(session?.user ?? null);
+    const init = async () => {
+      const { data, error: e } = await supabase.auth.getSession();
+      if (e) setError(e);
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        await fetchProfile(data.session.user);
+      }
       setLoading(false);
+      setIsInitialLoad(false);
     };
+    init();
 
-    getInitialSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, sess) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        await fetchProfile(sess.user);
+      } else {
+        setProfile(null);
+      }
     });
-
     return () => {
       listener.subscription.unsubscribe();
     };
   }, []);
 
-  // Hook für Benutzerprofil laden
-  const {
-    profile,
-    profileLoading,
-    profileError,
-    setProfile,
-    retryProfileLoad,
-    isInitialLoad
-  } = useProfile(user, loading);
-
+  // Auth‑Methoden
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
-    await authService.signIn(email, password);
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    if (data.session?.user) {
+      setUser(data.session.user);
+      await fetchProfile(data.session.user);
+    }
   };
 
   const signUp = async (
     email: string,
     password: string,
-    metadata?: Record<string, string>
+    metadata?: Record<string, any>
   ) => {
-    setLoading(true);
-    const result = await authService.signUp(email, password, metadata);
-    setLoading(false);
-    return result;
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: metadata },
+    });
+    if (error) throw error;
+    return data;
   };
 
   const signOut = async () => {
-    setLoading(true);
-    await authService.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    setUser(null);
+    setSession(null);
     setProfile(null);
-    setLoading(false);
   };
 
-  const refreshProfile = () => {
-    retryProfileLoad?.();
+  // Ermöglicht manuelles Nachladen des Profils
+  const retryProfileLoad = () => {
+    if (user) fetchProfile(user);
   };
 
-  const value: AuthContextProps = {
-    user,
-    session,
-    profile,
-    loading: loading || profileLoading,
-    error: error || profileError,
-    isInitialLoad,
-    signIn,
-    signUp,
-    signOut,
-    retryProfileLoad,
-    refreshProfile
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        profile,
+        loading,
+        error,
+        isInitialLoad,
+        signIn,
+        signUp,
+        signOut,
+        retryProfileLoad,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
+// **Wichtig**: Hiermit stellst du das Hook `useAuth` zur Verfügung
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return useContext(AuthContext);
 };
