@@ -1,35 +1,30 @@
-
-import { lazy } from "react";
+import { RouteConfig } from "@/components/routing/AppRoutes";
 import Index from "@/pages/Index";
-import Dashboard from "@/pages/Dashboard";
-import Orders from "@/pages/Orders";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
-import Profile from "@/pages/Profile";
-import CommunityManager from "@/pages/CommunityManager";
-import Admin from "@/pages/Admin";
-import AdminDashboard from "@/pages/AdminDashboard";
-import ValidationAdmin from "@/pages/ValidationAdmin";
-import Deal from "@/pages/Deal";
-import DeliveryConfirmationPage from "@/pages/DeliveryConfirmationPage";
-import NotFound from "@/pages/NotFound";
-import InvoiceDownload from "@/pages/InvoiceDownload";
-import AdminInvoiceTest from "@/pages/AdminInvoiceTest";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import Faq from "@/pages/Faq";
 import Support from "@/pages/Support";
-import EmailTest from "@/pages/EmailTest";
+import DeliveryConfirmationPage from "@/pages/DeliveryConfirmationPage";
+import InvoiceDownload from "@/pages/InvoiceDownload";
+import Profile from "@/pages/Profile";
+import Orders from "@/pages/Orders";
 import CreateOrder from "@/pages/CreateOrder";
+import Deal from "@/pages/Deal";
 import Feedback from "@/pages/Feedback";
+import DashboardSender from "@/pages/dashboard/DashboardSender";
+import DashboardDriver from "@/pages/dashboard/DashboardDriver";
+import DashboardCM from "@/pages/dashboard/DashboardCM";
+import DashboardAdmin from "@/pages/dashboard/DashboardAdmin";
+import CommunityManager from "@/pages/CommunityManager";
+import Admin from "@/pages/Admin";
+import AdminDashboard from "@/pages/AdminDashboard";
+import ValidationAdmin from "@/pages/ValidationAdmin";
 import FeedbackAdmin from "@/pages/FeedbackAdmin";
-
-export interface RouteConfig {
-  path: string;
-  element: JSX.Element;
-  protected?: boolean;
-  public?: boolean;
-}
+import AdminInvoiceTest from "@/pages/AdminInvoiceTest";
+import EmailTest from "@/pages/EmailTest";
+import NotFound from "@/pages/NotFound";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -42,24 +37,32 @@ export const routes: RouteConfig[] = [
   { path: "/support", element: <Support />, public: true },
   { path: "/delivery/:token", element: <DeliveryConfirmationPage />, public: true },
   { path: "/invoice-download/:token", element: <InvoiceDownload />, public: true },
+
+  // Dashboard redirect entry (evaluates role)
+  { path: "/dashboard", element: <DashboardSender />, protected: true },
   
-  // Protected routes
-  { path: "/dashboard", element: <Dashboard />, protected: true },
+  // Role-specific dashboards
+  { path: "/dashboard/sender", element: <DashboardSender />, protected: true },
+  { path: "/dashboard/driver", element: <DashboardDriver />, protected: true },
+  { path: "/dashboard/cm", element: <DashboardCM />, protected: true },
+  { path: "/dashboard/admin", element: <DashboardAdmin />, protected: true },
+
+  // Protected application routes
+  { path: "/profile", element: <Profile />, protected: true },
   { path: "/orders", element: <Orders />, protected: true },
   { path: "/create-order", element: <CreateOrder />, protected: true },
-  { path: "/profile", element: <Profile />, protected: true },
-  { path: "/feedback", element: <Feedback />, protected: true },
   { path: "/deal/:orderId", element: <Deal />, protected: true },
-  
-  // Admin routes
+  { path: "/feedback", element: <Feedback />, protected: true },
+
+  // Admin & CM tools
+  { path: "/community-manager", element: <CommunityManager />, protected: true },
   { path: "/admin", element: <Admin />, protected: true },
   { path: "/admin/dashboard", element: <AdminDashboard />, protected: true },
   { path: "/admin/validation", element: <ValidationAdmin />, protected: true },
   { path: "/admin/feedback", element: <FeedbackAdmin />, protected: true },
   { path: "/admin/invoice-test", element: <AdminInvoiceTest />, protected: true },
-  { path: "/community-manager", element: <CommunityManager />, protected: true },
   { path: "/email-test", element: <EmailTest />, protected: true },
-  
-  // 404 route - must be last
-  { path: "*", element: <NotFound />, public: true }
+
+  // 404 - last
+  { path: "*", element: <NotFound />, public: true },
 ];
