@@ -1,3 +1,4 @@
+
 // ✅ Aktualisierte useProfile.ts mit Vollintegration von Onboarding, Profilfeldern und Zustand
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";

@@ -708,6 +708,69 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          address_extra: string | null
+          city: string
+          company_name: string | null
+          created_at: string
+          email: string
+          first_name: string
+          house_number: string | null
+          last_name: string
+          name_affix: string | null
+          onboarding_complete: boolean
+          phone: string
+          postal_code: string
+          profile_complete: boolean
+          region: string
+          role: string
+          street: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address_extra?: string | null
+          city: string
+          company_name?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          house_number?: string | null
+          last_name: string
+          name_affix?: string | null
+          onboarding_complete?: boolean
+          phone: string
+          postal_code: string
+          profile_complete?: boolean
+          region: string
+          role: string
+          street?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address_extra?: string | null
+          city?: string
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          house_number?: string | null
+          last_name?: string
+          name_affix?: string | null
+          onboarding_complete?: boolean
+          phone?: string
+          postal_code?: string
+          profile_complete?: boolean
+          region?: string
+          role?: string
+          street?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ratings: {
         Row: {
           comment: string | null
@@ -836,38 +899,62 @@ export type Database = {
       users: {
         Row: {
           active: boolean | null
+          address_extra: string | null
+          city: string | null
           company_name: string | null
           created_at: string | null
           email: string
+          house_number: string | null
           language: string | null
           name: string
+          name_affix: string | null
+          onboarding_complete: boolean | null
+          phone: string | null
+          postal_code: string | null
           profile_complete: boolean | null
-          region: string | null
+          region: string
           role: string
+          street: string | null
           user_id: string
         }
         Insert: {
           active?: boolean | null
+          address_extra?: string | null
+          city?: string | null
           company_name?: string | null
           created_at?: string | null
           email: string
+          house_number?: string | null
           language?: string | null
           name: string
+          name_affix?: string | null
+          onboarding_complete?: boolean | null
+          phone?: string | null
+          postal_code?: string | null
           profile_complete?: boolean | null
-          region?: string | null
+          region: string
           role: string
+          street?: string | null
           user_id?: string
         }
         Update: {
           active?: boolean | null
+          address_extra?: string | null
+          city?: string | null
           company_name?: string | null
           created_at?: string | null
           email?: string
+          house_number?: string | null
           language?: string | null
           name?: string
+          name_affix?: string | null
+          onboarding_complete?: boolean | null
+          phone?: string | null
+          postal_code?: string | null
           profile_complete?: boolean | null
-          region?: string | null
+          region?: string
           role?: string
+          street?: string | null
           user_id?: string
         }
         Relationships: []
@@ -883,6 +970,10 @@ export type Database = {
       }
       is_admin: {
         Args: { requesting_user_id: string }
+        Returns: boolean
+      }
+      is_admin_user: {
+        Args: { user_id: string }
         Returns: boolean
       }
       is_profile_complete: {

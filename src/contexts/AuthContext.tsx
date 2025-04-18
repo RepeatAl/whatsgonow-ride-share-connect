@@ -1,9 +1,10 @@
+
 // ✅ Vollständiger AuthContext mit Supabase-Session, Profile, Login/Logout/SignUp & OnboardingStatus
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { authService } from "@/services/auth-service";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/hooks/auth/useProfile";
 import type { AuthContextProps, UserProfile } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);

@@ -152,4 +152,47 @@ const Profile = () => {
                 </div>
                 <div>
                   <Label htmlFor="phone">Telefon</Label>
-                  <Input id="phone" value={phone} onChange={e => setPhone(e.ta
+                  <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required />
+                </div>
+                <div>
+                  <Label htmlFor="region">Region</Label>
+                  <Input id="region" value={region} onChange={e => setRegion(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="postal_code">Postleitzahl</Label>
+                  <Input id="postal_code" value={postalCode} onChange={e => setPostalCode(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="city">Stadt</Label>
+                  <Input id="city" value={city} onChange={e => setCity(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="street">Strasse</Label>
+                  <Input id="street" value={street} onChange={e => setStreet(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="house_number">Hausnummer</Label>
+                  <Input id="house_number" value={houseNumber} onChange={e => setHouseNumber(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="address_extra">Zusatzadresse</Label>
+                  <Input id="address_extra" value={addressExtra} onChange={e => setAddressExtra(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="transports">
+            <TransportCard transports={mockTransports} />
+          </TabsContent>
+
+          <TabsContent value="requests">
+            <RequestCard requests={mockRequests} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </Layout>
+  );
+};
+
+export default Profile;
