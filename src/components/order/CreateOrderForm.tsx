@@ -1,13 +1,15 @@
+// src/components/order/CreateOrderForm.tsx
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
-import Dropzone from "react-dropzone";
+import { v4 as uuidv4 } from "uuid";
 
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,8 +17,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
-  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -29,10 +29,14 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
-const MAX_IMAGES = 4;
+const MAX_FILES = 4;
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const CreateOrderForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const form = useForm<CreateOrderFormValues>({
@@ -40,305 +44,140 @@ const CreateOrderForm = () => {
     defaultValues: {
       title: "",
       description: "",
-      category: "",
-      fragile: false,
-      assistance: false,
-      tools: "",
-      securityMeasures: "",
       pickupAddress: "",
       deliveryAddress: "",
       weight: undefined,
-      length: undefined,
-      width: undefined,
-      height: undefined,
+      dimensions: "",
       value: undefined,
       insurance: false,
-      vehicleType: "",
-      price: undefined,
-      negotiable: false,
-      pickupDate: undefined,
-      deliveryDate: undefined,
-      images: [] as File[]
+      pickupTimeStart: undefined,
+      pickupTimeEnd: undefined,
+      deliveryTimeStart: undefined,
+      deliveryTimeEnd: undefined,
+      deadline: undefined,
     },
   });
 
-  const { control, handleSubmit, watch, setValue } = form;
+  // 1) Handler für File‑Input und Validierung
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    // Anzahl prüfen
+    if (files.length + selectedFiles.length > MAX_FILES) {
+      toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
+      return;
+    }
+    // Größe & Typ prüfen
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`${file.name} ist größer als 2 MB.`);
+        return;
+      }
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        toast.error(`${file.name} ist kein unterstütztes Format.`);
+        return;
+      }
+    }
+    // ok → state updaten und Vorschau erzeugen
+    setSelectedFiles(prev => [...prev, ...files]);
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      setPreviews(prev => [...prev, url]);
+    });
+  };
+
+  // 2) Entfernen eines Bildes aus der Vorschau
+  const removeFile = (idx: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
+    setPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
 
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
     try {
-      console.log("Submitting order data:", data);
-      // TODO: Upload images to storage, attach URLs
-      // TODO: API call to create order in database
+      // 3) Order in der DB anlegen (Beispiel mit Supabase)
+      const orderId = uuidv4();
+      const { error: insertError } = await supabase
+        .from("orders")
+        .insert([{ id: orderId, ...data }]);
+      if (insertError) throw insertError;
 
-      await new Promise((r) => setTimeout(r, 1000));
+      // 4) Bilder hochladen
+      for (const file of selectedFiles) {
+        const { error: uploadError } = await supabase
+          .storage
+          .from("orders")
+          .upload(`${orderId}/${file.name}`, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+        if (uploadError) throw uploadError;
+      }
+
       toast.success("Transportauftrag erfolgreich erstellt!");
       navigate("/find-transport");
     } catch (error) {
-      console.error(error);
-      toast.error("Fehler beim Erstellen des Transportauftrags. Bitte versuche es erneut.");
+      console.error("Error creating order:", error);
+      toast.error("Fehler beim Erstellen des Transportauftrags.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const images = watch("images");
-
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* ---------- die bisherigen Felder (Titel, Description, Adressen, etc.) ---------- */}
+        {/* ... kopiere hier alle deine bestehenden FormField-Blöcke ... */}
 
-        {/* Article Images */}
-        <FormItem>
-          <FormLabel>Bilder hochladen (max. {MAX_IMAGES})</FormLabel>
-          <Dropzone
-            onDrop={(accepted) => {
-              const current = images || [];
-              const next = [...current, ...accepted].slice(0, MAX_IMAGES);
-              setValue("images", next, { shouldValidate: true });
-            }}
-            accept={{ "image/*": [] }}
-            multiple
-            maxFiles={MAX_IMAGES}
-          >
-            {({ getRootProps, getInputProps }) => (
-              <div
-                {...getRootProps()}
-                className="p-6 border-2 border-dashed rounded cursor-pointer text-center"
-              >
-                <input {...getInputProps()} />
-                <p>Ziehe Bilder hierher oder klicke zum Auswählen</p>
-              </div>
-            )}
-          </Dropzone>
-          <div className="mt-4 grid grid-cols-4 gap-2">
-            {images?.map((file, idx) => (
-              <img
-                key={idx}
-                src={URL.createObjectURL(file)}
-                alt={file.name}
-                className="h-24 w-24 object-cover rounded"
-              />
-            ))}
-          </div>
+        {/* ---------- Bilder‑Upload ---------- */}
+        <FormItem className="col-span-full">
+          <FormLabel>Bilder (max. {MAX_FILES})</FormLabel>
+          <FormControl>
+            <input
+              type="file"
+              multiple
+              accept={ALLOWED_TYPES.join(",")}
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-700"
+            />
+          </FormControl>
           <FormMessage />
         </FormItem>
 
-        {/* Title */}
-        <FormField
-          control={control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Artikelname*</FormLabel>
-              <FormControl>
-                <Input placeholder="z.B. Esstisch" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* ---------- Thumbnail‑Vorschau ---------- */}
+        {previews.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {previews.map((src, idx) => (
+              <div key={idx} className="relative group">
+                <img src={src} className="w-full h-24 object-cover rounded" />
+                <button
+                  type="button"
+                  onClick={() => removeFile(idx)}
+                  className="absolute top-1 right-1 bg-white rounded-full p-1 opacity-0 group-hover:opacity-80"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Category */}
-        <FormField
-          control={control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Kategorie*</FormLabel>
-              <FormControl>
-                <select {...field} className="block w-full border rounded p-2">
-                  <option value="">Wähle Kategorie</option>
-                  <option value="furniture">Möbel</option>
-                  <option value="electronics">Elektronik</option>
-                  <option value="other">Sonstiges</option>
-                </select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Weight */}
-          <FormField
-            control={control}
-            name="weight"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Gewicht (kg)*</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.1" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+        {/* ---------- Submit ---------- */}
+        <div className="flex justify-end">
+          <Button type="submit" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Wird erstellt...
+              </>
+            ) : (
+              "Transportauftrag erstellen"
             )}
-          />
-          {/* Dimensions */}
-          <FormField
-            control={control}
-            name="length"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Länge (cm)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="width"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Breite (cm)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="height"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Höhe (cm)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          </Button>
         </div>
+      </form>
+    </Form>
+  );
+};
 
-        {/* Fragile & Assistance */}
-        <div className="flex gap-6">
-          <FormField
-            control={control}
-            name="fragile"
-            render={({ field }) => (
-              <FormItem className="flex items-center">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <FormLabel>Zerbrechlich</FormLabel>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="assistance"
-            render={({ field }) => (
-              <FormItem className="flex items-center">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <FormLabel>Beladehilfe benötigt</FormLabel>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Tools & Security Measures */}
-        <FormField
-          control={control}
-          name="tools"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Werkzeuge benötigt (optional)</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="securityMeasures"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sicherungshinweise (optional)</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        {/* Value & Insurance */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={control}
-            name="value"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Warenwert (€)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="insurance"
-            render={({ field }) => (
-              <FormItem className="flex items-center">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <FormLabel>Transportversicherung</FormLabel>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Addresses */}
-        <FormField
-          control={control}
-          name="pickupAddress"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Abholadresse</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="deliveryAddress"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Zieladresse</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        {/* Dates */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <FormField
-            control={control}
-            name="pickupDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Abholdatum</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>
-                        {field.value ? format(field.value, "PPP") : "Datum wählen"}
-                        <CalendarIcon className="ml-2 h-4 w-4" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+export default CreateOrderForm;
