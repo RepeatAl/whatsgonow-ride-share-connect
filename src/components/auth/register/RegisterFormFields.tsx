@@ -1,249 +1,120 @@
-import { Control } from "react-hook-form";
-import { RegisterFormData } from "./RegisterFormSchema";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/contexts/AuthContext';
+import { registerSchema, type RegisterFormData } from '@/components/auth/register/RegisterFormSchema';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { RegisterFormFields } from '@/components/auth/register/RegisterFormFields';
+import { SuccessMessage } from '@/components/auth/register/SuccessMessage';
+import { ErrorDisplay } from '@/components/auth/register/ErrorDisplay';
 
-interface RegisterFormFieldsProps {
-  control: Control<RegisterFormData>;
-  selectedRole: string;
+interface RegisterFormProps {
+  onSwitchToLogin?: () => void;
 }
 
-export const RegisterFormFields = ({
-  control,
-  selectedRole,
-}: RegisterFormFieldsProps) => {
+export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { signUp } = useAuth();
+
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      name_affix: '',
+      phone: '',
+      region: '',
+      postal_code: '',
+      city: '',
+      street: '',
+      house_number: '',
+      address_extra: '',
+      role: 'sender_private',
+      company_name: '',
+    },
+  });
+
+  const { watch } = form;
+  const selectedRole = watch('role');
+
+  const onSubmit = async (data: RegisterFormData) => {
+    if (import.meta.env.DEV) {
+      console.log('🧪 Registration form data:', data);
+    }
+
+    setError('');
+    setIsLoading(true);
+    setIsSuccess(false);
+
+    try {
+      await signUp(data.email, data.password, {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        name_affix: data.name_affix,
+        phone: data.phone,
+        region: data.region,
+        postal_code: data.postal_code,
+        city: data.city,
+        street: data.street,
+        house_number: data.house_number,
+        address_extra: data.address_extra,
+        role: data.role,
+        ...(data.company_name ? { company_name: data.company_name } : {}),
+      });
+
+      if (import.meta.env.DEV) {
+        console.log('✅ Sign up successful');
+      }
+
+      setIsSuccess(true);
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error('❌ Registration error:', err);
+      }
+      setError((err as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isSuccess) {
+    return <SuccessMessage />;
+  }
+
   return (
-    <>
-      <FormField
-        control={control}
-        name="email"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>E-Mail</FormLabel>
-            <FormControl>
-              <Input placeholder="deine@email.de" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="password"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Passwort</FormLabel>
-            <FormControl>
-              <Input type="password" placeholder="••••••••" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="first_name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Vorname</FormLabel>
-            <FormControl>
-              <Input placeholder="Max" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="last_name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Nachname</FormLabel>
-            <FormControl>
-              <Input placeholder="Mustermann" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="name_affix"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Namenszusatz (optional)</FormLabel>
-            <FormControl>
-              <Input placeholder="z. B. Dr." {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="phone"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Telefonnummer</FormLabel>
-            <FormControl>
-              <Input placeholder="z. B. +49 123 4567890" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="postal_code"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Postleitzahl</FormLabel>
-            <FormControl>
-              <Input placeholder="z. B. 10115" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="city"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Stadt</FormLabel>
-            <FormControl>
-              <Input placeholder="z. B. Berlin" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="street"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Straße (optional)</FormLabel>
-            <FormControl>
-              <Input placeholder="z. B. Hauptstraße" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="house_number"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Hausnummer (wenn Straße angegeben)</FormLabel>
-            <FormControl>
-              <Input placeholder="z. B. 12a" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="address_extra"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Adresszusatz (optional)</FormLabel>
-            <FormControl>
-              <Input placeholder="z. B. 3. Etage links" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="region"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Region</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Wähle deine Region" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="berlin">Berlin</SelectItem>
-                <SelectItem value="hamburg">Hamburg</SelectItem>
-                <SelectItem value="munich">München</SelectItem>
-                <SelectItem value="cologne">Köln</SelectItem>
-                <SelectItem value="frankfurt">Frankfurt</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="role"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Rolle</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Wähle deine Rolle" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="sender_private">Privater Sender</SelectItem>
-                <SelectItem value="sender_business">Geschäftlicher Sender</SelectItem>
-                <SelectItem value="driver">Fahrer</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {selectedRole === "sender_business" && (
-        <FormField
-          control={control}
-          name="company_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Firmenname <span className="text-red-500">*</span></FormLabel>
-              <FormControl>
-                <Input placeholder="Firma GmbH" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
-    </>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Registrieren</CardTitle>
+        <CardDescription>
+          Erstelle ein neues Konto bei Whatsgonow
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <RegisterFormFields control={form.control} selectedRole={selectedRole} />
+            <ErrorDisplay error={error} />
+            <Button type="submit" className="w-full" disabled={isLoading} variant="brand">
+              {isLoading ? "Wird verarbeitet..." : "Registrieren"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="flex justify-center">
+        <Button 
+          variant="link" 
+          onClick={onSwitchToLogin} 
+          className="text-sm"
+        >
+          Schon registriert? Login
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
