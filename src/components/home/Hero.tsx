@@ -55,7 +55,10 @@ const Hero = () => {
                 ) : (
                   <div className="rounded-md shadow">
                     <Link to="/pre-register">
-                      <Button variant="brand" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                      <Button 
+                        variant="brand" 
+                        className="w-full flex items-center justify-center px-8 py-3 text-base font-medium"
+                      >
                         Join Waiting List
                       </Button>
                     </Link>

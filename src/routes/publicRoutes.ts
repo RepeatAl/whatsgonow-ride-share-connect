@@ -1,4 +1,3 @@
-// src/routes/publicRoutes.ts
 
 /**
  * Definiert alle öffentlichen Routen der Anwendung.
@@ -14,6 +13,8 @@ export const publicRoutes = [
   "/support",
   "/delivery",          // deckt /delivery/:token ab
   "/invoice-download",  // deckt /invoice-download/:token ab
+  "/pre-register",
+  "/pre-register/success"
 ];
 
 /**
