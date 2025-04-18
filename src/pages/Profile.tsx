@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
@@ -12,6 +11,7 @@ import { TransportsTab } from "@/components/profile/TransportsTab";
 import { RequestsTab } from "@/components/profile/RequestsTab";
 import { useProfileManager } from "@/hooks/use-profile-manager";
 import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
+import { useUploadVisibility } from "@/hooks/use-upload-visibility";
 
 const Profile = () => {
   const { user, loading, error, profile } = useAuth();
@@ -24,6 +24,7 @@ const Profile = () => {
     handleSave,
     handleOnboarding,
   } = useProfileManager();
+  const { canUploadItems } = useUploadVisibility();
 
   if (loading) {
     return (
@@ -90,6 +91,9 @@ const Profile = () => {
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="transports">Transporte</TabsTrigger>
             <TabsTrigger value="requests">Anfragen</TabsTrigger>
+            {canUploadItems && (
+              <TabsTrigger value="upload">Upload Item</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="profile">

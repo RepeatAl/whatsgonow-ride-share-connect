@@ -65,7 +65,7 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
           <Label htmlFor="lastName">Nachname</Label>
           <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} />
         </div>
-        <div>
+        <div className="md:col-span-2">
           <Label htmlFor="email">E-Mail</Label>
           <Input id="email" value={email} onChange={e => setEmail(e.target.value)} />
         </div>

@@ -3,7 +3,7 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, User, Camera } from "lucide-react";
+import { Shield, Camera, BadgeCheck } from "lucide-react";
 import UserRating from "@/components/rating/UserRating";
 
 interface UserProfileHeaderProps {
@@ -58,13 +58,11 @@ const UserProfileHeader = ({ profile, userId, onUploadClick }: UserProfileHeader
             )}
             {profile.verified && (
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <Shield className="w-3 h-3 mr-1" />
+                <BadgeCheck className="w-3 h-3 mr-1" />
                 Verifiziert
               </Badge>
             )}
           </div>
-          
-          <div className="text-sm text-muted-foreground mb-2">{profile.email}</div>
           
           <UserRating userId={userId} size="md" />
         </div>
