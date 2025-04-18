@@ -6,6 +6,11 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthContext";
+import DashboardSender from "@/pages/dashboard/DashboardSender";
+import DashboardDriver from "@/pages/dashboard/DashboardDriver";
+import DashboardCM from "@/pages/dashboard/DashboardCM";
+import DashboardAdmin from "@/pages/dashboard/DashboardAdmin";
+
 
 export const AppRoutes = () => {
   const { loading } = useAuth();
