@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -9,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { authService } from "@/services/auth-service";
 import { useProfile as useProfileHook } from "@/hooks/auth/useProfile";
+import { isProfileIncomplete } from "@/utils/profile-check";
 import type { UserProfile, AuthContextProps } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
@@ -47,9 +49,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     error: profileError, 
     retryProfileLoad, 
     isInitialLoad,
-    isProfileComplete, 
+    user: profileUser,
     refreshProfile
   } = useProfileHook();
+
+  // Calculate isProfileComplete from the profile data using the utility function
+  const isProfileComplete = profile ? !isProfileIncomplete(profile) : false;
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
@@ -78,6 +83,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
+
+  // Set profile from hook when it changes
+  useEffect(() => {
+    if (profileHook) {
+      setProfile(profileHook);
+    }
+  }, [profileHook]);
 
   const value = {
     user,
