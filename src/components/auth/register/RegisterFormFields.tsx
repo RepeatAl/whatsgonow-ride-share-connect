@@ -1,4 +1,3 @@
-
 import { Control } from "react-hook-form";
 import { RegisterFormData } from "./RegisterFormSchema";
 import {
@@ -22,7 +21,10 @@ interface RegisterFormFieldsProps {
   selectedRole: string;
 }
 
-export const RegisterFormFields = ({ control, selectedRole }: RegisterFormFieldsProps) => {
+export const RegisterFormFields = ({
+  control,
+  selectedRole,
+}: RegisterFormFieldsProps) => {
   return (
     <>
       <FormField
@@ -58,7 +60,7 @@ export const RegisterFormFields = ({ control, selectedRole }: RegisterFormFields
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>Ansprechpartner</FormLabel>
             <FormControl>
               <Input placeholder="Max Mustermann" {...field} />
             </FormControl>
@@ -115,13 +117,13 @@ export const RegisterFormFields = ({ control, selectedRole }: RegisterFormFields
         )}
       />
 
-      {selectedRole === 'sender_business' && (
+      {selectedRole === "sender_business" && (
         <FormField
           control={control}
           name="company_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Firmenname</FormLabel>
+              <FormLabel>Firmenname <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <Input placeholder="Firma GmbH" {...field} />
               </FormControl>
