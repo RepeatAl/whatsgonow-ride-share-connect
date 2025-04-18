@@ -19,7 +19,7 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { signUp } = useAuth();
-  
+
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -39,23 +39,23 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
     if (import.meta.env.DEV) {
       console.log('🧪 Registration form data:', data);
     }
-    
+
     setError('');
     setIsLoading(true);
     setIsSuccess(false);
-    
+
     try {
       await signUp(data.email, data.password, {
         name: data.name,
         role: data.role,
-        company_name: data.company_name || undefined,
-        region: data.region
+        region: data.region,
+        ...(data.company_name ? { company_name: data.company_name } : {})
       });
-      
+
       if (import.meta.env.DEV) {
         console.log('✅ Sign up successful');
       }
-      
+
       setIsSuccess(true);
     } catch (err) {
       if (import.meta.env.DEV) {
