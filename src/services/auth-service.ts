@@ -129,7 +129,38 @@ export const authService = {
         title: "Registrierung erfolgreich",
         description: "Bestätige deine E-Mail-Adresse, um fortzufahren."
       });
+      // src/services/auth-service.ts
+async signUp(email: string, password: string, metadata?: { /* ... */ }) {
+  // … bestehender SignUp-Code …
+  const { data, error } = await supabase.auth.signUp({ /* … */ });
+  if (error) throw error;
 
+  toast({ title: "Registrierung erfolgreich", /* … */ });
+
+  // **HIER einfügen: neues Profil anlegen**
+  await supabase
+    .from("profiles")
+    .insert([{
+      user_id: data.user!.id,
+      email,
+      first_name: metadata?.first_name ?? "",
+      last_name: metadata?.last_name ?? "",
+      name_affix: metadata?.name_affix ?? null,
+      phone: metadata?.phone ?? "",
+      role: metadata?.role ?? "sender_private",
+      company_name: metadata?.company_name ?? null,
+      region: metadata?.region ?? "",
+      postal_code: metadata?.postal_code ?? "",
+      city: metadata?.city ?? "",
+      street: metadata?.street ?? null,
+      house_number: metadata?.house_number ?? null,
+      address_extra: metadata?.address_extra ?? null,
+      profile_complete: false,
+      onboarding_complete: false
+    }]);
+
+  return data;
+}
       return data;
     } catch (error) {
       handleAuthError(error as Error, "Registrierung");
