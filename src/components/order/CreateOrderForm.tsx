@@ -1,5 +1,5 @@
 // src/components/order/CreateOrderForm.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,11 +35,14 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const CreateOrderForm = () => {
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // für den Bildupload
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const form = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
@@ -58,15 +62,13 @@ const CreateOrderForm = () => {
     },
   });
 
-  // 1) Handler für File‑Input und Validierung
+  // Bild‑Auswahl + Validierung
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    // Anzahl prüfen
     if (files.length + selectedFiles.length > MAX_FILES) {
       toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
       return;
     }
-    // Größe & Typ prüfen
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
         toast.error(`${file.name} ist größer als 2 MB.`);
@@ -77,38 +79,43 @@ const CreateOrderForm = () => {
         return;
       }
     }
-    // ok → state updaten und Vorschau erzeugen
-    setSelectedFiles(prev => [...prev, ...files]);
-    files.forEach(file => {
+    setSelectedFiles((prev) => [...prev, ...files]);
+    files.forEach((file) => {
       const url = URL.createObjectURL(file);
-      setPreviews(prev => [...prev, url]);
+      setPreviews((prev) => [...prev, url]);
     });
   };
 
-  // 2) Entfernen eines Bildes aus der Vorschau
+  // Einzelnes Bild entfernen
   const removeFile = (idx: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
-    setPreviews(prev => prev.filter((_, i) => i !== idx));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== idx));
+    setPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // Submit‑Handler
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
     try {
-      // 3) Order in der DB anlegen (Beispiel mit Supabase)
+      // 1) Neuer Auftrag in DB
       const orderId = uuidv4();
       const { error: insertError } = await supabase
         .from("orders")
         .insert([{ id: orderId, ...data }]);
       if (insertError) throw insertError;
 
-      // 4) Bilder hochladen
+      // 2) Bilder hochladen mit Metadata (user_id, published=false)
       for (const file of selectedFiles) {
+        const path = `${orderId}/${file.name}`;
         const { error: uploadError } = await supabase
           .storage
-          .from("orders")
-          .upload(`${orderId}/${file.name}`, file, {
+          .from("items-images")
+          .upload(path, file, {
             cacheControl: "3600",
             upsert: false,
+            metadata: {
+              user_id: user!.id,
+              published: "false",
+            },
           });
         if (uploadError) throw uploadError;
       }
@@ -126,12 +133,283 @@ const CreateOrderForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* ---------- die bisherigen Felder (Titel, Description, Adressen, etc.) ---------- */}
-        {/* ... kopiere hier alle deine bestehenden FormField-Blöcke ... */}
+        {/* === TITEL === */}
+        <FormItem>
+          <FormLabel>Titel*</FormLabel>
+          <FormControl>
+            <Input placeholder="z.B. Transport von Möbeln" {...form.register("title")} />
+          </FormControl>
+          <FormMessage>{form.formState.errors.title?.message}</FormMessage>
+        </FormItem>
 
-        {/* ---------- Bilder‑Upload ---------- */}
-        <FormItem className="col-span-full">
-          <FormLabel>Bilder (max. {MAX_FILES})</FormLabel>
+        {/* === BESCHREIBUNG === */}
+        <FormItem>
+          <FormLabel>Beschreibung*</FormLabel>
+          <FormControl>
+            <Textarea
+              placeholder="Beschreiben Sie Ihren Transportauftrag..."
+              className="min-h-[120px]"
+              {...form.register("description")}
+            />
+          </FormControl>
+          <FormMessage>{form.formState.errors.description?.message}</FormMessage>
+        </FormItem>
+
+        {/* === ADRESSEN === */}
+        <FormItem>
+          <FormLabel>Abholadresse*</FormLabel>
+          <FormControl>
+            <Textarea
+              placeholder="Straße, Hausnummer, PLZ, Ort"
+              className="min-h-[80px]"
+              {...form.register("pickupAddress")}
+            />
+          </FormControl>
+          <FormMessage>{form.formState.errors.pickupAddress?.message}</FormMessage>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel>Zieladresse*</FormLabel>
+          <FormControl>
+            <Textarea
+              placeholder="Straße, Hausnummer, PLZ, Ort"
+              className="min-h-[80px]"
+              {...form.register("deliveryAddress")}
+            />
+          </FormControl>
+          <FormMessage>{form.formState.errors.deliveryAddress?.message}</FormMessage>
+        </FormItem>
+
+        {/* === GEWICHT & MAẞE & WERT === */}
+        <FormItem>
+          <FormLabel>Gewicht (kg)*</FormLabel>
+          <FormControl>
+            <Input
+              type="number"
+              step="0.1"
+              placeholder="z.B. 15.5"
+              {...form.register("weight")}
+            />
+          </FormControl>
+          <FormMessage>{form.formState.errors.weight?.message}</FormMessage>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel>Maße (optional)</FormLabel>
+          <FormControl>
+            <Input
+              placeholder="z.B. 100 x 50 x 30 cm"
+              {...form.register("dimensions")}
+            />
+          </FormControl>
+          <FormMessage>{form.formState.errors.dimensions?.message}</FormMessage>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel>Warenwert (€, optional)</FormLabel>
+          <FormControl>
+            <Input
+              type="number"
+              step="0.01"
+              placeholder="z.B. 499.99"
+              {...form.register("value")}
+            />
+          </FormControl>
+          <FormMessage>{form.formState.errors.value?.message}</FormMessage>
+        </FormItem>
+
+        {/* === VERSICHERUNG === */}
+        <FormItem className="flex items-center space-x-3">
+          <FormControl>
+            <Checkbox {...form.register("insurance")} />
+          </FormControl>
+          <div>
+            <FormLabel>Versicherung</FormLabel>
+            <FormMessage>{form.formState.errors.insurance?.message}</FormMessage>
+          </div>
+        </FormItem>
+
+        {/* === ZEITFENSTER (Abholung & Lieferung) === */}
+        <div>
+          <h3 className="font-medium mb-2">Abholzeitfenster</h3>
+          <div className="grid grid-cols-2 gap-4">
+            {/* pickupTimeStart */}
+            <FormItem className="flex flex-col">
+              <FormLabel>Von</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full text-left",
+                      !form.watch("pickupTimeStart") && "text-muted-foreground"
+                    )}
+                  >
+                    {form.watch("pickupTimeStart")
+                      ? format(form.watch("pickupTimeStart")!, "PPP")
+                      : "Datum wählen"}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-auto" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.watch("pickupTimeStart")}
+                    onSelect={(date) => form.setValue("pickupTimeStart", date!)}
+                    disabled={(d) => d < new Date()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage>
+                {form.formState.errors.pickupTimeStart?.message}
+              </FormMessage>
+            </FormItem>
+
+            {/* pickupTimeEnd */}
+            <FormItem className="flex flex-col">
+              <FormLabel>Bis</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full text-left",
+                      !form.watch("pickupTimeEnd") && "text-muted-foreground"
+                    )}
+                  >
+                    {form.watch("pickupTimeEnd")
+                      ? format(form.watch("pickupTimeEnd")!, "PPP")
+                      : "Datum wählen"}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-auto" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.watch("pickupTimeEnd")}
+                    onSelect={(date) => form.setValue("pickupTimeEnd", date!)}
+                    disabled={(d) =>
+                      d < new Date() ||
+                      (form.watch("pickupTimeStart")! && d < form.watch("pickupTimeStart")!)
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage>
+                {form.formState.errors.pickupTimeEnd?.message}
+              </FormMessage>
+            </FormItem>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="font-medium mb-2">Lieferzeitfenster</h3>
+          <div className="grid grid-cols-2 gap-4">
+            {/* deliveryTimeStart */}
+            <FormItem className="flex flex-col">
+              <FormLabel>Von</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full text-left",
+                      !form.watch("deliveryTimeStart") && "text-muted-foreground"
+                    )}
+                  >
+                    {form.watch("deliveryTimeStart")
+                      ? format(form.watch("deliveryTimeStart")!, "PPP")
+                      : "Datum wählen"}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-auto" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.watch("deliveryTimeStart")}
+                    onSelect={(date) => form.setValue("deliveryTimeStart", date!)}
+                    disabled={(d) => d < new Date()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage>
+                {form.formState.errors.deliveryTimeStart?.message}
+              </FormMessage>
+            </FormItem>
+
+            {/* deliveryTimeEnd */}
+            <FormItem className="flex flex-col">
+              <FormLabel>Bis</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full text-left",
+                      !form.watch("deliveryTimeEnd") && "text-muted-foreground"
+                    )}
+                  >
+                    {form.watch("deliveryTimeEnd")
+                      ? format(form.watch("deliveryTimeEnd")!, "PPP")
+                      : "Datum wählen"}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-auto" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.watch("deliveryTimeEnd")}
+                    onSelect={(date) => form.setValue("deliveryTimeEnd", date!)}
+                    disabled={(d) =>
+                      d < new Date() ||
+                      (form.watch("deliveryTimeStart")! && d < form.watch("deliveryTimeStart")!)
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage>
+                {form.formState.errors.deliveryTimeEnd?.message}
+              </FormMessage>
+            </FormItem>
+          </div>
+        </div>
+
+        {/* === DEADLINE === */}
+        <FormItem>
+          <FormLabel>Deadline</FormLabel>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full text-left",
+                  !form.watch("deadline") && "text-muted-foreground"
+                )}
+              >
+                {form.watch("deadline") ? format(form.watch("deadline")!, "PPP") : "Termin wählen"}
+                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0 w-auto" align="start">
+              <Calendar
+                mode="single"
+                selected={form.watch("deadline")}
+                onSelect={(date) => form.setValue("deadline", date!)}
+                disabled={(d) => d < new Date()}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <FormMessage>{form.formState.errors.deadline?.message}</FormMessage>
+        </FormItem>
+
+        {/* === BILDER-UPLOAD === */}
+        <FormItem>
+          <FormLabel>Bilder (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
           <FormControl>
             <input
               type="file"
@@ -144,7 +422,7 @@ const CreateOrderForm = () => {
           <FormMessage />
         </FormItem>
 
-        {/* ---------- Thumbnail‑Vorschau ---------- */}
+        {/* === VORSCHAU === */}
         {previews.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {previews.map((src, idx) => (
@@ -162,7 +440,7 @@ const CreateOrderForm = () => {
           </div>
         )}
 
-        {/* ---------- Submit ---------- */}
+        {/* === SUBMIT === */}
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={isSubmitting}>
             {isSubmitting ? (
