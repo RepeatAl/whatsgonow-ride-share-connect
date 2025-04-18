@@ -2,7 +2,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.24.2/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.0.0";
-import { sendConfirmation } from "../send-confirmation/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +36,32 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
+async function sendConfirmationEmail(email: string, firstName: string) {
+  try {
+    const response = await fetch(
+      `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-confirmation`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        },
+        body: JSON.stringify({ email, firstName }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to send confirmation email: ${error}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error calling send-confirmation function:", error);
+    throw error;
+  }
+}
+
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -62,10 +87,7 @@ serve(async (req: Request) => {
     if (dbError) throw dbError;
 
     // Send confirmation email
-    await sendConfirmation({ 
-      email: data.email, 
-      firstName: data.first_name 
-    });
+    await sendConfirmationEmail(data.email, data.first_name);
 
     return new Response(
       JSON.stringify({ success: true }),

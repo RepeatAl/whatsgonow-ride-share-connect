@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { preRegistrationSchema, type PreRegistrationFormData } from "@/lib/validators/pre-registration";
 import { VehicleTypeSelector } from "./VehicleTypeSelector";
+import { supabase } from "@/lib/supabaseClient";
 
 export function PreRegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<PreRegistrationFormData>({
+  const { register, handleSubmit, watch, formState: { errors }, setError } = useForm<PreRegistrationFormData>({
     resolver: zodResolver(preRegistrationSchema)
   });
 
@@ -21,13 +22,27 @@ export function PreRegistrationForm() {
   const onSubmit = async (data: PreRegistrationFormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/pre-register", {
+      const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabase.auth.anon}`
+        },
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Registration failed");
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.errors) {
+          // Apply server-side validation errors to form
+          Object.entries(result.errors).forEach(([field, message]) => {
+            setError(field as any, { message: message as string });
+          });
+          throw new Error("Validation failed");
+        }
+        throw new Error(result.error || "Registration failed");
+      }
 
       toast({
         title: "Voranmeldung erfolgreich!",
@@ -37,11 +52,13 @@ export function PreRegistrationForm() {
       // Redirect to success page
       window.location.href = "/pre-register/success";
     } catch (error) {
-      toast({
-        title: "Fehler bei der Registrierung",
-        description: "Bitte versuche es später erneut.",
-        variant: "destructive",
-      });
+      if (!(error instanceof Error && error.message === "Validation failed")) {
+        toast({
+          title: "Fehler bei der Registrierung",
+          description: "Bitte versuche es später erneut.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

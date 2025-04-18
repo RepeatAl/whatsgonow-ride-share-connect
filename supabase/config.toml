@@ -23,6 +23,12 @@ enabled = true
 [functions.auth-email-handler]
 verify_jwt = false
 
+[functions.send-confirmation]
+verify_jwt = false
+
+[functions.pre-register]
+verify_jwt = false
+
 [functions.send-email]
 verify_jwt = false
 

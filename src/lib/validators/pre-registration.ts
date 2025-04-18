@@ -9,7 +9,14 @@ export const preRegistrationSchema = z.object({
   wants_driver: z.boolean().default(false),
   wants_cm: z.boolean().default(false),
   wants_sender: z.boolean().default(false),
-  vehicle_types: z.any().optional(),
+  vehicle_types: z.object({
+    car: z.array(z.enum(["S", "M", "L", "XL", "XXL"])).optional(),
+    motorcycle: z.boolean().optional(),
+    bicycle: z.boolean().optional(),
+    ship: z.boolean().optional(),
+    plane: z.boolean().optional(),
+    other: z.string().optional()
+  }).optional(),
   gdpr_consent: z.boolean().refine((val) => val === true, {
     message: "Bitte stimmen Sie den Datenschutzbestimmungen zu"
   })
