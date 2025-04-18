@@ -1,10 +1,12 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Package, Car } from "lucide-react";
+import { ArrowRight, Package, Car, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Hero = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isDriver = profile?.role === "driver";
 
   return (
     <div className="relative overflow-hidden bg-white">
@@ -31,11 +33,11 @@ const Hero = () => {
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                 Whatsgonow transforms everyday mobility into a decentralized, flexible logistics network. Send and receive packages through people who are already traveling your route.
               </p>
-              <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+              <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start gap-4">
                 {user ? (
                   <>
                     <div className="rounded-md shadow">
-                      <Link to="/find-transport">
+                      <Link to="/create-order">
                         <Button className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
                           <Package className="mr-2 h-5 w-5" />
                           Send Something
@@ -43,11 +45,28 @@ const Hero = () => {
                         </Button>
                       </Link>
                     </div>
-                    <div className="mt-3 sm:mt-0 sm:ml-3">
-                      <Link to="/offer-transport">
-                        <Button variant="outline" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
-                          <Car className="mr-2 h-5 w-5" />
-                          Become a Driver
+                    <div className="mt-3 sm:mt-0">
+                      {isDriver ? (
+                        <Link to="/dashboard/driver">
+                          <Button variant="outline" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                            <Car className="mr-2 h-5 w-5" />
+                            Pick Up On Your Ride
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link to="/profile">
+                          <Button variant="outline" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                            <Car className="mr-2 h-5 w-5" />
+                            Become a Driver
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                    <div className="mt-3 sm:mt-0">
+                      <Link to="/profile">
+                        <Button variant="secondary" className="w-full flex items-center justify-center px-8 py-3 text-base font-medium">
+                          <User className="mr-2 h-5 w-5" />
+                          My Profile
                         </Button>
                       </Link>
                     </div>
