@@ -1,9 +1,7 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
-import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
 import UserProfileHeader from "@/components/profile/UserProfileHeader";
@@ -12,17 +10,20 @@ import ImageUploader from "@/components/profile/ImageUploader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { TransportsTab } from "@/components/profile/TransportsTab";
 import { RequestsTab } from "@/components/profile/RequestsTab";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfileManager } from "@/hooks/use-profile-manager";
 import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
-import { UserProfile } from "@/types/auth"; // Added import for UserProfile type
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const { user, profile, loading, error, refreshProfile } = useAuth();
+  const { user, loading, error, profile } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [onboardingComplete, setOnboardingComplete] = useState(true);
-  const [showImageUploader, setShowImageUploader] = useState(false);
+  const {
+    loadingSave,
+    showImageUploader,
+    onboardingComplete,
+    setShowImageUploader,
+    handleSave,
+    handleOnboarding,
+  } = useProfileManager();
 
   if (loading) {
     return (
@@ -53,30 +54,6 @@ const Profile = () => {
     );
   }
 
-  const handleSave = async (formData: Partial<UserProfile>) => {
-    setLoadingSave(true);
-    const { error: upErr } = await supabase
-      .from("users")
-      .update(formData)
-      .eq("user_id", user!.id);
-
-    if (upErr) {
-      toast({ title: "Fehler", description: "Profil konnte nicht gespeichert werden.", variant: "destructive" });
-    } else {
-      toast({ title: "Gespeichert", description: "Dein Profil wurde aktualisiert." });
-      await refreshProfile?.();
-    }
-    setLoadingSave(false);
-  };
-
-  const handleOnboarding = async () => {
-    const { error: onErr } = await supabase
-      .from("users")
-      .update({ onboarding_complete: true })
-      .eq("user_id", user!.id);
-    if (!onErr) setOnboardingComplete(true);
-  };
-
   const missingFields = getMissingProfileFields(profile);
   const profileIsComplete = !isProfileIncomplete(profile);
 
@@ -90,11 +67,10 @@ const Profile = () => {
         />
         
         <ImageUploader
-          userId={user!.id}
           open={showImageUploader}
           onSuccess={(url) => {
             setShowImageUploader(false);
-            refreshProfile?.();
+            handleSave({ avatar_url: url });
           }}
           onCancel={() => setShowImageUploader(false)}
         />
