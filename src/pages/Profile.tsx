@@ -16,6 +16,7 @@ import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-ch
 import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
 import UserProfileHeader from "@/components/profile/UserProfileHeader";
 import { Skeleton } from "@/components/ui/skeleton";
+import ImageUploader from "@/components/ImageUploader";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [loadingSave, setLoadingSave] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(true);
+  const [showImageUploader, setShowImageUploader] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -124,8 +126,22 @@ const Profile = () => {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <UserProfileHeader profile={profile} userId={user!.id} />
+        <UserProfileHeader 
+          profile={profile} 
+          userId={user!.id} 
+          onUploadClick={() => setShowImageUploader(true)}
+        />
         
+        <ImageUploader
+          userId={user!.id}
+          open={showImageUploader}
+          onSuccess={(url) => {
+            setShowImageUploader(false);
+            refreshProfile?.();
+          }}
+          onCancel={() => setShowImageUploader(false)}
+        />
+
         {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboarding} />}
 
         {!profileIsComplete && (

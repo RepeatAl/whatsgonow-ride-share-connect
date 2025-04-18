@@ -981,6 +981,7 @@ export type Database = {
         Row: {
           active: boolean | null
           address_extra: string | null
+          avatar_url: string | null
           city: string | null
           company_name: string | null
           created_at: string | null
@@ -997,10 +998,12 @@ export type Database = {
           role: string
           street: string | null
           user_id: string
+          verified: boolean | null
         }
         Insert: {
           active?: boolean | null
           address_extra?: string | null
+          avatar_url?: string | null
           city?: string | null
           company_name?: string | null
           created_at?: string | null
@@ -1017,10 +1020,12 @@ export type Database = {
           role: string
           street?: string | null
           user_id?: string
+          verified?: boolean | null
         }
         Update: {
           active?: boolean | null
           address_extra?: string | null
+          avatar_url?: string | null
           city?: string | null
           company_name?: string | null
           created_at?: string | null
@@ -1037,6 +1042,7 @@ export type Database = {
           role?: string
           street?: string | null
           user_id?: string
+          verified?: boolean | null
         }
         Relationships: []
       }

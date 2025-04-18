@@ -1,4 +1,3 @@
-
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -18,6 +17,8 @@ export interface UserProfile {
   house_number?: string;
   address_extra?: string;
   name_affix?: string;
+  verified?: boolean;
+  avatar_url?: string;
 }
 
 export interface AuthContextProps {

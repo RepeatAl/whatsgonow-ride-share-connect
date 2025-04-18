@@ -2,7 +2,8 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Shield, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, User, Camera } from "lucide-react";
 import UserRating from "@/components/rating/UserRating";
 
 interface UserProfileHeaderProps {
@@ -10,11 +11,14 @@ interface UserProfileHeaderProps {
     name: string;
     email: string;
     role?: string;
+    verified?: boolean;
+    avatar_url?: string;
   };
   userId: string;
+  onUploadClick?: () => void;
 }
 
-const UserProfileHeader = ({ profile, userId }: UserProfileHeaderProps) => {
+const UserProfileHeader = ({ profile, userId, onUploadClick }: UserProfileHeaderProps) => {
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -26,10 +30,22 @@ const UserProfileHeader = ({ profile, userId }: UserProfileHeaderProps) => {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-4">
-        <Avatar className="h-20 w-20">
-          <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}`} />
-          <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
-        </Avatar>
+        <div className="relative group">
+          <Avatar className="h-20 w-20">
+            <AvatarImage src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}`} />
+            <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
+          </Avatar>
+          {onUploadClick && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="absolute bottom-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={onUploadClick}
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
 
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -38,6 +54,12 @@ const UserProfileHeader = ({ profile, userId }: UserProfileHeaderProps) => {
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                 <Shield className="w-3 h-3 mr-1" />
                 Fahrer
+              </Badge>
+            )}
+            {profile.verified && (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <Shield className="w-3 h-3 mr-1" />
+                Verifiziert
               </Badge>
             )}
           </div>
