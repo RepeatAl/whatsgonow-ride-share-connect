@@ -67,6 +67,7 @@ const Profile = () => {
         />
         
         <ImageUploader
+          userId={user!.id}
           open={showImageUploader}
           onSuccess={(url) => {
             setShowImageUploader(false);
