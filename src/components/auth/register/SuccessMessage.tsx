@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -11,14 +10,14 @@ export const SuccessMessage: React.FC = () => {
       <CardHeader>
         <CardTitle>Registrierung erfolgreich</CardTitle>
         <CardDescription>
-          Dein Konto wurde erstellt
+          Dein Konto wurde erfolgreich erstellt
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Alert className="mb-4">
           <AlertDescription>
-            Es kann vorkommen, dass keine Bestätigungs-E-Mail versendet wird, da wir uns in der Testphase befinden. 
-            Du kannst dich trotzdem mit deinen Anmeldedaten einloggen.
+            Hinweis: In der Testphase kann es vorkommen, dass keine Bestätigungs-E-Mail versendet wird.
+            Du kannst dich trotzdem direkt mit deinen Anmeldedaten einloggen.
           </AlertDescription>
         </Alert>
         <Button 
