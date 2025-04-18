@@ -25,11 +25,19 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
     defaultValues: {
       email: '',
       password: '',
-      name: '',
+      first_name: '',
+      last_name: '',
+      name_affix: '',
+      phone: '',
+      region: '',
+      postal_code: '',
+      city: '',
+      street: '',
+      house_number: '',
+      address_extra: '',
       role: 'sender_private',
       company_name: '',
-      region: ''
-    }
+    },
   });
 
   const { watch } = form;
@@ -46,10 +54,18 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
 
     try {
       await signUp(data.email, data.password, {
-        name: data.name,
-        role: data.role,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        name_affix: data.name_affix,
+        phone: data.phone,
         region: data.region,
-        ...(data.company_name ? { company_name: data.company_name } : {})
+        postal_code: data.postal_code,
+        city: data.city,
+        street: data.street,
+        house_number: data.house_number,
+        address_extra: data.address_extra,
+        role: data.role,
+        ...(data.company_name ? { company_name: data.company_name } : {}),
       });
 
       if (import.meta.env.DEV) {
