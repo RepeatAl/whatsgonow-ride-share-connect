@@ -1,4 +1,4 @@
-// ✅ Vollständig aktualisierte Profile.tsx mit zentraler Profilprüfung
+// ✅ Vollständig aktualisierte Profile.tsx mit zentraler Profilprüfung, UI-Erweiterung & dauerhaftem Onboarding-Status
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,8 @@ import TransportCard from "@/components/transport/TransportCard";
 import RequestCard from "@/components/transport/RequestCard";
 import { mockTransports, mockRequests } from "@/data/mockData";
 import { useProfile } from "@/hooks/useProfile";
+import { getMissingProfileFields } from "@/utils/profile-check";
+import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -27,6 +29,7 @@ const Profile = () => {
   const [houseNumber, setHouseNumber] = useState("");
   const [addressExtra, setAddressExtra] = useState("");
   const [nameAffix, setNameAffix] = useState("");
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
 
   const navigate = useNavigate();
   const { user, profile, signOut, refreshProfile, isProfileComplete } = useProfile();
@@ -46,6 +49,7 @@ const Profile = () => {
       setHouseNumber(profile.house_number || "");
       setAddressExtra(profile.address_extra || "");
       setNameAffix(profile.name_affix || "");
+      setOnboardingComplete(profile.onboarding_complete === true);
     }
   }, [user, profile]);
 
@@ -54,7 +58,6 @@ const Profile = () => {
     setLoading(true);
 
     const fullName = `${firstName} ${lastName}`.trim();
-    const isComplete = fullName && email && phone && region && postalCode && city;
 
     const { error } = await supabase.from("users").update({
       name: fullName,
@@ -66,8 +69,7 @@ const Profile = () => {
       city,
       street,
       house_number: houseNumber,
-      address_extra: addressExtra,
-      profile_complete: isComplete
+      address_extra: addressExtra
     }).eq("user_id", user.id);
 
     if (error) {
@@ -79,16 +81,31 @@ const Profile = () => {
     setLoading(false);
   };
 
+  const handleOnboardingComplete = async () => {
+    if (!user) return;
+    setOnboardingComplete(true);
+    const { error } = await supabase.from("users").update({ onboarding_complete: true }).eq("user_id", user.id);
+    if (error) {
+      console.warn("❌ Fehler beim Setzen des Onboarding-Status:", error);
+    } else {
+      console.log("✅ Onboarding abgeschlossen und gespeichert");
+    }
+  };
+
   if (!profile || loading) {
     return <Layout><div className="p-8 text-center text-gray-500">Lade Profil...</div></Layout>;
   }
 
+  const missingFields = getMissingProfileFields(profile);
+
   return <Layout>
+    {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboardingComplete} />}
     <div className="max-w-4xl mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-4">Mein Profil</h1>
       {!isProfileComplete && (
         <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
-          Bitte vervollständige dein Profil, um alle Funktionen zu nutzen.
+          Bitte vervollständige dein Profil, um alle Funktionen zu nutzen.<br />
+          Fehlende Angaben: {missingFields.join(', ')}
         </div>
       )}
       <Tabs defaultValue="profile" onValueChange={setActiveTab}>
