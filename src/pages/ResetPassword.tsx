@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -19,12 +19,16 @@ const ResetPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    
+    if (password !== confirmPassword) {
+      setError("Die Passwörter stimmen nicht überein.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      });
+      const { error } = await supabase.auth.updateUser({ password });
 
       if (error) throw error;
 
@@ -33,7 +37,6 @@ const ResetPassword = () => {
         description: "Dein Passwort wurde erfolgreich zurückgesetzt.",
       });
 
-      // Redirect to login
       navigate("/login");
     } catch (err) {
       setError((err as Error).message);
@@ -47,7 +50,6 @@ const ResetPassword = () => {
     }
   };
 
-  // Check if we have a valid session for password reset
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -60,7 +62,6 @@ const ResetPassword = () => {
         navigate("/login");
       }
     };
-
     checkSession();
   }, [navigate]);
 
@@ -71,7 +72,7 @@ const ResetPassword = () => {
           <CardHeader>
             <CardTitle>Neues Passwort festlegen</CardTitle>
             <CardDescription>
-              Bitte gib dein neues Passwort ein.
+              Bitte gib dein neues Passwort ein und bestätige es.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -86,6 +87,20 @@ const ResetPassword = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Passwort bestätigen
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
                 />
