@@ -17,24 +17,24 @@ export const registerSchema = z.object({
     required_error: "Bitte wählen Sie eine Rolle aus",
   }),
 
-  company_name: z.string()
-    .min(2, "Firmenname ist erforderlich")
-    .max(100, "Firmenname darf maximal 100 Zeichen lang sein")
-    .optional(),
-
   region: z.string()
     .min(2, "Region ist erforderlich")
     .max(100, "Region darf maximal 100 Zeichen lang sein"),
+
+  company_name: z.string()
+    .max(100, "Firmenname darf maximal 100 Zeichen lang sein")
+    .optional()
 })
-.refine((data) => {
-  // Wenn die Rolle "sender_business" ist, dann muss ein Firmenname vorhanden sein
-  if (data.role === "sender_business" && !data.company_name) {
-    return false;
+.superRefine((data, ctx) => {
+  if (data.role === "sender_business") {
+    if (!data.company_name || data.company_name.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Firmenname ist erforderlich für geschäftliche Sender",
+        path: ["company_name"],
+      });
+    }
   }
-  return true;
-}, {
-  message: "Firmenname ist erforderlich für geschäftliche Sender",
-  path: ["company_name"],
 });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
