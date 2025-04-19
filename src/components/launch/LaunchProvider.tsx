@@ -69,10 +69,12 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
           setRegion("unbekannt");
           setLoading(false);
           
-          // Only navigate to login if not already on auth-related pages to avoid redirect loops
-          const isAuthPage = location.pathname === "/login" || 
-                            location.pathname === "/register" || 
-                            location.pathname === "/";
+          // Check if current page is an auth page (including pre-register)
+          const isAuthPage = location.pathname === "/" || 
+                           location.pathname === "/login" || 
+                           location.pathname === "/register" ||
+                           location.pathname === "/pre-register" ||
+                           location.pathname.startsWith("/pre-register/");
           
           if (!isAuthPage) {
             navigate("/login");

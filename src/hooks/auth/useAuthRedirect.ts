@@ -17,19 +17,19 @@ export function useAuthRedirect(
   useEffect(() => {
     const currentPath = location.pathname;
 
-    // 1) Public route check - BEFORE everything else
+    // Skip redirect logic while loading or on initial load
+    if (loading || isInitialLoad) {
+      console.log("⏳ Auth loading or initial load – skip redirect");
+      return;
+    }
+
+    // 1) No auth needed for public routes
     if (isPublicRoute(currentPath)) {
       console.log("🌐 Public route → allow:", currentPath);
       return;
     }
 
-    // 2) While auth state is loading, do nothing
-    if (loading) {
-      console.log("⏳ Auth loading – skip redirect");
-      return;
-    }
-
-    // 3) No user → waiting list
+    // 2) Not logged in - redirect to pre-register
     if (!user) {
       console.log("🔒 Not authenticated → /pre-register");
       navigate("/pre-register", {
@@ -39,13 +39,12 @@ export function useAuthRedirect(
       return;
     }
 
-    // 4) Logged-in users on auth pages → landing page
-    if (["/login", "/register"].includes(currentPath)) {
+    // 3) Logged-in users shouldn't access auth pages
+    const isAuthPage = ["/login", "/register"].includes(currentPath);
+    if (isAuthPage) {
       console.log("✅ Logged in on auth page → /");
       navigate("/", { replace: true });
       return;
     }
-
-    // 5) All other protected routes → stay
-  }, [user, loading, location, navigate]);
+  }, [user, loading, isInitialLoad, location, navigate]);
 }
