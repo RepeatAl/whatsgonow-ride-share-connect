@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -20,34 +21,18 @@ export function useProfile() {
 
       const { data: userProfile, error: profileError } = await supabase
         .from("profiles")
-        .select(`
-          user_id,
-          name,
-          email,
-          phone,
-          role,
-          company_name,
-          region,
-          postal_code,
-          city,
-          street,
-          house_number,
-          address_extra,
-          profile_complete,
-          onboarding_complete
-        `)
+        .select("*")
         .eq("user_id", userId)
         .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
+        throw profileError;
+      }
       
       if (!userProfile) {
-        toast({
-          title: "Kein Profil gefunden",
-          description: "Bitte kontaktiere den Support.",
-          variant: "destructive"
-        });
-        throw new Error("Profile konnte nicht geladen werden.");
+        console.log("No profile found, will be created by trigger");
+        return;
       }
 
       setProfile(userProfile);
@@ -55,7 +40,7 @@ export function useProfile() {
       console.log("✅ Profile loaded:", userProfile);
     } catch (err) {
       console.error("❌ Error loading profile:", err);
-      setError(err instanceof Error ? err : new Error("Unbekannter Fehler beim Laden des Profils"));
+      setError(err instanceof Error ? err : new Error("Unknown error loading profile"));
       
       if (retryCount < 2) {
         setRetryCount((prev) => prev + 1);
@@ -68,33 +53,56 @@ export function useProfile() {
 
   const retryProfileLoad = useCallback(() => {
     if (!user) return;
-    console.log("🔁 Erneuter Profil-Ladeversuch");
+    console.log("🔁 Retrying profile load");
     setRetryCount(0);
     fetchProfile(user.id);
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    const getUserAndFetchProfile = async () => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+        
         const currentUser = session?.user || null;
         setUser(currentUser);
         
         if (currentUser) {
-          console.log("📥 Fetching profile for user:", currentUser.id);
+          console.log("📥 Found session, fetching profile for:", currentUser.id);
           await fetchProfile(currentUser.id);
         } else {
           setLoading(false);
           setIsInitialLoad(false);
         }
       } catch (err) {
-        console.error("Error getting user session:", err);
+        console.error("Session init error:", err);
         setLoading(false);
         setIsInitialLoad(false);
       }
     };
 
-    getUserAndFetchProfile();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("🔐 Auth state changed:", event);
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+        
+        if (currentUser && event === 'SIGNED_IN') {
+          await fetchProfile(currentUser.id);
+        } else if (!currentUser) {
+          setProfile(null);
+        }
+      }
+    );
+
+    initializeAuth();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
   return {

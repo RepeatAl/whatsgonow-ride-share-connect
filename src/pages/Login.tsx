@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -26,18 +27,15 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, user, profile, loading: authLoading } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (user && profile && !authLoading) {
-      if (profile.profile_complete) {
-        const destination = (location.state as any)?.from || "/dashboard";
-        navigate(destination, { replace: true });
-      } else {
-        navigate("/complete-profile", { replace: true });
-      }
+    if (user && !authLoading) {
+      const destination = (location.state as any)?.from || "/dashboard";
+      console.log("🚀 Redirecting authenticated user to:", destination);
+      navigate(destination, { replace: true });
     }
-  }, [user, profile, authLoading, location, navigate]);
+  }, [user, authLoading, location, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,10 +43,11 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      console.log("🔑 Attempting login for:", email);
       await signIn(email, password);
     } catch (err) {
       console.error("Login error:", err);
-      setError((err as Error).message);
+      setError("Anmeldung fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.");
     } finally {
       setIsLoading(false);
     }
@@ -102,6 +101,7 @@ const Login = () => {
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <label htmlFor="password" className="text-sm font-medium">Passwort</label>
                     <div className="relative">
@@ -130,7 +130,12 @@ const Login = () => {
                     </Button>
                   </div>
                   
-                  <Button type="submit" className="w-full" disabled={isLoading} variant="brand">
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isLoading} 
+                    variant="brand"
+                  >
                     {isLoading ? "Wird verarbeitet..." : "Einloggen"}
                   </Button>
                 </form>
