@@ -21,21 +21,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
+    console.log("🔄 AuthProvider initialized");
+
     const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) console.warn("Session error:", error);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Session error:", error);
+          setError(error);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (err) {
+        console.error("Unexpected error during session init:", err);
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+        setIsInitialLoad(false);
+      }
     };
 
     getInitialSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("📡 Auth state changed");
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
+      setIsInitialLoad(false);
     });
 
     return () => {
@@ -95,10 +112,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     session,
     profile,
-    loading: loading || profileLoading,
-    error: error || profileError,
+    loading,
+    error,
     isInitialLoad,
-    isProfileComplete,
+    isProfileComplete: profile ? !isProfileIncomplete(profile) : false,
     signIn,
     signUp,
     signOut,

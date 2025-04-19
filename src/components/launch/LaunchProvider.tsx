@@ -1,7 +1,8 @@
-
 import { useEffect, useState, ReactNode, createContext, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import NewUserOnboarding from "./NewUserOnboarding";
 import { isTestRegion, fetchUserRegion } from "@/utils/regionUtils";
 
@@ -35,12 +36,11 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, isInitialLoad } = useAuth();
 
-  // Check if launch is ready from environment variable
   const isLaunchReady = import.meta.env.VITE_LAUNCH_READY === "true";
   const isTest = isTestRegion(region);
 
-  // Analytics tracking function
   const trackEvent = (eventName: string, properties: Record<string, any> = {}) => {
     console.log(`[Analytics] ${eventName}`, properties);
 
@@ -53,6 +53,11 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
     const loadUserRegion = async () => {
       try {
         setLoading(true);
+        
+        if (isInitialLoad) {
+          return;
+        }
+        
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -62,51 +67,42 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
           return;
         }
         
-        const user = sessionData.session?.user;
-
-        if (!user) {
-          console.warn("Kein Benutzer eingeloggt");
+        if (!sessionData.session?.user) {
+          console.warn("No user logged in");
           setRegion("unbekannt");
           setLoading(false);
           
-          // Check if current page is an auth page (including pre-register)
           const isAuthPage = location.pathname === "/" || 
                            location.pathname === "/login" || 
                            location.pathname === "/register" ||
                            location.pathname === "/pre-register" ||
                            location.pathname.startsWith("/pre-register/");
           
-          if (!isAuthPage) {
+          if (!isAuthPage && !isInitialLoad) {
             navigate("/login");
           }
           return;
         }
 
         try {
-          const userRegion = await fetchUserRegion(supabase, user.id);
-          if (!userRegion) {
-            console.warn("Region konnte nicht geladen werden");
-            setRegion("unbekannt");
-          } else {
-            setRegion(userRegion);
-          }
+          const userRegion = await fetchUserRegion(supabase, sessionData.session.user.id);
+          setRegion(userRegion || "unbekannt");
         } catch (e) {
-          console.error("Fehler beim Laden der Region:", e);
+          console.error("Error loading region:", e);
           setRegion("unbekannt");
         } finally {
           setLoading(false);
         }
       } catch (e) {
-        console.error("Unerwarteter Fehler:", e);
+        console.error("Unexpected error:", e);
         setRegion("unbekannt");
         setLoading(false);
       }
     };
 
     loadUserRegion();
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, isInitialLoad]);
 
-  // Onboarding logic
   useEffect(() => {
     const isNewUser = localStorage.getItem("hasSeenOnboarding") !== "true";
     
@@ -115,7 +111,6 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
     }
   }, [isLaunchReady, isTest, location]);
 
-  // Track page views
   useEffect(() => {
     trackEvent("page_view", { path: location.pathname });
   }, [location.pathname]);
@@ -126,8 +121,8 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
     setHasCompletedOnboarding(true);
   };
 
-  if (loading) {
-    return <div className="p-4">Lade Region...</div>;
+  if (isInitialLoad) {
+    return <LoadingSpinner />;
   }
 
   return (

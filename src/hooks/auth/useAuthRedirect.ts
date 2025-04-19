@@ -17,13 +17,13 @@ export function useAuthRedirect(
   useEffect(() => {
     const currentPath = location.pathname;
 
-    // Skip redirect logic while loading or on initial load
+    // Skip redirect logic during initial load or while loading
     if (loading || isInitialLoad) {
       console.log("⏳ Auth loading or initial load – skip redirect");
       return;
     }
 
-    // 1) No auth needed for public routes
+    // 1) Public routes are always accessible
     if (isPublicRoute(currentPath)) {
       console.log("🌐 Public route → allow:", currentPath);
       return;
