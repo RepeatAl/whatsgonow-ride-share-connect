@@ -8,14 +8,12 @@ import type { UserProfile } from "@/types/auth";
 export function useAuthRedirect(
   user: User | null,
   profile: UserProfile | null,
-  loading: boolean,
-  isInitialLoad: boolean = false
+  loading: boolean
 ) {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Skip redirect logic while loading
     if (loading) {
       console.log("⏳ Auth loading – skip redirect");
       return;
@@ -29,10 +27,10 @@ export function useAuthRedirect(
       return;
     }
 
-    // Not logged in - redirect to login
+    // Not logged in - redirect to pre-register
     if (!user) {
-      console.log("🔒 Not authenticated → /login");
-      navigate("/login", {
+      console.log("🔒 Not authenticated → /pre-register");
+      navigate("/pre-register", {
         state: { from: currentPath },
         replace: true
       });

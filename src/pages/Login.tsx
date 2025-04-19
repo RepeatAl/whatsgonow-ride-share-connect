@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -26,15 +25,15 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (user && !authLoading) {
-      const location = useLocation();
-      const destination = location.state?.from || "/";
+      const destination = (location.state as any)?.from || "/";
       navigate(destination, { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, location, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
