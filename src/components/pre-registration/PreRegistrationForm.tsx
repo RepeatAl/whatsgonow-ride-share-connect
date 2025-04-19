@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -106,20 +105,14 @@ export function PreRegistrationForm() {
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="wants_driver" 
-              {...register("wants_driver")} 
-              onChange={(e) => {
-                // Empty onChange handler to let react-hook-form handle the value
-              }}
+              {...register("wants_driver")}
             />
             <Label htmlFor="wants_driver">Fahrer</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="wants_cm" 
-              {...register("wants_cm")} 
-              onChange={(e) => {
-                // Empty onChange handler to let react-hook-form handle the value
-              }}
+              {...register("wants_cm")}
             />
             <Label htmlFor="wants_cm">Community Manager</Label>
           </div>
@@ -127,9 +120,6 @@ export function PreRegistrationForm() {
             <Checkbox 
               id="wants_sender" 
               {...register("wants_sender")}
-              onChange={(e) => {
-                // Empty onChange handler to let react-hook-form handle the value
-              }}
             />
             <Label htmlFor="wants_sender">Versender</Label>
           </div>
@@ -144,9 +134,6 @@ export function PreRegistrationForm() {
           <Checkbox 
             id="gdpr_consent" 
             {...register("gdpr_consent")}
-            onChange={(e) => {
-              // Empty onChange handler to let react-hook-form handle the value
-            }}
           />
           <Label htmlFor="gdpr_consent">
             Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu
