@@ -20,10 +20,29 @@ export function useProfile() {
       setError(null);
 
       const { data: userProfile, error: profileError } = await supabase
-        .from("users")
-        .select("*")
+        .from("profiles")
+        .select(`
+          user_id,
+          first_name,
+          last_name,
+          name_affix,
+          email,
+          phone,
+          role,
+          company_name,
+          region,
+          postal_code,
+          city,
+          street,
+          house_number,
+          address_extra,
+          profile_complete,
+          onboarding_complete,
+          created_at,
+          updated_at
+        `)
         .eq("user_id", userId)
-        .maybeSingle();
+        .single();
 
       if (profileError) throw profileError;
       if (!userProfile) {

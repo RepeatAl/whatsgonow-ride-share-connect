@@ -11,10 +11,29 @@ export const authService = {
     try {
       console.log("📊 Fetching profile for user:", userId);
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
+        .from("profiles")
+        .select(`
+          user_id,
+          first_name,
+          last_name,
+          name_affix,
+          email,
+          phone,
+          role,
+          company_name,
+          region,
+          postal_code,
+          city,
+          street,
+          house_number,
+          address_extra,
+          profile_complete,
+          onboarding_complete,
+          created_at,
+          updated_at
+        `)
         .eq("user_id", userId)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       if (!data) {
@@ -43,6 +62,8 @@ export const authService = {
       const insertData = {
         user_id: userId,
         email,
+        first_name: meta.first_name || "",
+        last_name: meta.last_name || "",
         name: `${meta.first_name ?? ""} ${meta.last_name ?? ""}`.trim() || meta.name || "Neuer Benutzer",
         name_affix: meta.name_affix || null,
         phone: meta.phone || null,
@@ -54,13 +75,12 @@ export const authService = {
         street: meta.street || null,
         house_number: meta.house_number || null,
         address_extra: meta.address_extra || null,
-        active: true,
         profile_complete: false,
         onboarding_complete: false
       };
 
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .insert([insertData])
         .select()
         .single();
