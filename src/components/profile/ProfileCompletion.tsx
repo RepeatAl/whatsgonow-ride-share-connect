@@ -14,9 +14,14 @@ export function ProfileCompletion() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  // Split the name into first and last name for the form
+  const nameParts = (profile?.name || "").split(" ");
+  const initialFirstName = nameParts[0] || "";
+  const initialLastName = nameParts.slice(1).join(" ") || "";
+
   const [formData, setFormData] = useState({
-    first_name: profile?.first_name || "",
-    last_name: profile?.last_name || "",
+    first_name: initialFirstName,
+    last_name: initialLastName,
     phone: profile?.phone || "",
     region: profile?.region || "",
     postal_code: profile?.postal_code || "",
@@ -28,10 +33,16 @@ export function ProfileCompletion() {
     setLoading(true);
 
     try {
+      const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+      
       const { error } = await supabase
         .from("profiles")
         .update({
-          ...formData,
+          name: fullName,
+          phone: formData.phone,
+          region: formData.region,
+          postal_code: formData.postal_code,
+          city: formData.city,
           profile_complete: true
         })
         .eq("user_id", profile?.user_id);

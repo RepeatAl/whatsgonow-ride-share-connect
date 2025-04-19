@@ -3,6 +3,14 @@ import { Routes, Route } from "react-router-dom";
 import { ProfileCheck } from "@/components/profile/ProfileCheck";
 import { routes } from "@/routes/routes";
 
+export interface RouteConfig {
+  path: string;
+  element: React.ReactNode;
+  public?: boolean;
+  protected?: boolean;
+  children?: RouteConfig[];
+}
+
 export const AppRoutes = () => {
   return (
     <Routes>
