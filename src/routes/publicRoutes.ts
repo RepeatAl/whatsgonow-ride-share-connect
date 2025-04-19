@@ -5,11 +5,13 @@
  */
 export const publicRoutes = [
   "/",
+  "/login",
+  "/register", 
   "/pre-register",
   "/pre-register/success",
   "/delivery",
   "/invoice-download",
-  "/forgot-password",
+  "/forgot-password", 
   "/reset-password",
   "/faq",
   "/support"
