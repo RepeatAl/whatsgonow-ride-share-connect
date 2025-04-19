@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -16,7 +15,8 @@ import {
   MessageSquareWarning,
   FileBarChart,
   FileSpreadsheet,
-  UserCheck
+  UserCheck,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -59,7 +59,6 @@ const AdminDashboard = () => {
     );
   }
   
-  // Redirect if not admin
   if (!profile || profile.role !== 'admin') {
     return <Navigate to="/dashboard" />;
   }
@@ -69,10 +68,8 @@ const AdminDashboard = () => {
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">{t('admin.dashboard.title', 'Admin Dashboard')}</h1>
         
-        {/* KPI Cards Row */}
         <KPICards stats={stats} timeRange={parseInt(timeRange)} />
         
-        {/* Admin Tools Section */}
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Admin-Tools</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -90,6 +87,26 @@ const AdminDashboard = () => {
                 <Button variant="outline" className="w-full justify-between" asChild>
                   <Link to="/admin/validation">
                     Validierung durchführen
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center">
+                  <FileText className="mr-2 h-5 w-5 text-primary" />
+                  Vorregistrierungen
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Zugriff auf Vorregistrierungsdaten und Export der Informationen.
+                </p>
+                <Button variant="outline" className="w-full justify-between" asChild>
+                  <Link to="/admin/pre-registrations">
+                    Registrierungen anzeigen
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -135,7 +152,7 @@ const AdminDashboard = () => {
                 </Button>
               </CardContent>
             </Card>
-
+            
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center">
@@ -194,7 +211,6 @@ const AdminDashboard = () => {
           </div>
         </div>
         
-        {/* Filter Options */}
         <div className="mt-8">
           <FilterOptions 
             timeRange={timeRange}
@@ -205,7 +221,6 @@ const AdminDashboard = () => {
           />
         </div>
         
-        {/* Data Tables */}
         <div className="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8">
             <UserActivityTable userSummaries={userSummaries} />

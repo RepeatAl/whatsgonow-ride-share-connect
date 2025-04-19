@@ -1,3 +1,4 @@
+
 import { RouteConfig } from "@/components/routing/AppRoutes";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -28,6 +29,7 @@ import AdminInvoiceTest from "@/pages/AdminInvoiceTest";
 import EmailTest from "@/pages/EmailTest";
 import NotFound from "@/pages/NotFound";
 import OfferTransport from "@/pages/OfferTransport";
+import PreRegistrationsPage from "@/pages/admin/PreRegistrationsPage";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -71,6 +73,7 @@ export const routes: RouteConfig[] = [
   { path: "/admin/validation", element: <ValidationAdmin />, protected: true },
   { path: "/admin/feedback", element: <FeedbackAdmin />, protected: true },
   { path: "/admin/invoice-test", element: <AdminInvoiceTest />, protected: true },
+  { path: "/admin/pre-registrations", element: <PreRegistrationsPage />, protected: true },
   { path: "/email-test", element: <EmailTest />, protected: true },
 
   // 404 - last
