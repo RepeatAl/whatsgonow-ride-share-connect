@@ -1,3 +1,4 @@
+
 // src/services/auth-service.ts
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
@@ -41,8 +42,14 @@ export const authService = {
         return await this.createDefaultUserProfile(userId);
       }
 
-      console.log("✅ Profile loaded:", data);
-      return data;
+      // Add name property by combining first_name and last_name
+      const profile = {
+        ...data,
+        name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+      };
+
+      console.log("✅ Profile loaded:", profile);
+      return profile;
     } catch (error) {
       console.error("❌ Profile fetch failed:", error);
       throw error;

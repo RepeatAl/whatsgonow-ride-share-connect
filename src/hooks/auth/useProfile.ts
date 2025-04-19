@@ -49,9 +49,15 @@ export function useProfile() {
         throw new Error("Profile konnte nicht geladen werden.");
       }
 
-      setProfile(userProfile);
+      // Add name property by combining first_name and last_name
+      const profileWithName = {
+        ...userProfile,
+        name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim(),
+      };
+
+      setProfile(profileWithName);
       setRetryCount(0);
-      console.log("✅ Profile loaded:", userProfile);
+      console.log("✅ Profile loaded:", profileWithName);
     } catch (err) {
       console.error("❌ Error loading profile:", err);
       setError(err instanceof Error ? err : new Error("Unbekannter Fehler beim Laden des Profils"));
