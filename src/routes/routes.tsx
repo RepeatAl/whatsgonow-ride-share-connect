@@ -30,6 +30,7 @@ import NotFound from "@/pages/NotFound";
 import OfferTransport from "@/pages/OfferTransport";
 import PreRegistrationsPage from "@/pages/admin/PreRegistrationsPage";
 import AdminLayout from "@/components/admin/AdminLayout";
+import AdminHome from "@/pages/admin/index";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -82,7 +83,7 @@ export const routes: RouteConfig[] = [
     element: <AdminLayout />,
     protected: true,
     children: [
-      { path: "", element: <Admin /> },
+      { path: "", element: <AdminHome /> },
       { path: "dashboard", element: <DashboardAdmin /> },
       { path: "pre-registrations", element: <PreRegistrationsPage /> },
       { path: "users", element: <ValidationAdmin /> },

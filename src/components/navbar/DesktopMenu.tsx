@@ -52,23 +52,11 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
 
   const adminLinks = [
     { 
-      name: "Admin Panel", 
+      name: "Admin", 
       path: "/admin", 
       icon: <Shield className="h-5 w-5 mr-2" />, 
-      tooltip: "Access admin panel" 
-    },
-    { 
-      name: "User Management", 
-      path: "/admin", 
-      icon: <Shield className="h-5 w-5 mr-2" />, 
-      tooltip: "Manage users" 
-    },
-    { 
-      name: "Admin Dashboard", 
-      path: "/admin/dashboard", 
-      icon: <Database className="h-5 w-5 mr-2" />, 
-      tooltip: "View logs and transactions" 
-    },
+      tooltip: "Admin Panel" 
+    }
   ];
 
   return (
@@ -89,7 +77,7 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
             />
           ))}
           
-          {userRole === 'admin' && (
+          {(userRole === 'admin' || userRole === 'admin_limited') && (
             <>
               <div className="h-6 border-l mx-1"></div>
               {adminLinks.map((link) => (

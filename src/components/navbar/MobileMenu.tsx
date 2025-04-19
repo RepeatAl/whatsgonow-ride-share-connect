@@ -6,6 +6,7 @@ import { Menu, X, Package, Car, MessageCircle, User, LayoutDashboard, Shield, Da
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import NavLink from "./NavLink";
 
 interface MobileMenuProps {
   user: any;
@@ -35,10 +36,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
     name: "Admin Panel",
     path: "/admin",
     icon: <Shield className="h-5 w-5 mr-2" />
-  }, {
-    name: "Admin Dashboard",
-    path: "/admin/dashboard",
-    icon: <Database className="h-5 w-5 mr-2" />
   }];
 
   const signOut = async () => {
@@ -50,12 +47,14 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
     }
   };
 
-  return <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+  return (
+    <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={isMenuOpen ? "Close menu" : "Open menu"} className="text-orange-500">
           {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
       </SheetTrigger>
+      
       <SheetContent side="right" className="w-[250px] sm:w-[300px]">
         <div className="flex flex-col gap-4 mt-8">
           <div className="flex items-center gap-2">
@@ -71,26 +70,44 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
             <LanguageToggle />
           </div>
 
-          {!user ? <Link to="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+          {!user ? (
+            <Link to="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
               <LogIn className="h-5 w-5 mr-2" />
               <span>Anmelden</span>
-            </Link> : <>
-              {navLinks.map(link => <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+            </Link>
+          ) : (
+            <>
+              {navLinks.map(link => (
+                <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                   {link.icon}
                   <span>{link.name}</span>
                   {link.path === "/inbox" && unreadMessagesCount > 0 && <div className="ml-1 px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground text-xs">
                       {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
                     </div>}
-                </Link>)}
+                </Link>
+              ))}
               
-              {userRole === 'admin' && <>
+              {(userRole === 'admin' || userRole === 'admin_limited') && (
+                <>
                   <div className="border-t my-2"></div>
-                  <div className="px-3 py-1 text-sm font-semibold text-gray-500 dark:text-gray-400">Admin</div>
-                  {adminLinks.map(link => <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <div className="px-3 py-1 text-sm font-semibold text-muted-foreground">Admin</div>
+                  {adminLinks.map(link => (
+                    <NavLink
+                      key={link.path}
+                      to={link.path}
+                      end={link.path === "/admin"}
+                      className={({ isActive }) =>
+                        `flex items-center py-2 px-3 rounded-md hover:bg-accent ${
+                          isActive ? "text-primary font-medium" : "text-foreground"
+                        }`
+                      }
+                    >
                       {link.icon}
                       <span>{link.name}</span>
-                    </Link>)}
-                </>}
+                    </NavLink>
+                  ))}
+                </>
+              )}
               
               <div className="border-t my-2"></div>
               <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -109,10 +126,12 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 <LogOut className="h-5 w-5 mr-2" />
                 <span>Abmelden</span>
               </button>
-            </>}
+            </>
+          )}
         </div>
       </SheetContent>
-    </Sheet>;
+    </Sheet>
+  );
 };
 
 export default MobileMenu;

@@ -1,12 +1,16 @@
 
-import { Outlet } from "react-router-dom";
-import { Shield, LayoutDashboard, Users, MessageSquare } from "lucide-react";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Shield, LayoutDashboard, Users, MessageCircle, Home } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const adminNavItems = [
+  {
+    title: "Home",
+    icon: Home,
+    path: "/admin",
+  },
   {
     title: "Dashboard",
     icon: LayoutDashboard,
@@ -24,7 +28,7 @@ const adminNavItems = [
   },
   {
     title: "Feedback",
-    icon: MessageSquare,
+    icon: MessageCircle,
     path: "/admin/feedback",
   },
 ];
@@ -34,7 +38,7 @@ const AdminLayout = () => {
   const { profile } = useAuth();
 
   // Redirect non-admin users
-  if (!profile || profile.role !== 'admin') {
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'admin_limited')) {
     navigate('/dashboard');
     return null;
   }
@@ -48,14 +52,19 @@ const AdminLayout = () => {
               <SidebarMenu>
                 {adminNavItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      onClick={() => navigate(item.path)}
-                    >
-                      <button>
-                        <item.icon />
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.path}
+                        end={item.path === "/admin"}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2 ${
+                            isActive ? "text-primary font-medium" : "text-muted-foreground"
+                          }`
+                        }
+                      >
+                        <item.icon className="h-5 w-5" />
                         <span>{item.title}</span>
-                      </button>
+                      </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -64,7 +73,7 @@ const AdminLayout = () => {
           </SidebarContent>
         </Sidebar>
         
-        <div className="flex-1 p-6">
+        <div className="flex-1">
           <Outlet />
         </div>
       </div>
