@@ -1,4 +1,3 @@
-
 // src/services/auth-service.ts
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
@@ -7,7 +6,6 @@ import { getMissingProfileFields } from "@/utils/profile-check";
 import type { UserProfile } from "@/types/auth";
 
 export const authService = {
-  // Profil laden oder neu anlegen
   async fetchUserProfile(userId: string): Promise<UserProfile | null> {
     try {
       console.log("📊 Fetching profile for user:", userId);
@@ -34,7 +32,7 @@ export const authService = {
           updated_at
         `)
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (!data) {
@@ -42,7 +40,6 @@ export const authService = {
         return await this.createDefaultUserProfile(userId);
       }
 
-      // Add name property by combining first_name and last_name
       const profile = {
         ...data,
         name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
@@ -56,7 +53,6 @@ export const authService = {
     }
   },
 
-  // Standard-Profil anlegen
   async createDefaultUserProfile(userId: string): Promise<UserProfile> {
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -109,7 +105,6 @@ export const authService = {
     }
   },
 
-  // Einloggen
   async signIn(email: string, password: string) {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -122,7 +117,6 @@ export const authService = {
     }
   },
 
-  // Registrierung inklusive Anlage eines separaten Profils
   async signUp(
     email: string,
     password: string,
@@ -158,7 +152,6 @@ export const authService = {
         description: "Bestätige deine E‑Mail-Adresse, um fortzufahren."
       });
 
-      // **Hier neues Profil in eigener Tabelle anlegen**
       await supabase
         .from("profiles")
         .insert([{
@@ -187,7 +180,6 @@ export const authService = {
     }
   },
 
-  // Ausloggen
   async signOut() {
     try {
       const { error } = await supabase.auth.signOut();

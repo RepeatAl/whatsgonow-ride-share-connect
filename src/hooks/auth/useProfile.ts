@@ -42,14 +42,18 @@ export function useProfile() {
           updated_at
         `)
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
       if (!userProfile) {
+        toast({
+          title: "Kein Profil gefunden",
+          description: "Bitte kontaktiere den Support.",
+          variant: "destructive"
+        });
         throw new Error("Profile konnte nicht geladen werden.");
       }
 
-      // Add name property by combining first_name and last_name
       const profileWithName = {
         ...userProfile,
         name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim(),
