@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -52,6 +51,12 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
   ];
 
   const adminLinks = [
+    { 
+      name: "Admin Panel", 
+      path: "/admin", 
+      icon: <Shield className="h-5 w-5 mr-2" />, 
+      tooltip: "Access admin panel" 
+    },
     { 
       name: "User Management", 
       path: "/admin", 

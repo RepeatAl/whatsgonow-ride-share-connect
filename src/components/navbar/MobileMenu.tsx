@@ -13,11 +13,7 @@ interface MobileMenuProps {
   unreadMessagesCount: number;
 }
 
-const MobileMenu = ({
-  user,
-  userRole,
-  unreadMessagesCount
-}: MobileMenuProps) => {
+const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
@@ -36,7 +32,7 @@ const MobileMenu = ({
   }];
 
   const adminLinks = [{
-    name: "User Management",
+    name: "Admin Panel",
     path: "/admin",
     icon: <Shield className="h-5 w-5 mr-2" />
   }, {
