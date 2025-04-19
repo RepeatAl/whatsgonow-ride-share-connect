@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -26,14 +27,19 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signIn, user, profile, loading: authLoading } = useAuth();
 
+  // Redirect on successful login based on role
   useEffect(() => {
-    if (user && !authLoading) {
-      const destination = (location.state as any)?.from || "/";
-      navigate(destination, { replace: true });
+    if (user && profile && !authLoading) {
+      if (profile.role === 'admin' || profile.role === 'admin_limited') {
+        navigate("/admin", { replace: true });
+      } else {
+        const destination = (location.state as any)?.from || "/";
+        navigate(destination, { replace: true });
+      }
     }
-  }, [user, authLoading, location, navigate]);
+  }, [user, profile, authLoading, location, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +48,7 @@ const Login = () => {
     
     try {
       await signIn(email, password);
+      // Navigation is handled by the useEffect above
     } catch (err) {
       console.error("Login error:", err);
       setError((err as Error).message);
