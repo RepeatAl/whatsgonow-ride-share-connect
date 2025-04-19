@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+
+import { useState } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useNavigate, useEffect } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -25,34 +26,15 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { signIn, user, loading: authLoading, profile } = useAuth();
-  const from = location.state?.from?.pathname || '/dashboard';
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get('signup') === 'true') {
-      setIsSignup(true);
-    }
-  }, [location]);
+  const { signIn, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     // Only redirect after successful authentication is complete
     if (user && !authLoading) {
-      // If no profile, redirect to profile page
-      if (!profile) {
-        console.log("🔄 No profile found after login, redirecting to /profile");
-        navigate("/profile", { 
-          replace: true,
-          state: { from: location }
-        });
-        return;
-      }
-      
-      console.log("✅ Login successful, redirecting to:", from);
-      navigate(from, { replace: true });
+      console.log("✅ Login successful, redirecting to landing page");
+      navigate("/", { replace: true });
     }
-  }, [user, profile, authLoading, navigate, location, from]);
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
