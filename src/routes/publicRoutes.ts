@@ -9,8 +9,6 @@ export const publicRoutes = [
   "/pre-register/success",
   "/delivery",
   "/invoice-download",
-  "/login",
-  "/register",
   "/forgot-password",
   "/reset-password",
   "/faq",

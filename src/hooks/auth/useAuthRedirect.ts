@@ -37,12 +37,12 @@ export function useAuthRedirect(
       return;
     }
 
-    // Logged-in users shouldn't access auth pages
+    // If user is authenticated and tries to access auth pages, redirect to home
     const isAuthPage = ["/login", "/register", "/pre-register"].includes(currentPath);
-    if (isAuthPage) {
-      console.log("✅ Logged in on auth page → /");
+    if (isAuthPage && user) {
+      console.log("✅ Authenticated on auth page → /");
       navigate("/", { replace: true });
       return;
     }
-  }, [user, loading, location, navigate]);
+  }, [user, loading, location.pathname, navigate]);
 }
