@@ -9,17 +9,22 @@ export const preRegistrationSchema = z.object({
   wants_driver: z.boolean().default(false),
   wants_cm: z.boolean().default(false),
   wants_sender: z.boolean().default(false),
-  vehicle_types: z.object({
-    car: z.array(z.string()).optional(),
-    motorcycle: z.boolean().optional(),
-    bicycle: z.boolean().optional(),
-    ship: z.boolean().optional(),
-    plane: z.boolean().optional(),
-    other: z.string().optional()
-  }).optional(),
+  vehicle_types: z.array(
+    z.enum(["S", "M", "L", "XL", "XXL", "MOPED", "BIKE", "BOAT", "PLANE"])
+  ).optional(),
   gdpr_consent: z.boolean().refine((val) => val === true, {
     message: "Bitte stimmen Sie den Datenschutzbestimmungen zu"
   })
+}).superRefine((data, ctx) => {
+  if (data.wants_driver) {
+    if (!data.vehicle_types || data.vehicle_types.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["vehicle_types"],
+        message: "Bitte wähle mindestens eine Fahrzeuggröße aus."
+      });
+    }
+  }
 });
 
 export type PreRegistrationFormData = z.infer<typeof preRegistrationSchema>;

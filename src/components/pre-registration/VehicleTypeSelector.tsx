@@ -2,7 +2,6 @@
 import { UseFormRegister } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import type { PreRegistrationFormData } from "@/lib/validators/pre-registration";
 
 interface Props {
@@ -21,11 +20,11 @@ export function VehicleTypeSelector({ register }: Props) {
             {["S", "M", "L", "XL", "XXL"].map((size) => (
               <div key={size} className="flex items-center space-x-2">
                 <Checkbox 
-                  id={`car-${size}`} 
-                  {...register(`vehicle_types.car` as const)}
+                  id={`vehicle-${size}`} 
                   value={size}
+                  {...register("vehicle_types")}
                 />
-                <Label htmlFor={`car-${size}`}>{size}</Label>
+                <Label htmlFor={`vehicle-${size}`}>{size}</Label>
               </div>
             ))}
           </div>
@@ -33,24 +32,20 @@ export function VehicleTypeSelector({ register }: Props) {
 
         <div className="space-y-2">
           {[
-            { id: "motorcycle", label: "Moped/Motorrad" },
-            { id: "bicycle", label: "Fahrrad/Lastenrad" },
-            { id: "ship", label: "Schiff" },
-            { id: "plane", label: "Flugzeug" }
+            { id: "MOPED", label: "Moped/Motorrad" },
+            { id: "BIKE", label: "Fahrrad/Lastenrad" },
+            { id: "BOAT", label: "Schiff" },
+            { id: "PLANE", label: "Flugzeug" }
           ].map(({ id, label }) => (
             <div key={id} className="flex items-center space-x-2">
               <Checkbox 
-                id={id} 
-                {...register(`vehicle_types.${id}` as "vehicle_types.motorcycle" | "vehicle_types.bicycle" | "vehicle_types.ship" | "vehicle_types.plane")} 
+                id={`vehicle-${id}`}
+                value={id}
+                {...register("vehicle_types")}
               />
-              <Label htmlFor={id}>{label}</Label>
+              <Label htmlFor={`vehicle-${id}`}>{label}</Label>
             </div>
           ))}
-        </div>
-
-        <div>
-          <Label htmlFor="other">Sonstige</Label>
-          <Input id="other" {...register("vehicle_types.other" as const)} />
         </div>
       </div>
     </div>
