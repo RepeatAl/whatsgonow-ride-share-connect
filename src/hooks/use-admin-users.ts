@@ -10,6 +10,7 @@ export interface AdminUser {
   role: string;
   region: string;
   active: boolean;
+  banned_until?: string;
 }
 
 export const useAdminUsers = () => {
@@ -20,8 +21,8 @@ export const useAdminUsers = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('user_id, name, email, role, region, active');
+        .from('profiles')
+        .select('user_id, name, email, role, region, active, banned_until');
 
       if (error) throw error;
 
@@ -41,7 +42,7 @@ export const useAdminUsers = () => {
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ role: newRole })
         .eq('user_id', userId);
 
@@ -70,7 +71,7 @@ export const useAdminUsers = () => {
   const toggleUserActive = async (userId: string, activeStatus: boolean) => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ active: activeStatus })
         .eq('user_id', userId);
 
@@ -101,7 +102,7 @@ export const useAdminUsers = () => {
   const deleteUser = async (userId: string) => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .delete()
         .eq('user_id', userId);
 
