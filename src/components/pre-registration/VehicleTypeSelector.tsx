@@ -8,6 +8,9 @@ interface Props {
   control: Control<PreRegistrationFormData>;
 }
 
+// Define the allowed vehicle types to match our Zod schema
+type VehicleType = "S" | "M" | "L" | "XL" | "XXL" | "MOPED" | "BIKE" | "BOAT" | "PLANE";
+
 export function VehicleTypeSelector({ control }: Props) {
   return (
     <div className="space-y-4">
@@ -17,7 +20,7 @@ export function VehicleTypeSelector({ control }: Props) {
         <div>
           <Label>Auto (Größen)</Label>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-1">
-            {["S", "M", "L", "XL", "XXL"].map((size) => (
+            {(["S", "M", "L", "XL", "XXL"] as const).map((size) => (
               <Controller
                 key={size}
                 control={control}
@@ -32,7 +35,7 @@ export function VehicleTypeSelector({ control }: Props) {
                         onCheckedChange={(checked) => {
                           const currentValues = field.value || [];
                           if (checked) {
-                            field.onChange([...currentValues, size]);
+                            field.onChange([...currentValues, size as VehicleType]);
                           } else {
                             field.onChange(currentValues.filter(value => value !== size));
                           }
@@ -48,12 +51,12 @@ export function VehicleTypeSelector({ control }: Props) {
         </div>
 
         <div className="space-y-2">
-          {[
-            { id: "MOPED", label: "Moped/Motorrad" },
-            { id: "BIKE", label: "Fahrrad/Lastenrad" },
-            { id: "BOAT", label: "Schiff" },
-            { id: "PLANE", label: "Flugzeug" }
-          ].map(({ id, label }) => (
+          {([
+            { id: "MOPED" as const, label: "Moped/Motorrad" },
+            { id: "BIKE" as const, label: "Fahrrad/Lastenrad" },
+            { id: "BOAT" as const, label: "Schiff" },
+            { id: "PLANE" as const, label: "Flugzeug" }
+          ]).map(({ id, label }) => (
             <Controller
               key={id}
               control={control}
@@ -68,7 +71,7 @@ export function VehicleTypeSelector({ control }: Props) {
                       onCheckedChange={(checked) => {
                         const currentValues = field.value || [];
                         if (checked) {
-                          field.onChange([...currentValues, id]);
+                          field.onChange([...currentValues, id as VehicleType]);
                         } else {
                           field.onChange(currentValues.filter(value => value !== id));
                         }
