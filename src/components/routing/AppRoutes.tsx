@@ -1,15 +1,12 @@
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import { routes } from "@/routes/routes";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthContext";
-import DashboardSender from "@/pages/dashboard/DashboardSender";
-import DashboardDriver from "@/pages/dashboard/DashboardDriver";
-import DashboardCM from "@/pages/dashboard/DashboardCM";
-import DashboardAdmin from "@/pages/dashboard/DashboardAdmin";
+import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect";
 
 export interface RouteConfig {
   path: string;
@@ -19,7 +16,10 @@ export interface RouteConfig {
 }
 
 export const AppRoutes = () => {
-  const { loading } = useAuth();
+  const { user, profile, loading, isInitialLoad } = useAuth();
+  
+  // Use auth redirect hook at the top level
+  useAuthRedirect(user, profile, loading, isInitialLoad);
   
   if (loading) {
     return <LoadingSpinner />;

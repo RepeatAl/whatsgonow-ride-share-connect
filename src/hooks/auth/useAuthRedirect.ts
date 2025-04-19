@@ -15,34 +15,37 @@ export function useAuthRedirect(
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) {
-      console.log("⏳ Auth state loading, skipping redirect check");
-      return;
-    }
-
     const currentPath = location.pathname;
-    
-    // Public routes are always accessible
+
+    // 1) Public route check - BEFORE everything else
     if (isPublicRoute(currentPath)) {
-      console.log("🌐 Public route access granted:", currentPath);
+      console.log("🌐 Public route → allow:", currentPath);
       return;
     }
 
-    // Non-authenticated users go to pre-register
+    // 2) While auth state is loading, do nothing
+    if (loading) {
+      console.log("⏳ Auth loading – skip redirect");
+      return;
+    }
+
+    // 3) No user → waiting list
     if (!user) {
-      console.log("🔒 Protected route access denied, redirecting to pre-register");
-      navigate("/pre-register", { 
-        state: { from: location }, 
-        replace: true 
+      console.log("🔒 Not authenticated → /pre-register");
+      navigate("/pre-register", {
+        state: { from: currentPath },
+        replace: true
       });
       return;
     }
 
-    // Authenticated users on auth pages go to home
+    // 4) Logged-in users on auth pages → landing page
     if (["/login", "/register"].includes(currentPath)) {
-      console.log("✅ Auth page redirect to home");
+      console.log("✅ Logged in on auth page → /");
       navigate("/", { replace: true });
       return;
     }
-  }, [user, profile, loading, location, navigate, isInitialLoad]);
+
+    // 5) All other protected routes → stay
+  }, [user, loading, location, navigate]);
 }
