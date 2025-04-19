@@ -13,6 +13,7 @@ export interface RouteConfig {
   element: React.ReactNode;
   protected?: boolean;
   public?: boolean;
+  children?: RouteConfig[];
 }
 
 export const AppRoutes = () => {
@@ -28,20 +29,47 @@ export const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
-        {routes.map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={
-              route.protected ? (
-                <ProtectedRoute>{route.element}</ProtectedRoute>
-              ) : (
-                <PublicRoute>{route.element}</PublicRoute>
-              )
-            }
-          />
-        ))}
+        {renderRoutes(routes)}
       </Routes>
     </Suspense>
   );
+};
+
+// Helper function to recursively render routes with nested children
+const renderRoutes = (routes: RouteConfig[]) => {
+  return routes.map((route) => {
+    // If route has children, render them recursively
+    if (route.children) {
+      return (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={
+            route.protected ? (
+              <ProtectedRoute>{route.element}</ProtectedRoute>
+            ) : (
+              <PublicRoute>{route.element}</PublicRoute>
+            )
+          }
+        >
+          {renderRoutes(route.children)}
+        </Route>
+      );
+    }
+    
+    // Regular route without children
+    return (
+      <Route
+        key={route.path}
+        path={route.path}
+        element={
+          route.protected ? (
+            <ProtectedRoute>{route.element}</ProtectedRoute>
+          ) : (
+            <PublicRoute>{route.element}</PublicRoute>
+          )
+        }
+      />
+    );
+  });
 };
