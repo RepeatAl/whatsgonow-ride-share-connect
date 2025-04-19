@@ -31,6 +31,7 @@ import OfferTransport from "@/pages/OfferTransport";
 import PreRegistrationsPage from "@/pages/admin/PreRegistrationsPage";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AdminHome from "@/pages/admin/index";
+import UsersPage from "@/pages/admin/users";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -86,7 +87,7 @@ export const routes: RouteConfig[] = [
       { path: "", element: <AdminHome /> },
       { path: "dashboard", element: <DashboardAdmin /> },
       { path: "pre-registrations", element: <PreRegistrationsPage /> },
-      { path: "users", element: <ValidationAdmin /> },
+      { path: "users", element: <UsersPage /> },
       { path: "feedback", element: <FeedbackAdmin /> },
     ]
   },
