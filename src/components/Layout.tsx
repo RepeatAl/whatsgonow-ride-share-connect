@@ -1,6 +1,7 @@
 
 import React from "react";
 import Navbar from "./Navbar";
+import NavbarLogo from "./navbar/NavbarLogo";
 import Footer from "./Footer";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BackButton } from "./navigation/BackButton";
@@ -20,13 +21,17 @@ const Layout = ({ children, minimal = false }: LayoutProps) => {
         theme === 'dark' ? 'dark' : ''
       }`}
     >
-      {/* Enable smooth scrolling for the entire layout */}
       <div className="flex flex-col min-h-screen scroll-smooth">
-        {!minimal && <Navbar />}
+        {minimal ? (
+          <div className="p-4">
+            <NavbarLogo />
+          </div>
+        ) : (
+          <Navbar />
+        )}
         
-        {/* Main content area with responsive padding */}
         <main className="flex-grow w-full px-4 sm:px-6 lg:px-8">
-          {!minimal && <BackButton />}
+          <BackButton />
           {children}
         </main>
 

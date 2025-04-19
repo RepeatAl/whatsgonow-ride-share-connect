@@ -3,8 +3,8 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-// Pages where we don't want to show the back button
-const excludedPaths = ['/', '/dashboard', '/login'];
+// Nur auf der Startseite ausblenden
+const excludedPaths = ['/'];
 
 export const BackButton = () => {
   const navigate = useNavigate();
@@ -19,10 +19,10 @@ export const BackButton = () => {
     <Button 
       variant="ghost" 
       className="w-fit mb-4" 
-      onClick={() => navigate(-1)}
+      onClick={() => navigate("/")}
     >
       <ArrowLeft className="h-4 w-4 mr-2" />
-      Zurück
+      Zurück zur Startseite
     </Button>
   );
 };
