@@ -7,10 +7,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { isProfileIncomplete } from "@/utils/profile-check";
+import { useProfileManager } from "@/hooks/use-profile-manager";
 
 const Profile = () => {
-  const { user, profile, loading, error } = useAuth();
+  const { user, profile, loading, error, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const { handleSave, loadingSave } = useProfileManager();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -63,7 +65,11 @@ const Profile = () => {
             <CardTitle>Profil</CardTitle>
           </CardHeader>
           <CardContent>
-            <ProfileForm profile={profile} />
+            <ProfileForm 
+              profile={profile} 
+              onSave={handleSave}
+              loading={loadingSave}
+            />
           </CardContent>
         </Card>
       </div>

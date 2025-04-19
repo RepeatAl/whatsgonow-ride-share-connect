@@ -12,14 +12,24 @@ export function useProfileManager() {
   const [onboardingComplete, setOnboardingComplete] = useState(true);
 
   const handleSave = async (formData: Partial<UserProfile>) => {
+    if (!user) {
+      toast({ 
+        title: "Fehler", 
+        description: "Du musst angemeldet sein, um dein Profil zu bearbeiten.", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
     setLoadingSave(true);
     try {
       const { error: upErr } = await supabase
-        .from("users")
+        .from("profiles")
         .update(formData)
-        .eq("user_id", user!.id);
+        .eq("user_id", user.id);
 
       if (upErr) {
+        console.error("Profile update error:", upErr);
         toast({ 
           title: "Fehler", 
           description: "Profil konnte nicht gespeichert werden.", 
@@ -30,7 +40,9 @@ export function useProfileManager() {
           title: "Gespeichert", 
           description: "Dein Profil wurde aktualisiert." 
         });
-        await refreshProfile?.();
+        if (refreshProfile) {
+          await refreshProfile();
+        }
       }
     } catch (error) {
       console.error("Error saving profile:", error);
@@ -45,15 +57,19 @@ export function useProfileManager() {
   };
 
   const handleOnboarding = async () => {
+    if (!user) return;
+    
     try {
       const { error: onErr } = await supabase
-        .from("users")
+        .from("profiles")
         .update({ onboarding_complete: true })
-        .eq("user_id", user!.id);
+        .eq("user_id", user.id);
         
       if (!onErr) {
         setOnboardingComplete(true);
-        await refreshProfile?.();
+        if (refreshProfile) {
+          await refreshProfile();
+        }
       }
     } catch (error) {
       console.error("Error completing onboarding:", error);
