@@ -17,10 +17,10 @@ export interface RouteConfig {
 }
 
 export const AppRoutes = () => {
-  const { user, profile, loading, isInitialLoad } = useAuth();
+  const { user, profile, loading } = useAuth();
   
-  // Use auth redirect hook at the top level
-  useAuthRedirect(user, profile, loading, isInitialLoad);
+  // Use auth redirect hook at the top level - using only the expected 3 arguments
+  useAuthRedirect(user, profile, loading);
   
   if (loading) {
     return <LoadingSpinner />;
