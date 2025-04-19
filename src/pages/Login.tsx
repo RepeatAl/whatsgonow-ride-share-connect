@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -29,14 +28,13 @@ const Login = () => {
   const location = useLocation();
   const { signIn, user, profile, loading: authLoading } = useAuth();
 
-  // Redirect on successful login based on role
   useEffect(() => {
     if (user && profile && !authLoading) {
-      if (profile.role === 'admin' || profile.role === 'admin_limited') {
-        navigate("/admin", { replace: true });
-      } else {
-        const destination = (location.state as any)?.from || "/";
+      if (profile.profile_complete) {
+        const destination = (location.state as any)?.from || "/dashboard";
         navigate(destination, { replace: true });
+      } else {
+        navigate("/complete-profile", { replace: true });
       }
     }
   }, [user, profile, authLoading, location, navigate]);
@@ -48,7 +46,6 @@ const Login = () => {
     
     try {
       await signIn(email, password);
-      // Navigation is handled by the useEffect above
     } catch (err) {
       console.error("Login error:", err);
       setError((err as Error).message);
@@ -59,7 +56,7 @@ const Login = () => {
 
   const toggleSignup = () => {
     setIsSignup(!isSignup);
-    setError(""); // Clear any existing errors when toggling
+    setError("");
   };
 
   if (authLoading) {

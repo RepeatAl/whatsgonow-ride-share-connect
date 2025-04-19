@@ -1,47 +1,35 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import NewUserOnboarding from "@/components/onboarding/NewUserOnboarding";
-import UserProfileHeader from "@/components/profile/UserProfileHeader";
-import { Skeleton } from "@/components/ui/skeleton";
-import ImageUploader from "@/components/profile/ImageUploader";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
 import { ProfileForm } from "@/components/profile/ProfileForm";
-import { TransportsTab } from "@/components/profile/TransportsTab";
-import { RequestsTab } from "@/components/profile/RequestsTab";
-import { useProfileManager } from "@/hooks/use-profile-manager";
-import { getMissingProfileFields, isProfileIncomplete } from "@/utils/profile-check";
-import { useUploadVisibility } from "@/hooks/use-upload-visibility";
+import { isProfileIncomplete } from "@/utils/profile-check";
 
 const Profile = () => {
+  const { user, profile, loading, error } = useAuth();
   const navigate = useNavigate();
-  const { user, loading, error, profile } = useAuth();
-  const [activeTab, setActiveTab] = useState("profile");
-  const {
-    loadingSave,
-    showImageUploader,
-    onboardingComplete,
-    setShowImageUploader,
-    handleSave,
-    handleOnboarding,
-  } = useProfileManager();
-  const { canUploadItems } = useUploadVisibility();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/login");
+      return;
+    }
+
+    if (!loading && profile && isProfileIncomplete(profile)) {
+      navigate("/complete-profile");
+    }
+  }, [user, profile, loading, navigate]);
 
   if (loading) {
     return (
       <Layout>
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-20 w-20 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </div>
+        <div className="container max-w-4xl mx-auto py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
           </div>
         </div>
       </Layout>
@@ -51,77 +39,33 @@ const Profile = () => {
   if (error || !profile) {
     return (
       <Layout>
-        <div className="p-8 text-center text-red-500">
-          Profil konnte nicht geladen werden. Bitte versuche es später erneut.
+        <div className="container max-w-4xl mx-auto py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Fehler</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-red-500">
+                Dein Profil konnte nicht geladen werden. Bitte versuche es später erneut.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
   }
 
-  const missingFields = getMissingProfileFields(profile);
-  const profileIsComplete = !isProfileIncomplete(profile);
-
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <UserProfileHeader 
-          profile={profile} 
-          userId={user!.id} 
-          onUploadClick={() => setShowImageUploader(true)}
-        />
-        
-        <ImageUploader
-          userId={user!.id}
-          open={showImageUploader}
-          onSuccess={(url) => {
-            setShowImageUploader(false);
-            handleSave({ avatar_url: url });
-          }}
-          onCancel={() => setShowImageUploader(false)}
-        />
-
-        {!onboardingComplete && <NewUserOnboarding onComplete={handleOnboarding} />}
-
-        {!profileIsComplete && (
-          <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
-            Bitte vervollständige dein Profil!<br/>
-            Fehlende Angaben: {missingFields.join(", ")}
-          </div>
-        )}
-
-        <Tabs defaultValue="profile" onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="profile">Profil</TabsTrigger>
-            <TabsTrigger value="transports">Transporte</TabsTrigger>
-            <TabsTrigger value="requests">Anfragen</TabsTrigger>
-            {canUploadItems && (
-              <TabsTrigger 
-                value="upload" 
-                onClick={() => navigate('/create-order')}
-              >
-                Transportauftrag erstellen
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="profile">
-            <div className="mt-6">
-              <ProfileForm 
-                profile={profile}
-                onSave={handleSave}
-                loading={loadingSave}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="transports">
-            <TransportsTab />
-          </TabsContent>
-
-          <TabsContent value="requests">
-            <RequestsTab />
-          </TabsContent>
-        </Tabs>
+      <div className="container max-w-4xl mx-auto py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profil</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProfileForm profile={profile} />
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

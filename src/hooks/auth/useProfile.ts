@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -23,9 +22,7 @@ export function useProfile() {
         .from("profiles")
         .select(`
           user_id,
-          first_name,
-          last_name,
-          name_affix,
+          name,
           email,
           phone,
           role,
@@ -37,14 +34,13 @@ export function useProfile() {
           house_number,
           address_extra,
           profile_complete,
-          onboarding_complete,
-          created_at,
-          updated_at
+          onboarding_complete
         `)
         .eq("user_id", userId)
         .maybeSingle();
 
       if (profileError) throw profileError;
+      
       if (!userProfile) {
         toast({
           title: "Kein Profil gefunden",
@@ -54,14 +50,9 @@ export function useProfile() {
         throw new Error("Profile konnte nicht geladen werden.");
       }
 
-      const profileWithName = {
-        ...userProfile,
-        name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim(),
-      };
-
-      setProfile(profileWithName);
+      setProfile(userProfile);
       setRetryCount(0);
-      console.log("✅ Profile loaded:", profileWithName);
+      console.log("✅ Profile loaded:", userProfile);
     } catch (err) {
       console.error("❌ Error loading profile:", err);
       setError(err instanceof Error ? err : new Error("Unbekannter Fehler beim Laden des Profils"));
