@@ -1,12 +1,12 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Package, Car, MessageCircle, User, LayoutDashboard, Shield, Database, LogIn, LogOut, Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import NavLink from "./NavLink";
 
 interface MobileMenuProps {
   user: any;
@@ -101,6 +101,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                           isActive ? "text-primary font-medium" : "text-foreground"
                         }`
                       }
+                      onClick={() => setIsMenuOpen(false)}
                     >
                       {link.icon}
                       <span>{link.name}</span>
