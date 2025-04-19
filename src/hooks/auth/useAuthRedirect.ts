@@ -21,28 +21,28 @@ export function useAuthRedirect(
     }
 
     const currentPath = location.pathname;
-    const isAuthPage = ["/login", "/register"].includes(currentPath);
     
-    // When we have a logged-in user
-    if (user) {
-      // If user is on auth page but already authenticated, redirect to home
-      if (isAuthPage) {
-        console.log("✅ Auth page redirect: /");
-        navigate("/", { replace: true });
-        return;
-      }
-    } 
-    // When user is not logged in
-    else {
-      // Only redirect if on a protected route and not already on an auth page
-      if (!isPublicRoute(currentPath) && !isAuthPage) {
-        console.log("🔒 Protected route access denied → /login");
-        navigate("/login", { 
-          state: { from: location }, 
-          replace: true 
-        });
-        return;
-      }
+    // Wenn die aktuelle Route öffentlich ist, keine Weiterleitung
+    if (isPublicRoute(currentPath)) {
+      console.log("🌐 Public route access granted:", currentPath);
+      return;
+    }
+
+    // Wenn kein User und keine öffentliche Route, zum Login
+    if (!user) {
+      console.log("🔒 Protected route access denied, redirecting to login");
+      navigate("/login", { 
+        state: { from: location }, 
+        replace: true 
+      });
+      return;
+    }
+
+    // Wenn User eingeloggt ist und auf Login/Register-Seite, zur Startseite
+    if (["/login", "/register"].includes(currentPath)) {
+      console.log("✅ Auth page redirect to home");
+      navigate("/", { replace: true });
+      return;
     }
   }, [user, profile, loading, location, navigate, isInitialLoad]);
 }

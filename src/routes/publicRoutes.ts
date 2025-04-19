@@ -23,10 +23,14 @@ export const publicRoutes = [
  * @returns true, wenn die Route öffentlich ist
  */
 export const isPublicRoute = (pathname: string): boolean => {
+  // Exakte Übereinstimmung prüfen
+  if (publicRoutes.includes(pathname)) {
+    return true;
+  }
+
+  // Prüfen auf dynamische Routen mit Parametern
   return publicRoutes.some(route => {
-    // exakte Übereinstimmung, z. B. "/login"
-    if (pathname === route) return true;
-    // Parameter-Routen: "/delivery/:token" oder "/invoice-download/:token"
+    if (route === "/") return false; // Skip root path for parameter check
     return pathname.startsWith(route + "/");
   });
 };
