@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +18,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
+import { DatePickerField } from "@/components/admin/validation/filters/DatePickerField";
 
 type PreRegistration = {
   id: string;
@@ -44,6 +44,8 @@ const PreRegistrationsPage = () => {
   const [filterDrivers, setFilterDrivers] = useState(false);
   const [filterCM, setFilterCM] = useState(false);
   const [filterSender, setFilterSender] = useState(false);
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
 
   useEffect(() => {
     if (!loading) {
@@ -91,8 +93,22 @@ const PreRegistrationsPage = () => {
   };
 
   useEffect(() => {
-    // Apply filters
     let filtered = [...preRegistrations];
+    
+    // Apply date filters
+    if (startDate) {
+      filtered = filtered.filter(reg => 
+        new Date(reg.created_at) >= startDate
+      );
+    }
+    
+    if (endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(reg => 
+        new Date(reg.created_at) <= endOfDay
+      );
+    }
     
     // Apply role filters
     if (filterDrivers || filterCM || filterSender) {
@@ -116,7 +132,7 @@ const PreRegistrationsPage = () => {
     }
     
     setFilteredRegistrations(filtered);
-  }, [preRegistrations, searchTerm, filterDrivers, filterCM, filterSender]);
+  }, [preRegistrations, searchTerm, filterDrivers, filterCM, filterSender, startDate, endDate]);
 
   const downloadCSV = () => {
     try {
@@ -195,49 +211,65 @@ const PreRegistrationsPage = () => {
             <CardTitle className="text-lg">Filter und Export</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
-              <div className="w-full md:w-1/3">
-                <Input
-                  type="text"
-                  placeholder="Suche nach Name, Email, PLZ..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              
-              <div className="flex flex-wrap gap-4 items-center">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="filter-drivers"
-                    checked={filterDrivers}
-                    onCheckedChange={(checked) => setFilterDrivers(!!checked)}
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="w-full md:w-1/4">
+                  <DatePickerField
+                    label="Von"
+                    date={startDate}
+                    onDateChange={setStartDate}
+                    placeholder="Startdatum wählen"
                   />
-                  <label htmlFor="filter-drivers" className="text-sm">Fahrer</label>
                 </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="filter-cm"
-                    checked={filterCM}
-                    onCheckedChange={(checked) => setFilterCM(!!checked)}
+                <div className="w-full md:w-1/4">
+                  <DatePickerField
+                    label="Bis"
+                    date={endDate}
+                    onDateChange={setEndDate}
+                    placeholder="Enddatum wählen"
                   />
-                  <label htmlFor="filter-cm" className="text-sm">Community Manager</label>
                 </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="filter-sender"
-                    checked={filterSender}
-                    onCheckedChange={(checked) => setFilterSender(!!checked)}
+                <div className="w-full md:w-1/2">
+                  <Input
+                    type="text"
+                    placeholder="Suche nach Name, Email, PLZ..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full"
                   />
-                  <label htmlFor="filter-sender" className="text-sm">Versender</label>
                 </div>
               </div>
               
-              <div className="flex-1"></div>
-              
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-drivers"
+                      checked={filterDrivers}
+                      onCheckedChange={(checked) => setFilterDrivers(!!checked)}
+                    />
+                    <label htmlFor="filter-drivers" className="text-sm">Fahrer</label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-cm"
+                      checked={filterCM}
+                      onCheckedChange={(checked) => setFilterCM(!!checked)}
+                    />
+                    <label htmlFor="filter-cm" className="text-sm">Community Manager</label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-sender"
+                      checked={filterSender}
+                      onCheckedChange={(checked) => setFilterSender(!!checked)}
+                    />
+                    <label htmlFor="filter-sender" className="text-sm">Versender</label>
+                  </div>
+                </div>
+                
                 <Button variant="outline" onClick={downloadCSV}>
                   <Download className="mr-2 h-4 w-4" />
                   CSV Export
