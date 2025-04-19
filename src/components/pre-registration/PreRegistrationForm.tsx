@@ -106,21 +106,30 @@ export function PreRegistrationForm() {
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="wants_driver" 
-              {...register("wants_driver", { valueAsBoolean: true })} 
+              {...register("wants_driver")} 
+              onChange={(e) => {
+                // Empty onChange handler to let react-hook-form handle the value
+              }}
             />
             <Label htmlFor="wants_driver">Fahrer</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="wants_cm" 
-              {...register("wants_cm", { valueAsBoolean: true })} 
+              {...register("wants_cm")} 
+              onChange={(e) => {
+                // Empty onChange handler to let react-hook-form handle the value
+              }}
             />
             <Label htmlFor="wants_cm">Community Manager</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="wants_sender" 
-              {...register("wants_sender", { valueAsBoolean: true })}
+              {...register("wants_sender")}
+              onChange={(e) => {
+                // Empty onChange handler to let react-hook-form handle the value
+              }}
             />
             <Label htmlFor="wants_sender">Versender</Label>
           </div>
@@ -134,7 +143,10 @@ export function PreRegistrationForm() {
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="gdpr_consent" 
-            {...register("gdpr_consent", { valueAsBoolean: true })}
+            {...register("gdpr_consent")}
+            onChange={(e) => {
+              // Empty onChange handler to let react-hook-form handle the value
+            }}
           />
           <Label htmlFor="gdpr_consent">
             Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu
