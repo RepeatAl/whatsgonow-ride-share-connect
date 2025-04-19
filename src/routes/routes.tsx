@@ -32,6 +32,7 @@ import PreRegistrationsPage from "@/pages/admin/PreRegistrationsPage";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AdminHome from "@/pages/admin/index";
 import UsersPage from "@/pages/admin/users";
+import CompleteProfile from "@/pages/CompleteProfile";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -65,6 +66,11 @@ export const routes: RouteConfig[] = [
   { 
     path: "/offer-transport", 
     element: <OfferTransport />, 
+    protected: true 
+  },
+  { 
+    path: "/complete-profile", 
+    element: <CompleteProfile />, 
     protected: true 
   },
 
