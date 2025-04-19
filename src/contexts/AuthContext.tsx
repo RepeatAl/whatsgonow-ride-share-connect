@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading: profileLoading, 
     error: profileError, 
     retryProfileLoad, 
-    isInitialLoad,
+    isInitialLoad: profileInitialLoad, // Renamed to avoid conflict
     user: profileUser,
     refreshProfile
   } = useProfileHook();
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profile,
     loading,
     error,
-    isInitialLoad,
+    isInitialLoad: isInitialLoad || profileInitialLoad, // Combined initial load states
     isProfileComplete: profile ? !isProfileIncomplete(profile) : false,
     signIn,
     signUp,
