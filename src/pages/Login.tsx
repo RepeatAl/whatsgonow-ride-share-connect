@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -29,10 +29,10 @@ const Login = () => {
   const { signIn, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    // Only redirect after successful authentication is complete
     if (user && !authLoading) {
-      console.log("✅ Login successful, redirecting to landing page");
-      navigate("/", { replace: true });
+      const location = useLocation();
+      const destination = location.state?.from || "/";
+      navigate(destination, { replace: true });
     }
   }, [user, authLoading, navigate]);
 

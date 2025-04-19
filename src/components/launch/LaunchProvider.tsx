@@ -1,3 +1,4 @@
+
 import { useEffect, useState, ReactNode, createContext, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
@@ -72,14 +73,21 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
           setRegion("unbekannt");
           setLoading(false);
           
-          const isAuthPage = location.pathname === "/" || 
-                           location.pathname === "/login" || 
-                           location.pathname === "/register" ||
-                           location.pathname === "/pre-register" ||
-                           location.pathname.startsWith("/pre-register/");
+          const publicPaths = [
+            "/",
+            "/login",
+            "/register",
+            "/pre-register",
+            "/pre-register/success",
+            "/forgot-password",
+            "/reset-password",
+            "/faq",
+            "/support"
+          ];
+          const isAuthPage = publicPaths.includes(location.pathname);
           
-          if (!isAuthPage && !isInitialLoad) {
-            navigate("/login");
+          if (!isAuthPage) {
+            navigate("/login", { replace: true });
           }
           return;
         }
