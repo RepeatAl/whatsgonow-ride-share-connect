@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { preRegistrationSchema, type PreRegistrationFormData } from "@/lib/validators/pre-registration";
 import { VehicleTypeSelector } from "./VehicleTypeSelector";
+
 export function PreRegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
@@ -19,9 +21,17 @@ export function PreRegistrationForm() {
     },
     setError
   } = useForm<PreRegistrationFormData>({
-    resolver: zodResolver(preRegistrationSchema)
+    resolver: zodResolver(preRegistrationSchema),
+    defaultValues: {
+      wants_driver: false,
+      wants_cm: false,
+      wants_sender: false,
+      vehicle_types: [],
+    }
   });
+
   const wantsDriver = watch("wants_driver");
+
   const onSubmit = async (data: PreRegistrationFormData) => {
     setIsSubmitting(true);
     try {
@@ -35,7 +45,6 @@ export function PreRegistrationForm() {
       const result = await response.json();
       if (!response.ok) {
         if (result.errors) {
-          // Apply server-side validation errors to form
           Object.entries(result.errors).forEach(([field, message]) => {
             setError(field as any, {
               message: message as string
@@ -50,7 +59,6 @@ export function PreRegistrationForm() {
         description: "Wir informieren dich, sobald whatsgonow live geht."
       });
 
-      // Redirect to success page
       window.location.href = "/pre-register/success";
     } catch (error) {
       if (!(error instanceof Error && error.message === "Validation failed")) {
@@ -64,6 +72,7 @@ export function PreRegistrationForm() {
       setIsSubmitting(false);
     }
   };
+
   return <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -92,28 +101,41 @@ export function PreRegistrationForm() {
       </div>
 
       <div className="space-y-4">
-        <Label className="Ich bin interessiert als">Registrieren als</Label>
+        <Label>Registrieren als</Label>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Checkbox id="wants_driver" {...register("wants_driver")} />
+            <Checkbox 
+              id="wants_driver" 
+              {...register("wants_driver", { valueAsBoolean: true })} 
+            />
             <Label htmlFor="wants_driver">Fahrer</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox id="wants_cm" {...register("wants_cm")} />
+            <Checkbox 
+              id="wants_cm" 
+              {...register("wants_cm", { valueAsBoolean: true })} 
+            />
             <Label htmlFor="wants_cm">Community Manager</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox id="wants_sender" {...register("wants_sender")} />
+            <Checkbox 
+              id="wants_sender" 
+              {...register("wants_sender", { valueAsBoolean: true })}
+            />
             <Label htmlFor="wants_sender">Versender</Label>
           </div>
         </div>
       </div>
 
       {wantsDriver && <VehicleTypeSelector register={register} />}
+      {errors.vehicle_types && <p className="text-sm text-red-500">{errors.vehicle_types.message}</p>}
 
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
-          <Checkbox id="gdpr_consent" {...register("gdpr_consent")} />
+          <Checkbox 
+            id="gdpr_consent" 
+            {...register("gdpr_consent", { valueAsBoolean: true })}
+          />
           <Label htmlFor="gdpr_consent">
             Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu
           </Label>

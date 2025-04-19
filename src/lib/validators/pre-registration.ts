@@ -21,7 +21,7 @@ export const preRegistrationSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["vehicle_types"],
-        message: "Bitte wähle mindestens eine Fahrzeuggröße aus."
+        message: "Bitte mindestens eine Fahrzeuggröße aus."
       });
     }
   }
