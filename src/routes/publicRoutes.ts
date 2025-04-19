@@ -8,7 +8,7 @@ export const publicRoutes = [
   "/login",
   "/register",
   "/forgot-password",
-  "/reset-password",
+  "/reset-password", 
   "/faq",
   "/support",
   "/delivery",          // deckt /delivery/:token ab

@@ -22,23 +22,23 @@ export function useAuthRedirect(
 
     const currentPath = location.pathname;
     
-    // Wenn die aktuelle Route öffentlich ist, keine Weiterleitung
+    // Public routes are always accessible
     if (isPublicRoute(currentPath)) {
       console.log("🌐 Public route access granted:", currentPath);
       return;
     }
 
-    // Wenn kein User und keine öffentliche Route, zum Login
+    // Non-authenticated users go to pre-register
     if (!user) {
-      console.log("🔒 Protected route access denied, redirecting to login");
-      navigate("/login", { 
+      console.log("🔒 Protected route access denied, redirecting to pre-register");
+      navigate("/pre-register", { 
         state: { from: location }, 
         replace: true 
       });
       return;
     }
 
-    // Wenn User eingeloggt ist und auf Login/Register-Seite, zur Startseite
+    // Authenticated users on auth pages go to home
     if (["/login", "/register"].includes(currentPath)) {
       console.log("✅ Auth page redirect to home");
       navigate("/", { replace: true });
