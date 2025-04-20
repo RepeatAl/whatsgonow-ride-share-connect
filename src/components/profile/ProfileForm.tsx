@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/auth";
 
 interface ProfileFormProps {
@@ -26,9 +27,8 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
 
   useEffect(() => {
     if (profile) {
-      const [vor, ...rest] = (profile.name || "").split(" ");
-      setFirstName(vor || "");
-      setLastName(rest.join(" ") || "");
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
       setRegion(profile.region || "");
@@ -42,16 +42,33 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
   }, [profile]);
 
   const handleSubmit = async () => {
-    const fullName = `${firstName} ${lastName}`.trim();
-    await onSave({
-      name: fullName,
-      name_affix: nameAffix,
-      email, phone, region,
-      postal_code: postalCode,
-      city, street,
-      house_number: houseNumber,
-      address_extra: addressExtra,
-    });
+    try {
+      await onSave({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone,
+        region,
+        postal_code: postalCode,
+        city,
+        street,
+        house_number: houseNumber,
+        address_extra: addressExtra,
+        name_affix: nameAffix,
+      });
+      
+      toast({
+        title: "Profil gespeichert",
+        description: "Deine Änderungen wurden erfolgreich gespeichert."
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Fehler",
+        description: "Profil konnte nicht gespeichert werden. Bitte versuche es später erneut.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -59,51 +76,107 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="firstName">Vorname</Label>
-          <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} />
+          <Input 
+            id="firstName" 
+            value={firstName} 
+            onChange={e => setFirstName(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="lastName">Nachname</Label>
-          <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} />
+          <Input 
+            id="lastName" 
+            value={lastName} 
+            onChange={e => setLastName(e.target.value)}
+            required
+          />
         </div>
         <div className="md:col-span-2">
           <Label htmlFor="email">E-Mail</Label>
-          <Input id="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <Input 
+            id="email" 
+            value={email} 
+            onChange={e => setEmail(e.target.value)}
+            required 
+          />
         </div>
         <div>
           <Label htmlFor="phone">Telefon</Label>
-          <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} />
+          <Input 
+            id="phone" 
+            value={phone} 
+            onChange={e => setPhone(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="region">Region</Label>
-          <Input id="region" value={region} onChange={e => setRegion(e.target.value)} />
+          <Input 
+            id="region" 
+            value={region} 
+            onChange={e => setRegion(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="postalCode">Postleitzahl</Label>
-          <Input id="postalCode" value={postalCode} onChange={e => setPostalCode(e.target.value)} />
+          <Input 
+            id="postalCode" 
+            value={postalCode} 
+            onChange={e => setPostalCode(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="city">Stadt</Label>
-          <Input id="city" value={city} onChange={e => setCity(e.target.value)} />
+          <Input 
+            id="city" 
+            value={city} 
+            onChange={e => setCity(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="street">Straße</Label>
-          <Input id="street" value={street} onChange={e => setStreet(e.target.value)} />
+          <Input 
+            id="street" 
+            value={street} 
+            onChange={e => setStreet(e.target.value)} 
+          />
         </div>
         <div>
           <Label htmlFor="houseNumber">Hausnummer</Label>
-          <Input id="houseNumber" value={houseNumber} onChange={e => setHouseNumber(e.target.value)} />
+          <Input 
+            id="houseNumber" 
+            value={houseNumber} 
+            onChange={e => setHouseNumber(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="addressExtra">Adresszusatz</Label>
-          <Input id="addressExtra" value={addressExtra} onChange={e => setAddressExtra(e.target.value)} />
+          <Input 
+            id="addressExtra" 
+            value={addressExtra} 
+            onChange={e => setAddressExtra(e.target.value)} 
+          />
         </div>
         <div>
           <Label htmlFor="nameAffix">Namenszusatz</Label>
-          <Input id="nameAffix" value={nameAffix} onChange={e => setNameAffix(e.target.value)} />
+          <Input 
+            id="nameAffix" 
+            value={nameAffix} 
+            onChange={e => setNameAffix(e.target.value)} 
+          />
         </div>
       </div>
       <div className="mt-4">
-        <Button onClick={handleSubmit} disabled={loading}>Speichern</Button>
+        <Button 
+          onClick={handleSubmit} 
+          disabled={loading}
+        >
+          {loading ? "Speichert..." : "Speichern"}
+        </Button>
       </div>
     </div>
   );

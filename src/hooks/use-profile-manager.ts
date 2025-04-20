@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/auth";
@@ -25,32 +24,33 @@ export function useProfileManager() {
     try {
       const { error: upErr } = await supabase
         .from("profiles")
-        .update(formData)
+        .update({
+          ...formData,
+          profile_complete: true // Mark profile as complete when saved
+        })
         .eq("user_id", user.id);
 
       if (upErr) {
         console.error("Profile update error:", upErr);
-        toast({ 
-          title: "Fehler", 
-          description: "Profil konnte nicht gespeichert werden.", 
-          variant: "destructive" 
-        });
-      } else {
-        toast({ 
-          title: "Gespeichert", 
-          description: "Dein Profil wurde aktualisiert." 
-        });
-        if (refreshProfile) {
-          await refreshProfile();
-        }
+        throw upErr;
+      }
+
+      toast({ 
+        title: "Gespeichert", 
+        description: "Dein Profil wurde aktualisiert." 
+      });
+      
+      if (refreshProfile) {
+        await refreshProfile();
       }
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({ 
         title: "Fehler", 
-        description: "Ein unerwarteter Fehler ist aufgetreten.", 
+        description: "Profil konnte nicht gespeichert werden. Bitte versuche es später erneut.", 
         variant: "destructive" 
       });
+      throw error;
     } finally {
       setLoadingSave(false);
     }
