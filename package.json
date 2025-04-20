@@ -1,3 +1,5 @@
+npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react
+
 {
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx",
