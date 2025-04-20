@@ -19,9 +19,26 @@ export function useProfile() {
       setLoading(true);
       setError(null);
 
+      // Try to fetch the profile with the new RLS policies in place
       const { data: userProfile, error: profileError } = await supabase
         .from("profiles")
-        .select("*")
+        .select(`
+          user_id,
+          email,
+          first_name,
+          last_name,
+          phone,
+          role,
+          company_name,
+          region,
+          postal_code,
+          city,
+          street,
+          house_number,
+          address_extra,
+          profile_complete,
+          onboarding_complete
+        `)
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -35,9 +52,15 @@ export function useProfile() {
         return;
       }
 
-      setProfile(userProfile);
+      // Transform the profile data to match our UserProfile type
+      const transformedProfile: UserProfile = {
+        ...userProfile,
+        name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || 'New User'
+      };
+
+      setProfile(transformedProfile);
       setRetryCount(0);
-      console.log("✅ Profile loaded:", userProfile);
+      console.log("✅ Profile loaded:", transformedProfile);
     } catch (err) {
       console.error("❌ Error loading profile:", err);
       setError(err instanceof Error ? err : new Error("Unknown error loading profile"));

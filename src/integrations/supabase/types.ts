@@ -1055,11 +1055,19 @@ export type Database = {
         Args: { requesting_user_id: string }
         Returns: boolean
       }
+      get_user_region: {
+        Args: { user_id: string }
+        Returns: string
+      }
       is_admin: {
-        Args: { requesting_user_id: string }
+        Args: { user_id: string }
         Returns: boolean
       }
       is_admin_user: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_community_manager: {
         Args: { user_id: string }
         Returns: boolean
       }
