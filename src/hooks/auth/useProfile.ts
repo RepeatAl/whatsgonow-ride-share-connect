@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -48,6 +49,18 @@ export function useProfile() {
       
       if (!userProfile) {
         console.log("No profile found, will be created by trigger");
+        // Wir warten kurz und versuchen es dann noch einmal
+        if (retryCount < 2) {
+          setTimeout(() => {
+            setRetryCount(count => count + 1);
+          }, 1000);
+        } else {
+          toast({
+            title: "Profil nicht gefunden",
+            description: "Dein Profil konnte nicht geladen werden. Bitte versuche es später erneut.",
+            variant: "destructive"
+          });
+        }
         return;
       }
 
@@ -69,6 +82,12 @@ export function useProfile() {
       
       if (retryCount < 2) {
         setRetryCount((prev) => prev + 1);
+      } else {
+        toast({
+          title: "Fehler beim Laden des Profils",
+          description: "Bitte versuche es später erneut",
+          variant: "destructive"
+        });
       }
     } finally {
       setLoading(false);
@@ -98,24 +117,34 @@ export function useProfile() {
           console.log("📥 Found session, fetching profile for:", currentUser.id);
           await fetchProfile(currentUser.id);
         } else {
+          console.log("⚠️ No user session found");
           setLoading(false);
           setIsInitialLoad(false);
         }
       } catch (err) {
         console.error("Session init error:", err);
-        setLoading(false);
-        setIsInitialLoad(false);
+        if (mounted) {
+          setLoading(false);
+          setIsInitialLoad(false);
+        }
       }
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("🔐 Auth state changed:", event);
+        if (!mounted) return;
+        
         const currentUser = session?.user || null;
         setUser(currentUser);
         
         if (currentUser && event === 'SIGNED_IN') {
-          await fetchProfile(currentUser.id);
+          // Verwende setTimeout, um Dead Locks zu vermeiden
+          setTimeout(async () => {
+            if (mounted) {
+              await fetchProfile(currentUser.id);
+            }
+          }, 0);
         } else if (!currentUser) {
           setProfile(null);
         }

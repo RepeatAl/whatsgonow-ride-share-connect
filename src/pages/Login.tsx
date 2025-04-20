@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -30,9 +31,15 @@ const Login = () => {
   const { signIn, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    console.log("🔍 Login page - Auth state:", user ? "Authenticated" : "Unauthenticated");
+    
     if (user && !authLoading) {
       const destination = (location.state as any)?.from || "/dashboard";
       console.log("🚀 Redirecting authenticated user to:", destination);
+      toast({
+        title: "Anmeldung erfolgreich",
+        description: "Du wirst weitergeleitet...",
+      });
       navigate(destination, { replace: true });
     }
   }, [user, authLoading, location, navigate]);
@@ -62,7 +69,7 @@ const Login = () => {
     return <Layout>
       <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p>Authentifizierung wird überprüft...</p>
         </div>
       </div>
@@ -136,7 +143,12 @@ const Login = () => {
                     disabled={isLoading} 
                     variant="brand"
                   >
-                    {isLoading ? "Wird verarbeitet..." : "Einloggen"}
+                    {isLoading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                        Wird verarbeitet...
+                      </>
+                    ) : "Einloggen"}
                   </Button>
                 </form>
               </CardContent>

@@ -1,10 +1,48 @@
 
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatRealtimeProvider } from "@/contexts/ChatRealtimeContext"; 
 import { AppRoutes as Routes } from "@/components/routing/AppRoutes";
-import { Toaster } from "@/components/ui/toaster"; // Using the toaster component directly
+import { Toaster } from "@/components/ui/toaster";
+import { initSupabase } from "@/lib/supabaseClient";
+import { Button } from "@/components/ui/button";
+import { ArrowPathIcon } from "lucide-react";
 
 function App() {
+  const [supabaseInitialized, setSupabaseInitialized] = useState<boolean | null>(null);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const result = await initSupabase();
+        setSupabaseInitialized(result.success);
+        if (!result.success) {
+          setInitError(result.message || "Verbindung zu Supabase fehlgeschlagen");
+        }
+      } catch (err) {
+        console.error("Fehler bei der Supabase-Initialisierung:", err);
+        setSupabaseInitialized(false);
+        setInitError("Unerwarteter Fehler bei der Verbindung zur Datenbank");
+      }
+    };
+
+    init();
+  }, []);
+
+  if (supabaseInitialized === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-4">
+        <h1 className="text-xl font-bold text-red-600">Verbindungsfehler</h1>
+        <p>{initError || "Die Verbindung zur Datenbank konnte nicht hergestellt werden."}</p>
+        <Button onClick={() => window.location.reload()}>
+          <ArrowPathIcon className="w-4 h-4 mr-2" />
+          Erneut versuchen
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <>
       <Toaster />
@@ -19,14 +57,16 @@ function AppContent() {
 
   if (isInitialLoad) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <span className="mb-2">⏳ Lädt Sitzung...</span>
-        <button
-          className="px-4 py-2 bg-primary text-white rounded"
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin"></div>
+        <span className="mb-2">Lädt Sitzung...</span>
+        <Button
+          size="sm"
+          variant="outline"
           onClick={() => window.location.reload()}
         >
           Erneut versuchen
-        </button>
+        </Button>
       </div>
     );
   }

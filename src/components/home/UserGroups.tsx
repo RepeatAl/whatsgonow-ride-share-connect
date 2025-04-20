@@ -1,69 +1,73 @@
-import { Link } from "react-router-dom";
-import { ArrowRight, Package, Car, UserCheck, Users } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-const userTypes = [{
-  title: "For Package Senders",
-  description: "Need to send something quickly, affordably, and securely? Find drivers already heading to your destination.",
-  icon: <Package className="h-8 w-8 text-white" />,
-  color: "from-brand-purple to-brand-blue",
-  link: "/find-transport",
-  linkText: "Send a Package"
-}, {
-  title: "For Drivers",
-  description: "Turn empty space in your vehicle into extra income while you travel routes you're already taking.",
-  icon: <Car className="h-8 w-8 text-white" />,
-  color: "from-brand-blue to-cyan-500",
-  link: "/offer-transport",
-  linkText: "Become a Driver"
-}, {
-  title: "For Small Businesses",
-  description: "Get flexible, same-day logistics without investing in your own delivery infrastructure.",
-  icon: <UserCheck className="h-8 w-8 text-white bg-orange-500" />,
-  color: "from-cyan-500 to-emerald-500",
-  link: "/business",
-  linkText: "Business Solutions"
-}, {
-  title: "For Community Managers",
-  description: "Become a local trust anchor, grow the whatsgonow community, and earn through referrals.",
-  icon: <Users className="h-8 w-8 text-white bg-orange-500" />,
-  color: "from-emerald-500 to-brand-purple",
-  link: "/community-managers",
-  linkText: "Join as Manager"
-}];
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { Package, Truck, Building } from "lucide-react";
+
 const UserGroups = () => {
-  return <div className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Who Can Use whatsgonow?
-          </h2>
-          <p className="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-            A platform for everyone in the logistics ecosystem
+  return (
+    <section className="py-16 bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold">Für wen ist Whatsgonow?</h2>
+          <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
+            Whatsgonow ist für alle, die Güter transportieren oder Transportkapazitäten anbieten möchten
           </p>
         </div>
-
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {userTypes.map((user, index) => <div key={index} className="flex flex-col rounded-lg overflow-hidden shadow-sm">
-              <div className={`p-6 bg-gradient-to-r ${user.color}`}>
-                <div className="h-14 w-14 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-4">
-                  {user.icon}
-                </div>
-                <h3 className="text-xl font-bold text-orange-500">{user.title}</h3>
-              </div>
-              <div className="p-6 bg-white flex-grow">
-                <p className="text-gray-600">{user.description}</p>
-                <div className="mt-6">
-                  <Link to={user.link}>
-                    <Button variant="outline" className="w-full">
-                      {user.linkText}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>)}
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          <UserGroupCard 
+            icon={<Package className="h-10 w-10 text-brand-orange" />}
+            title="Privatkunden" 
+            description="Du möchtest etwas transportieren lassen und suchst eine günstige und zuverlässige Lösung?"
+            buttonText="Als Privatkunde starten"
+          />
+          
+          <UserGroupCard 
+            icon={<Building className="h-10 w-10 text-brand-orange" />}
+            title="Geschäftskunden" 
+            description="Du brauchst regelmäßige Transporte für dein Unternehmen und willst Kosten optimieren?"
+            buttonText="Als Geschäftskunde starten"
+          />
+          
+          <UserGroupCard 
+            icon={<Truck className="h-10 w-10 text-brand-orange" />}
+            title="Fahrer" 
+            description="Du bist unterwegs und möchtest deine Fahrt nutzen, um zusätzliches Geld zu verdienen?"
+            buttonText="Als Fahrer starten"
+          />
         </div>
       </div>
-    </div>;
+    </section>
+  );
 };
+
+interface UserGroupCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  buttonText: string;
+}
+
+const UserGroupCard = ({ icon, title, description, buttonText }: UserGroupCardProps) => {
+  return (
+    <Card className="border-none shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
+      <CardHeader className="flex flex-col items-center pb-2">
+        <div className="rounded-full bg-orange-100 dark:bg-orange-900/20 p-3 mb-4">
+          {icon}
+        </div>
+        <CardTitle className="text-xl text-center">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <CardDescription className="text-center text-base">{description}</CardDescription>
+      </CardContent>
+      <CardFooter className="pt-4 flex justify-center">
+        <Button asChild variant="outline">
+          <Link to="/register">{buttonText}</Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
+
 export default UserGroups;
