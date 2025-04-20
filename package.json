@@ -1,4 +1,11 @@
 {
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix"
+  }
+}
+
+{
   "name": "vite_react_shadcn_ts",
   "private": true,
   "version": "0.0.0",
