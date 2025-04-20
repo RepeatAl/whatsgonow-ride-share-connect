@@ -30,25 +30,18 @@ const Login = () => {
   const location = useLocation();
   const { signIn, user, loading: authLoading, sessionExpired } = useAuth();
 
-  // Extract the redirect destination from state if available
-  const from = location.state?.from || "/";
+  const from = location.state?.from || "/dashboard";
   
   useEffect(() => {
-    console.log("🔍 Login page - Auth state:", user ? "Authenticated" : "Unauthenticated");
-    
     if (user && !authLoading && !sessionExpired) {
-      // Only redirect to dashboard or protected routes if user is fully authenticated
-      const destination = from === "/" ? "/dashboard" : from;
-      if (!isPublicRoute(destination)) {
-        console.log("🚀 Redirecting authenticated user to:", destination);
-        toast({
-          title: "Anmeldung erfolgreich",
-          description: "Du wirst weitergeleitet...",
-        });
-        setTimeout(() => {
-          navigate(destination, { replace: true });
-        }, 1000);
-      }
+      console.log("🚀 Redirecting authenticated user to:", from);
+      toast({
+        title: "Anmeldung erfolgreich",
+        description: "Du wirst weitergeleitet...",
+      });
+      setTimeout(() => {
+        navigate(from, { replace: true });
+      }, 100);
     }
   }, [user, authLoading, navigate, from, sessionExpired]);
 
