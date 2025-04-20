@@ -1,5 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+
 const Hero = () => {
   return <div className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/20 to-brand-blue/10 z-0"></div>
@@ -18,7 +20,7 @@ const Hero = () => {
             <div className="flex flex-col items-center gap-4 pt-4">
               <div className="flex flex-wrap justify-center gap-4 w-full">
                 <Button asChild size="lg" variant="brand">
-                  <Link to="/register">Jetzt starten</Link>
+                  <Link to="/login">Anmelden</Link>
                 </Button>
                 
                 <Button asChild size="lg" variant="outline">
@@ -27,7 +29,7 @@ const Hero = () => {
               </div>
               
               <Button asChild size="lg" variant="brand" className="w-full max-w-md mt-2 bg-brand-orange hover:bg-brand-orange/90">
-                <Link to="/pre-register" className="px-0">Jetzt vorregistrieren</Link>
+                <Link to="/pre-register" className="px-0">Dabeisein wenn Whatsgonow startet</Link>
               </Button>
             </div>
           </div>

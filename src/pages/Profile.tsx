@@ -8,11 +8,14 @@ import { toast } from "@/hooks/use-toast";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { isProfileIncomplete } from "@/utils/profile-check";
 import { useProfileManager } from "@/hooks/use-profile-manager";
+import UserProfileHeader from "@/components/profile/UserProfileHeader";
+import ImageUploader from "@/components/profile/ImageUploader";
 
 const Profile = () => {
   const { user, profile, loading, error, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { handleSave, loadingSave } = useProfileManager();
+  const [showImageUploader, setShowImageUploader] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,7 +41,7 @@ const Profile = () => {
     );
   }
 
-  if (error || !profile) {
+  if (error || !profile || !user) {
     return (
       <Layout>
         <div className="container max-w-4xl mx-auto py-8">
@@ -64,7 +67,13 @@ const Profile = () => {
           <CardHeader>
             <CardTitle>Profil</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
+            <UserProfileHeader 
+              profile={profile}
+              userId={user.id}
+              onUploadClick={() => setShowImageUploader(true)}
+            />
+            
             <ProfileForm 
               profile={profile} 
               onSave={handleSave}
@@ -72,6 +81,22 @@ const Profile = () => {
             />
           </CardContent>
         </Card>
+
+        {showImageUploader && (
+          <ImageUploader
+            userId={user.id}
+            onSuccess={(url) => {
+              refreshProfile?.();
+              setShowImageUploader(false);
+              toast({
+                title: "Profilbild aktualisiert",
+                description: "Dein neues Profilbild wurde hochgeladen."
+              });
+            }}
+            onCancel={() => setShowImageUploader(false)}
+            open={showImageUploader}
+          />
+        )}
       </div>
     </Layout>
   );
