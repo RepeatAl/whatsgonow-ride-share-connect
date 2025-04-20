@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, loading, sessionExpired } = useAuth();
   const location = useLocation();
   
   // Show loading spinner only during initial load
@@ -16,10 +16,10 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <LoadingSpinner />;
   }
   
-  // If no user, redirect to login with current location preserved
-  if (!user) {
-    console.log("🔒 Protected route access denied, redirecting to pre-register");
-    return <Navigate to="/pre-register" state={{ from: location }} replace />;
+  // If session expired or no user, redirect to login with current location preserved
+  if (!user || sessionExpired) {
+    console.log("🔒 Protected route access denied, redirecting to login");
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
   
   // If all checks pass, render the protected content

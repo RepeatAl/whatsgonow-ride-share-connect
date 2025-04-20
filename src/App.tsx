@@ -7,10 +7,25 @@ import { Toaster } from "@/components/ui/toaster";
 import { initSupabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { isPublicRoute } from "@/routes/publicRoutes";
 
 function App() {
   const [supabaseInitialized, setSupabaseInitialized] = useState<boolean | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Security check - redirect to login from root path if not authenticated
+  useEffect(() => {
+    if (location.pathname === "/") {
+      const isLoggedIn = !!localStorage.getItem("supabase.auth.token");
+      // Root path is considered public but we still want to check login status
+      if (!isLoggedIn) {
+        navigate("/login");
+      }
+    }
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     const init = async () => {
@@ -53,7 +68,19 @@ function App() {
 
 // Inner component that can access the auth context
 function AppContent() {
-  const { isInitialLoad } = useAuth();
+  const { isInitialLoad, user, sessionExpired } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect to login if session expired
+  useEffect(() => {
+    if (!isInitialLoad && sessionExpired && !isPublicRoute(location.pathname)) {
+      navigate("/login", { 
+        state: { from: location.pathname },
+        replace: true 
+      });
+    }
+  }, [sessionExpired, navigate, location.pathname, isInitialLoad]);
 
   if (isInitialLoad) {
     return (

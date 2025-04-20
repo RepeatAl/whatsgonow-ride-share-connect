@@ -4,7 +4,6 @@
  * These paths are accessible without authentication.
  */
 export const publicRoutes = [
-  "/",
   "/login",
   "/register", 
   "/pre-register",
@@ -33,4 +32,12 @@ export const isPublicRoute = (pathname: string): boolean => {
     if (route === "/") return false; // Skip root path for parameter check
     return pathname.startsWith(route + "/");
   });
+};
+
+/**
+ * Check if a route is a home/landing page route
+ * These are technically public but need special handling
+ */
+export const isHomeRoute = (pathname: string): boolean => {
+  return pathname === "/";
 };

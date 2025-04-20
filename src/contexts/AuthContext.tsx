@@ -14,6 +14,9 @@ import { isProfileIncomplete } from "@/utils/profile-check";
 import type { UserProfile, AuthContextProps } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 
+const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
+const AUTH_CONTEXT_KEY = "whatsgonow_auth_timestamp";
+
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -23,6 +26,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<Error | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  // Check session expiration
+  useEffect(() => {
+    const checkSessionExpiration = () => {
+      const lastActivity = localStorage.getItem(AUTH_CONTEXT_KEY);
+      if (lastActivity && user) {
+        const timePassed = Date.now() - parseInt(lastActivity);
+        if (timePassed > SESSION_TIMEOUT) {
+          console.log("🕒 Session expired due to inactivity");
+          setSessionExpired(true);
+          signOut();
+        } else {
+          // Update the timestamp for activity
+          localStorage.setItem(AUTH_CONTEXT_KEY, Date.now().toString());
+        }
+      }
+    };
+
+    // Check on component mount and set interval
+    checkSessionExpiration();
+    const interval = setInterval(checkSessionExpiration, 60000); // Check every minute
+
+    // Update timestamp on user activity
+    const updateTimestamp = () => {
+      if (user) {
+        localStorage.setItem(AUTH_CONTEXT_KEY, Date.now().toString());
+      }
+    };
+
+    // Listen for user activity
+    window.addEventListener("click", updateTimestamp);
+    window.addEventListener("keypress", updateTimestamp);
+    window.addEventListener("scroll", updateTimestamp);
+    window.addEventListener("mousemove", updateTimestamp);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("click", updateTimestamp);
+      window.removeEventListener("keypress", updateTimestamp);
+      window.removeEventListener("scroll", updateTimestamp);
+      window.removeEventListener("mousemove", updateTimestamp);
+    };
+  }, [user]);
 
   useEffect(() => {
     console.log("🔄 AuthProvider initialized");
@@ -40,8 +87,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setError(error);
         } else {
           console.log("✅ Session state:", session ? "Active" : "None");
-          setSession(session);
-          setUser(session?.user ?? null);
+          // Only set the session and user if we're not in the middle of an expired session
+          if (!sessionExpired) {
+            setSession(session);
+            setUser(session?.user ?? null);
+            
+            // Initialize timestamp if user is logged in
+            if (session?.user) {
+              localStorage.setItem(AUTH_CONTEXT_KEY, Date.now().toString());
+            }
+          }
         }
       } catch (err) {
         console.error("❌ Unexpected error during session init:", err);
@@ -58,10 +113,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: listener } = supabase.auth.onAuthStateChange((event, currentSession) => {
       console.log("📡 Auth state changed:", event);
       if (mounted) {
+        if (event === "SIGNED_IN") {
+          localStorage.setItem(AUTH_CONTEXT_KEY, Date.now().toString());
+        } else if (event === "SIGNED_OUT") {
+          localStorage.removeItem(AUTH_CONTEXT_KEY);
+        }
+        
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
         setIsInitialLoad(false);
+        
+        // Reset session expired flag if user signs in again
+        if (event === "SIGNED_IN") {
+          setSessionExpired(false);
+        }
       }
     });
 
@@ -71,7 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [sessionExpired]);
 
   const { 
     profile: profileHook,
@@ -97,6 +163,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("🔑 Attempting login for:", email);
       await authService.signIn(email, password);
       console.log("✅ Sign in successful");
+      localStorage.setItem(AUTH_CONTEXT_KEY, Date.now().toString());
+      setSessionExpired(false);
     } catch (err) {
       console.error("❌ Sign in error:", err);
       toast({
@@ -133,6 +201,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       setProfile(null);
+      setSessionExpired(true);
+      localStorage.removeItem(AUTH_CONTEXT_KEY);
       console.log("✅ Sign out successful");
     } catch (error) {
       console.error("❌ Sign out error:", error);
@@ -157,7 +227,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signUp,
     signOut,
     retryProfileLoad,
-    refreshProfile
+    refreshProfile,
+    sessionExpired
   };
 
   return (

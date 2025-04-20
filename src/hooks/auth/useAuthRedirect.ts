@@ -29,19 +29,24 @@ export function useAuthRedirect(
 
     // Not logged in - redirect to pre-register
     if (!user) {
-      console.log("🔒 Not authenticated → /pre-register");
-      navigate("/pre-register", {
-        state: { from: currentPath },
-        replace: true
-      });
+      // Don't redirect while on login/register pages
+      const isAuthPage = ["/login", "/register", "/pre-register"].includes(currentPath);
+      if (!isAuthPage) {
+        console.log("🔒 Not authenticated → /login");
+        navigate("/login", {
+          state: { from: currentPath },
+          replace: true
+        });
+      }
       return;
     }
 
-    // If user is authenticated and tries to access auth pages, redirect to home
+    // If user is authenticated and tries to access auth pages, don't redirect
+    // Let them explicitly navigate to protected areas after login
     const isAuthPage = ["/login", "/register", "/pre-register"].includes(currentPath);
     if (isAuthPage && user) {
-      console.log("✅ Authenticated on auth page → /");
-      navigate("/", { replace: true });
+      console.log("✅ Authenticated on auth page → stay on page");
+      // Don't automatically redirect - require explicit navigation
       return;
     }
   }, [user, loading, location.pathname, navigate]);

@@ -1,3 +1,4 @@
+
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -33,6 +34,7 @@ export interface AuthContextProps {
   error: Error | null;
   isInitialLoad: boolean;
   isProfileComplete?: boolean;
+  sessionExpired?: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (
     email: string,

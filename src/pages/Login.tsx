@@ -28,21 +28,28 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signIn, user, loading: authLoading, sessionExpired } = useAuth();
 
+  // Extract the redirect destination from state if available
+  const from = location.state?.from || "/";
+  
   useEffect(() => {
     console.log("🔍 Login page - Auth state:", user ? "Authenticated" : "Unauthenticated");
     
-    if (user && !authLoading) {
-      const destination = (location.state as any)?.from || "/dashboard";
+    // Only redirect if the user is authenticated AND not from an expired session
+    if (user && !authLoading && !sessionExpired) {
+      const destination = from === "/" ? "/dashboard" : from;
       console.log("🚀 Redirecting authenticated user to:", destination);
       toast({
         title: "Anmeldung erfolgreich",
         description: "Du wirst weitergeleitet...",
       });
-      navigate(destination, { replace: true });
+      // Redirect after a slight delay to allow toast to be seen
+      setTimeout(() => {
+        navigate(destination, { replace: true });
+      }, 1000);
     }
-  }, [user, authLoading, location, navigate]);
+  }, [user, authLoading, location, navigate, from, sessionExpired]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +98,14 @@ const Login = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {sessionExpired && (
+                  <Alert className="mb-4 bg-amber-50 border-amber-200">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-amber-600">
+                      Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">E-Mail</label>
