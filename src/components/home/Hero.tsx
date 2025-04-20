@@ -1,10 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
 const Hero = () => {
-  return (
-    <div className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
+  return <div className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/20 to-brand-blue/10 z-0"></div>
       
       <div className="container mx-auto px-4 relative z-10">
@@ -29,28 +26,17 @@ const Hero = () => {
                 </Button>
               </div>
               
-              <Button 
-                asChild 
-                size="lg" 
-                variant="brand" 
-                className="w-full max-w-md mt-2 bg-brand-orange hover:bg-brand-orange/90"
-              >
-                <Link to="/pre-register">Jetzt vorregistrieren</Link>
+              <Button asChild size="lg" variant="brand" className="w-full max-w-md mt-2 bg-brand-orange hover:bg-brand-orange/90">
+                <Link to="/pre-register" className="px-[3px]">Jetzt vorregistrieren</Link>
               </Button>
             </div>
           </div>
 
           <div className="flex justify-center">
-            <img 
-              src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" 
-              alt="Whatsgonow Platform" 
-              className="w-full max-w-md rounded-lg shadow-lg"
-            />
+            <img src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" alt="Whatsgonow Platform" className="w-full max-w-md rounded-lg shadow-lg" />
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Hero;
