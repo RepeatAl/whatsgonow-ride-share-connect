@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Package, Truck, Building } from "lucide-react";
+import { Package, Truck, Building, Users } from "lucide-react";
 
 const UserGroups = () => {
   return (
@@ -15,7 +15,7 @@ const UserGroups = () => {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <UserGroupCard 
             icon={<Package className="h-10 w-10 text-brand-orange" />}
             title="Privatkunden" 
@@ -35,6 +35,13 @@ const UserGroups = () => {
             title="Fahrer" 
             description="Du bist unterwegs und möchtest deine Fahrt nutzen, um zusätzliches Geld zu verdienen?"
             buttonText="Als Fahrer starten"
+          />
+
+          <UserGroupCard 
+            icon={<Users className="h-10 w-10 text-brand-orange" />}
+            title="Community Manager" 
+            description="Du möchtest als Community Manager Whatsgonow in deiner Region voranbringen?"
+            buttonText="Als Community Manager starten"
           />
         </div>
       </div>

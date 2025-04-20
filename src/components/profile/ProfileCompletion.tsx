@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function ProfileCompletion() {
-  const { profile, refreshProfile } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Split the name into first and last name for the form
   const nameParts = (profile?.name || "").split(" ");
@@ -31,13 +33,22 @@ export function ProfileCompletion() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+
+    if (!user) {
+      setError("Du musst angemeldet sein, um dein Profil zu speichern.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const fullName = `${formData.first_name} ${formData.last_name}`.trim();
       
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from("profiles")
         .update({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
           name: fullName,
           phone: formData.phone,
           region: formData.region,
@@ -45,9 +56,9 @@ export function ProfileCompletion() {
           city: formData.city,
           profile_complete: true
         })
-        .eq("user_id", profile?.user_id);
+        .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       await refreshProfile?.();
       toast({
@@ -56,8 +67,9 @@ export function ProfileCompletion() {
       });
 
       navigate("/dashboard");
-    } catch (error) {
-      console.error("Error updating profile:", error);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("Dein Profil konnte nicht aktualisiert werden.");
       toast({
         title: "Fehler",
         description: "Dein Profil konnte nicht aktualisiert werden.",
@@ -75,6 +87,21 @@ export function ProfileCompletion() {
     }));
   };
 
+  if (!user) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <p className="text-red-500">Du musst angemeldet sein, um dein Profil zu vervollständigen.</p>
+            <Button asChild className="mt-4">
+              <Link to="/login">Zum Login</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -85,6 +112,12 @@ export function ProfileCompletion() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-100 text-red-600 rounded-md mb-4">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="first_name">Vorname</Label>
@@ -155,7 +188,9 @@ export function ProfileCompletion() {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Wird gespeichert..." : "Profil speichern"}
+            {loading ? (
+              <><LoadingSpinner /> Wird gespeichert...</>
+            ) : "Profil speichern"}
           </Button>
         </form>
       </CardContent>
