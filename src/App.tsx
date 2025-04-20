@@ -6,7 +6,7 @@ import { AppRoutes as Routes } from "@/components/routing/AppRoutes";
 import { Toaster } from "@/components/ui/toaster";
 import { initSupabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
-import { ArrowPathIcon } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 function App() {
   const [supabaseInitialized, setSupabaseInitialized] = useState<boolean | null>(null);
@@ -36,7 +36,7 @@ function App() {
         <h1 className="text-xl font-bold text-red-600">Verbindungsfehler</h1>
         <p>{initError || "Die Verbindung zur Datenbank konnte nicht hergestellt werden."}</p>
         <Button onClick={() => window.location.reload()}>
-          <ArrowPathIcon className="w-4 h-4 mr-2" />
+          <RefreshCw className="w-4 h-4 mr-2" />
           Erneut versuchen
         </Button>
       </div>

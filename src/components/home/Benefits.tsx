@@ -4,7 +4,7 @@ import {
   ShieldCheck, 
   Clock, 
   TrendingUp, 
-  Environment, 
+  Leaf, 
   DollarSign, 
   Users
 } from "lucide-react";
@@ -33,7 +33,7 @@ const Benefits = () => {
         />
         
         <BenefitCard 
-          icon={<Environment className="h-6 w-6 text-brand-orange" />}
+          icon={<Leaf className="h-6 w-6 text-brand-orange" />}
           title="Umweltfreundlich" 
           description="Weniger Leerfahrten bedeuten weniger CO₂-Emissionen"
         />
