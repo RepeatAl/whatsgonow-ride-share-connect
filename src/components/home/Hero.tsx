@@ -27,7 +27,7 @@ const Hero = () => {
               </div>
               
               <Button asChild size="lg" variant="brand" className="w-full max-w-md mt-2 bg-brand-orange hover:bg-brand-orange/90">
-                <Link to="/pre-register" className="px-[3px]">Jetzt vorregistrieren</Link>
+                <Link to="/pre-register" className="px-0">Jetzt vorregistrieren</Link>
               </Button>
             </div>
           </div>
