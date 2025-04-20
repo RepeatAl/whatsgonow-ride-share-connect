@@ -18,13 +18,24 @@ const Hero = () => {
               Whatsgonow ist die Plattform, die spontane und planbare Transporte zwischen Auftraggebern und mobilen Fahrern vermittelt.
             </p>
 
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild size="lg" variant="brand">
-                <Link to="/register">Jetzt starten</Link>
-              </Button>
+            <div className="flex flex-col items-center gap-4 pt-4">
+              <div className="flex flex-wrap justify-center gap-4 w-full">
+                <Button asChild size="lg" variant="brand">
+                  <Link to="/register">Jetzt starten</Link>
+                </Button>
+                
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/faq">Mehr erfahren</Link>
+                </Button>
+              </div>
               
-              <Button asChild size="lg" variant="outline">
-                <Link to="/faq">Mehr erfahren</Link>
+              <Button 
+                asChild 
+                size="lg" 
+                variant="brand" 
+                className="w-full max-w-md mt-2 bg-brand-orange hover:bg-brand-orange/90"
+              >
+                <Link to="/pre-register">Jetzt vorregistrieren</Link>
               </Button>
             </div>
           </div>
