@@ -27,8 +27,9 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
 
   useEffect(() => {
     if (profile) {
-      setFirstName(profile.first_name || "");
-      setLastName(profile.last_name || "");
+      // Using firstName/lastName for display but mapping to the correct fields from UserProfile
+      setFirstName(profile.firstName || "");
+      setLastName(profile.lastName || "");
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
       setRegion(profile.region || "");
@@ -43,9 +44,10 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
 
   const handleSubmit = async () => {
     try {
+      // Map form fields to the correct UserProfile properties
       await onSave({
-        first_name: firstName,
-        last_name: lastName,
+        firstName,
+        lastName,
         email,
         phone,
         region,
