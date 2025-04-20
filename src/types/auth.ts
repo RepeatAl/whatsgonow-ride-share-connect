@@ -19,6 +19,10 @@ export interface UserProfile {
   name_affix?: string;
   verified?: boolean;
   avatar_url?: string;
+  first_name?: string;
+  last_name?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface AuthContextProps {

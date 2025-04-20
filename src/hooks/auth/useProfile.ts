@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -55,6 +54,9 @@ export function useProfile() {
       // Transform the profile data to match our UserProfile type
       const transformedProfile: UserProfile = {
         ...userProfile,
+        // Keep the snake_case properties as they come from the database
+        first_name: userProfile.first_name,
+        last_name: userProfile.last_name,
         name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || 'New User'
       };
 

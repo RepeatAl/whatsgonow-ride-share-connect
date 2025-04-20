@@ -27,9 +27,9 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
 
   useEffect(() => {
     if (profile) {
-      // Using firstName/lastName for display but mapping to the correct fields from UserProfile
-      setFirstName(profile.firstName || "");
-      setLastName(profile.lastName || "");
+      // Map the snake_case properties from UserProfile to our camelCase state variables
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
       setRegion(profile.region || "");
@@ -44,10 +44,10 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
 
   const handleSubmit = async () => {
     try {
-      // Map form fields to the correct UserProfile properties
+      // Map form fields to the correct UserProfile properties using snake_case
       await onSave({
-        firstName,
-        lastName,
+        first_name: firstName,
+        last_name: lastName,
         email,
         phone,
         region,
