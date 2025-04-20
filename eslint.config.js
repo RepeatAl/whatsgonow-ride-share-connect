@@ -8,18 +8,10 @@ import tsPlugin from "@typescript-eslint/eslint-plugin";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
-  {
-    // Apply to all JS/TS files including JSX/TSX
-    files: ["**/*.{js,mjs,cjs,jsx,ts,tsx}"],
-    languageOptions: {
-      globals: globals.browser,
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: "module",
-        ecmaFeatures: { jsx: true },
-      },
-    },
+	{ files: ["**/*.js"], languageOptions: { globals: globals.browser } },
+	{ files: ["**/*.js"], plugins: { js }, extends: ["js/recommended"] },
+]);
+
     plugins: {
       js,
       react: pluginReact,
