@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
@@ -28,6 +27,7 @@ export function useSessionManager() {
           setSession(initialSession);
           setUser(initialSession.user);
           localStorage.setItem(AUTH_CONTEXT_KEY, Date.now().toString());
+          setSessionExpired(false);
         }
       } catch (err) {
         console.error("❌ Session init error:", err);
@@ -94,7 +94,7 @@ export function useSessionManager() {
       window.removeEventListener('scroll', updateTimestamp);
       window.removeEventListener('mousemove', updateTimestamp);
     };
-  }, [user, sessionExpired]);
+  }, []);
 
   return {
     user,

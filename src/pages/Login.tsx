@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -28,22 +29,26 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, user, loading: authLoading, sessionExpired } = useAuth();
+  const { signIn, user, loading: authLoading, sessionExpired, profile, isProfileComplete } = useAuth();
 
-  const from = location.state?.from || "/dashboard";
-  
   useEffect(() => {
     if (user && !authLoading && !sessionExpired) {
-      console.log("🚀 Redirecting authenticated user to:", from);
-      toast({
-        title: "Anmeldung erfolgreich",
-        description: "Du wirst weitergeleitet...",
-      });
-      setTimeout(() => {
-        navigate(from, { replace: true });
+      console.log("🚀 User authenticated, preparing redirect...");
+      
+      // Add a small delay to ensure profile is loaded
+      const redirectTimer = setTimeout(() => {
+        if (!isProfileComplete) {
+          console.log("📝 Profile incomplete → /profile");
+          navigate("/profile", { replace: true });
+        } else {
+          console.log("🏠 Profile complete → /dashboard");
+          navigate("/dashboard", { replace: true });
+        }
       }, 100);
+
+      return () => clearTimeout(redirectTimer);
     }
-  }, [user, authLoading, navigate, from, sessionExpired]);
+  }, [user, authLoading, sessionExpired, navigate, isProfileComplete]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +71,7 @@ const Login = () => {
     setError("");
   };
 
+  // Show loading state
   if (authLoading) {
     return <Layout>
       <div className="flex items-center justify-center min-h-screen bg-background p-4">

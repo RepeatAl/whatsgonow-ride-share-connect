@@ -6,16 +6,20 @@ import { authService } from "@/services/auth-service";
 import { isProfileIncomplete } from "@/utils/profile-check";
 import type { AuthContextProps } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+  
   const {
     user,
     session,
-    loading,
+    loading: sessionLoading,
     isInitialLoad: sessionInitialLoad,
-    sessionExpired
+    sessionExpired,
+    setSessionExpired
   } = useSessionManager();
 
   const {
@@ -29,7 +33,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log("🔐 Attempting sign in for:", email);
       await authService.signIn(email, password);
+      setSessionExpired(false);
     } catch (err) {
       console.error("❌ Sign in error:", err);
       toast({
@@ -41,22 +47,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
-    try {
-      const result = await authService.signUp(email, password, metadata);
-      return result;
-    } catch (err) {
-      console.error("❌ Sign up error:", err);
-      throw err;
-    }
-  };
-
   const signOut = async () => {
     try {
       await authService.signOut();
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("❌ Sign out error:", error);
+      toast({
+        title: "Fehler beim Abmelden",
+        description: "Bitte versuche es später erneut.",
+        variant: "destructive"
+      });
       throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+    try {
+      return await authService.signUp(email, password, metadata);
+    } catch (err) {
+      console.error("❌ Sign up error:", err);
+      throw err;
     }
   };
 
@@ -66,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     session,
     profile,
-    loading: loading || profileLoading,
+    loading: sessionLoading || profileLoading,
     error,
     isInitialLoad: sessionInitialLoad || profileInitialLoad,
     isProfileComplete,
