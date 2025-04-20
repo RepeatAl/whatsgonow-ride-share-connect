@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatRealtimeProvider } from "@/contexts/ChatRealtimeContext"; 
@@ -16,14 +15,13 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Security check - redirect to login from root path if not authenticated
+  // Only check auth on non-public routes
   useEffect(() => {
-    if (location.pathname === "/") {
-      const isLoggedIn = !!localStorage.getItem("supabase.auth.token");
-      // Root path is considered public but we still want to check login status
-      if (!isLoggedIn) {
-        navigate("/login");
-      }
+    const isLoggedIn = !!localStorage.getItem("supabase.auth.token");
+    const currentPath = location.pathname;
+    
+    if (!isPublicRoute(currentPath) && !isLoggedIn) {
+      navigate("/login", { replace: true });
     }
   }, [location.pathname, navigate]);
 
@@ -72,7 +70,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect to login if session expired
+  // Only redirect on session expiry for non-public routes
   useEffect(() => {
     if (!isInitialLoad && sessionExpired && !isPublicRoute(location.pathname)) {
       navigate("/login", { 

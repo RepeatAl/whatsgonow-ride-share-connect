@@ -4,16 +4,11 @@
  * These paths are accessible without authentication.
  */
 export const publicRoutes = [
+  "/",
   "/login",
-  "/register", 
+  "/register",
   "/pre-register",
-  "/pre-register/success",
-  "/delivery",
-  "/invoice-download",
-  "/forgot-password", 
-  "/reset-password",
-  "/faq",
-  "/support"
+  "/pre-register/success"
 ];
 
 /**
@@ -27,16 +22,12 @@ export const isPublicRoute = (pathname: string): boolean => {
     return true;
   }
 
-  // Check for dynamic routes with parameters
-  return publicRoutes.some(route => {
-    if (route === "/") return false; // Skip root path for parameter check
-    return pathname.startsWith(route + "/");
-  });
+  // Only allow /pre-register/* paths for dynamic routes
+  return pathname.startsWith("/pre-register/");
 };
 
 /**
  * Check if a route is a home/landing page route
- * These are technically public but need special handling
  */
 export const isHomeRoute = (pathname: string): boolean => {
   return pathname === "/";

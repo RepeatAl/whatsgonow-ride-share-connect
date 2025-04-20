@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -19,6 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { isPublicRoute } from "@/routes/publicRoutes";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -36,20 +36,21 @@ const Login = () => {
   useEffect(() => {
     console.log("🔍 Login page - Auth state:", user ? "Authenticated" : "Unauthenticated");
     
-    // Only redirect if the user is authenticated AND not from an expired session
     if (user && !authLoading && !sessionExpired) {
+      // Only redirect to dashboard or protected routes if user is fully authenticated
       const destination = from === "/" ? "/dashboard" : from;
-      console.log("🚀 Redirecting authenticated user to:", destination);
-      toast({
-        title: "Anmeldung erfolgreich",
-        description: "Du wirst weitergeleitet...",
-      });
-      // Redirect after a slight delay to allow toast to be seen
-      setTimeout(() => {
-        navigate(destination, { replace: true });
-      }, 1000);
+      if (!isPublicRoute(destination)) {
+        console.log("🚀 Redirecting authenticated user to:", destination);
+        toast({
+          title: "Anmeldung erfolgreich",
+          description: "Du wirst weitergeleitet...",
+        });
+        setTimeout(() => {
+          navigate(destination, { replace: true });
+        }, 1000);
+      }
     }
-  }, [user, authLoading, location, navigate, from, sessionExpired]);
+  }, [user, authLoading, navigate, from, sessionExpired]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
