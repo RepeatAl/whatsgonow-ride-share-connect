@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -27,31 +26,8 @@ const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { signIn, user, loading: authLoading, sessionExpired, profile, isProfileComplete } = useAuth();
-
-  // Redirect logic
-  useEffect(() => {
-    if (user && !authLoading && !sessionExpired) {
-      console.log("🚀 User authenticated, preparing redirect...");
-      setIsRedirecting(true);
-      
-      // Add a small delay to ensure profile is loaded
-      const redirectTimer = setTimeout(() => {
-        if (!isProfileComplete) {
-          console.log("📝 Profile incomplete → /profile");
-          navigate("/profile", { replace: true });
-        } else {
-          console.log("🏠 Profile complete → /dashboard");
-          navigate("/dashboard", { replace: true });
-        }
-      }, 500);
-
-      return () => clearTimeout(redirectTimer);
-    }
-  }, [user, authLoading, sessionExpired, navigate, isProfileComplete]);
+  const { signIn, user, loading: authLoading, sessionExpired } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,17 +57,6 @@ const Login = () => {
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p>Authentifizierung wird überprüft...</p>
-        </div>
-      </div>
-    </Layout>;
-  }
-
-  if (isRedirecting) {
-    return <Layout>
-      <div className="flex items-center justify-center min-h-screen bg-background p-4">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Du wirst weitergeleitet...</p>
         </div>
       </div>
     </Layout>;
