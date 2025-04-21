@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,15 +46,14 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
   const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterFormData) => {
-    if (import.meta.env.DEV) {
-      console.log('🧪 Registration form data:', data);
-    }
-
     setError('');
     setIsLoading(true);
-    setIsSuccess(false);
 
     try {
+      if (import.meta.env.DEV) {
+        console.log('🧪 Registration form data:', data);
+      }
+
       await signUp(data.email, data.password, {
         first_name: data.first_name,
         last_name: data.last_name,
@@ -75,14 +73,12 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
         console.log('✅ Sign up successful');
       }
 
-      // 🚀 Statt interne SuccessCard: Weiterleitung zur Dankeschön-Seite
+      // Immer externe Success-Route nutzen
       navigate("/pre-register/success");
-      return;
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('❌ Registration error:', err);
-      }
-      setError((err as Error).message);
+    } catch (err: any) {
+      let message = "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
+      if (err && typeof err.message === "string") message = err.message;
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -95,36 +91,6 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
       navigate('/login');
     }
   };
-
-  if (isSuccess) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>Registrierung erfolgreich</CardTitle>
-          <CardDescription>
-            Dein Konto wurde erfolgreich erstellt
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p>
-            Hinweis: In der Testphase kann es vorkommen, dass keine Bestätigungs-E-Mail versendet wird. 
-            Du kannst dich trotzdem direkt mit deinen Anmeldedaten einloggen.
-          </p>
-          <div className="flex flex-col gap-2">
-            <Button onClick={handleLoginClick} variant="brand">
-              Zum Login
-            </Button>
-            <Button 
-              onClick={() => navigate('/')} 
-              variant="outline"
-            >
-              Zurück zur Hauptseite
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -151,9 +117,9 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <Button 
-          variant="link" 
-          onClick={handleLoginClick} 
+        <Button
+          variant="link"
+          onClick={handleLoginClick}
           className="text-sm"
         >
           Schon registriert? Login

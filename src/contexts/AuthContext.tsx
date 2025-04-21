@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode } from "react";
 import { useSessionManager } from "@/hooks/auth/useSessionManager";
 import { useProfile } from "@/hooks/auth/useProfile";
@@ -33,21 +32,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log("🔐 Attempting sign in for:", email);
       await authService.signIn(email, password);
       setSessionExpired(false);
-      
-      // Wichtig: Eine kurze Verzögerung, um sicherzustellen, dass die Session geladen wird
       setTimeout(() => {
-        if (refreshProfile) {
-          refreshProfile();
-        }
+        if (refreshProfile) refreshProfile();
       }, 500);
-    } catch (err) {
-      console.error("❌ Sign in error:", err);
+    } catch (err: any) {
       toast({
         title: "Anmeldung fehlgeschlagen",
-        description: "Bitte überprüfe deine E-Mail-Adresse und dein Passwort.",
+        description: err?.message || "Bitte überprüfe deine E-Mail-Adresse und dein Passwort.",
         variant: "destructive"
       });
       throw err;
@@ -58,11 +51,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await authService.signOut();
       navigate("/", { replace: true });
-    } catch (error) {
-      console.error("❌ Sign out error:", error);
+    } catch (error: any) {
       toast({
         title: "Fehler beim Abmelden",
-        description: "Bitte versuche es später erneut.",
+        description: error?.message || "Bitte versuche es später erneut.",
         variant: "destructive"
       });
       throw error;
@@ -71,10 +63,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
-      console.log("📝 Registrierungsversuch für:", email);
       return await authService.signUp(email, password, metadata);
-    } catch (err) {
-      console.error("❌ Sign up error:", err);
+    } catch (err: any) {
+      toast({
+        title: "Registrierung fehlgeschlagen",
+        description: err?.message || "Bitte versuche es später erneut.",
+        variant: "destructive"
+      });
       throw err;
     }
   };

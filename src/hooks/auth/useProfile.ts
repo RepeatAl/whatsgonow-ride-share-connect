@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -15,11 +14,9 @@ export function useProfile() {
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
-      console.log("🔄 Loading profile for:", userId);
       setLoading(true);
       setError(null);
 
-      // Try to fetch the profile with the new RLS policies in place
       const { data: userProfile, error: profileError } = await supabase
         .from("profiles")
         .select(`
@@ -43,31 +40,24 @@ export function useProfile() {
         .maybeSingle();
 
       if (profileError) {
-        console.error("Profile fetch error:", profileError);
+        setProfile(null);
+        setError(profileError);
         throw profileError;
       }
-      
+
       if (!userProfile) {
-        console.log("No profile found, will be created by trigger");
-        // Wir warten kurz und versuchen es dann noch einmal
+        setProfile(null);
+        setError(new Error("Kein Profil gefunden."));
         if (retryCount < 2) {
           setTimeout(() => {
             setRetryCount(count => count + 1);
           }, 1000);
-        } else {
-          toast({
-            title: "Profil nicht gefunden",
-            description: "Dein Profil konnte nicht geladen werden. Bitte versuche es später erneut.",
-            variant: "destructive"
-          });
         }
         return;
       }
 
-      // Transform the profile data to match our UserProfile type
       const transformedProfile: UserProfile = {
         ...userProfile,
-        // Keep the snake_case properties as they come from the database
         first_name: userProfile.first_name,
         last_name: userProfile.last_name,
         name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || 'New User'
@@ -75,19 +65,11 @@ export function useProfile() {
 
       setProfile(transformedProfile);
       setRetryCount(0);
-      console.log("✅ Profile loaded:", transformedProfile);
     } catch (err) {
-      console.error("❌ Error loading profile:", err);
+      setProfile(null);
       setError(err instanceof Error ? err : new Error("Unknown error loading profile"));
-      
       if (retryCount < 2) {
         setRetryCount((prev) => prev + 1);
-      } else {
-        toast({
-          title: "Fehler beim Laden des Profils",
-          description: "Bitte versuche es später erneut",
-          variant: "destructive"
-        });
       }
     } finally {
       setLoading(false);
@@ -139,7 +121,6 @@ export function useProfile() {
         setUser(currentUser);
         
         if (currentUser && event === 'SIGNED_IN') {
-          // Verwende setTimeout, um Dead Locks zu vermeiden
           setTimeout(async () => {
             if (mounted) {
               await fetchProfile(currentUser.id);

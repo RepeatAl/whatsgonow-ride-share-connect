@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,6 @@ const Profile = () => {
       navigate("/login");
       return;
     }
-
     if (!loading && profile && isProfileIncomplete(profile)) {
       navigate("/complete-profile");
     }
@@ -51,7 +49,7 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               <p className="text-red-500">
-                Dein Profil konnte nicht geladen werden. Bitte versuche es später erneut.
+                {error?.message ?? "Dein Profil konnte nicht geladen werden. Bitte versuche es später erneut."}
               </p>
             </CardContent>
           </Card>
