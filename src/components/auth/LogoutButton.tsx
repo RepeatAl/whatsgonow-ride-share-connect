@@ -30,8 +30,8 @@ const LogoutButton = ({
       toast({
         description: "Erfolgreich abgemeldet",
       });
-      // Always redirect to login after logout for security
-      navigate("/login", { replace: true });
+      // Immer zur Startseite nach Abmelden
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout error:", error);
       toast({

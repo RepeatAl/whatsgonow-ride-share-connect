@@ -75,7 +75,9 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
         console.log('✅ Sign up successful');
       }
 
-      setIsSuccess(true);
+      // 🚀 Statt interne SuccessCard: Weiterleitung zur Dankeschön-Seite
+      navigate("/pre-register/success");
+      return;
     } catch (err) {
       if (import.meta.env.DEV) {
         console.error('❌ Registration error:', err);

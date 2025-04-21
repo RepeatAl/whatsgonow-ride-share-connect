@@ -29,6 +29,12 @@ const Login = () => {
   const navigate = useNavigate();
   const { signIn, user, loading: authLoading, sessionExpired } = useAuth();
 
+  useEffect(() => {
+    if (user && !authLoading && !sessionExpired) {
+      navigate("/", { replace: true });
+    }
+  }, [user, authLoading, sessionExpired, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -50,7 +56,6 @@ const Login = () => {
     setError("");
   };
 
-  // Show loading state
   if (authLoading) {
     return <Layout>
       <div className="flex items-center justify-center min-h-screen bg-background p-4">
