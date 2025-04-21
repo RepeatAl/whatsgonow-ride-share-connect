@@ -4,6 +4,9 @@ import type { UserProfile } from "@/types/auth";
 export const isProfileIncomplete = (profile: UserProfile | null): boolean => {
   if (!profile) return true;
   
+  // Wenn das Profil explizit als vollständig markiert ist, vertrauen wir diesem Flag
+  if (profile.profile_complete === true) return false;
+  
   const requiredFields = [
     "first_name",
     "last_name",
@@ -17,7 +20,7 @@ export const isProfileIncomplete = (profile: UserProfile | null): boolean => {
   return requiredFields.some(field => {
     // @ts-ignore - dynamic property access
     const value = profile[field];
-    return !value || value.trim() === "";
+    return !value || (typeof value === 'string' && value.trim() === "");
   });
 };
 
@@ -38,7 +41,7 @@ export const getMissingProfileFields = (profile: UserProfile | null): string[] =
     .filter(([key]) => {
       // @ts-ignore - dynamic property access
       const value = profile[key];
-      return !value || value.trim() === "";
+      return !value || (typeof value === 'string' && value.trim() === "");
     })
     .map(([_, label]) => label);
 };

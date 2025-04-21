@@ -36,6 +36,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("🔐 Attempting sign in for:", email);
       await authService.signIn(email, password);
       setSessionExpired(false);
+      
+      // Wichtig: Eine kurze Verzögerung, um sicherzustellen, dass die Session geladen wird
+      setTimeout(() => {
+        if (refreshProfile) {
+          refreshProfile();
+        }
+      }, 500);
     } catch (err) {
       console.error("❌ Sign in error:", err);
       toast({
@@ -64,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
+      console.log("📝 Registrierungsversuch für:", email);
       return await authService.signUp(email, password, metadata);
     } catch (err) {
       console.error("❌ Sign up error:", err);

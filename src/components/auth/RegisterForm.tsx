@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { RegisterFormFields } from '@/components/auth/register/RegisterFormFields';
 import { SuccessMessage } from '@/components/auth/register/SuccessMessage';
 import { ErrorDisplay } from '@/components/auth/register/ErrorDisplay';
+import { useNavigate } from 'react-router-dom';
 
 interface RegisterFormProps {
   onSwitchToLogin?: () => void;
@@ -19,6 +21,7 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { signUp } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -83,8 +86,42 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
     }
   };
 
+  const handleLoginClick = () => {
+    if (onSwitchToLogin) {
+      onSwitchToLogin();
+    } else {
+      navigate('/login');
+    }
+  };
+
   if (isSuccess) {
-    return <SuccessMessage />;
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Registrierung erfolgreich</CardTitle>
+          <CardDescription>
+            Dein Konto wurde erfolgreich erstellt
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p>
+            Hinweis: In der Testphase kann es vorkommen, dass keine Bestätigungs-E-Mail versendet wird. 
+            Du kannst dich trotzdem direkt mit deinen Anmeldedaten einloggen.
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button onClick={handleLoginClick} variant="brand">
+              Zum Login
+            </Button>
+            <Button 
+              onClick={() => navigate('/')} 
+              variant="outline"
+            >
+              Zurück zur Hauptseite
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -101,7 +138,12 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
             <RegisterFormFields control={form.control} selectedRole={selectedRole} />
             <ErrorDisplay error={error} />
             <Button type="submit" className="w-full" disabled={isLoading} variant="brand">
-              {isLoading ? "Wird verarbeitet..." : "Registrieren"}
+              {isLoading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  Wird verarbeitet...
+                </>
+              ) : "Registrieren"}
             </Button>
           </form>
         </Form>
@@ -109,7 +151,7 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
       <CardFooter className="flex justify-center">
         <Button 
           variant="link" 
-          onClick={onSwitchToLogin} 
+          onClick={handleLoginClick} 
           className="text-sm"
         >
           Schon registriert? Login

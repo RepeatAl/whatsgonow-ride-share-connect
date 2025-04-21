@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import type { UserProfile } from "@/types/auth";
 
 interface ProfileFormProps {
@@ -27,10 +27,13 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
   const [addressExtra, setAddressExtra] = useState("");
   const [nameAffix, setNameAffix] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [formLoaded, setFormLoaded] = useState(false);
 
   useEffect(() => {
     if (profile) {
       try {
+        console.log("Loading profile data:", profile);
+        
         // Map the snake_case properties from UserProfile to our camelCase state variables
         setFirstName(profile.first_name || "");
         setLastName(profile.last_name || "");
@@ -44,6 +47,7 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
         setAddressExtra(profile.address_extra || "");
         setNameAffix(profile.name_affix || "");
         setFormError(null);
+        setFormLoaded(true);
       } catch (err) {
         console.error("Error loading profile data:", err);
         setFormError("Profildaten konnten nicht geladen werden");
@@ -91,10 +95,10 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
     }
   };
 
-  if (!profile) {
+  if (!formLoaded) {
     return (
       <div className="p-8 text-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <Loader2 className="w-12 h-12 animate-spin mx-auto text-primary mb-4" />
         <p>Profil wird geladen...</p>
       </div>
     );
@@ -214,7 +218,7 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
         >
           {loading ? (
             <>
-              <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></span>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
               Speichert...
             </>
           ) : "Speichern"}
