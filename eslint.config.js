@@ -1,17 +1,25 @@
+
 import js from "@eslint/js";
 import globals from "globals";
 import pluginReact from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import { parser as tsParser } from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
-	{ files: ["**/*.js"], languageOptions: { globals: globals.browser } },
-	{ files: ["**/*.js"], plugins: { js }, extends: ["js/recommended"] },
-]);
-
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: { jsx: true }
+      },
+      globals: globals.browser,
+    },
     plugins: {
       js,
       react: pluginReact,
@@ -21,27 +29,21 @@ export default defineConfig([
     },
     extends: [
       js.configs.recommended,
-      pluginReact.configs.flat.recommended,
-      tsPlugin.configs.flat.recommended,
+      pluginReact.configs.recommended,
+      tsPlugin.configs.recommended,
     ],
     rules: {
-      // React hooks rules
       ...reactHooks.configs.recommended.rules,
-      // Ensure only components are exported when using react-refresh
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
       ],
-      // TypeScript unused variables warning
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      // Console usage
       "no-console": ["warn", { allow: ["error", "warn", "info"] }],
-      // Prefer const over let
       "prefer-const": "warn",
-      // Disallow duplicate imports
       "no-duplicate-imports": "error",
     },
     settings: {
