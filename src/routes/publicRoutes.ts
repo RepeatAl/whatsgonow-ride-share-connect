@@ -8,7 +8,9 @@ export const publicRoutes = [
   "/login",
   "/register",
   "/pre-register",
-  "/pre-register/success"
+  "/pre-register/success",
+  "/faq",  // Added FAQ route to public routes
+  "/support"  // Also adding support route for consistency
 ];
 
 /**
@@ -32,3 +34,4 @@ export const isPublicRoute = (pathname: string): boolean => {
 export const isHomeRoute = (pathname: string): boolean => {
   return pathname === "/";
 };
+
