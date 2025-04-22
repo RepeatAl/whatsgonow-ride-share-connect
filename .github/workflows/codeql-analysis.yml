@@ -13,7 +13,6 @@ jobs:
   analyze:
     name: Scan code with CodeQL
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -38,3 +37,6 @@ jobs:
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v2
+        with:
+          token: ${{ secrets.CODEQL_TOKEN }}
+
