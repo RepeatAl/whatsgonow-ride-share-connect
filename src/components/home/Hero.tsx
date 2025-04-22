@@ -19,18 +19,14 @@ const Hero = () => {
 
             <div className="flex flex-col items-center gap-4 pt-4">
               <div className="flex flex-wrap justify-center gap-4 w-full">
-                <Button asChild size="lg" variant="brand">
-                  <Link to="/login">Anmelden</Link>
+                <Button asChild size="lg" variant="brand" className="w-full max-w-md">
+                  <Link to="/pre-register" className="px-0">Dabeisein wenn Whatsgonow startet</Link>
                 </Button>
                 
-                <Button asChild size="lg" variant="outline">
+                <Button asChild size="lg" variant="outline" className="w-full max-w-md">
                   <Link to="/faq">Mehr erfahren</Link>
                 </Button>
               </div>
-              
-              <Button asChild size="lg" variant="brand" className="w-full max-w-md mt-2 bg-brand-orange hover:bg-brand-orange/90">
-                <Link to="/pre-register" className="px-0">Dabeisein wenn Whatsgonow startet</Link>
-              </Button>
             </div>
           </div>
 
