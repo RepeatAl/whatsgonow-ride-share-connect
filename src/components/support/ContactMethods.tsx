@@ -10,11 +10,11 @@ export const ContactMethods = () => {
         <CardHeader className="items-center text-center">
           <MessageSquare className="h-8 w-8 text-brand-primary mb-2" />
           <CardTitle>Live Chat</CardTitle>
-          <CardDescription>Available 9 AM - 7 PM</CardDescription>
+          <CardDescription>Verfügbar 9 - 19 Uhr</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <Button variant="outline" className="w-full">
-            Start Chat
+            Chat starten
           </Button>
         </CardContent>
       </Card>
@@ -22,12 +22,12 @@ export const ContactMethods = () => {
       <Card>
         <CardHeader className="items-center text-center">
           <Mail className="h-8 w-8 text-brand-primary mb-2" />
-          <CardTitle>Email Support</CardTitle>
-          <CardDescription>Response within 24h</CardDescription>
+          <CardTitle>E-Mail-Support</CardTitle>
+          <CardDescription>Antwort innerhalb von 24h</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <Button variant="outline" className="w-full">
-            support@whatsgonow.com
+            admin@whatsgonow.com
           </Button>
         </CardContent>
       </Card>
@@ -35,8 +35,8 @@ export const ContactMethods = () => {
       <Card>
         <CardHeader className="items-center text-center">
           <Headphones className="h-8 w-8 text-brand-primary mb-2" />
-          <CardTitle>Phone Support</CardTitle>
-          <CardDescription>Mon-Fri: 9 AM - 5 PM</CardDescription>
+          <CardTitle>Telefon-Support</CardTitle>
+          <CardDescription>Mo-Fr: 9 - 17 Uhr</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <Button variant="outline" className="w-full">

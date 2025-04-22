@@ -8,37 +8,37 @@ export const FaqSection = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Frequently Asked Questions</CardTitle>
+        <CardTitle>Häufig gestellte Fragen</CardTitle>
         <CardDescription>
-          Quick answers to common questions
+          Schnelle Antworten auf häufige Fragen
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div>
-            <h3 className="font-medium mb-1">How do I track my package?</h3>
+            <h3 className="font-medium mb-1">Wie kann ich mein Paket verfolgen?</h3>
             <p className="text-gray-600 text-sm">
-              You can track your package in the Tracking page using your order ID. Real-time updates will be provided.
+              Sie können Ihr Paket auf der Tracking-Seite mit Ihrer Auftrags-ID verfolgen. Es werden Echtzeitupdates bereitgestellt.
             </p>
           </div>
           <Separator />
           <div>
-            <h3 className="font-medium mb-1">What payment methods do you accept?</h3>
+            <h3 className="font-medium mb-1">Welche Zahlungsmethoden akzeptieren Sie?</h3>
             <p className="text-gray-600 text-sm">
-              We accept all major credit cards, PayPal, and bank transfers for secure payments.
+              Wir akzeptieren alle gängigen Kreditkarten, PayPal und Banküberweisungen für sichere Zahlungen.
             </p>
           </div>
           <Separator />
           <div>
-            <h3 className="font-medium mb-1">How can I become a transport provider?</h3>
+            <h3 className="font-medium mb-1">Wie kann ich Transportanbieter werden?</h3>
             <p className="text-gray-600 text-sm">
-              Visit the Offer Transport page to register as a provider. You'll need to verify your identity and set up your profile.
+              Besuchen Sie die Seite 'Transport anbieten', um sich als Anbieter zu registrieren. Sie müssen Ihre Identität verifizieren und Ihr Profil einrichten.
             </p>
           </div>
         </div>
         <div className="mt-6 text-center">
           <Button asChild variant="outline">
-            <Link to="/faq">View All FAQs</Link>
+            <Link to="/faq">Alle FAQs anzeigen</Link>
           </Button>
         </div>
       </CardContent>
