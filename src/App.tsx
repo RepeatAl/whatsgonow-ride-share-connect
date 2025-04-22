@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatRealtimeProvider } from "@/contexts/ChatRealtimeContext"; 
@@ -8,7 +7,8 @@ import { initSupabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { isPublicRoute } from "@/routes/publicRoutes";
+import { isPublicRoute, isHomeRoute } from "@/routes/publicRoutes";
+import { supabase } from "@/lib/supabaseClient";
 
 function App() {
   const [supabaseInitialized, setSupabaseInitialized] = useState<boolean | null>(null);
@@ -16,15 +16,15 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Only check auth on non-public routes
+  // Check auth state and clear if on public routes
   useEffect(() => {
-    const isLoggedIn = !!localStorage.getItem("supabase.auth.token");
     const currentPath = location.pathname;
     
-    if (!isPublicRoute(currentPath) && !isLoggedIn) {
-      navigate("/login", { replace: true });
+    if (isPublicRoute(currentPath) && isHomeRoute(currentPath)) {
+      // Clear auth state when accessing public home page
+      supabase.auth.signOut();
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname]);
 
   useEffect(() => {
     const init = async () => {
@@ -65,7 +65,6 @@ function App() {
   );
 }
 
-// Inner component that can access the auth context
 function AppContent() {
   const { isInitialLoad, user, sessionExpired } = useAuth();
   const navigate = useNavigate();
