@@ -11,9 +11,9 @@ const corsHeaders = {
 };
 
 interface FeedbackNotificationRequest {
-  adminEmail: string;
+  title: string;
   feedbackType: string;
-  userEmail: string;
+  email?: string;
   message: string;
 }
 
@@ -24,26 +24,27 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { 
-      adminEmail, 
+      title,
       feedbackType,
-      userEmail,
+      email,
       message 
     }: FeedbackNotificationRequest = await req.json();
 
     const emailResponse = await resend.emails.send({
-      from: "Whatsgonow Feedback <feedback@whatsgonow.com>",
-      to: [adminEmail],
-      subject: `Neues Feedback: ${feedbackType}`,
+      from: "Whatsgonow Support <noreply@whatsgonow.com>",
+      to: ["admin@whatsgonow.com"],
+      subject: `Neue Support-Anfrage: ${title}`,
       html: `
-        <h1>Neues Feedback eingegangen</h1>
+        <h1>Neue Support-Anfrage eingegangen</h1>
         <p><strong>Typ:</strong> ${feedbackType}</p>
-        <p><strong>Von:</strong> ${userEmail}</p>
+        <p><strong>Von:</strong> ${email || 'Anonym'}</p>
+        <p><strong>Betreff:</strong> ${title}</p>
         <p><strong>Nachricht:</strong></p>
         <p>${message}</p>
       `
     });
 
-    console.log("Feedback notification email sent successfully:", emailResponse);
+    console.log("Support notification email sent successfully:", emailResponse);
 
     return new Response(
       JSON.stringify(emailResponse),
@@ -56,10 +57,10 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error) {
-    console.error("Error sending feedback notification:", error);
+    console.error("Error sending support notification:", error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Fehler beim Versand der Feedback-Benachrichtigung" 
+        error: error instanceof Error ? error.message : "Fehler beim Versand der Support-Benachrichtigung" 
       }), 
       { 
         status: 500, 

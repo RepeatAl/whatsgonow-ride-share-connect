@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { useLaunch } from "@/components/launch/LaunchProvider";
-import { useFeedback, FeedbackData } from "@/hooks/use-feedback";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
+import { useFeedback } from "@/hooks/use-feedback";
 
 export const ContactForm = ({ onSubmit }: { onSubmit: () => void }) => {
-  const { trackEvent } = useLaunch();
-  const { submitFeedback, loading } = useFeedback();
+  const { submitFeedback, loading, error } = useFeedback();
   const [supportType, setSupportType] = useState<'question' | 'bug' | 'suggestion' | 'compliment'>('question');
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -19,14 +19,15 @@ export const ContactForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    trackEvent("support_request_submitted", { supportType });
+    
+    if (!message.trim()) {
+      return;
+    }
 
     const success = await submitFeedback({
       feedbackType: supportType,
       title,
       content: message,
-      satisfaction: "3", // Default satisfaction for support requests
-      features: [],
       email
     });
 
@@ -45,6 +46,14 @@ export const ContactForm = ({ onSubmit }: { onSubmit: () => void }) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {error.message || "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <Label>Wie können wir Ihnen helfen?</Label>
             <RadioGroup
@@ -107,8 +116,19 @@ export const ContactForm = ({ onSubmit }: { onSubmit: () => void }) => {
             </p>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Wird gesendet..." : "Anfrage senden"}
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={loading || !message.trim()}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Wird gesendet...
+              </>
+            ) : (
+              "Anfrage senden"
+            )}
           </Button>
         </CardContent>
       </form>
