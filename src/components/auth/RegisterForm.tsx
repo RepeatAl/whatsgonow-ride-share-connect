@@ -74,7 +74,7 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
       }
 
       // Immer externe Success-Route nutzen
-      navigate("/pre-register/success");
+      navigate("/register/success");
     } catch (err: any) {
       let message = "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
       if (err && typeof err.message === "string") message = err.message;
