@@ -41,27 +41,29 @@ const Hero = () => {
 
         <div className="flex justify-center relative">
           {!videoError ? (
-            <div className="relative">
+            <div className="relative inline-block">
               <button
                 onClick={toggleMute}
-                className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                className="absolute top-4 right-4 z-30 p-2.5 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors shadow-lg hover:scale-105 transform duration-200"
                 aria-label={isMuted ? "Ton einschalten" : "Ton ausschalten"}
               >
-                {isMuted ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                {isMuted ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
               </button>
-              <video 
-                className="w-full max-w-md rounded-lg shadow-lg"
-                autoPlay
-                muted={isMuted}
-                loop
-                playsInline
-                onError={() => setVideoError(true)}
-              >
-                <source 
-                  src="https://orgcruwmxqiwnjnkxpjb.supabase.co/storage/v1/object/public/explainvideo1/Whatsgonow-Whatsabout-Klein.mp4" 
-                  type="video/mp4" 
-                />
-              </video>
+              <div className="rounded-lg overflow-hidden shadow-xl">
+                <video 
+                  className="w-full max-w-md rounded-lg"
+                  autoPlay
+                  muted={isMuted}
+                  loop
+                  playsInline
+                  onError={() => setVideoError(true)}
+                >
+                  <source 
+                    src="https://orgcruwmxqiwnjnkxpjb.supabase.co/storage/v1/object/public/explainvideo1/Whatsgonow-Whatsabout-Klein.mp4" 
+                    type="video/mp4" 
+                  />
+                </video>
+              </div>
             </div>
           ) : (
             <img 
