@@ -2,6 +2,7 @@ import { RouteConfig } from "@/components/routing/AppRoutes";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import RegisterSuccess from "@/pages/RegisterSuccess";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import Faq from "@/pages/Faq";
@@ -39,6 +40,7 @@ export const routes: RouteConfig[] = [
   { path: "/", element: <Index />, public: true },
   { path: "/login", element: <Login />, public: true },
   { path: "/register", element: <Register />, public: true },
+  { path: "/register/success", element: <RegisterSuccess />, public: true },
   { path: "/forgot-password", element: <ForgotPassword />, public: true },
   { path: "/reset-password", element: <ResetPassword />, public: true },
   { path: "/faq", element: <Faq />, public: true },

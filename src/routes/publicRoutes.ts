@@ -7,10 +7,11 @@ export const publicRoutes = [
   "/",
   "/login",
   "/register",
+  "/register/success",  // Added registration success route
   "/pre-register",
   "/pre-register/success",
-  "/faq",  // Added FAQ route to public routes
-  "/support"  // Also adding support route for consistency
+  "/faq",
+  "/support"
 ];
 
 /**
