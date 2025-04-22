@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -35,15 +36,18 @@ const Hero = () => {
         <div className="flex justify-center">
           {!videoError ? (
             <video 
-              src="https://orgcruwmxqiwnjnkxpjb.supabase.co/storage/v1/object/public/explainvideo1/Whatsgonow-Whatsabout-Klein.mp4"
               className="w-full max-w-md rounded-lg shadow-lg"
               autoPlay
               muted
               loop
               playsInline
               onError={() => setVideoError(true)}
-              type="video/mp4"
-            />
+            >
+              <source 
+                src="https://orgcruwmxqiwnjnkxpjb.supabase.co/storage/v1/object/public/explainvideo1/Whatsgonow-Whatsabout-Klein.mp4" 
+                type="video/mp4" 
+              />
+            </video>
           ) : (
             <img 
               src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" 
