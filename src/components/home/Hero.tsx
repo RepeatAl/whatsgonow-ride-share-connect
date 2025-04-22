@@ -31,10 +31,18 @@ const Hero = () => {
           </div>
 
           <div className="flex justify-center">
-            <img src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" alt="Whatsgonow Platform" className="w-full max-w-md rounded-lg shadow-lg" />
+            <video 
+              src="https://orgcruwmxqiwnjnkxpjb.supabase.co/storage/v1/object/public/explainvideo1//Whatsgonow-Whatsabout-Klein.mp4"
+              className="w-full max-w-md rounded-lg shadow-lg"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
           </div>
         </div>
       </div>
     </div>;
 };
 export default Hero;
+
