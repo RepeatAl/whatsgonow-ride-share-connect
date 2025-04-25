@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -29,7 +30,11 @@ export const ImageUploadSection = ({
   orderId
 }: ImageUploadSectionProps) => {
   const { deviceType } = useDeviceType();
+  const [isCapturing, setIsCapturing] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const nextPhotoIndex = selectedFiles.length + 1;
+  const canTakeMore = nextPhotoIndex <= MAX_FILES;
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
@@ -62,6 +67,7 @@ export const ImageUploadSection = ({
 
   const handleOpenCamera = async () => {
     try {
+      setIsCapturing(true);
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       const video = document.createElement('video');
       video.srcObject = stream;
@@ -80,13 +86,13 @@ export const ImageUploadSection = ({
         
         canvas.toBlob((blob) => {
           if (blob) {
-            const file = new File([blob], `camera-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const file = new File([blob], `foto-${nextPhotoIndex}-${Date.now()}.jpg`, { type: 'image/jpeg' });
             
-            if (selectedFiles.length + 1 <= MAX_FILES) {
+            if (canTakeMore) {
               const url = URL.createObjectURL(blob);
-              setSelectedFiles([...selectedFiles, file]);
-              setPreviews([...previews, url]);
-              toast.success("Foto erfolgreich aufgenommen!");
+              setSelectedFiles(prev => [...prev, file]);
+              setPreviews(prev => [...prev, url]);
+              toast.success(`Foto ${nextPhotoIndex} erfolgreich aufgenommen!`);
             } else {
               toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
             }
@@ -99,6 +105,8 @@ export const ImageUploadSection = ({
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast.error("Kamera konnte nicht geöffnet werden");
+    } finally {
+      setIsCapturing(false);
     }
   };
 
@@ -172,9 +180,14 @@ export const ImageUploadSection = ({
                     type="button" 
                     variant="outline" 
                     onClick={handleOpenCamera}
+                    disabled={!canTakeMore || isCapturing}
                   >
                     <Camera className="mr-2 h-4 w-4" />
-                    Artikel fotografieren
+                    {isCapturing 
+                      ? "Nimmt auf..."
+                      : canTakeMore
+                        ? `Foto ${nextPhotoIndex} aufnehmen`
+                        : `Max. ${MAX_FILES} Fotos erreicht`}
                   </Button>
                 )}
 
