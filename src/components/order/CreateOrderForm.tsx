@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, CameraIcon, Upload } from "lucide-react";
+import { CalendarIcon, Loader2, CameraIcon, Upload, QrCode } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
@@ -47,6 +47,7 @@ const CreateOrderForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [showQrScanner, setShowQrScanner] = useState(false);
+  const [showItemQrScanner, setShowItemQrScanner] = useState(false);
   const [deviceType, setDeviceType] = useState<'mobile' | 'desktop'>('desktop');
   const navigate = useNavigate();
 
@@ -201,10 +202,10 @@ const CreateOrderForm = () => {
       if (data.weight) form.setValue("weight", data.weight);
       if (data.description) form.setValue("description", data.description);
       
-      setShowQrScanner(false);
+      setShowItemQrScanner(false);
       toast.success("QR-Code erfolgreich gescannt!");
     } catch (error) {
-      toast.error("Ungültiges QR-Code Format");
+      toast.error("Ungültiger QR-Code");
     }
   };
 
@@ -247,29 +248,38 @@ const CreateOrderForm = () => {
                     <Button 
                       type="button" 
                       variant="outline" 
-                      className="flex items-center gap-2"
                       onClick={() => document.getElementById('file-upload')?.click()}
                     >
-                      <Upload size={18} />
+                      <Upload size={18} className="mr-2" />
                       Datei auswählen
                     </Button>
 
                     {deviceType === 'mobile' && (
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="flex items-center gap-2"
-                        onClick={() => {
-                          if (!navigator.mediaDevices?.getUserMedia) {
-                            toast.error("Dein Gerät unterstützt keine Kamera-API");
-                            return;
-                          }
-                          setShowQrScanner(true);
-                        }}
-                      >
-                        <Camera size={18} />
-                        Jetzt Bild aufnehmen
-                      </Button>
+                      <>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => {
+                            if (!navigator.mediaDevices?.getUserMedia) {
+                              toast.error("Dein Gerät unterstützt keine Kamera-API");
+                              return;
+                            }
+                            setShowQrScanner(true);
+                          }}
+                        >
+                          <Camera size={18} className="mr-2" />
+                          Jetzt Bild aufnehmen
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowItemQrScanner(true)}
+                        >
+                          <QrCode size={18} className="mr-2" />
+                          QR-Code scannen
+                        </Button>
+                      </>
                     )}
 
                     {deviceType === 'desktop' && user && (
@@ -911,8 +921,17 @@ const CreateOrderForm = () => {
         <Dialog open={showQrScanner} onOpenChange={setShowQrScanner}>
           <DialogContent className="sm:max-w-md">
             <QRScanner
-              onScan={handleQrScan}
+              onScan={handleMobilePhotosComplete}
               onClose={() => setShowQrScanner(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showItemQrScanner} onOpenChange={setShowItemQrScanner}>
+          <DialogContent className="sm:max-w-md">
+            <QRScanner
+              onScan={handleQrScan}
+              onClose={() => setShowItemQrScanner(false)}
             />
           </DialogContent>
         </Dialog>

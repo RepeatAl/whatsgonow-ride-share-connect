@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
-import { Camera } from "lucide-react";
+import { Smartphone } from "lucide-react";
 
 interface UploadQrCodeProps {
   userId: string;
@@ -102,8 +102,8 @@ export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: U
   return (
     <>
       <Button onClick={createSession} variant="outline">
-        <Camera className="h-4 w-4 mr-2" />
-        Mit Kamera aufnehmen
+        <Smartphone className="h-4 w-4 mr-2" />
+        Mit Smartphone aufnehmen
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
