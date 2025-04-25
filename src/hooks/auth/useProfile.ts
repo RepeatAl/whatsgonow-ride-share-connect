@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -37,7 +38,10 @@ export function useProfile() {
           onboarding_complete,
           name_affix,
           avatar_url,
-          verified
+          verified,
+          can_become_driver,
+          dashboard_access_enabled,
+          wants_to_upload_items
         `)
         .eq("user_id", userId)
         .maybeSingle();

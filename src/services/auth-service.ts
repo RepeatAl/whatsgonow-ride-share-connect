@@ -81,7 +81,10 @@ export const authService = {
         profile_complete: false,
         onboarding_complete: false,
         avatar_url: null,
-        verified: false
+        verified: false,
+        can_become_driver: false,
+        dashboard_access_enabled: true,
+        wants_to_upload_items: false
       };
 
       const { data, error } = await supabase

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +11,7 @@ import { useProfileManager } from "@/hooks/use-profile-manager";
 import UserProfileHeader from "@/components/profile/UserProfileHeader";
 import ImageUploader from "@/components/profile/ImageUploader";
 import UserRating from "@/components/rating/UserRating";
+import { DriverApplication } from "@/components/profile/DriverApplication";
 
 const Profile = () => {
   const { user, profile, loading, error, refreshProfile } = useAuth();
@@ -30,11 +30,11 @@ const Profile = () => {
     }
   }, [user, profile, loading, navigate]);
 
-  // Show Admin-specific sections based on role
   const showAdminSection = profile?.role === "admin" || profile?.role === "admin_limited";
   const showDriverSection = profile?.role === "driver";
   const showCMSection = profile?.role === "cm";
   const showBusinessSection = profile?.role === "sender_business";
+  const canBecomeDriver = profile?.role === "sender_private" || profile?.role === "sender_business";
 
   if (loading) {
     return (
@@ -101,6 +101,7 @@ const Profile = () => {
                   onSave={handleSave}
                   loading={loadingSave}
                 />
+                {canBecomeDriver && <DriverApplication />}
               </TabsContent>
 
               <TabsContent value="ratings" className="mt-4 space-y-4">

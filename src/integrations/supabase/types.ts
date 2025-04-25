@@ -836,9 +836,11 @@ export type Database = {
         Row: {
           address_extra: string | null
           avatar_url: string | null
+          can_become_driver: boolean | null
           city: string
           company_name: string | null
           created_at: string
+          dashboard_access_enabled: boolean | null
           email: string
           first_name: string
           house_number: string | null
@@ -854,13 +856,16 @@ export type Database = {
           updated_at: string
           user_id: string
           verified: boolean | null
+          wants_to_upload_items: boolean | null
         }
         Insert: {
           address_extra?: string | null
           avatar_url?: string | null
+          can_become_driver?: boolean | null
           city: string
           company_name?: string | null
           created_at?: string
+          dashboard_access_enabled?: boolean | null
           email: string
           first_name: string
           house_number?: string | null
@@ -876,13 +881,16 @@ export type Database = {
           updated_at?: string
           user_id: string
           verified?: boolean | null
+          wants_to_upload_items?: boolean | null
         }
         Update: {
           address_extra?: string | null
           avatar_url?: string | null
+          can_become_driver?: boolean | null
           city?: string
           company_name?: string | null
           created_at?: string
+          dashboard_access_enabled?: boolean | null
           email?: string
           first_name?: string
           house_number?: string | null
@@ -898,6 +906,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verified?: boolean | null
+          wants_to_upload_items?: boolean | null
         }
         Relationships: []
       }
