@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
@@ -34,7 +35,10 @@ export function useProfile() {
           house_number,
           address_extra,
           profile_complete,
-          onboarding_complete
+          onboarding_complete,
+          name_affix,
+          avatar_url,
+          verified
         `)
         .eq("user_id", userId)
         .maybeSingle();
@@ -58,8 +62,6 @@ export function useProfile() {
 
       const transformedProfile: UserProfile = {
         ...userProfile,
-        first_name: userProfile.first_name,
-        last_name: userProfile.last_name,
         name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || 'New User'
       };
 

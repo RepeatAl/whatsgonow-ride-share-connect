@@ -26,6 +26,7 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
   const [houseNumber, setHouseNumber] = useState("");
   const [addressExtra, setAddressExtra] = useState("");
   const [nameAffix, setNameAffix] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [formLoaded, setFormLoaded] = useState(false);
 
@@ -34,7 +35,6 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
       try {
         console.log("Loading profile data:", profile);
         
-        // Map the snake_case properties from UserProfile to our camelCase state variables
         setFirstName(profile.first_name || "");
         setLastName(profile.last_name || "");
         setEmail(profile.email || "");
@@ -46,6 +46,7 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
         setHouseNumber(profile.house_number || "");
         setAddressExtra(profile.address_extra || "");
         setNameAffix(profile.name_affix || "");
+        setCompanyName(profile.company_name || "");
         setFormError(null);
         setFormLoaded(true);
       } catch (err) {
@@ -59,13 +60,11 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
     try {
       setFormError(null);
       
-      // Validate form - basic checks
-      if (!firstName || !lastName || !email) {
-        setFormError("Bitte fülle alle Pflichtfelder aus (Vorname, Nachname, E-Mail)");
+      if (!firstName || !lastName || !email || !phone || !postalCode || !city || !region) {
+        setFormError("Bitte fülle alle Pflichtfelder aus (mit * markiert)");
         return;
       }
       
-      // Map form fields to the correct UserProfile properties using snake_case
       await onSave({
         first_name: firstName,
         last_name: lastName,
@@ -78,6 +77,7 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
         house_number: houseNumber,
         address_extra: addressExtra,
         name_affix: nameAffix,
+        company_name: companyName,
       });
       
       toast({
@@ -87,11 +87,6 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
     } catch (error) {
       console.error("Error saving profile:", error);
       setFormError("Profil konnte nicht gespeichert werden");
-      toast({
-        title: "Fehler",
-        description: "Profil konnte nicht gespeichert werden. Bitte versuche es später erneut.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -132,6 +127,19 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
             required
           />
         </div>
+        
+        {profile.role === "sender_business" && (
+          <div className="md:col-span-2">
+            <Label htmlFor="companyName">Firmenname*</Label>
+            <Input 
+              id="companyName" 
+              value={companyName} 
+              onChange={e => setCompanyName(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
         <div className="md:col-span-2">
           <Label htmlFor="email">E-Mail*</Label>
           <Input 
@@ -139,8 +147,10 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
             value={email} 
             onChange={e => setEmail(e.target.value)}
             required 
+            type="email"
           />
         </div>
+
         <div>
           <Label htmlFor="phone">Telefon*</Label>
           <Input 
@@ -178,19 +188,21 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
           />
         </div>
         <div>
-          <Label htmlFor="street">Straße</Label>
+          <Label htmlFor="street">Straße*</Label>
           <Input 
             id="street" 
             value={street} 
-            onChange={e => setStreet(e.target.value)} 
+            onChange={e => setStreet(e.target.value)}
+            required
           />
         </div>
         <div>
-          <Label htmlFor="houseNumber">Hausnummer</Label>
+          <Label htmlFor="houseNumber">Hausnummer*</Label>
           <Input 
             id="houseNumber" 
             value={houseNumber} 
             onChange={e => setHouseNumber(e.target.value)}
+            required
           />
         </div>
         <div>
@@ -210,7 +222,9 @@ export function ProfileForm({ profile, onSave, loading = false }: ProfileFormPro
           />
         </div>
       </div>
+
       <p className="text-sm text-muted-foreground">* Pflichtfelder</p>
+      
       <div className="mt-4">
         <Button 
           onClick={handleSubmit} 
