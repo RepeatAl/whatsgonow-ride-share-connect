@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatRealtimeProvider } from "@/contexts/ChatRealtimeContext"; 
@@ -6,25 +7,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { initSupabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { isPublicRoute, isHomeRoute } from "@/routes/publicRoutes";
-import { supabase } from "@/lib/supabaseClient";
+import { useLocation } from "react-router-dom";
 
 function App() {
   const [supabaseInitialized, setSupabaseInitialized] = useState<boolean | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
   const location = useLocation();
-  const navigate = useNavigate();
-
-  // Check auth state and clear if on public routes
-  useEffect(() => {
-    const currentPath = location.pathname;
-    
-    if (isPublicRoute(currentPath) && isHomeRoute(currentPath)) {
-      // Clear auth state when accessing public home page
-      supabase.auth.signOut();
-    }
-  }, [location.pathname]);
 
   useEffect(() => {
     const init = async () => {
@@ -67,18 +55,6 @@ function App() {
 
 function AppContent() {
   const { isInitialLoad, user, sessionExpired } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Only redirect on session expiry for non-public routes
-  useEffect(() => {
-    if (!isInitialLoad && sessionExpired && !isPublicRoute(location.pathname)) {
-      navigate("/login", { 
-        state: { from: location.pathname },
-        replace: true 
-      });
-    }
-  }, [sessionExpired, navigate, location.pathname, isInitialLoad]);
 
   if (isInitialLoad) {
     return (

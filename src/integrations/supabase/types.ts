@@ -134,7 +134,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_feedback_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       feedback_responses: {
         Row: {
@@ -597,6 +605,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_messages_recipient"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_messages_sender"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "messages_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
@@ -642,6 +664,20 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_offers_driver"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_offers_order"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
           {
             foreignKeyName: "offers_driver_id_fkey"
             columns: ["driver_id"]
@@ -726,6 +762,13 @@ export type Database = {
           weight?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_orders_sender"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "orders_sender_id_fkey"
             columns: ["sender_id"]
@@ -879,6 +922,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_ratings_from_user"
+            columns: ["from_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_ratings_order"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "fk_ratings_to_user"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "ratings_from_user_fkey"
             columns: ["from_user"]
             isOneToOne: false
@@ -927,6 +991,27 @@ export type Database = {
           tx_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_transactions_order"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_payer"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_receiver"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "transactions_order_id_fkey"
             columns: ["order_id"]

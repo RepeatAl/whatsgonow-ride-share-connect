@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -28,13 +27,14 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, user, loading: authLoading, sessionExpired } = useAuth();
+  const { signIn, user, loading: authLoading, profile } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && user && !sessionExpired) {
-      navigate("/", { replace: true });
+    if (!authLoading && user) {
+      const redirectPath = profile ? getRoleBasedRedirectPath(profile.role) : "/dashboard";
+      navigate(redirectPath, { replace: true });
     }
-  }, [user, authLoading, sessionExpired, navigate]);
+  }, [user, profile, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
