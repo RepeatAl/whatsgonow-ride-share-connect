@@ -1,5 +1,3 @@
-
-// src/components/order/CreateOrderForm.tsx
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +32,9 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Camera } from "lucide-react";
+import { QRScanner } from "@/components/qr/QRScanner";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -44,15 +45,14 @@ const CreateOrderForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const navigate = useNavigate();
   const [showQrScanner, setShowQrScanner] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
       title: "",
       description: "",
-      // Adressfelder für Abholung
       pickupStreet: "",
       pickupHouseNumber: "",
       pickupPostalCode: "",
@@ -61,8 +61,6 @@ const CreateOrderForm = () => {
       pickupAddressExtra: "",
       pickupPhone: "",
       pickupEmail: "",
-      
-      // Adressfelder für Lieferung
       deliveryStreet: "",
       deliveryHouseNumber: "",
       deliveryPostalCode: "",
@@ -71,8 +69,6 @@ const CreateOrderForm = () => {
       deliveryAddressExtra: "",
       deliveryPhone: "",
       deliveryEmail: "",
-      
-      // Artikeldetails
       itemName: "",
       category: "",
       width: undefined,
@@ -80,8 +76,6 @@ const CreateOrderForm = () => {
       depth: undefined,
       weight: undefined,
       value: undefined,
-      
-      // Weitere Optionen
       insurance: false,
       fragile: false,
       loadAssistance: false,
@@ -90,8 +84,6 @@ const CreateOrderForm = () => {
       price: undefined,
       negotiable: false,
       preferredVehicleType: "",
-      
-      // Zeitfenster
       pickupTimeStart: undefined,
       pickupTimeEnd: undefined,
       deliveryTimeStart: undefined,
@@ -100,10 +92,8 @@ const CreateOrderForm = () => {
     },
   });
 
-  // Beobachten des Versicherungs-Checkbox-Status
   const insuranceEnabled = form.watch("insurance");
-  
-  // 1) Handler für File-Input und Validierung
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + selectedFiles.length > MAX_FILES) {
@@ -133,28 +123,22 @@ const CreateOrderForm = () => {
     setPreviews(prev => [...prev, ...validPreviews]);
   };
 
-  // 2) Entfernen eines Bildes aus der Vorschau
   const removeFile = (idx: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
     setPreviews(prev => {
-      // URL.revokeObjectURL für das entfernte Bild aufrufen, um Speicher freizugeben
       if (prev[idx]) URL.revokeObjectURL(prev[idx]);
       return prev.filter((_, i) => i !== idx);
     });
   };
 
-  // 3) Submit-Handler
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
     try {
-      // Konvertierung der einzelnen Adressfelder in kombinierte Adressstrings
       const pickupAddress = `${data.pickupStreet} ${data.pickupHouseNumber}, ${data.pickupPostalCode} ${data.pickupCity}, ${data.pickupCountry}${data.pickupAddressExtra ? ` (${data.pickupAddressExtra})` : ''}`;
       const deliveryAddress = `${data.deliveryStreet} ${data.deliveryHouseNumber}, ${data.deliveryPostalCode} ${data.deliveryCity}, ${data.deliveryCountry}${data.deliveryAddressExtra ? ` (${data.deliveryAddressExtra})` : ''}`;
       
-      // Konvertierung der Maße in einen dimensions-String
       const dimensions = `${data.width} x ${data.height} x ${data.depth} cm`;
       
-      // a) Neuer Auftrag in DB anlegen
       const orderId = uuidv4();
       const { error: insertError } = await supabase
         .from("orders")
@@ -180,7 +164,6 @@ const CreateOrderForm = () => {
         
       if (insertError) throw insertError;
 
-      // b) Bilder hochladen mit Metadata (user_id, published=true)
       for (const file of selectedFiles) {
         const path = `${orderId}/${file.name}`;
         const { error: uploadError } = await supabase
@@ -207,19 +190,29 @@ const CreateOrderForm = () => {
     }
   };
 
-  // Handle QR-Code scanning (placeholder for future implementation)
-  const handleQrScan = () => {
-    setShowQrScanner(true);
-    // In einer vollständigen Implementierung würde hier die Kamera geöffnet
-    // und der QR-Code gescannt werden
-    toast.info("QR-Code-Scanner wird in einer zukünftigen Version verfügbar sein.");
-    setTimeout(() => setShowQrScanner(false), 3000);
+  const handleQrScan = async (decodedText: string) => {
+    try {
+      const data = JSON.parse(decodedText);
+      
+      if (data.itemName) form.setValue("itemName", data.itemName);
+      if (data.category) form.setValue("category", data.category);
+      if (data.weight) form.setValue("weight", data.weight);
+      if (data.description) form.setValue("description", data.description);
+      
+      if (data.width) form.setValue("width", data.width);
+      if (data.height) form.setValue("height", data.height);
+      if (data.depth) form.setValue("depth", data.depth);
+      
+      setShowQrScanner(false);
+      toast.success("QR-Code erfolgreich gescannt!");
+    } catch (error) {
+      toast.error("Ungültiges QR-Code Format");
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* ---------- Bilder-Upload (an den Anfang verschoben) ---------- */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Bilder hochladen</h3>
           <Card>
@@ -242,9 +235,15 @@ const CreateOrderForm = () => {
                         type="button" 
                         variant="outline" 
                         className="flex items-center gap-2"
-                        onClick={handleQrScan}
+                        onClick={() => {
+                          if (!navigator.mediaDevices?.getUserMedia) {
+                            toast.error("Dein Gerät unterstützt keine Kamera-API");
+                            return;
+                          }
+                          setShowQrScanner(true);
+                        }}
                       >
-                        <CameraIcon size={18} />
+                        <Camera size={18} />
                         QR-Code scannen
                       </Button>
                       <input
@@ -260,7 +259,6 @@ const CreateOrderForm = () => {
                   </FormItem>
                 </div>
 
-                {/* Vorschau */}
                 {previews.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
                     {previews.map((src, idx) => (
@@ -286,7 +284,6 @@ const CreateOrderForm = () => {
 
         <Separator />
 
-        {/* ---------- Allgemeine Informationen ---------- */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Allgemeine Informationen</h3>
           <div className="grid gap-4">
@@ -326,7 +323,6 @@ const CreateOrderForm = () => {
 
         <Separator />
 
-        {/* ---------- Artikeldetails ---------- */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Artikeldetails</h3>
           <div className="grid gap-4 md:grid-cols-2">
@@ -392,7 +388,6 @@ const CreateOrderForm = () => {
             />
           </div>
 
-          {/* Maße (separat für Breite, Höhe, Tiefe) */}
           <div className="grid gap-4 md:grid-cols-3 mt-4">
             <FormField
               control={form.control}
@@ -440,7 +435,6 @@ const CreateOrderForm = () => {
 
         <Separator />
 
-        {/* ---------- Abholadresse ---------- */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Abholadresse</h3>
           <div className="grid gap-4 md:grid-cols-2">
@@ -560,7 +554,6 @@ const CreateOrderForm = () => {
 
         <Separator />
 
-        {/* ---------- Zieladresse ---------- */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Zieladresse</h3>
           <div className="grid gap-4 md:grid-cols-2">
@@ -680,7 +673,6 @@ const CreateOrderForm = () => {
 
         <Separator />
 
-        {/* ---------- Zusätzliche Optionen ---------- */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Zusätzliche Optionen</h3>
           <div className="grid gap-4 md:grid-cols-2">
@@ -828,11 +820,9 @@ const CreateOrderForm = () => {
 
         <Separator />
 
-        {/* ---------- Zeitfenster & Deadline ---------- */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Zeitfenster</h3>
           <div className="grid gap-6">
-            {/* Deadline */}
             <FormField
               control={form.control}
               name="deadline"
@@ -875,7 +865,6 @@ const CreateOrderForm = () => {
           </div>
         </div>
 
-        {/* Submit */}
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={isSubmitting}>
             {isSubmitting ? (
@@ -885,6 +874,15 @@ const CreateOrderForm = () => {
             )}
           </Button>
         </div>
+
+        <Dialog open={showQrScanner} onOpenChange={setShowQrScanner}>
+          <DialogContent className="sm:max-w-md">
+            <QRScanner
+              onScan={handleQrScan}
+              onClose={() => setShowQrScanner(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </form>
     </Form>
   );
