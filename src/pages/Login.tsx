@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -19,6 +20,7 @@ import { AlertCircle, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { isPublicRoute } from "@/routes/publicRoutes";
+import { getRoleBasedRedirectPath } from "@/utils/auth-utils"; // Added missing import
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -27,7 +29,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, user, loading: authLoading, profile } = useAuth();
+  const { signIn, user, loading: authLoading, profile, sessionExpired } = useAuth(); // Added sessionExpired from useAuth
 
   useEffect(() => {
     if (!authLoading && user) {
