@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Camera } from "lucide-react";
 import { QRScanner } from "@/components/qr/QRScanner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { UploadQrCode } from "@/components/upload/UploadQrCode";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -46,6 +47,7 @@ const CreateOrderForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [showQrScanner, setShowQrScanner] = useState(false);
+  const [deviceType, setDeviceType] = useState<'mobile' | 'desktop'>('desktop');
   const navigate = useNavigate();
 
   const form = useForm<CreateOrderFormValues>({
@@ -210,6 +212,31 @@ const CreateOrderForm = () => {
     }
   };
 
+  const handleMobilePhotosComplete = (files: string[]) => {
+    files.forEach(async (url) => {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], `mobile-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        
+        if (selectedFiles.length + 1 <= MAX_FILES) {
+          setSelectedFiles(prev => [...prev, file]);
+          setPreviews(prev => [...prev, url]);
+        } else {
+          toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
+        }
+      } catch (error) {
+        console.error('Error processing mobile photo:', error);
+        toast.error('Fehler beim Verarbeiten des Fotos');
+      }
+    });
+  };
+
+  useEffect(() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    setDeviceType(isMobile ? 'mobile' : 'desktop');
+  }, []);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -218,19 +245,20 @@ const CreateOrderForm = () => {
           <Card>
             <CardContent className="pt-4">
               <div className="space-y-4">
-                <div className="flex flex-wrap gap-4">
-                  <FormItem>
-                    <FormLabel>Bilder hochladen (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
-                    <div className="flex items-center gap-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="flex items-center gap-2"
-                        onClick={() => document.getElementById('file-upload')?.click()}
-                      >
-                        <Upload size={18} />
-                        Datei auswählen
-                      </Button>
+                <FormItem>
+                  <FormLabel>Bilder hochladen (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="flex items-center gap-2"
+                      onClick={() => document.getElementById('file-upload')?.click()}
+                    >
+                      <Upload size={18} />
+                      Datei auswählen
+                    </Button>
+
+                    {deviceType === 'mobile' ? (
                       <Button 
                         type="button" 
                         variant="outline" 
@@ -244,26 +272,35 @@ const CreateOrderForm = () => {
                         }}
                       >
                         <Camera size={18} />
-                        QR-Code scannen
+                        Jetzt Bild aufnehmen
                       </Button>
-                      <input
-                        id="file-upload"
-                        type="file"
-                        multiple
-                        accept={ALLOWED_TYPES.join(",")}
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                </div>
+                    ) : (
+                      user && (
+                        <UploadQrCode
+                          userId={user.id}
+                          target="order-photos"
+                          onComplete={handleMobilePhotosComplete}
+                        />
+                      )
+                    )}
+
+                    <input
+                      id="file-upload"
+                      type="file"
+                      multiple
+                      accept={ALLOWED_TYPES.join(",")}
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </div>
+                  <FormMessage />
+                </FormItem>
 
                 {previews.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
                     {previews.map((src, idx) => (
                       <div key={idx} className="relative group">
-                        <img src={src} className="w-full h-32 object-cover rounded" />
+                        <img src={src} className="w-full h-32 object-cover rounded" alt={`Upload ${idx + 1}`} />
                         <Button
                           type="button"
                           variant="destructive"

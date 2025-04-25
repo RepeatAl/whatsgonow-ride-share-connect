@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -46,10 +45,14 @@ export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: U
           (payload) => {
             const event = payload.new as DatabaseUploadEvent;
             if (event.event_type === 'file_uploaded' && event.payload?.file_url) {
-              setUploadedFiles(prev => [...prev, event.payload.file_url!]);
-            } else if (event.event_type === 'session_completed') {
-              onComplete?.(uploadedFiles);
-              setIsOpen(false);
+              setUploadedFiles(prev => {
+                const newFiles = [...prev, event.payload.file_url!];
+                if (event.payload.files?.length === newFiles.length) {
+                  onComplete?.(newFiles);
+                  setIsOpen(false);
+                }
+                return newFiles;
+              });
             }
           }
         )
@@ -61,7 +64,7 @@ export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: U
         supabase.removeChannel(channel);
       }
     };
-  }, [sessionId, onComplete, uploadedFiles]);
+  }, [sessionId, onComplete]);
 
   const createSession = async () => {
     try {
