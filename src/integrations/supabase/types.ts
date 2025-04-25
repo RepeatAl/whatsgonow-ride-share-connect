@@ -835,6 +835,7 @@ export type Database = {
       profiles: {
         Row: {
           address_extra: string | null
+          avatar_url: string | null
           city: string
           company_name: string | null
           created_at: string
@@ -852,9 +853,11 @@ export type Database = {
           street: string | null
           updated_at: string
           user_id: string
+          verified: boolean | null
         }
         Insert: {
           address_extra?: string | null
+          avatar_url?: string | null
           city: string
           company_name?: string | null
           created_at?: string
@@ -872,9 +875,11 @@ export type Database = {
           street?: string | null
           updated_at?: string
           user_id: string
+          verified?: boolean | null
         }
         Update: {
           address_extra?: string | null
+          avatar_url?: string | null
           city?: string
           company_name?: string | null
           created_at?: string
@@ -892,6 +897,7 @@ export type Database = {
           street?: string | null
           updated_at?: string
           user_id?: string
+          verified?: boolean | null
         }
         Relationships: []
       }

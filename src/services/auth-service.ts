@@ -79,7 +79,9 @@ export const authService = {
         house_number: meta.house_number || null,
         address_extra: meta.address_extra || null,
         profile_complete: false,
-        onboarding_complete: false
+        onboarding_complete: false,
+        avatar_url: null,
+        verified: false
       };
 
       const { data, error } = await supabase
