@@ -7,6 +7,7 @@ import { Camera, Check } from "lucide-react";
 import { useUploadSession } from "@/hooks/useUploadSession";
 import { useUploadHandler } from "@/hooks/useUploadHandler";
 import { UploadProgress } from "@/components/upload/UploadProgress";
+import { supabase } from "@/lib/supabaseClient"; // Import supabase client
 
 export default function MobileUpload() {
   const { sessionId } = useParams<{ sessionId: string }>();

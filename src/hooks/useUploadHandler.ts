@@ -35,17 +35,16 @@ export function useUploadHandler({ sessionId, onProgress }: UseUploadHandlerProp
 
       const fileName = `${sessionId}/${Date.now()}.${file.name.split('.').pop()}`;
 
+      // Upload the file without the onUploadProgress option
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('profile-images')
-        .upload(fileName, compressedFile, {
-          onUploadProgress: (progress) => {
-            const percentage = (progress.loaded / progress.total) * 100;
-            setCurrentProgress(percentage);
-            onProgress?.(percentage);
-          },
-        });
+        .upload(fileName, compressedFile);
 
       if (uploadError) throw uploadError;
+
+      // Use separate progress tracking (we'll update it manually since the API doesn't support progress)
+      setCurrentProgress(100);
+      onProgress?.(100); // Indicate completion
 
       const { data: { publicUrl } } = supabase.storage
         .from('profile-images')
