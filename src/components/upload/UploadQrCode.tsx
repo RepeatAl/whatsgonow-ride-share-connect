@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ interface UploadQrCodeProps {
   target: string;
   onSessionCreated?: (sessionId: string) => void;
   onComplete?: (files: string[]) => void;
+  children?: ReactNode;
 }
 
 interface DatabaseUploadEvent {
@@ -23,7 +24,7 @@ interface DatabaseUploadEvent {
   };
 }
 
-export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: UploadQrCodeProps) {
+export function UploadQrCode({ userId, target, onSessionCreated, onComplete, children }: UploadQrCodeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
@@ -104,7 +105,7 @@ export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: U
     <>
       <Button onClick={createSession} variant="outline" className="whitespace-nowrap">
         <Smartphone className="h-4 w-4 mr-2" />
-        Mit Smartphone aufnehmen
+        {children || "Mit Smartphone aufnehmen"}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

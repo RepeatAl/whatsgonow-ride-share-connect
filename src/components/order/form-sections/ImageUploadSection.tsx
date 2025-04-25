@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -123,6 +124,24 @@ export const ImageUploadSection = ({
         toast.error('Fehler beim Verarbeiten des Fotos');
       }
     });
+  };
+  
+  // Add the removeFile function
+  const removeFile = (index: number) => {
+    const newFiles = [...selectedFiles];
+    const newPreviews = [...previews];
+    
+    // Release the object URL to avoid memory leaks
+    URL.revokeObjectURL(newPreviews[index]);
+    
+    // Remove the file and preview at the specified index
+    newFiles.splice(index, 1);
+    newPreviews.splice(index, 1);
+    
+    setSelectedFiles(newFiles);
+    setPreviews(newPreviews);
+    
+    toast.success("Bild erfolgreich entfernt");
   };
 
   return (

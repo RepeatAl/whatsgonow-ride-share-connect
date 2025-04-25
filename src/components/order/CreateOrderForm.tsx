@@ -24,7 +24,6 @@ const CreateOrderForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [deviceType, setDeviceType] = useState<'mobile' | 'desktop'>('desktop');
   const navigate = useNavigate();
 
   const form = useForm<CreateOrderFormValues>({
@@ -72,11 +71,6 @@ const CreateOrderForm = () => {
   });
 
   const insuranceEnabled = form.watch("insurance");
-
-  useEffect(() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    setDeviceType(isMobile ? 'mobile' : 'desktop');
-  }, []);
 
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
@@ -139,12 +133,12 @@ const CreateOrderForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <ImageUploadSection
-          deviceType={deviceType}
           userId={user?.id}
           selectedFiles={selectedFiles}
           setSelectedFiles={setSelectedFiles}
           previews={previews}
           setPreviews={setPreviews}
+          orderId={uuidv4()} // Generate a temporary ID for uploads
         />
 
         <Separator />
