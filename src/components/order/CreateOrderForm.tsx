@@ -32,10 +32,10 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Camera } from "lucide-react";
+import { Camera, Smartphone } from "lucide-react";
 import { QRScanner } from "@/components/qr/QRScanner";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { UploadQrCode } from "@/components/upload/UploadQrCode";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -201,10 +201,6 @@ const CreateOrderForm = () => {
       if (data.weight) form.setValue("weight", data.weight);
       if (data.description) form.setValue("description", data.description);
       
-      if (data.width) form.setValue("width", data.width);
-      if (data.height) form.setValue("height", data.height);
-      if (data.depth) form.setValue("depth", data.depth);
-      
       setShowQrScanner(false);
       toast.success("QR-Code erfolgreich gescannt!");
     } catch (error) {
@@ -258,7 +254,7 @@ const CreateOrderForm = () => {
                       Datei auswählen
                     </Button>
 
-                    {deviceType === 'mobile' ? (
+                    {deviceType === 'mobile' && (
                       <Button 
                         type="button" 
                         variant="outline" 
@@ -274,14 +270,14 @@ const CreateOrderForm = () => {
                         <Camera size={18} />
                         Jetzt Bild aufnehmen
                       </Button>
-                    ) : (
-                      user && (
-                        <UploadQrCode
-                          userId={user.id}
-                          target="order-photos"
-                          onComplete={handleMobilePhotosComplete}
-                        />
-                      )
+                    )}
+
+                    {deviceType === 'desktop' && user && (
+                      <UploadQrCode
+                        userId={user.id}
+                        target="order-photos"
+                        onComplete={handleMobilePhotosComplete}
+                      />
                     )}
 
                     <input
