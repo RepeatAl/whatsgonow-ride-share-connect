@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -90,8 +89,10 @@ export const ImageUploadSection = ({
             
             if (canTakeMore) {
               const url = URL.createObjectURL(blob);
-              setSelectedFiles(prev => [...prev, file]);
-              setPreviews(prev => [...prev, url]);
+              const newFiles = [...selectedFiles, file];
+              const newPreviews = [...previews, url];
+              setSelectedFiles(newFiles);
+              setPreviews(newPreviews);
               toast.success(`Foto ${nextPhotoIndex} erfolgreich aufgenommen!`);
             } else {
               toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
