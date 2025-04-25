@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -135,11 +134,14 @@ export const ImageUploadSection = ({
                 )}
 
                 {deviceType === 'desktop' && userId && (
-                  <UploadQrCode 
-                    userId={userId} 
-                    target="order-photos" 
-                    onComplete={handleMobilePhotosComplete} 
-                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => document.getElementById('qr-code-scanner')?.click()}
+                  >
+                    <QrCode className="mr-2 h-4 w-4" />
+                    QR-Code scannen
+                  </Button>
                 )}
 
                 {deviceType === 'mobile' && (
