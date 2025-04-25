@@ -34,6 +34,8 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import AdminHome from "@/pages/admin/index";
 import UsersPage from "@/pages/admin/users";
 import CompleteProfile from "@/pages/CompleteProfile";
+import MobileUpload from "@/pages/MobileUpload";
+import UploadComplete from "@/pages/UploadComplete";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -49,6 +51,16 @@ export const routes: RouteConfig[] = [
   { path: "/invoice-download/:token", element: <InvoiceDownload />, public: true },
   { path: "/pre-register", element: <PreRegister />, public: true },
   { path: "/pre-register/success", element: <PreRegisterSuccess />, public: true },
+  { 
+    path: "/mobile-upload/:sessionId", 
+    element: <MobileUpload />, 
+    public: true 
+  },
+  { 
+    path: "/upload-complete", 
+    element: <UploadComplete />, 
+    public: true 
+  },
 
   // Dashboard redirect entry (evaluates role)
   { path: "/dashboard", element: <DashboardSender />, protected: true },
