@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -7,9 +8,11 @@ import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { UploadQrCode } from "@/components/upload/UploadQrCode";
 import { QRScanner } from "@/components/qr/QRScanner";
+
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
 interface ImageUploadSectionProps {
   deviceType: 'mobile' | 'desktop';
   userId?: string;
@@ -18,6 +21,7 @@ interface ImageUploadSectionProps {
   previews: string[];
   setPreviews: (previews: string[]) => void;
 }
+
 export const ImageUploadSection = ({
   deviceType,
   userId,
@@ -28,6 +32,7 @@ export const ImageUploadSection = ({
 }: ImageUploadSectionProps) => {
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [showItemQrScanner, setShowItemQrScanner] = useState(false);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + selectedFiles.length > MAX_FILES) {
@@ -52,6 +57,7 @@ export const ImageUploadSection = ({
     setSelectedFiles([...selectedFiles, ...validFiles]);
     setPreviews([...previews, ...validPreviews]);
   };
+
   const removeFile = (idx: number) => {
     const newSelectedFiles = selectedFiles.filter((_, i) => i !== idx);
     setSelectedFiles(newSelectedFiles);
@@ -59,6 +65,7 @@ export const ImageUploadSection = ({
     if (previews[idx]) URL.revokeObjectURL(previews[idx]);
     setPreviews(newPreviews);
   };
+
   const handleMobilePhotosComplete = (files: string[]) => {
     files.forEach(async url => {
       try {
@@ -68,8 +75,8 @@ export const ImageUploadSection = ({
           type: 'image/jpeg'
         });
         if (selectedFiles.length + 1 <= MAX_FILES) {
-          setSelectedFiles([...selectedFiles, file]);
-          setPreviews([...previews, url]);
+          setSelectedFiles(prev => [...prev, file]);
+          setPreviews(prev => [...prev, url]);
         } else {
           toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
         }
@@ -79,6 +86,7 @@ export const ImageUploadSection = ({
       }
     });
   };
+
   const handleCameraScan = (decodedText: string) => {
     try {
       handleMobilePhotosComplete([decodedText]);
@@ -88,7 +96,9 @@ export const ImageUploadSection = ({
       toast.error("Fehler beim Scannen des Bildes");
     }
   };
-  return <div className="space-y-2">
+
+  return (
+    <div className="space-y-2">
       <h3 className="text-lg font-medium">Bilder hochladen</h3>
       <Card>
         <CardContent className="pt-4">
@@ -101,37 +111,45 @@ export const ImageUploadSection = ({
                   Datei auswählen
                 </Button>
 
-                <Button type="button" variant="outline" onClick={() => setShowItemQrScanner(true)} className="Das ist der button der die kamera ausl\xF6st und nur auf dem \"mobile\" bildschirm sein darf. die beschriftung ist Bild aufnehmen\"\n">
+                <Button type="button" variant="outline" onClick={() => setShowItemQrScanner(true)}>
                   <QrCode className="mr-2 h-4 w-4" />
                   QR-Code scannen
                 </Button>
 
-                {deviceType === 'mobile' && <Button type="button" variant="outline" onClick={() => {
-                if (!navigator.mediaDevices?.getUserMedia) {
-                  toast.error("Dein Gerät unterstützt keine Kamera-API");
-                  return;
-                }
-                setShowQrScanner(true);
-              }}>
+                {deviceType === 'mobile' && (
+                  <Button type="button" variant="outline" onClick={() => {
+                    if (!navigator.mediaDevices?.getUserMedia) {
+                      toast.error("Dein Gerät unterstützt keine Kamera-API");
+                      return;
+                    }
+                    setShowQrScanner(true);
+                  }}>
                     <Camera className="mr-2 h-4 w-4" />
                     Jetzt Bild aufnehmen
-                  </Button>}
+                  </Button>
+                )}
 
-                {deviceType === 'desktop' && userId && <UploadQrCode userId={userId} target="order-photos" onComplete={handleMobilePhotosComplete} />}
+                {deviceType === 'desktop' && userId && (
+                  <UploadQrCode userId={userId} target="order-photos" onComplete={handleMobilePhotosComplete} />
+                )}
 
                 <input id="file-upload" type="file" multiple accept={ALLOWED_TYPES.join(",")} onChange={handleFileChange} className="hidden" />
               </div>
               <FormMessage />
             </FormItem>
 
-            {previews.length > 0 && <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                {previews.map((src, idx) => <div key={idx} className="relative group">
+            {previews.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                {previews.map((src, idx) => (
+                  <div key={idx} className="relative group">
                     <img src={src} className="w-full h-32 object-cover rounded" alt={`Upload ${idx + 1}`} />
                     <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeFile(idx)}>
                       &times;
                     </Button>
-                  </div>)}
-              </div>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -147,5 +165,6 @@ export const ImageUploadSection = ({
           <QRScanner onScan={() => {}} onClose={() => setShowItemQrScanner(false)} />
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+  );
 };
