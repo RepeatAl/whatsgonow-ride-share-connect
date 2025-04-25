@@ -2,35 +2,38 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, QrCode, Camera } from "lucide-react";
+import { Upload, Camera } from "lucide-react";
 import { toast } from "sonner";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { UploadQrCode } from "@/components/upload/UploadQrCode";
-import { QRScanner } from "@/components/qr/QRScanner";
+import { useDeviceType } from "@/hooks/useDeviceType";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 interface ImageUploadSectionProps {
-  deviceType: 'mobile' | 'desktop';
   userId?: string;
   selectedFiles: File[];
   setSelectedFiles: (files: File[]) => void;
   previews: string[];
   setPreviews: (previews: string[]) => void;
+  orderId?: string;
 }
 
 export const ImageUploadSection = ({
-  deviceType,
   userId,
   selectedFiles,
   setSelectedFiles,
   previews,
-  setPreviews
+  setPreviews,
+  orderId
 }: ImageUploadSectionProps) => {
-  const [showQrScanner, setShowQrScanner] = useState(false);
-  const [showItemQrScanner, setShowItemQrScanner] = useState(false);
+  const { deviceType } = useDeviceType();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -57,12 +60,46 @@ export const ImageUploadSection = ({
     setPreviews([...previews, ...validPreviews]);
   };
 
-  const removeFile = (idx: number) => {
-    const newSelectedFiles = selectedFiles.filter((_, i) => i !== idx);
-    setSelectedFiles(newSelectedFiles);
-    const newPreviews = previews.filter((_, i) => i !== idx);
-    if (previews[idx]) URL.revokeObjectURL(previews[idx]);
-    setPreviews(newPreviews);
+  const handleOpenCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      await new Promise(resolve => video.onloadedmetadata = resolve);
+      video.play();
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      if (context) {
+        context.drawImage(video, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `camera-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            
+            if (selectedFiles.length + 1 <= MAX_FILES) {
+              const url = URL.createObjectURL(blob);
+              setSelectedFiles([...selectedFiles, file]);
+              setPreviews([...previews, url]);
+              toast.success("Foto erfolgreich aufgenommen!");
+            } else {
+              toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
+            }
+          }
+        }, 'image/jpeg');
+      }
+      
+      stream.getTracks().forEach(track => track.stop());
+      
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      toast.error("Kamera konnte nicht geöffnet werden");
+    }
   };
 
   const handleMobilePhotosComplete = (files: string[]) => {
@@ -88,16 +125,6 @@ export const ImageUploadSection = ({
     });
   };
 
-  const handleCameraScan = (decodedText: string) => {
-    try {
-      handleMobilePhotosComplete([decodedText]);
-      setShowQrScanner(false);
-      toast.success("Bild erfolgreich aufgenommen!");
-    } catch (error) {
-      toast.error("Fehler beim Scannen des Bildes");
-    }
-  };
-
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Bilder hochladen</h3>
@@ -110,52 +137,35 @@ export const ImageUploadSection = ({
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => document.getElementById('file-upload')?.click()}
+                  onClick={handleFileSelect}
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   Datei auswählen
                 </Button>
 
-                {deviceType === 'desktop' && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => {
-                      if (!navigator.mediaDevices?.getUserMedia) {
-                        toast.error("Dein Gerät unterstützt keine Kamera-API");
-                        return;
-                      }
-                      setShowQrScanner(true);
-                    }}
+                {deviceType === 'desktop' && userId && orderId && (
+                  <UploadQrCode
+                    userId={userId}
+                    target={`order-${orderId}`}
+                    onComplete={handleMobilePhotosComplete}
                   >
-                    <Camera className="mr-2 h-4 w-4" />
                     Mit Smartphone aufnehmen
-                  </Button>
-                )}
-
-                {deviceType === 'desktop' && userId && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => document.getElementById('qr-code-scanner')?.click()}
-                  >
-                    <QrCode className="mr-2 h-4 w-4" />
-                    QR-Code scannen
-                  </Button>
+                  </UploadQrCode>
                 )}
 
                 {deviceType === 'mobile' && (
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setShowItemQrScanner(true)}
+                    onClick={handleOpenCamera}
                   >
-                    <QrCode className="mr-2 h-4 w-4" />
+                    <Camera className="mr-2 h-4 w-4" />
                     Artikel fotografieren
                   </Button>
                 )}
 
                 <input 
+                  ref={fileInputRef}
                   id="file-upload" 
                   type="file" 
                   multiple 
@@ -188,18 +198,6 @@ export const ImageUploadSection = ({
           </div>
         </CardContent>
       </Card>
-
-      <Dialog open={showQrScanner} onOpenChange={setShowQrScanner}>
-        <DialogContent className="sm:max-w-md">
-          <QRScanner onScan={handleCameraScan} onClose={() => setShowQrScanner(false)} />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showItemQrScanner} onOpenChange={setShowItemQrScanner}>
-        <DialogContent className="sm:max-w-md">
-          <QRScanner onScan={() => {}} onClose={() => setShowItemQrScanner(false)} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
