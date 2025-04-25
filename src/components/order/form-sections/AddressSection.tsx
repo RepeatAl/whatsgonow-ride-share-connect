@@ -19,7 +19,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
       <div className="grid gap-4 md:grid-cols-2">
         <FormField
           control={form.control}
-          name={`${prefix}Street` as keyof CreateOrderFormValues}
+          name={`${prefix}Street`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Straße*</FormLabel>
@@ -33,7 +33,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
 
         <FormField
           control={form.control}
-          name={`${prefix}HouseNumber` as keyof CreateOrderFormValues}
+          name={`${prefix}HouseNumber`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Hausnummer*</FormLabel>
@@ -47,7 +47,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
 
         <FormField
           control={form.control}
-          name={`${prefix}PostalCode` as keyof CreateOrderFormValues}
+          name={`${prefix}PostalCode`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Postleitzahl*</FormLabel>
@@ -61,7 +61,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
 
         <FormField
           control={form.control}
-          name={`${prefix}City` as keyof CreateOrderFormValues}
+          name={`${prefix}City`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Stadt*</FormLabel>
@@ -75,7 +75,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
 
         <FormField
           control={form.control}
-          name={`${prefix}Country` as keyof CreateOrderFormValues}
+          name={`${prefix}Country`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Land*</FormLabel>
@@ -89,7 +89,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
 
         <FormField
           control={form.control}
-          name={`${prefix}AddressExtra` as keyof CreateOrderFormValues}
+          name={`${prefix}AddressExtra`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Adresszusatz</FormLabel>
@@ -103,7 +103,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
 
         <FormField
           control={form.control}
-          name={`${prefix}Phone` as keyof CreateOrderFormValues}
+          name={`${prefix}Phone`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Telefonnummer{type === 'delivery' ? ' Empfänger' : ''}</FormLabel>
@@ -117,7 +117,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
 
         <FormField
           control={form.control}
-          name={`${prefix}Email` as keyof CreateOrderFormValues}
+          name={`${prefix}Email`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>E-Mail{type === 'delivery' ? ' Empfänger' : ''}</FormLabel>

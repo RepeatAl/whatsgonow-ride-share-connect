@@ -63,11 +63,12 @@ export const ImageUploadSection = ({
   };
 
   const removeFile = (idx: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
-    setPreviews(prev => {
-      if (prev[idx]) URL.revokeObjectURL(prev[idx]);
-      return prev.filter((_, i) => i !== idx);
-    });
+    const newSelectedFiles = selectedFiles.filter((_, i) => i !== idx);
+    setSelectedFiles(newSelectedFiles);
+    
+    const newPreviews = previews.filter((_, i) => i !== idx);
+    if (previews[idx]) URL.revokeObjectURL(previews[idx]);
+    setPreviews(newPreviews);
   };
 
   const handleMobilePhotosComplete = (files: string[]) => {
@@ -78,8 +79,8 @@ export const ImageUploadSection = ({
         const file = new File([blob], `mobile-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
         
         if (selectedFiles.length + 1 <= MAX_FILES) {
-          setSelectedFiles(prev => [...prev, file]);
-          setPreviews(prev => [...prev, url]);
+          setSelectedFiles([...selectedFiles, file]);
+          setPreviews([...previews, url]);
         } else {
           toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
         }
