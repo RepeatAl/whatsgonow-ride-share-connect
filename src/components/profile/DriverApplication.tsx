@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useProfile } from "@/hooks/auth/useProfile";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabaseClient";
 
 export function DriverApplication() {
   const { profile, refreshProfile } = useProfile();
