@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -101,7 +102,7 @@ export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: U
 
   return (
     <>
-      <Button onClick={createSession} variant="outline">
+      <Button onClick={createSession} variant="outline" className="whitespace-nowrap">
         <Smartphone className="h-4 w-4 mr-2" />
         Mit Smartphone aufnehmen
       </Button>

@@ -1050,6 +1050,65 @@ export type Database = {
           },
         ]
       }
+      upload_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          payload: Json | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          payload?: Json | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "upload_sessions"
+            referencedColumns: ["session_id"]
+          },
+        ]
+      }
+      upload_sessions: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          expires_at: string | null
+          session_id: string
+          target: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          expires_at?: string | null
+          session_id?: string
+          target: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          expires_at?: string | null
+          session_id?: string
+          target?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profile_creation_log: {
         Row: {
           created_at: string | null

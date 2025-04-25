@@ -258,6 +258,7 @@ const CreateOrderForm = () => {
                 <FormItem>
                   <FormLabel>Bilder hochladen (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
                   <div className="flex flex-wrap items-center gap-4">
+                    {/* File Upload Button - Always visible */}
                     <Button 
                       type="button" 
                       variant="outline" 
@@ -267,34 +268,35 @@ const CreateOrderForm = () => {
                       Datei auswählen
                     </Button>
 
-                    {deviceType === 'mobile' && (
-                      <>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => {
-                            if (!navigator.mediaDevices?.getUserMedia) {
-                              toast.error("Dein Gerät unterstützt keine Kamera-API");
-                              return;
-                            }
-                            setShowQrScanner(true);
-                          }}
-                        >
-                          <Camera size={18} className="mr-2" />
-                          Jetzt Bild aufnehmen
-                        </Button>
+                    {/* QR Code Scanner Button - Always visible */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowItemQrScanner(true)}
+                    >
+                      <QrCode size={18} className="mr-2" />
+                      QR-Code scannen
+                    </Button>
 
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowItemQrScanner(true)}
-                        >
-                          <QrCode size={18} className="mr-2" />
-                          QR-Code scannen
-                        </Button>
-                      </>
+                    {/* Mobile Camera Button - Only on mobile */}
+                    {deviceType === 'mobile' && (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => {
+                          if (!navigator.mediaDevices?.getUserMedia) {
+                            toast.error("Dein Gerät unterstützt keine Kamera-API");
+                            return;
+                          }
+                          setShowQrScanner(true);
+                        }}
+                      >
+                        <Camera size={18} className="mr-2" />
+                        Jetzt Bild aufnehmen
+                      </Button>
                     )}
 
+                    {/* Upload QR Code Button - Only on desktop */}
                     {deviceType === 'desktop' && user && (
                       <UploadQrCode
                         userId={user.id}
