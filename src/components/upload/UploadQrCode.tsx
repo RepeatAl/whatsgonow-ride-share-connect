@@ -14,10 +14,10 @@ interface UploadQrCodeProps {
   onComplete?: (files: string[]) => void;
 }
 
-// Define types for the upload events
-interface UploadEvent {
-  event_type: string;
-  payload?: {
+interface DatabaseUploadEvent {
+  session_id: string;
+  event_type: 'file_uploaded' | 'session_completed';
+  payload: {
     file_url?: string;
     files?: string[];
   };
@@ -34,22 +34,19 @@ export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: U
 
     if (sessionId) {
       channel = supabase
-        .channel(`upload_session_${sessionId}`)
+        .channel(`upload_events:${sessionId}`)
         .on(
           'postgres_changes',
           {
-            event: '*',
+            event: 'INSERT',
             schema: 'public',
             table: 'upload_events',
             filter: `session_id=eq.${sessionId}`,
           },
           (payload) => {
-            const event = payload.new as UploadEvent;
-            if (event.event_type === 'file_uploaded') {
-              const fileUrl = event.payload?.file_url;
-              if (fileUrl) {
-                setUploadedFiles(prev => [...prev, fileUrl]);
-              }
+            const event = payload.new as DatabaseUploadEvent;
+            if (event.event_type === 'file_uploaded' && event.payload?.file_url) {
+              setUploadedFiles(prev => [...prev, event.payload.file_url!]);
             } else if (event.event_type === 'session_completed') {
               onComplete?.(uploadedFiles);
               setIsOpen(false);
