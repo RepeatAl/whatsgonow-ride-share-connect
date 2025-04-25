@@ -75,8 +75,11 @@ export const ImageUploadSection = ({
           type: 'image/jpeg'
         });
         if (selectedFiles.length + 1 <= MAX_FILES) {
-          setSelectedFiles(prev => [...prev, file]);
-          setPreviews(prev => [...prev, url]);
+          // Fix TypeScript errors by creating new arrays instead of using function references
+          const updatedFiles = [...selectedFiles, file];
+          const updatedPreviews = [...previews, url];
+          setSelectedFiles(updatedFiles);
+          setPreviews(updatedPreviews);
         } else {
           toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
         }
@@ -143,7 +146,13 @@ export const ImageUploadSection = ({
                 {previews.map((src, idx) => (
                   <div key={idx} className="relative group">
                     <img src={src} className="w-full h-32 object-cover rounded" alt={`Upload ${idx + 1}`} />
-                    <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeFile(idx)}>
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="icon" 
+                      className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" 
+                      onClick={() => removeFile(idx)}
+                    >
                       &times;
                     </Button>
                   </div>
