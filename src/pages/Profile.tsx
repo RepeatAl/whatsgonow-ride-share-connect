@@ -11,6 +11,7 @@ import { isProfileIncomplete } from "@/utils/profile-check";
 import { useProfileManager } from "@/hooks/use-profile-manager";
 import UserProfileHeader from "@/components/profile/UserProfileHeader";
 import ImageUploader from "@/components/profile/ImageUploader";
+import UserRating from "@/components/rating/UserRating";
 
 const Profile = () => {
   const { user, profile, loading, error, refreshProfile } = useAuth();
