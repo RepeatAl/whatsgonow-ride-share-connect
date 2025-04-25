@@ -3,6 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileTabContent } from "./tabs/ProfileTabContent";
 import { RatingsTabContent } from "./tabs/RatingsTabContent";
 import { RoleTabContent } from "./tabs/RoleTabContent";
+import { DriverTabContent } from "./tabs/DriverTabContent";
+import { SenderTabContent } from "./tabs/SenderTabContent";
 import type { UserProfile } from "@/types/auth";
 
 interface ProfileTabsProps {
@@ -32,6 +34,7 @@ export function ProfileTabs({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
         <TabsTrigger value="profile">Profil</TabsTrigger>
+        <TabsTrigger value="sender">Versender</TabsTrigger>
         <TabsTrigger value="ratings">Bewertungen</TabsTrigger>
         {showDriverSection && <TabsTrigger value="driver">Fahrer</TabsTrigger>}
         {showBusinessSection && <TabsTrigger value="business">Business</TabsTrigger>}
@@ -43,16 +46,17 @@ export function ProfileTabs({
         <ProfileTabContent profile={profile} canBecomeDriver={canBecomeDriver} />
       </TabsContent>
 
+      <TabsContent value="sender">
+        <SenderTabContent profile={profile} />
+      </TabsContent>
+
       <TabsContent value="ratings">
         <RatingsTabContent userId={userId} />
       </TabsContent>
 
       {showDriverSection && (
         <TabsContent value="driver">
-          <RoleTabContent 
-            title="Fahrereinstellungen"
-            description="Hier kannst du deine Fahrerinformationen und Verfügbarkeit verwalten."
-          />
+          <DriverTabContent profile={profile} />
         </TabsContent>
       )}
 
