@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -206,6 +207,18 @@ const CreateOrderForm = () => {
       toast.success("QR-Code erfolgreich gescannt!");
     } catch (error) {
       toast.error("Ungültiger QR-Code");
+    }
+  };
+
+  const handleCameraScan = (decodedText: string) => {
+    try {
+      // For camera scans, we expect a URL in the decoded text
+      // This is a simplified approach; the actual implementation would depend on your QR format
+      handleMobilePhotosComplete([decodedText]);
+      setShowQrScanner(false);
+      toast.success("Bild erfolgreich aufgenommen!");
+    } catch (error) {
+      toast.error("Fehler beim Scannen des Bildes");
     }
   };
 
@@ -921,7 +934,7 @@ const CreateOrderForm = () => {
         <Dialog open={showQrScanner} onOpenChange={setShowQrScanner}>
           <DialogContent className="sm:max-w-md">
             <QRScanner
-              onScan={handleMobilePhotosComplete}
+              onScan={handleCameraScan}
               onClose={() => setShowQrScanner(false)}
             />
           </DialogContent>
