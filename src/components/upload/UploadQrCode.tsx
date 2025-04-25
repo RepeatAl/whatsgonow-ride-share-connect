@@ -14,6 +14,15 @@ interface UploadQrCodeProps {
   onComplete?: (files: string[]) => void;
 }
 
+// Define types for the upload events
+interface UploadEvent {
+  event_type: string;
+  payload?: {
+    file_url?: string;
+    files?: string[];
+  };
+}
+
 export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: UploadQrCodeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -35,12 +44,13 @@ export function UploadQrCode({ userId, target, onSessionCreated, onComplete }: U
             filter: `session_id=eq.${sessionId}`,
           },
           (payload) => {
-            if (payload.new?.event_type === 'file_uploaded') {
-              const fileUrl = payload.new.payload?.file_url;
+            const event = payload.new as UploadEvent;
+            if (event.event_type === 'file_uploaded') {
+              const fileUrl = event.payload?.file_url;
               if (fileUrl) {
                 setUploadedFiles(prev => [...prev, fileUrl]);
               }
-            } else if (payload.new?.event_type === 'session_completed') {
+            } else if (event.event_type === 'session_completed') {
               onComplete?.(uploadedFiles);
               setIsOpen(false);
             }
