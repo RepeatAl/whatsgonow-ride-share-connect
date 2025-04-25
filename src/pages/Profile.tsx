@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { isProfileIncomplete } from "@/utils/profile-check";
@@ -15,6 +17,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { handleSave, loadingSave } = useProfileManager();
   const [showImageUploader, setShowImageUploader] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,6 +28,12 @@ const Profile = () => {
       navigate("/complete-profile");
     }
   }, [user, profile, loading, navigate]);
+
+  // Show Admin-specific sections based on role
+  const showAdminSection = profile?.role === "admin" || profile?.role === "admin_limited";
+  const showDriverSection = profile?.role === "driver";
+  const showCMSection = profile?.role === "cm";
+  const showBusinessSection = profile?.role === "sender_business";
 
   if (loading) {
     return (
@@ -61,9 +70,12 @@ const Profile = () => {
   return (
     <Layout>
       <div className="container max-w-4xl mx-auto py-8">
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Profil</CardTitle>
+            <CardTitle>Mein Profil</CardTitle>
+            <CardDescription>
+              Verwalte dein Profil und persönliche Einstellungen
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <UserProfileHeader 
@@ -71,12 +83,96 @@ const Profile = () => {
               userId={user.id}
               onUploadClick={() => setShowImageUploader(true)}
             />
-            
-            <ProfileForm 
-              profile={profile} 
-              onSave={handleSave}
-              loading={loadingSave}
-            />
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+                <TabsTrigger value="profile">Profil</TabsTrigger>
+                <TabsTrigger value="ratings">Bewertungen</TabsTrigger>
+                {showDriverSection && <TabsTrigger value="driver">Fahrer</TabsTrigger>}
+                {showBusinessSection && <TabsTrigger value="business">Business</TabsTrigger>}
+                {showCMSection && <TabsTrigger value="community">CM</TabsTrigger>}
+                {showAdminSection && <TabsTrigger value="admin">Admin</TabsTrigger>}
+              </TabsList>
+              
+              <TabsContent value="profile" className="mt-4 space-y-4">
+                <ProfileForm 
+                  profile={profile} 
+                  onSave={handleSave}
+                  loading={loadingSave}
+                />
+              </TabsContent>
+
+              <TabsContent value="ratings" className="mt-4 space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Deine Bewertungen</CardTitle>
+                    <CardDescription>
+                      Bewertungen, die du von anderen Nutzern erhalten hast
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-6">
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <h3 className="font-medium mb-2">Deine aktuelle Bewertung</h3>
+                        <UserRating userId={user.id} size="lg" showDetails={true} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {showDriverSection && (
+                <TabsContent value="driver" className="mt-4 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Fahrereinstellungen</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Hier kannst du deine Fahrerinformationen und Verfügbarkeit verwalten.</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {showBusinessSection && (
+                <TabsContent value="business" className="mt-4 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Geschäftseinstellungen</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Verwalte deine Geschäftsinformationen und Firmendetails.</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {showCMSection && (
+                <TabsContent value="community" className="mt-4 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Community Manager</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Verwaltung deiner Community Manager Funktionen.</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {showAdminSection && (
+                <TabsContent value="admin" className="mt-4 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Admin-Einstellungen</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Hier kannst du auf Admin-spezifische Einstellungen und Funktionen zugreifen.</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+            </Tabs>
           </CardContent>
         </Card>
 
@@ -93,6 +189,7 @@ const Profile = () => {
             }}
             onCancel={() => setShowImageUploader(false)}
             open={showImageUploader}
+            currentImage={profile.avatar_url}
           />
         )}
       </div>

@@ -1,20 +1,33 @@
 
 import { useEffect, useState } from "react";
-import { Star, Award, Shield, ShieldCheck } from "lucide-react";
+import { Star, Award, Shield, ShieldCheck, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ratingService } from "@/services/ratingService";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface UserRatingProps {
   userId: string;
   size?: "sm" | "md" | "lg";
   showBadge?: boolean;
+  showDetails?: boolean;
+  className?: string;
 }
 
-const UserRating = ({ userId, size = "md", showBadge = true }: UserRatingProps) => {
+interface RatingDetail {
+  id: string;
+  rating: number;
+  comment?: string;
+  timestamp: Date;
+}
+
+const UserRating = ({ userId, size = "md", showBadge = true, showDetails = false, className }: UserRatingProps) => {
   const [averageRating, setAverageRating] = useState<number | null>(null);
   const [ratingCount, setRatingCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [showRatingDetails, setShowRatingDetails] = useState(false);
+  const [ratingDetails, setRatingDetails] = useState<RatingDetail[]>([]);
 
   useEffect(() => {
     const fetchRatings = async () => {
@@ -22,6 +35,16 @@ const UserRating = ({ userId, size = "md", showBadge = true }: UserRatingProps) 
         const userRatings = await ratingService.getUserRatings(userId);
         setAverageRating(userRatings.average);
         setRatingCount(userRatings.count);
+        
+        // Store rating details if available
+        if (userRatings.ratings) {
+          setRatingDetails(userRatings.ratings.map(r => ({
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment,
+            timestamp: new Date(r.timestamp)
+          })));
+        }
       } catch (error) {
         console.error("Error fetching user ratings:", error);
       } finally {
@@ -108,44 +131,110 @@ const UserRating = ({ userId, size = "md", showBadge = true }: UserRatingProps) 
     return <span className="text-gray-500 text-sm">Keine Bewertungen</span>;
   }
 
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('de-DE', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    }).format(date);
+  };
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center">
-        {[1, 2, 3, 4, 5].map((star) => {
-          // Calculate filled proportion for partial stars
-          const filled = Math.max(0, Math.min(1, averageRating - (star - 1)));
-          
-          return (
-            <div key={star} className="relative">
-              {/* Background star (gray) */}
-              <Star 
-                size={starSize} 
-                className="text-gray-300" 
-              />
-              
-              {/* Filled star overlay */}
-              {filled > 0 && (
-                <div 
-                  className="absolute top-0 left-0 overflow-hidden" 
-                  style={{ width: `${filled * 100}%` }}
-                >
-                  <Star 
-                    size={starSize} 
-                    className="fill-yellow-400 text-yellow-400" 
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
+    <>
+      <div className={`flex items-center gap-2 ${className}`}>
+        <div className="flex items-center">
+          {[1, 2, 3, 4, 5].map((star) => {
+            // Calculate filled proportion for partial stars
+            const filled = Math.max(0, Math.min(1, averageRating - (star - 1)));
+            
+            return (
+              <div key={star} className="relative">
+                {/* Background star (gray) */}
+                <Star 
+                  size={starSize} 
+                  className="text-gray-300" 
+                />
+                
+                {/* Filled star overlay */}
+                {filled > 0 && (
+                  <div 
+                    className="absolute top-0 left-0 overflow-hidden" 
+                    style={{ width: `${filled * 100}%` }}
+                  >
+                    <Star 
+                      size={starSize} 
+                      className="fill-yellow-400 text-yellow-400" 
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        
+        <span className="text-sm text-gray-600">
+          {averageRating.toFixed(1)} ({ratingCount})
+        </span>
+        
+        {showBadge && getTrustBadge()}
+
+        {showDetails && ratingCount > 0 && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-6 w-6"
+            onClick={() => setShowRatingDetails(true)}
+          >
+            <Info className="h-4 w-4" />
+          </Button>
+        )}
       </div>
-      
-      <span className="text-sm text-gray-600">
-        {averageRating.toFixed(1)} ({ratingCount})
-      </span>
-      
-      {showBadge && getTrustBadge()}
-    </div>
+
+      {/* Rating Details Dialog */}
+      <Dialog open={showRatingDetails} onOpenChange={setShowRatingDetails}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bewertungsübersicht</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="bg-gray-100 p-3 rounded-full">
+                <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{averageRating.toFixed(1)}/5</div>
+                <div className="text-sm text-gray-500">Basierend auf {ratingCount} Bewertungen</div>
+              </div>
+            </div>
+            
+            {ratingDetails.length > 0 ? (
+              <div className="space-y-3">
+                {ratingDetails.map(detail => (
+                  <div key={detail.id} className="border rounded-md p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`h-4 w-4 ${i < detail.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-500">{formatDate(detail.timestamp)}</span>
+                    </div>
+                    {detail.comment && <p className="text-sm">{detail.comment}</p>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                Keine detaillierten Bewertungen verfügbar
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

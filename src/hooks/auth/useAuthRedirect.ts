@@ -21,17 +21,26 @@ export function useAuthRedirect(
     }
 
     const currentPath = location.pathname;
-    const isAuthPage = ["/login", "/register", "/pre-register"].includes(currentPath);
-
-    // Wenn der Nutzer eingeloggt ist und sich auf einer Auth-Seite befindet
+    const isAuthPage = ["/login", "/register", "/pre-register", "/forgot-password", "/reset-password"].includes(currentPath);
+    
+    // Handle authentication state changes and redirects
     if (user && isAuthPage) {
+      // User is authenticated but on an auth page - redirect to appropriate dashboard
       console.log("✅ Authentifizierter Nutzer auf Auth-Seite → Dashboard");
       const redirectPath = profile ? getRoleBasedRedirectPath(profile.role) : "/dashboard";
+      
+      // Check if profile is incomplete
+      if (profile && !profile.profile_complete) {
+        console.log("⚠️ Profil unvollständig → /complete-profile");
+        navigate("/complete-profile", { replace: true });
+        return;
+      }
+      
       navigate(redirectPath, { replace: true });
       return;
     }
 
-    // Wenn der Nutzer nicht eingeloggt ist und eine geschützte Route aufruft
+    // If user is not authenticated and trying to access a protected route
     if (!user && !isPublicRoute(currentPath) && !isAuthPage) {
       console.log("🔒 Nicht authentifiziert → /login");
       navigate("/login", {
