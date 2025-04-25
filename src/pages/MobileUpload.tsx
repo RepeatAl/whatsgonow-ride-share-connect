@@ -1,89 +1,38 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, Check } from "lucide-react";
-
-interface UploadSession {
-  sessionId: string;
-  userId: string;
-  target: string;
-  expiresAt: string;
-  uploadedFiles: string[];
-  completed: boolean;
-}
+import { Camera, Check } from "lucide-react";
+import { useUploadSession } from "@/hooks/useUploadSession";
+import { useUploadHandler } from "@/hooks/useUploadHandler";
+import { UploadProgress } from "@/components/upload/UploadProgress";
 
 export default function MobileUpload() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
-  const [session, setSession] = useState<UploadSession | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  useEffect(() => {
-    const loadSession = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('upload_sessions')
-          .select('*')
-          .eq('session_id', sessionId)
-          .single();
-
-        if (error) throw error;
-        if (data.expires_at && new Date(data.expires_at) < new Date()) {
-          throw new Error('Session abgelaufen');
-        }
-
-        setSession(data);
-      } catch (err) {
-        setError('Session ungültig oder abgelaufen');
-        console.error('Error loading session:', err);
-      }
-    };
-
-    if (sessionId) {
-      loadSession();
-    }
-  }, [sessionId]);
+  const { session, error: sessionError, isLoading } = useUploadSession(sessionId!);
+  const { uploadFile, isUploading, error: uploadError } = 
+    useUploadHandler({ 
+      sessionId: sessionId!, 
+      onProgress: setUploadProgress 
+    });
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || !session) return;
 
-    setUploading(true);
     try {
       for (let i = 0; i < Math.min(files.length, 4 - uploadedFiles.length); i++) {
         const file = files[i];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${session.sessionId}/${Date.now()}.${fileExt}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('profile-images')
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('profile-images')
-          .getPublicUrl(fileName);
-
-        // Create upload event
-        await supabase.from('upload_events').insert({
-          session_id: session.sessionId,
-          event_type: 'file_uploaded',
-          payload: { file_url: publicUrl }
-        });
-
+        const publicUrl = await uploadFile(file);
         setUploadedFiles(prev => [...prev, publicUrl]);
       }
     } catch (err) {
       console.error('Upload error:', err);
-      setError('Fehler beim Hochladen');
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -105,18 +54,25 @@ export default function MobileUpload() {
       navigate('/upload-complete');
     } catch (err) {
       console.error('Error completing session:', err);
-      setError('Fehler beim Abschließen der Session');
     }
   };
 
-  if (error) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-t-2 border-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (sessionError || !session) {
     return (
       <Card className="mx-auto max-w-md mt-8">
         <CardHeader>
           <CardTitle className="text-red-500">Fehler</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{error}</p>
+          <p>{sessionError}</p>
         </CardContent>
       </Card>
     );
@@ -134,7 +90,7 @@ export default function MobileUpload() {
               <img
                 key={idx}
                 src={url}
-                alt={`Uploaded ${idx + 1}`}
+                alt={`Aufnahme ${idx + 1}`}
                 className="w-full aspect-square object-cover rounded"
               />
             ))}
@@ -145,7 +101,7 @@ export default function MobileUpload() {
               <Button
                 variant="outline"
                 className="w-full"
-                disabled={uploading}
+                disabled={isUploading}
                 asChild
               >
                 <label>
@@ -157,10 +113,18 @@ export default function MobileUpload() {
                     capture="environment"
                     onChange={handleFileSelect}
                     className="hidden"
-                    disabled={uploading}
+                    disabled={isUploading}
                   />
                 </label>
               </Button>
+
+              {isUploading && (
+                <UploadProgress 
+                  current={uploadedFiles.length} 
+                  total={4} 
+                  progress={uploadProgress} 
+                />
+              )}
               
               <span className="text-sm text-muted-foreground">
                 {uploadedFiles.length}/4 Fotos aufgenommen
@@ -168,11 +132,15 @@ export default function MobileUpload() {
             </div>
           )}
 
+          {uploadError && (
+            <p className="text-sm text-red-500 text-center">{uploadError}</p>
+          )}
+
           {uploadedFiles.length > 0 && (
             <Button 
               onClick={completeSession}
               className="w-full"
-              disabled={uploading}
+              disabled={isUploading}
             >
               <Check className="h-4 w-4 mr-2" />
               Fertig
