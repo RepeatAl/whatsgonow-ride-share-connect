@@ -13,6 +13,7 @@ interface QRScannerProps {
 export function QRScanner({ onScan, onClose }: QRScannerProps) {
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(true);
+  const [isScanning, setIsScanning] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
@@ -21,6 +22,9 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
 
     const startScanning = async () => {
       try {
+        setIsStarting(true);
+        setIsScanning(false);
+        
         await html5QrCode.start(
           { facingMode: "environment" },
           {
@@ -29,27 +33,48 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
           },
           (decodedText) => {
             onScan(decodedText);
-            html5QrCode.stop();
+            stopScanner();
           },
           (errorMessage) => {
             console.error("QR Scan error:", errorMessage);
           }
         );
+        
         setIsStarting(false);
+        setIsScanning(true);
       } catch (err) {
+        console.error("Failed to start scanner:", err);
         setError("Kamera konnte nicht gestartet werden. Bitte überprüfen Sie die Berechtigungen.");
         setIsStarting(false);
+        setIsScanning(false);
       }
     };
 
     startScanning();
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(console.error);
-      }
+      stopScanner();
     };
   }, [onScan]);
+
+  const stopScanner = () => {
+    if (scannerRef.current) {
+      try {
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop()
+            .then(() => {
+              console.log("Scanner stopped successfully");
+              setIsScanning(false);
+            })
+            .catch(error => {
+              console.warn("Error stopping scanner:", error);
+            });
+        }
+      } catch (error) {
+        console.warn("Error checking scanner status:", error);
+      }
+    }
+  };
 
   return (
     <div className="relative">
@@ -57,7 +82,10 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
         variant="ghost" 
         size="icon"
         className="absolute right-2 top-2 z-10"
-        onClick={onClose}
+        onClick={() => {
+          stopScanner();
+          onClose();
+        }}
       >
         <X className="h-4 w-4" />
       </Button>
