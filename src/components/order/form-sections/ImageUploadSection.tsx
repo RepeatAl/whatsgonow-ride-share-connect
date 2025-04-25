@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -116,15 +117,7 @@ export const ImageUploadSection = ({
                   Datei auswählen
                 </Button>
 
-                {deviceType === 'desktop' && userId && (
-                  <UploadQrCode 
-                    userId={userId} 
-                    target="order-photos" 
-                    onComplete={handleMobilePhotosComplete} 
-                  />
-                )}
-
-                {deviceType === 'mobile' && (
+                {deviceType === 'desktop' && (
                   <Button 
                     type="button" 
                     variant="outline" 
@@ -141,14 +134,24 @@ export const ImageUploadSection = ({
                   </Button>
                 )}
 
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setShowItemQrScanner(true)}
-                >
-                  <QrCode className="mr-2 h-4 w-4" />
-                  QR-Code scannen
-                </Button>
+                {deviceType === 'desktop' && userId && (
+                  <UploadQrCode 
+                    userId={userId} 
+                    target="order-photos" 
+                    onComplete={handleMobilePhotosComplete} 
+                  />
+                )}
+
+                {deviceType === 'mobile' && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setShowItemQrScanner(true)}
+                  >
+                    <QrCode className="mr-2 h-4 w-4" />
+                    Artikel fotografieren
+                  </Button>
+                )}
 
                 <input 
                   id="file-upload" 
