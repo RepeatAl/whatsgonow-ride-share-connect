@@ -29,7 +29,7 @@ const DashboardSender = () => {
               onClick={() => navigate("/create-order")}
             >
               <PlusCircle className="h-4 w-4" />
-              Neuer Transport
+              Neuer Auftrag
             </Button>
           </div>
         </div>
@@ -40,7 +40,7 @@ const DashboardSender = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Du hast aktuell keine aktiven Transporte. Sobald du einen Transport erstellst, erscheint er hier.
+              Du hast aktuell keine aktiven Transporte. Sobald du einen Auftrag erstellst, erscheint er hier.
             </p>
           </CardContent>
         </Card>

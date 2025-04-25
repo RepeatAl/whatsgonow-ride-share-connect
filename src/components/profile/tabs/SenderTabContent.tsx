@@ -65,7 +65,7 @@ export function SenderTabContent({ profile }: SenderTabContentProps) {
 
         <div className="flex justify-end">
           <Button variant="brand" asChild className="mt-4">
-            <Link to="/create-order">Neuen Transport erstellen</Link>
+            <Link to="/create-order">Neuen Auftrag erstellen</Link>
           </Button>
         </div>
       </CardContent>

@@ -8,7 +8,7 @@ const CreateOrder = () => {
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-16">
         <div className="flex flex-col gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Transportauftrag erstellen</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Auftrag erstellen</h1>
             <p className="text-gray-600 mt-2">
               Geben Sie alle notwendigen Informationen an, um einen neuen Transportauftrag zu erstellen.
             </p>

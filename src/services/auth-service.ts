@@ -1,3 +1,4 @@
+
 // src/services/auth-service.ts
 import { supabase } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
@@ -177,6 +178,20 @@ export const authService = {
           profile_complete: false,
           onboarding_complete: false
         }]);
+
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-confirmation', {
+          body: { 
+            email: email,
+            firstName: metadata?.first_name || "Neuer Benutzer"
+          }
+        });
+        console.log("✅ Confirmation email sent");
+      } catch (emailError) {
+        console.error("❌ Error sending confirmation email:", emailError);
+        // Don't throw here, we still want to complete the signup
+      }
 
       return data;
     } catch (error) {

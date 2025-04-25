@@ -1,3 +1,4 @@
+
 // src/components/order/CreateOrderForm.tsx
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -5,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, CameraIcon, Upload } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
@@ -18,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
+  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -29,6 +31,9 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -40,18 +45,53 @@ const CreateOrderForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const navigate = useNavigate();
+  const [showQrScanner, setShowQrScanner] = useState(false);
 
   const form = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
       title: "",
       description: "",
-      pickupAddress: "",
-      deliveryAddress: "",
+      // Adressfelder für Abholung
+      pickupStreet: "",
+      pickupHouseNumber: "",
+      pickupPostalCode: "",
+      pickupCity: "",
+      pickupCountry: "Deutschland",
+      pickupAddressExtra: "",
+      pickupPhone: "",
+      pickupEmail: "",
+      
+      // Adressfelder für Lieferung
+      deliveryStreet: "",
+      deliveryHouseNumber: "",
+      deliveryPostalCode: "",
+      deliveryCity: "",
+      deliveryCountry: "Deutschland",
+      deliveryAddressExtra: "",
+      deliveryPhone: "",
+      deliveryEmail: "",
+      
+      // Artikeldetails
+      itemName: "",
+      category: "",
+      width: undefined,
+      height: undefined,
+      depth: undefined,
       weight: undefined,
-      dimensions: "",
       value: undefined,
+      
+      // Weitere Optionen
       insurance: false,
+      fragile: false,
+      loadAssistance: false,
+      toolsRequired: "",
+      securityMeasures: "",
+      price: undefined,
+      negotiable: false,
+      preferredVehicleType: "",
+      
+      // Zeitfenster
       pickupTimeStart: undefined,
       pickupTimeEnd: undefined,
       deliveryTimeStart: undefined,
@@ -60,6 +100,9 @@ const CreateOrderForm = () => {
     },
   });
 
+  // Beobachten des Versicherungs-Checkbox-Status
+  const insuranceEnabled = form.watch("insurance");
+  
   // 1) Handler für File-Input und Validierung
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -67,7 +110,11 @@ const CreateOrderForm = () => {
       toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
       return;
     }
-    for (const file of files) {
+
+    const validFiles: File[] = [];
+    const validPreviews: string[] = [];
+
+    files.forEach(file => {
       if (file.size > MAX_FILE_SIZE) {
         toast.error(`${file.name} ist größer als 2 MB.`);
         return;
@@ -76,29 +123,61 @@ const CreateOrderForm = () => {
         toast.error(`${file.name} ist kein unterstütztes Format.`);
         return;
       }
-    }
-    setSelectedFiles(prev => [...prev, ...files]);
-    files.forEach(file => {
+      
+      validFiles.push(file);
       const url = URL.createObjectURL(file);
-      setPreviews(prev => [...prev, url]);
+      validPreviews.push(url);
     });
+
+    setSelectedFiles(prev => [...prev, ...validFiles]);
+    setPreviews(prev => [...prev, ...validPreviews]);
   };
 
   // 2) Entfernen eines Bildes aus der Vorschau
   const removeFile = (idx: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
-    setPreviews(prev => prev.filter((_, i) => i !== idx));
+    setPreviews(prev => {
+      // URL.revokeObjectURL für das entfernte Bild aufrufen, um Speicher freizugeben
+      if (prev[idx]) URL.revokeObjectURL(prev[idx]);
+      return prev.filter((_, i) => i !== idx);
+    });
   };
 
   // 3) Submit-Handler
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
     try {
+      // Konvertierung der einzelnen Adressfelder in kombinierte Adressstrings
+      const pickupAddress = `${data.pickupStreet} ${data.pickupHouseNumber}, ${data.pickupPostalCode} ${data.pickupCity}, ${data.pickupCountry}${data.pickupAddressExtra ? ` (${data.pickupAddressExtra})` : ''}`;
+      const deliveryAddress = `${data.deliveryStreet} ${data.deliveryHouseNumber}, ${data.deliveryPostalCode} ${data.deliveryCity}, ${data.deliveryCountry}${data.deliveryAddressExtra ? ` (${data.deliveryAddressExtra})` : ''}`;
+      
+      // Konvertierung der Maße in einen dimensions-String
+      const dimensions = `${data.width} x ${data.height} x ${data.depth} cm`;
+      
       // a) Neuer Auftrag in DB anlegen
       const orderId = uuidv4();
       const { error: insertError } = await supabase
         .from("orders")
-        .insert([{ id: orderId, ...data }]);
+        .insert([{ 
+          id: orderId, 
+          description: data.description,
+          from_address: pickupAddress,
+          to_address: deliveryAddress,
+          weight: data.weight,
+          price: data.price,
+          negotiable: data.negotiable,
+          fragile: data.fragile,
+          load_assistance: data.loadAssistance,
+          tools_required: data.toolsRequired || '',
+          security_measures: data.securityMeasures || '',
+          item_name: data.itemName,
+          category: data.category,
+          preferred_vehicle_type: data.preferredVehicleType || '',
+          deadline: data.deadline,
+          status: 'pending',
+          sender_id: user!.id
+        }]);
+        
       if (insertError) throw insertError;
 
       // b) Bilder hochladen mit Metadata (user_id, published=true)
@@ -128,128 +207,673 @@ const CreateOrderForm = () => {
     }
   };
 
+  // Handle QR-Code scanning (placeholder for future implementation)
+  const handleQrScan = () => {
+    setShowQrScanner(true);
+    // In einer vollständigen Implementierung würde hier die Kamera geöffnet
+    // und der QR-Code gescannt werden
+    toast.info("QR-Code-Scanner wird in einer zukünftigen Version verfügbar sein.");
+    setTimeout(() => setShowQrScanner(false), 3000);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* ---------- Felder (Titel, Beschreibung, Adressen etc.) ---------- */}
-        <FormItem>
-          <FormLabel>Titel*</FormLabel>
-          <FormControl>
-            <Input placeholder="z.B. Transport von Möbeln" {...form.register("title")} />
-          </FormControl>
-          <FormMessage>{form.formState.errors.title?.message}</FormMessage>
-        </FormItem>
+        {/* ---------- Bilder-Upload (an den Anfang verschoben) ---------- */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Bilder hochladen</h3>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-4">
+                  <FormItem>
+                    <FormLabel>Bilder hochladen (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="flex items-center gap-2"
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                      >
+                        <Upload size={18} />
+                        Datei auswählen
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="flex items-center gap-2"
+                        onClick={handleQrScan}
+                      >
+                        <CameraIcon size={18} />
+                        QR-Code scannen
+                      </Button>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        multiple
+                        accept={ALLOWED_TYPES.join(",")}
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                </div>
 
-        <FormItem>
-          <FormLabel>Beschreibung*</FormLabel>
-          <FormControl>
-            <Textarea
-              placeholder="Beschreiben Sie Ihren Transportauftrag..."
-              className="min-h-[120px]"
-              {...form.register("description")}
-            />
-          </FormControl>
-          <FormMessage>{form.formState.errors.description?.message}</FormMessage>
-        </FormItem>
-
-        <FormItem>
-          <FormLabel>Abholadresse*</FormLabel>
-          <FormControl>
-            <Textarea
-              placeholder="Straße, Hausnummer, PLZ, Ort"
-              className="min-h-[80px]"
-              {...form.register("pickupAddress")}
-            />
-          </FormControl>
-          <FormMessage>{form.formState.errors.pickupAddress?.message}</FormMessage>
-        </FormItem>
-
-        <FormItem>
-          <FormLabel>Zieladresse*</FormLabel>
-          <FormControl>
-            <Textarea
-              placeholder="Straße, Hausnummer, PLZ, Ort"
-              className="min-h-[80px]"
-              {...form.register("deliveryAddress")}
-            />
-          </FormControl>
-          <FormMessage>{form.formState.errors.deliveryAddress?.message}</FormMessage>
-        </FormItem>
-
-        <FormItem>
-          <FormLabel>Gewicht (kg)*</FormLabel>
-          <FormControl>
-            <Input type="number" step="0.1" placeholder="z.B. 15.5" {...form.register("weight")} />
-          </FormControl>
-          <FormMessage>{form.formState.errors.weight?.message}</FormMessage>
-        </FormItem>
-
-        <FormItem>
-          <FormLabel>Maße (optional)</FormLabel>
-          <FormControl>
-            <Input placeholder="z.B. 100 x 50 x 30 cm" {...form.register("dimensions")} />
-          </FormControl>
-          <FormMessage>{form.formState.errors.dimensions?.message}</FormMessage>
-        </FormItem>
-
-        <FormItem>
-          <FormLabel>Warenwert (€, optional)</FormLabel>
-          <FormControl>
-            <Input type="number" step="0.01" placeholder="z.B. 499.99" {...form.register("value")} />
-          </FormControl>
-          <FormMessage>{form.formState.errors.value?.message}</FormMessage>
-        </FormItem>
-
-        <FormItem className="flex items-center space-x-3">
-          <FormControl>
-            <Checkbox {...form.register("insurance")} />
-          </FormControl>
-          <div>
-            <FormLabel>Versicherung</FormLabel>
-            <FormMessage>{form.formState.errors.insurance?.message}</FormMessage>
-          </div>
-        </FormItem>
-
-        {/* Zeitfenster & Deadline */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Abholung: Von / Bis */}
-          {/* ... Popover für pickupTimeStart & pickupTimeEnd ... */}
-          {/* Lieferung: Von / Bis */}
-          {/* ... Popover für deliveryTimeStart & deliveryTimeEnd ... */}
-          {/* Deadline */}
-          {/* ... Popover für deadline ... */}
+                {/* Vorschau */}
+                {previews.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                    {previews.map((src, idx) => (
+                      <div key={idx} className="relative group">
+                        <img src={src} className="w-full h-32 object-cover rounded" />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeFile(idx)}
+                        >
+                          &times;
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* ---------- Bilder-Upload ---------- */}
-        <FormItem>
-          <FormLabel>Bilder (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
-          <FormControl>
-            <input
-              type="file"
-              multiple
-              accept={ALLOWED_TYPES.join(",")}
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-700"
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
+        <Separator />
 
-        {/* Vorschau */}
-        {previews.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {previews.map((src, idx) => (
-              <div key={idx} className="relative group">
-                <img src={src} className="w-full h-24 object-cover rounded" />
-                <button
-                  type="button"
-                  onClick={() => removeFile(idx)}
-                  className="absolute top-1 right-1 bg-white rounded-full p-1 opacity-0 group-hover:opacity-80"
-                >&times;</button>
-              </div>
-            ))}
+        {/* ---------- Allgemeine Informationen ---------- */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Allgemeine Informationen</h3>
+          <div className="grid gap-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Titel*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Transport von Möbeln" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.title?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Beschreibung*</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Beschreiben Sie Ihren Transportauftrag..."
+                      className="min-h-[120px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.description?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
           </div>
-        )}
+        </div>
+
+        <Separator />
+
+        {/* ---------- Artikeldetails ---------- */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Artikeldetails</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="itemName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Artikelname*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Sofa" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.itemName?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kategorie*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Möbel" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.category?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="weight"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gewicht (kg)*</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.1" placeholder="z.B. 15.5" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.weight?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{insuranceEnabled ? "Warenwert (€)*" : "Warenwert (€, optional)"}</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="z.B. 499.99" 
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.value?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Maße (separat für Breite, Höhe, Tiefe) */}
+          <div className="grid gap-4 md:grid-cols-3 mt-4">
+            <FormField
+              control={form.control}
+              name="width"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Breite (cm)*</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.1" placeholder="z.B. 100" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.width?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="height"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Höhe (cm)*</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.1" placeholder="z.B. 50" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.height?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="depth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tiefe (cm)*</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.1" placeholder="z.B. 30" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.depth?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* ---------- Abholadresse ---------- */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Abholadresse</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="pickupStreet"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Straße*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Musterstraße" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupStreet?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupHouseNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hausnummer*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. 123" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupHouseNumber?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupPostalCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Postleitzahl*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. 12345" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupPostalCode?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupCity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Stadt*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Berlin" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupCity?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupCountry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Land*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Deutschland" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupCountry?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupAddressExtra"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Adresszusatz</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Hinterhof, 2. Stock" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupAddressExtra?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefonnummer</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. +49123456789" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupPhone?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-Mail</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. beispiel@mail.com" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.pickupEmail?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* ---------- Zieladresse ---------- */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Zieladresse</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="deliveryStreet"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Straße*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Musterstraße" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryStreet?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryHouseNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hausnummer*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. 123" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryHouseNumber?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryPostalCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Postleitzahl*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. 12345" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryPostalCode?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryCity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Stadt*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. München" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryCity?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryCountry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Land*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Deutschland" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryCountry?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryAddressExtra"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Adresszusatz</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Hinterhof, 2. Stock" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryAddressExtra?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefonnummer Empfänger</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. +49123456789" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryPhone?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-Mail Empfänger</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. beispiel@mail.com" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.deliveryEmail?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* ---------- Zusätzliche Optionen ---------- */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Zusätzliche Optionen</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Angebotener Preis (€)*</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" placeholder="z.B. 50" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.price?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="preferredVehicleType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bevorzugter Fahrzeugtyp</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Transporter" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.preferredVehicleType?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="space-y-4 mt-4">
+            <div className="grid gap-2 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="negotiable"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div>
+                      <FormLabel>Preis verhandelbar</FormLabel>
+                      <FormMessage>{form.formState.errors.negotiable?.message}</FormMessage>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="insurance"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div>
+                      <FormLabel>Versicherung</FormLabel>
+                      <FormMessage>{form.formState.errors.insurance?.message}</FormMessage>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="fragile"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div>
+                      <FormLabel>Zerbrechlich</FormLabel>
+                      <FormMessage>{form.formState.errors.fragile?.message}</FormMessage>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="loadAssistance"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div>
+                      <FormLabel>Hilfe beim Be- und Entladen</FormLabel>
+                      <FormMessage>{form.formState.errors.loadAssistance?.message}</FormMessage>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="toolsRequired"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Benötigte Werkzeuge</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Sackkarre, Spanngurte" {...field} />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.toolsRequired?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="securityMeasures"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sicherheitsmaßnahmen</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="z.B. Besondere Vorsicht beim Transport, Verpackungsanweisungen"
+                      className="min-h-[80px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.securityMeasures?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* ---------- Zeitfenster & Deadline ---------- */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Zeitfenster</h3>
+          <div className="grid gap-6">
+            {/* Deadline */}
+            <FormField
+              control={form.control}
+              name="deadline"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Deadline*</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Deadline wählen</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage>{form.formState.errors.deadline?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         {/* Submit */}
         <div className="flex justify-end">
@@ -257,7 +881,7 @@ const CreateOrderForm = () => {
             {isSubmitting ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Wird erstellt...</>
             ) : (
-              "Transportauftrag erstellen"
+              "Auftrag erstellen"
             )}
           </Button>
         </div>
