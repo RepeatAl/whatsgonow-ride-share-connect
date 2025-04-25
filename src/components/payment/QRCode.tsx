@@ -1,9 +1,11 @@
 
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Scan, Check } from "lucide-react";
+import { Scan, Check, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { QRScanner } from "@/components/qr/QRScanner";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface QRCodeProps {
   value: string;
@@ -21,10 +23,20 @@ const QRCode = ({
   allowScan = false
 }: QRCodeProps) => {
   const [isScanning, setIsScanning] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [scannedValue, setScannedValue] = useState("");
   const [scanSuccess, setScanSuccess] = useState(false);
 
-  const handleScan = () => {
+  const handleScan = (value: string) => {
+    setScannedValue(value);
+    handleVerify();
+  };
+
+  const handleManualInput = () => {
+    handleVerify();
+  };
+
+  const handleVerify = () => {
     if (scannedValue === value) {
       setScanSuccess(true);
       if (onScan) {
@@ -35,6 +47,7 @@ const QRCode = ({
         setIsScanning(false);
         setScannedValue("");
         setScanSuccess(false);
+        setShowScanner(false);
       }, 3000);
     } else {
       // Invalid scan value
@@ -56,14 +69,25 @@ const QRCode = ({
           />
           
           {allowScan && (
-            <Button 
-              onClick={() => setIsScanning(true)} 
-              variant="outline" 
-              className="w-full mt-3"
-            >
-              <Scan className="h-4 w-4 mr-2" />
-              QR-Code scannen
-            </Button>
+            <div className="flex flex-col gap-2 mt-3">
+              <Button 
+                onClick={() => {
+                  setIsScanning(true);
+                  setShowScanner(true);
+                }} 
+                variant="outline"
+              >
+                <Camera className="h-4 w-4 mr-2" />
+                Mit Kamera scannen
+              </Button>
+              <Button 
+                onClick={() => setIsScanning(true)} 
+                variant="outline"
+              >
+                <Scan className="h-4 w-4 mr-2" />
+                Code manuell eingeben
+              </Button>
+            </div>
           )}
         </>
       ) : (
@@ -80,7 +104,7 @@ const QRCode = ({
           ) : (
             <>
               <p className="text-sm text-gray-600 text-center">
-                Bitte geben Sie den QR-Code-Wert ein oder verwenden Sie einen QR-Scanner
+                Bitte scannen Sie den QR-Code oder geben Sie den Code manuell ein
               </p>
               <Input
                 value={scannedValue}
@@ -88,26 +112,38 @@ const QRCode = ({
                 placeholder="QR-Code-Wert eingeben"
                 className="w-full"
               />
-              <Button 
-                onClick={handleScan} 
-                className="w-full"
-              >
-                Bestätigen
-              </Button>
-              <Button 
-                onClick={() => {
-                  setIsScanning(false);
-                  setScannedValue("");
-                }} 
-                variant="outline" 
-                className="w-full"
-              >
-                Abbrechen
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => {
+                    setIsScanning(false);
+                    setScannedValue("");
+                    setShowScanner(false);
+                  }} 
+                  variant="outline" 
+                  className="w-full"
+                >
+                  Abbrechen
+                </Button>
+                <Button 
+                  onClick={handleManualInput} 
+                  className="w-full"
+                >
+                  Bestätigen
+                </Button>
+              </div>
             </>
           )}
         </div>
       )}
+
+      <Dialog open={showScanner} onOpenChange={setShowScanner}>
+        <DialogContent className="sm:max-w-md">
+          <QRScanner
+            onScan={handleScan}
+            onClose={() => setShowScanner(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
