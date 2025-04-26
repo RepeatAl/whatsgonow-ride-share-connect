@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
@@ -15,7 +14,6 @@ export function useFileUpload(orderId?: string) {
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load existing photos on mount
   useEffect(() => {
     const loadExistingPhotos = async () => {
       if (!orderId) {
@@ -60,7 +58,6 @@ export function useFileUpload(orderId?: string) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
-    // Check total number of files
     if (files.length + previews.length >= MAX_FILES + 1) {
       toast.error(`Maximal ${MAX_FILES} Bilder erlaubt`);
       return;
@@ -84,7 +81,6 @@ export function useFileUpload(orderId?: string) {
       validUrls.push(url);
     });
 
-    // Update arrays while maintaining slot positions
     setSelectedFiles(prev => {
       const newFiles = [...prev];
       validFiles.forEach((file, idx) => {
@@ -118,14 +114,12 @@ export function useFileUpload(orderId?: string) {
       return;
     }
 
-    // Find next empty slot
     const nextEmptySlot = previews.findIndex(p => !p);
     if (nextEmptySlot === -1) {
       toast.error(`Maximal ${MAX_FILES} Fotos erlaubt`);
       return;
     }
 
-    // Update arrays at specific index
     setSelectedFiles(prev => {
       const newFiles = [...prev];
       newFiles[nextEmptySlot] = file;
@@ -155,11 +149,9 @@ export function useFileUpload(orderId?: string) {
           type: 'image/jpeg'
         });
 
-        // Find next empty slot
         const nextEmptySlot = previews.findIndex(p => !p);
         if (nextEmptySlot === -1) break;
 
-        // Update arrays at specific index
         setSelectedFiles(prev => {
           const newFiles = [...prev];
           newFiles[nextEmptySlot] = file;

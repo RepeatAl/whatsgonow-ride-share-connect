@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -19,12 +19,20 @@ import { AddressSection } from "./form-sections/AddressSection";
 import { AdditionalOptionsSection } from "./form-sections/AdditionalOptionsSection";
 import { DeadlineSection } from "./form-sections/DeadlineSection";
 
+const DRAFT_KEY = "order-form-draft";
+
+interface OrderFormDraft {
+  formValues: Partial<CreateOrderFormValues>;
+  photoUrls: string[];
+  lastModified: number;
+}
+
 const CreateOrderForm = () => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState<string[]>([]);
   const navigate = useNavigate();
-  const tempOrderId = uuidv4(); // Generate a temporary ID for uploads
+  const tempOrderId = uuidv4();
 
   const form = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
@@ -70,10 +78,42 @@ const CreateOrderForm = () => {
     },
   });
 
-  const insuranceEnabled = form.watch("insurance");
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    if (savedDraft) {
+      try {
+        const draft: OrderFormDraft = JSON.parse(savedDraft);
+        Object.entries(draft.formValues).forEach(([key, value]) => {
+          form.setValue(key as keyof CreateOrderFormValues, value);
+        });
+        setUploadedPhotoUrls(draft.photoUrls);
+      } catch (error) {
+        console.error('Error loading draft:', error);
+        localStorage.removeItem(DRAFT_KEY);
+      }
+    }
+  }, [form.setValue]);
+
+  useEffect(() => {
+    const subscription = form.watch((formValues) => {
+      const draft: OrderFormDraft = {
+        formValues,
+        photoUrls: uploadedPhotoUrls,
+        lastModified: Date.now(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch, uploadedPhotoUrls]);
 
   const handlePhotosUploaded = (urls: string[]) => {
     setUploadedPhotoUrls(urls);
+    const draft: OrderFormDraft = {
+      formValues: form.getValues(),
+      photoUrls: urls,
+      lastModified: Date.now(),
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     toast.success(`${urls.length} Fotos erfolgreich hochgeladen`);
   };
 
@@ -109,8 +149,10 @@ const CreateOrderForm = () => {
         
       if (insertError) throw insertError;
 
+      localStorage.removeItem(DRAFT_KEY);
+      
       toast.success("Transportauftrag erfolgreich erstellt!");
-      navigate("/find-transport");
+      navigate(`/orders/${orderId}/edit`);
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Fehler beim Erstellen des Transportauftrags.");
