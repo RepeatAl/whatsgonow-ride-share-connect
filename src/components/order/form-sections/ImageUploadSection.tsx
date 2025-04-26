@@ -1,12 +1,11 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+
+import React, { useState, useRef } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Camera, Save } from "lucide-react";
 import { toast } from "sonner";
-import { UploadQrCode } from "@/components/upload/UploadQrCode";
-import { useDeviceType } from "@/hooks/useDeviceType";
 import { CameraModal } from "./CameraModal";
+import { UploadButtons } from "./components/UploadButtons";
+import { PreviewGrid } from "./components/PreviewGrid";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -29,9 +28,8 @@ export const ImageUploadSection = ({
   setPreviews,
   orderId
 }: ImageUploadSectionProps) => {
-  const { deviceType } = useDeviceType();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const nextPhotoIndex = selectedFiles.length + 1;
   const canTakeMore = nextPhotoIndex <= MAX_FILES;
@@ -67,13 +65,11 @@ export const ImageUploadSection = ({
 
   const handleCapture = (file: File, url: string) => {
     if (canTakeMore) {
-      const newFiles = [...selectedFiles, file];
-      const newPreviews = [...previews, url];
-      setSelectedFiles(newFiles);
-      setPreviews(newPreviews);
+      setSelectedFiles([...selectedFiles, file]);
+      setPreviews([...previews, url]);
       toast.success(`Foto ${nextPhotoIndex} erfolgreich aufgenommen!`);
     } else {
-      toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
+      toast.error(`Maximal ${MAX_FILES} Fotos erlaubt.`);
     }
   };
 
@@ -86,12 +82,10 @@ export const ImageUploadSection = ({
           type: 'image/jpeg'
         });
         if (selectedFiles.length + 1 <= MAX_FILES) {
-          const updatedFiles = [...selectedFiles, file];
-          const updatedPreviews = [...previews, url];
-          setSelectedFiles(updatedFiles);
-          setPreviews(updatedPreviews);
+          setSelectedFiles([...selectedFiles, file]);
+          setPreviews([...previews, url]);
         } else {
-          toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
+          toast.error(`Maximal ${MAX_FILES} Fotos erlaubt.`);
         }
       } catch (error) {
         console.error('Error processing mobile photo:', error);
@@ -122,79 +116,33 @@ export const ImageUploadSection = ({
           <div className="space-y-4">
             <FormItem>
               <FormLabel>Bilder hochladen (max. {MAX_FILES}, 2 MB pro Datei)</FormLabel>
-              <div className="flex flex-wrap items-center gap-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Datei auswählen
-                </Button>
+              
+              <UploadButtons
+                userId={userId}
+                orderId={orderId}
+                canTakeMore={canTakeMore}
+                nextPhotoIndex={nextPhotoIndex}
+                onFileSelect={handleFileSelect}
+                onCameraOpen={() => setIsModalOpen(true)}
+                onMobilePhotosComplete={handleMobilePhotosComplete}
+              />
 
-                {deviceType === 'mobile' && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsModalOpen(true)}
-                    disabled={!canTakeMore}
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    {canTakeMore
-                      ? `Foto ${nextPhotoIndex} aufnehmen`
-                      : `Max. ${MAX_FILES} Fotos erreicht`}
-                  </Button>
-                )}
-
-                {deviceType === 'desktop' && userId && orderId && (
-                  <UploadQrCode
-                    userId={userId}
-                    target={`order-${orderId}`}
-                    onComplete={handleMobilePhotosComplete}
-                  >
-                    Mit Smartphone aufnehmen
-                  </UploadQrCode>
-                )}
-
-                <input 
-                  ref={fileInputRef}
-                  type="file" 
-                  multiple 
-                  accept={ALLOWED_TYPES.join(",")} 
-                  onChange={handleFileChange} 
-                  className="hidden" 
-                />
-              </div>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                multiple 
+                accept={ALLOWED_TYPES.join(",")} 
+                onChange={handleFileChange} 
+                className="hidden" 
+              />
+              
               <FormMessage />
             </FormItem>
 
-            {previews.length > 0 && (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {previews.map((src, idx) => (
-                    <div key={idx} className="relative group">
-                      <img src={src} className="w-full h-32 object-cover rounded" alt={`Upload ${idx + 1}`} />
-                      <Button 
-                        type="button" 
-                        variant="destructive" 
-                        size="icon" 
-                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" 
-                        onClick={() => removeFile(idx)}
-                      >
-                        &times;
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="flex justify-end">
-                  <Button type="submit">
-                    <Save className="mr-2 h-4 w-4" />
-                    Fotos speichern
-                  </Button>
-                </div>
-              </>
-            )}
+            <PreviewGrid 
+              previews={previews} 
+              onRemove={removeFile}
+            />
           </div>
         </CardContent>
       </Card>
