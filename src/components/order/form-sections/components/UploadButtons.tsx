@@ -5,6 +5,9 @@ import { Upload, Camera } from "lucide-react";
 import { UploadQrCode } from "@/components/upload/UploadQrCode";
 import { useDeviceType } from "@/hooks/useDeviceType";
 
+// Define the constant for max files
+const MAX_FILES = 4;
+
 interface UploadButtonsProps {
   userId?: string;
   orderId?: string;
@@ -63,5 +66,3 @@ export const UploadButtons = ({
     </div>
   );
 };
-
-const MAX_FILES = 4;

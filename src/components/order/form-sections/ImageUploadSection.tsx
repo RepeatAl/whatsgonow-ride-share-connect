@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { CameraModal } from "./CameraModal";
@@ -7,6 +7,9 @@ import { UploadButtons } from "./components/UploadButtons";
 import { PreviewGrid } from "./components/PreviewGrid";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
+
+// Define allowed file types
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 interface ImageUploadSectionProps {
   userId?: string;

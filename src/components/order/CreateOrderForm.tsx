@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,9 +22,9 @@ import { DeadlineSection } from "./form-sections/DeadlineSection";
 const CreateOrderForm = () => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState<string[]>([]);
   const navigate = useNavigate();
+  const tempOrderId = uuidv4(); // Generate a temporary ID for uploads
 
   const form = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
@@ -73,6 +72,11 @@ const CreateOrderForm = () => {
 
   const insuranceEnabled = form.watch("insurance");
 
+  const handlePhotosUploaded = (urls: string[]) => {
+    setUploadedPhotoUrls(urls);
+    toast.success(`${urls.length} Fotos erfolgreich hochgeladen`);
+  };
+
   const onSubmit = async (data: CreateOrderFormValues) => {
     setIsSubmitting(true);
     try {
@@ -99,26 +103,11 @@ const CreateOrderForm = () => {
           preferred_vehicle_type: data.preferredVehicleType || '',
           deadline: data.deadline,
           status: 'pending',
-          sender_id: user!.id
+          sender_id: user!.id,
+          photo_urls: uploadedPhotoUrls
         }]);
         
       if (insertError) throw insertError;
-
-      for (const file of selectedFiles) {
-        const path = `${orderId}/${file.name}`;
-        const { error: uploadError } = await supabase
-          .storage
-          .from("items-images")
-          .upload(path, file, {
-            cacheControl: "3600",
-            upsert: false,
-            metadata: {
-              user_id: user!.id,
-              published: "true",
-            },
-          });
-        if (uploadError) throw uploadError;
-      }
 
       toast.success("Transportauftrag erfolgreich erstellt!");
       navigate("/find-transport");
@@ -135,11 +124,8 @@ const CreateOrderForm = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <ImageUploadSection
           userId={user?.id}
-          selectedFiles={selectedFiles}
-          setSelectedFiles={setSelectedFiles}
-          previews={previews}
-          setPreviews={setPreviews}
-          orderId={uuidv4()} // Generate a temporary ID for uploads
+          orderId={tempOrderId}
+          onPhotosUploaded={handlePhotosUploaded}
         />
 
         <Separator />
