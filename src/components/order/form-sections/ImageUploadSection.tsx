@@ -8,9 +8,6 @@ import { PreviewGrid } from "./components/PreviewGrid";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
 
-// Define allowed file types
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-
 interface ImageUploadSectionProps {
   userId?: string;
   orderId?: string;
@@ -27,8 +24,6 @@ export const ImageUploadSection = ({
     fileInputRef,
     handleFileSelect,
     handleFileChange,
-    handleCapture,
-    handleMobilePhotosComplete,
     removeFile,
     uploadFiles,
     isUploading,
@@ -44,10 +39,20 @@ export const ImageUploadSection = ({
       return;
     }
 
-    const uploadedUrls = await uploadFiles();
+    const uploadedUrls = await uploadFiles(userId);
     if (uploadedUrls && onPhotosUploaded) {
       onPhotosUploaded(uploadedUrls);
     }
+  };
+
+  const handleCapture = (file: File, url: string) => {
+    const { handleCapture } = useFileUpload(orderId);
+    handleCapture(file, url);
+  };
+
+  const handleMobilePhotosComplete = (files: string[]) => {
+    const { handleMobilePhotosComplete } = useFileUpload(orderId);
+    handleMobilePhotosComplete(files);
   };
 
   return (
@@ -73,7 +78,7 @@ export const ImageUploadSection = ({
                 ref={fileInputRef}
                 type="file" 
                 multiple 
-                accept={ALLOWED_TYPES.join(",")} 
+                accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handleFileChange} 
                 className="hidden" 
               />
@@ -82,7 +87,7 @@ export const ImageUploadSection = ({
             </FormItem>
 
             <PreviewGrid 
-              previews={previews} 
+              previews={previews}
               onRemove={removeFile}
               onSave={handleSave}
               isUploading={isUploading}
