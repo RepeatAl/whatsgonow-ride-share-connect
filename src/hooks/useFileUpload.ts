@@ -1,14 +1,16 @@
-
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-export function useFileUpload() {
+export function useFileUpload(orderId?: string) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = () => {
@@ -75,6 +77,47 @@ export function useFileUpload() {
     });
   };
 
+  const uploadFiles = async () => {
+    if (!orderId) {
+      toast.error("Keine Auftrags-ID vorhanden");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const [index, file] of selectedFiles.entries()) {
+        const fileName = `${Date.now()}-${file.name}`;
+        const filePath = `${orderId}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('order-photos')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('order-photos')
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(data.publicUrl);
+        setUploadProgress(((index + 1) / selectedFiles.length) * 100);
+      }
+
+      toast.success("Fotos erfolgreich hochgeladen!");
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error("Fehler beim Hochladen der Fotos");
+      return null;
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
   const removeFile = (index: number) => {
     const newFiles = [...selectedFiles];
     const newPreviews = [...previews];
@@ -100,8 +143,10 @@ export function useFileUpload() {
     handleCapture,
     handleMobilePhotosComplete,
     removeFile,
+    uploadFiles,
+    isUploading,
+    uploadProgress,
     canTakeMore: selectedFiles.length < MAX_FILES,
     nextPhotoIndex: selectedFiles.length + 1
   };
 }
-

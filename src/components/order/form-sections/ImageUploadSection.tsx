@@ -1,30 +1,23 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { CameraModal } from "./CameraModal";
 import { UploadButtons } from "./components/UploadButtons";
 import { PreviewGrid } from "./components/PreviewGrid";
 import { useFileUpload } from "@/hooks/useFileUpload";
-
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+import { toast } from "sonner";
 
 interface ImageUploadSectionProps {
   userId?: string;
-  selectedFiles: File[];
-  setSelectedFiles: (files: File[]) => void;
-  previews: string[];
-  setPreviews: (previews: string[]) => void;
   orderId?: string;
+  onPhotosUploaded?: (urls: string[]) => void;
 }
 
 export const ImageUploadSection = ({
   userId,
-  selectedFiles: externalSelectedFiles,
-  setSelectedFiles: setExternalSelectedFiles,
-  previews: externalPreviews,
-  setPreviews: setExternalPreviews,
-  orderId
+  orderId,
+  onPhotosUploaded
 }: ImageUploadSectionProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {
@@ -34,9 +27,25 @@ export const ImageUploadSection = ({
     handleCapture,
     handleMobilePhotosComplete,
     removeFile,
+    uploadFiles,
+    isUploading,
+    uploadProgress,
+    previews,
     canTakeMore,
     nextPhotoIndex
-  } = useFileUpload();
+  } = useFileUpload(orderId);
+
+  const handleSave = async () => {
+    if (!orderId) {
+      toast.error("Bitte speichern Sie zuerst den Auftrag");
+      return;
+    }
+
+    const uploadedUrls = await uploadFiles();
+    if (uploadedUrls && onPhotosUploaded) {
+      onPhotosUploaded(uploadedUrls);
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -70,8 +79,11 @@ export const ImageUploadSection = ({
             </FormItem>
 
             <PreviewGrid 
-              previews={externalPreviews} 
+              previews={previews} 
               onRemove={removeFile}
+              onSave={handleSave}
+              isUploading={isUploading}
+              uploadProgress={uploadProgress}
             />
           </div>
         </CardContent>
@@ -86,4 +98,3 @@ export const ImageUploadSection = ({
     </div>
   );
 };
-
