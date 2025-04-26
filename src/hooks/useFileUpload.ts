@@ -46,6 +46,38 @@ export function useFileUpload(orderId?: string) {
     setPreviews([...previews, ...validPreviews]);
   };
 
+  const handleCapture = (file: File, url: string) => {
+    if (selectedFiles.length < MAX_FILES) {
+      setSelectedFiles([...selectedFiles, file]);
+      setPreviews([...previews, url]);
+      toast.success(`Foto ${selectedFiles.length + 1} erfolgreich aufgenommen!`);
+    } else {
+      toast.error(`Maximal ${MAX_FILES} Fotos erlaubt.`);
+    }
+  };
+
+  const handleMobilePhotosComplete = (files: string[]) => {
+    files.forEach(async url => {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], `mobile-photo-${Date.now()}.jpg`, {
+          type: 'image/jpeg'
+        });
+        
+        if (selectedFiles.length + 1 <= MAX_FILES) {
+          setSelectedFiles(prev => [...prev, file]);
+          setPreviews(prev => [...prev, url]);
+        } else {
+          toast.error(`Maximal ${MAX_FILES} Fotos erlaubt.`);
+        }
+      } catch (error) {
+        console.error('Error processing mobile photo:', error);
+        toast.error('Fehler beim Verarbeiten des Fotos');
+      }
+    });
+  };
+
   const uploadFiles = async (userId?: string) => {
     if (!orderId) {
       toast.error("Keine Auftrags-ID vorhanden");
@@ -116,6 +148,8 @@ export function useFileUpload(orderId?: string) {
     fileInputRef,
     handleFileSelect,
     handleFileChange,
+    handleCapture,
+    handleMobilePhotosComplete,
     removeFile,
     uploadFiles,
     isUploading,
