@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { CameraModal } from "./CameraModal";
@@ -20,13 +20,17 @@ export const ImageUploadSection = ({
   onPhotosUploaded
 }: ImageUploadSectionProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const {
     fileInputRef,
     handleFileSelect,
     handleFileChange,
+    handleCapture,
+    handleMobilePhotosComplete,
     removeFile,
     uploadFiles,
     isUploading,
+    isLoading,
     uploadProgress,
     previews,
     canTakeMore,
@@ -45,15 +49,11 @@ export const ImageUploadSection = ({
     }
   };
 
-  const handleCapture = (file: File, url: string) => {
-    const { handleCapture } = useFileUpload(orderId);
-    handleCapture(file, url);
-  };
-
-  const handleMobilePhotosComplete = (files: string[]) => {
-    const { handleMobilePhotosComplete } = useFileUpload(orderId);
-    handleMobilePhotosComplete(files);
-  };
+  if (isLoading) {
+    return <div className="flex items-center justify-center p-8">
+      <div className="animate 3s spin">Lade Fotos...</div>
+    </div>;
+  }
 
   return (
     <div className="space-y-2">
@@ -87,7 +87,7 @@ export const ImageUploadSection = ({
             </FormItem>
 
             <PreviewGrid 
-              previews={previews}
+              previews={previews.filter(Boolean)}
               onRemove={removeFile}
               onSave={handleSave}
               isUploading={isUploading}

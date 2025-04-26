@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -12,70 +12,170 @@ export function useFileUpload(orderId?: string) {
   const [previews, setPreviews] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load existing photos on mount
+  useEffect(() => {
+    const loadExistingPhotos = async () => {
+      if (!orderId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data: files, error } = await supabase.storage
+          .from('order-photos')
+          .list(orderId);
+
+        if (error) throw error;
+
+        const urls = files.map(file => {
+          const { data } = supabase.storage
+            .from('order-photos')
+            .getPublicUrl(`${orderId}/${file.name}`);
+          return data.publicUrl;
+        });
+
+        setPreviews(urls);
+      } catch (error) {
+        console.error('Error loading photos:', error);
+        toast.error("Fehler beim Laden der gespeicherten Fotos");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadExistingPhotos();
+  }, [orderId]);
+
   const handleFileSelect = () => {
+    if (previews.length >= MAX_FILES) {
+      toast.error(`Maximal ${MAX_FILES} Bilder erlaubt`);
+      return;
+    }
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + selectedFiles.length > MAX_FILES) {
-      toast.error(`Maximal ${MAX_FILES} Bilder erlaubt.`);
+    
+    // Check total number of files
+    if (files.length + previews.length >= MAX_FILES + 1) {
+      toast.error(`Maximal ${MAX_FILES} Bilder erlaubt`);
       return;
     }
 
     const validFiles: File[] = [];
-    const validPreviews: string[] = [];
+    const validUrls: string[] = [];
 
     files.forEach(file => {
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} ist größer als 2 MB.`);
+        toast.error(`${file.name} ist größer als 2 MB`);
         return;
       }
       if (!ALLOWED_TYPES.includes(file.type)) {
-        toast.error(`${file.name} ist kein unterstütztes Format.`);
+        toast.error(`${file.name} ist kein unterstütztes Format`);
         return;
       }
+
       validFiles.push(file);
       const url = URL.createObjectURL(file);
-      validPreviews.push(url);
+      validUrls.push(url);
     });
 
-    setSelectedFiles([...selectedFiles, ...validFiles]);
-    setPreviews([...previews, ...validPreviews]);
+    // Update arrays while maintaining slot positions
+    setSelectedFiles(prev => {
+      const newFiles = [...prev];
+      validFiles.forEach((file, idx) => {
+        const nextEmptySlot = newFiles.findIndex(f => !f);
+        if (nextEmptySlot !== -1) {
+          newFiles[nextEmptySlot] = file;
+        } else {
+          newFiles.push(file);
+        }
+      });
+      return newFiles.slice(0, MAX_FILES);
+    });
+
+    setPreviews(prev => {
+      const newPreviews = [...prev];
+      validUrls.forEach((url, idx) => {
+        const nextEmptySlot = newPreviews.findIndex(p => !p);
+        if (nextEmptySlot !== -1) {
+          newPreviews[nextEmptySlot] = url;
+        } else {
+          newPreviews.push(url);
+        }
+      });
+      return newPreviews.slice(0, MAX_FILES);
+    });
   };
 
   const handleCapture = (file: File, url: string) => {
-    if (selectedFiles.length < MAX_FILES) {
-      setSelectedFiles([...selectedFiles, file]);
-      setPreviews([...previews, url]);
-      toast.success(`Foto ${selectedFiles.length + 1} erfolgreich aufgenommen!`);
-    } else {
-      toast.error(`Maximal ${MAX_FILES} Fotos erlaubt.`);
+    if (previews.length >= MAX_FILES) {
+      toast.error(`Maximal ${MAX_FILES} Fotos erlaubt`);
+      return;
     }
+
+    // Find next empty slot
+    const nextEmptySlot = previews.findIndex(p => !p);
+    if (nextEmptySlot === -1) {
+      toast.error(`Maximal ${MAX_FILES} Fotos erlaubt`);
+      return;
+    }
+
+    // Update arrays at specific index
+    setSelectedFiles(prev => {
+      const newFiles = [...prev];
+      newFiles[nextEmptySlot] = file;
+      return newFiles;
+    });
+
+    setPreviews(prev => {
+      const newPreviews = [...prev];
+      newPreviews[nextEmptySlot] = url;
+      return newPreviews;
+    });
+
+    toast.success(`Foto ${nextEmptySlot + 1} erfolgreich aufgenommen!`);
   };
 
-  const handleMobilePhotosComplete = (files: string[]) => {
-    files.forEach(async url => {
+  const handleMobilePhotosComplete = async (files: string[]) => {
+    for (const url of files) {
+      if (previews.length >= MAX_FILES) {
+        toast.error(`Maximal ${MAX_FILES} Fotos erlaubt`);
+        break;
+      }
+
       try {
         const response = await fetch(url);
         const blob = await response.blob();
         const file = new File([blob], `mobile-photo-${Date.now()}.jpg`, {
           type: 'image/jpeg'
         });
-        
-        if (selectedFiles.length + 1 <= MAX_FILES) {
-          setSelectedFiles(prev => [...prev, file]);
-          setPreviews(prev => [...prev, url]);
-        } else {
-          toast.error(`Maximal ${MAX_FILES} Fotos erlaubt.`);
-        }
+
+        // Find next empty slot
+        const nextEmptySlot = previews.findIndex(p => !p);
+        if (nextEmptySlot === -1) break;
+
+        // Update arrays at specific index
+        setSelectedFiles(prev => {
+          const newFiles = [...prev];
+          newFiles[nextEmptySlot] = file;
+          return newFiles;
+        });
+
+        setPreviews(prev => {
+          const newPreviews = [...prev];
+          newPreviews[nextEmptySlot] = url;
+          return newPreviews;
+        });
       } catch (error) {
         console.error('Error processing mobile photo:', error);
         toast.error('Fehler beim Verarbeiten des Fotos');
       }
-    });
+    }
   };
 
   const uploadFiles = async (userId?: string) => {
@@ -84,12 +184,18 @@ export function useFileUpload(orderId?: string) {
       return;
     }
 
+    if (previews.length === 0) {
+      toast.error("Bitte mindestens ein Foto hochladen");
+      return;
+    }
+
     setIsUploading(true);
     setUploadProgress(0);
     const uploadedUrls: string[] = [];
 
     try {
-      for (const [index, file] of selectedFiles.entries()) {
+      const validFiles = selectedFiles.filter(Boolean);
+      for (const [index, file] of validFiles.entries()) {
         const fileName = `${Date.now()}-${file.name}`;
         const filePath = `${orderId}/${fileName}`;
 
@@ -111,7 +217,7 @@ export function useFileUpload(orderId?: string) {
           .getPublicUrl(filePath);
 
         uploadedUrls.push(data.publicUrl);
-        setUploadProgress(((index + 1) / selectedFiles.length) * 100);
+        setUploadProgress(((index + 1) / validFiles.length) * 100);
       }
 
       toast.success("Fotos erfolgreich hochgeladen!");
@@ -130,21 +236,22 @@ export function useFileUpload(orderId?: string) {
     const newFiles = [...selectedFiles];
     const newPreviews = [...previews];
     
-    URL.revokeObjectURL(newPreviews[index]);
-    newFiles.splice(index, 1);
-    newPreviews.splice(index, 1);
+    if (newPreviews[index]) {
+      URL.revokeObjectURL(newPreviews[index]);
+    }
     
-    setSelectedFiles(newFiles);
-    setPreviews(newPreviews);
+    newFiles[index] = undefined;
+    newPreviews[index] = undefined;
+    
+    setSelectedFiles(newFiles.filter(Boolean));
+    setPreviews(newPreviews.filter(Boolean));
     
     toast.success("Bild erfolgreich entfernt");
   };
 
   return {
     selectedFiles,
-    setSelectedFiles,
     previews,
-    setPreviews,
     fileInputRef,
     handleFileSelect,
     handleFileChange,
@@ -153,8 +260,9 @@ export function useFileUpload(orderId?: string) {
     removeFile,
     uploadFiles,
     isUploading,
+    isLoading,
     uploadProgress,
-    canTakeMore: selectedFiles.length < MAX_FILES,
-    nextPhotoIndex: selectedFiles.length + 1
+    canTakeMore: previews.filter(Boolean).length < MAX_FILES,
+    nextPhotoIndex: previews.filter(Boolean).length + 1
   };
 }

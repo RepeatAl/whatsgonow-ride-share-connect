@@ -21,20 +21,23 @@ export const PreviewGrid = ({
   isUploading,
   uploadProgress = 0
 }: PreviewGridProps) => {
+  // Create an array of 4 slots, filling empty slots with undefined
+  const previewSlots = Array.from({ length: MAX_FILES }, (_, idx) => previews[idx]);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {Array.from({ length: MAX_FILES }).map((_, idx) => (
+        {previewSlots.map((preview, idx) => (
           <div
             key={idx}
             className={`relative group flex items-center justify-center w-full h-32 border-2 ${
-              previews[idx] ? "border-solid" : "border-dashed"
-            } rounded ${previews[idx] ? "bg-white" : "bg-gray-50"}`}
+              preview ? "border-solid" : "border-dashed"
+            } rounded ${preview ? "bg-white" : "bg-gray-50"}`}
           >
-            {previews[idx] ? (
+            {preview ? (
               <>
                 <img
-                  src={previews[idx]}
+                  src={preview}
                   alt={`Foto ${idx + 1}`}
                   className="w-full h-full object-cover rounded"
                 />
@@ -72,7 +75,7 @@ export const PreviewGrid = ({
           <div className="flex justify-end">
             <Button 
               onClick={onSave} 
-              disabled={isUploading || previews.length === 0}
+              disabled={isUploading}
             >
               <Save className="mr-2 h-4 w-4" />
               Fotos speichern
