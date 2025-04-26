@@ -161,6 +161,8 @@ const CreateOrderForm = () => {
     }
   };
 
+  const insuranceEnabled = form.watch('insurance');
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
