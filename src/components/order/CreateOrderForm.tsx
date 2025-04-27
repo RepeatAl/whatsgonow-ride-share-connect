@@ -1,10 +1,8 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { v4 as uuidv4 } from "uuid";
-import { toast } from "sonner";
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
 import { useAuth } from "@/contexts/AuthContext";
 import { Form } from "@/components/ui/form";
@@ -17,9 +15,10 @@ import { AddressSection } from "./form-sections/AddressSection";
 import { AdditionalOptionsSection } from "./form-sections/AdditionalOptionsSection";
 import { DeadlineSection } from "./form-sections/DeadlineSection";
 import { SubmitButton } from "./form-sections/SubmitButton";
-import { useOrderFormDraft } from "@/hooks/useOrderFormDraft";
+import { useOrderDraftStorage } from "@/hooks/useOrderDraftStorage";
 import { useOrderSubmit } from "@/hooks/useOrderSubmit";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const CreateOrderForm = () => {
   const { user } = useAuth();
@@ -71,8 +70,16 @@ const CreateOrderForm = () => {
     },
   });
 
-  const { clearDraft } = useOrderFormDraft(form, uploadedPhotoUrls);
+  const { clearDraft, isLoading, isSaving } = useOrderDraftStorage(form, uploadedPhotoUrls);
   const { handleSubmit, isSubmitting } = useOrderSubmit(user?.id, clearDraft);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   const handlePhotosUploaded = (urls: string[]) => {
     setUploadedPhotoUrls(urls);
@@ -105,10 +112,20 @@ const CreateOrderForm = () => {
           <Button
             type="button"
             variant="secondary"
-            onClick={handleSaveDraft}
+            disabled={isSaving}
             className="mb-4"
           >
-            Als Entwurf speichern
+            {isSaving ? (
+              <>
+                <LoadingSpinner className="w-4 h-4 mr-2" />
+                Speichert...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Als Entwurf gespeichert
+              </>
+            )}
           </Button>
         </div>
 
