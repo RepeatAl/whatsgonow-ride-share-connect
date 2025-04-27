@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -22,15 +21,24 @@ import { ArrowLeft, Save } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 
-const CreateOrderForm = () => {
+interface CreateOrderFormProps {
+  initialData?: {
+    draft_data: Partial<CreateOrderFormValues>;
+    photo_urls: string[];
+  };
+}
+
+const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState<string[]>([]);
+  const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState<string[]>(
+    initialData?.photo_urls || []
+  );
   const tempOrderId = uuidv4();
 
   const form = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
-    defaultValues: {
+    defaultValues: initialData?.draft_data || {
       title: "",
       description: "",
       pickupStreet: "",
@@ -87,13 +95,22 @@ const CreateOrderForm = () => {
     setUploadedPhotoUrls(urls);
   };
 
-  const handleSaveDraft = () => {
-    const currentValues = form.getValues();
-    localStorage.setItem('order-draft', JSON.stringify({
-      formValues: currentValues,
-      photoUrls: uploadedPhotoUrls
-    }));
-    toast.success("Auftrag als Entwurf gespeichert");
+  const handleSaveDraft = async () => {
+    try {
+      const currentValues = form.getValues();
+      await clearDraft();
+      localStorage.removeItem('order-draft');
+      navigate("/orders/drafts");
+      toast.success("Entwurf gespeichert");
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast.error("Fehler beim Speichern des Entwurfs");
+    }
+  };
+
+  const handleCreateOrder = async (data: CreateOrderFormValues) => {
+    await handleSubmit(data, uploadedPhotoUrls);
+    navigate("/orders");
   };
 
   const insuranceEnabled = form.watch('insurance');
@@ -114,6 +131,7 @@ const CreateOrderForm = () => {
           <Button
             type="button"
             variant="secondary"
+            onClick={handleSaveDraft}
             disabled={isSaving}
             className="mb-4"
           >
@@ -125,17 +143,18 @@ const CreateOrderForm = () => {
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" />
-                Als Entwurf gespeichert
+                Als Entwurf speichern
               </>
             )}
           </Button>
         </div>
 
-        <form onSubmit={form.handleSubmit((data) => handleSubmit(data, uploadedPhotoUrls))} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleCreateOrder)} className="space-y-6">
           <ImageUploadSection
             userId={user?.id}
             orderId={tempOrderId}
             onPhotosUploaded={handlePhotosUploaded}
+            existingUrls={uploadedPhotoUrls}
           />
 
           <Separator />

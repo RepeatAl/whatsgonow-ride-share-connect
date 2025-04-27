@@ -52,7 +52,6 @@ export const DeadlineSection = ({ form }: DeadlineSectionProps) => {
                     selected={field.value}
                     onSelect={(date) => {
                       field.onChange(date);
-                      // Close popover automatically after selection
                       setIsCalendarOpen(false);
                     }}
                     disabled={(date) => date < new Date()}

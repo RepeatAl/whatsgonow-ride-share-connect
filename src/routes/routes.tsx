@@ -36,6 +36,9 @@ import UsersPage from "@/pages/admin/users";
 import CompleteProfile from "@/pages/CompleteProfile";
 import MobileUpload from "@/pages/MobileUpload";
 import UploadComplete from "@/pages/UploadComplete";
+import DraftList from "@/pages/orders/DraftList";
+import DraftEdit from "@/pages/orders/DraftEdit";
+import MyOrders from "@/pages/orders/MyOrders";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -74,6 +77,9 @@ export const routes: RouteConfig[] = [
   // Protected application routes
   { path: "/profile", element: <Profile />, protected: true },
   { path: "/orders", element: <Orders />, protected: true },
+  { path: "/orders/drafts", element: <DraftList />, protected: true },
+  { path: "/orders/drafts/:draftId/edit", element: <DraftEdit />, protected: true },
+  { path: "/orders/mine", element: <MyOrders />, protected: true },
   { path: "/create-order", element: <CreateOrder />, protected: true },
   { path: "/deal/:orderId", element: <Deal />, protected: true },
   { path: "/feedback", element: <Feedback />, protected: true },
