@@ -14,11 +14,12 @@ export const isTestRegion = (region: string | null | undefined): boolean => {
 // Function to fetch user region from Supabase
 export const fetchUserRegion = async (supabase: any, userId: string): Promise<string | null> => {
   try {
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("region")
-      .eq("user_id", userId)
-      .single();
+   const { data, error } = await supabase
+  .from('user_regions')
+  .select('region')
+  .eq('id', userId)
+  .single();
+
 
     if (error) {
       console.error("Failed to load region:", error);
