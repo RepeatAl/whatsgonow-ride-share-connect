@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useFilePreviews } from "./useFilePreviews";
 import { useFileSelection } from "./useFileSelection";
 import { useFileUploader } from "./useFileUploader";
+import { MAX_FILES } from "./constants"; // Added import for MAX_FILES
 
 export function useFileUpload(orderId?: string) {
   const [isLoading, setIsLoading] = useState(true);
