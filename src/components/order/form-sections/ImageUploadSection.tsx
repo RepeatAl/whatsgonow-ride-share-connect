@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -5,7 +6,6 @@ import { CameraModal } from "./CameraModal";
 import { UploadButtons } from "./components/UploadButtons";
 import { PreviewGrid } from "./components/PreviewGrid";
 import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
-import { useUploadInit } from "@/hooks/file-upload/useUploadInit";
 import { toast } from "sonner";
 
 interface ImageUploadSectionProps {
@@ -36,13 +36,16 @@ export const ImageUploadSection = ({
     uploadProgress,
     previews,
     canTakeMore,
-    nextPhotoIndex
+    nextPhotoIndex,
+    initializeWithExistingUrls
   } = useFileUpload(orderId, existingUrls);
 
-  useUploadInit({
-    existingUrls,
-    initializeWithExistingUrls: useFileUpload.initializeWithExistingUrls
-  });
+  // Initialize with existing URLs
+  useEffect(() => {
+    if (existingUrls?.length > 0) {
+      initializeWithExistingUrls(existingUrls);
+    }
+  }, [existingUrls, initializeWithExistingUrls]);
 
   const handleRemoveFile = useCallback((index: number) => {
     removeFile(index);

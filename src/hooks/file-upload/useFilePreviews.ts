@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { MAX_FILES } from "./constants";
@@ -6,10 +5,9 @@ import { MAX_FILES } from "./constants";
 export const useFilePreviews = () => {
   const [previews, setPreviews] = useState<string[]>([]);
   const previewUrlsRef = useRef<string[]>([]);
-  
   const initialLoadDoneRef = useRef(false);
   const restoredFromStorageRef = useRef(false);
-  
+
   // Initial setup - clear previews when component mounts
   useEffect(() => {
     if (!initialLoadDoneRef.current) {

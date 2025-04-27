@@ -109,6 +109,6 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
     previews,
     canTakeMore,
     nextPhotoIndex,
-    initializeWithExistingUrls: useFilePreviews.initializeWithExistingUrls
+    initializeWithExistingUrls
   };
 };
