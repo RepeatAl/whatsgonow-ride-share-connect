@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { CameraModal } from "./CameraModal";
@@ -40,7 +39,6 @@ export const ImageUploadSection = ({
     initializeWithExistingUrls
   } = useFileUpload(orderId, existingUrls);
 
-  // Initialize with existing URLs
   useEffect(() => {
     if (existingUrls?.length > 0) {
       initializeWithExistingUrls(existingUrls);
