@@ -32,7 +32,7 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
     removeFile
   } = useFileSelection(updatePreviews);
   
-  const { uploadFile } = useFileUploader({
+  const { uploadFile, uploadFiles: uploaderUploadFiles } = useFileUploader({
     onProgress: (progress) => setUploadProgress(progress)
   });
 
@@ -48,7 +48,7 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
   }, [updatePreviews]);
   
   const uploadFiles = async (userId?: string): Promise<string[]> => {
-    if (!selectedFiles.current.length && !previews.length) {
+    if (!selectedFiles.length && !previews.length) {
       return existingUrls;
     }
     
@@ -62,9 +62,11 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       setUploadProgress(0);
       
       // Filter out only selected files that aren't already in previewsRef
-      const filesToUpload = selectedFiles.current.filter(file => {
-        const fileUrl = URL.createObjectURL(file);
-        return !previewsRef.current.includes(fileUrl);
+      const filesToUpload = selectedFiles.filter(file => {
+        // Generate a temporary object URL for this file to check
+        const tempUrl = URL.createObjectURL(file);
+        URL.revokeObjectURL(tempUrl); // Clean up immediately
+        return !previewsRef.current.some(url => url === tempUrl);
       });
       
       if (filesToUpload.length === 0) {
@@ -73,37 +75,14 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       }
       
       // Upload new files
-      const uploadPromises = filesToUpload.map(async (file) => {
-        try {
-          const filePath = `${orderId}/${uuidv4()}-${file.name}`;
-          const { data, error } = await supabase.storage
-            .from("order-images")
-            .upload(filePath, file, {
-              cacheControl: "3600",
-              upsert: false
-            });
-            
-          if (error) {
-            throw error;
-          }
-          
-          const { data: { publicUrl } } = supabase.storage
-            .from("order-images")
-            .getPublicUrl(filePath);
-            
-          return publicUrl;
-        } catch (error) {
-          console.error("Error uploading file:", error);
-          return null;
-        }
-      });
-      
-      // Wait for all uploads to complete
-      const uploadedUrls = await Promise.all(uploadPromises);
-      const validUrls = uploadedUrls.filter(Boolean) as string[];
+      const uploadedUrls = await uploaderUploadFiles(
+        orderId,
+        userId,
+        filesToUpload
+      );
       
       // Combine with existing URLs, but filter out any that might be duplicates
-      const combinedUrls = [...validUrls, ...existingUrls];
+      const combinedUrls = [...uploadedUrls, ...existingUrls];
       const uniqueUrls = Array.from(new Set(combinedUrls));
       
       return uniqueUrls.slice(0, 4); // Limit to 4 images
