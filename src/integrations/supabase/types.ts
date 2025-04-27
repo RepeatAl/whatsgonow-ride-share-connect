@@ -142,6 +142,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "fk_feedback_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       feedback_responses: {
@@ -612,11 +619,25 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "fk_messages_recipient"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_messages_sender"
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_messages_sender"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "messages_order_id_fkey"
@@ -670,6 +691,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_offers_driver"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_offers_order"
@@ -798,6 +826,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_orders_sender"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "orders_sender_id_fkey"
@@ -974,6 +1009,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "fk_ratings_from_user"
+            columns: ["from_user"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_ratings_order"
             columns: ["order_id"]
             isOneToOne: false
@@ -986,6 +1028,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_ratings_to_user"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "ratings_from_user_fkey"
@@ -1051,11 +1100,25 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "fk_transactions_payer"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_transactions_receiver"
             columns: ["receiver_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_receiver"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "transactions_order_id_fkey"
@@ -1237,7 +1300,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_regions: {
+        Row: {
+          id: string | null
+          region: string | null
+        }
+        Insert: {
+          id?: string | null
+          region?: string | null
+        }
+        Update: {
+          id?: string | null
+          region?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_view_sensitive_data: {

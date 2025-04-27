@@ -14,19 +14,19 @@ export const isTestRegion = (region: string | null | undefined): boolean => {
 // Function to fetch user region from Supabase
 export const fetchUserRegion = async (supabase: any, userId: string): Promise<string | null> => {
   try {
-   const { data, error } = await supabase
-  .from('user_regions')
-  .select('region')
-  .eq('id', userId)
-  .single();
-
+    const { data, error } = await supabase
+      .from('user_regions')
+      .select('region')
+      .eq('user_id', userId)  // Updated from 'id' to 'user_id'
+      .single();
 
     if (error) {
       console.error("Failed to load region:", error);
       return null;
     }
     
-    return profile?.region || null;
+    // Return the region data if available, otherwise null
+    return data?.region || null;
   } catch (error) {
     console.error("Unexpected error loading region:", error);
     return null;
