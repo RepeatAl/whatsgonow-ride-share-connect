@@ -5,12 +5,21 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 import { CreateOrderFormValues } from '@/lib/validators/order';
 
+// Define a return type for the submission function
+interface SubmitResult {
+  success: boolean;
+  error?: string;
+  id?: string;
+}
+
 export function useOrderSubmit(userId: string | undefined, clearDraft: () => void) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (data: CreateOrderFormValues, photoUrls: string[]) => {
-    if (!userId) return;
+  const handleSubmit = async (data: CreateOrderFormValues, photoUrls: string[]): Promise<SubmitResult> => {
+    if (!userId) {
+      return { success: false, error: "Benutzer nicht angemeldet" };
+    }
     
     setIsSubmitting(true);
     try {
@@ -45,10 +54,14 @@ export function useOrderSubmit(userId: string | undefined, clearDraft: () => voi
 
       clearDraft();
       toast.success("Transportauftrag erfolgreich erstellt!");
-      navigate(`/orders/${insertedOrder.id}/edit`);
+      return { success: true, id: insertedOrder.id };
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Fehler beim Erstellen des Transportauftrags.");
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Unbekannter Fehler" 
+      };
     } finally {
       setIsSubmitting(false);
     }

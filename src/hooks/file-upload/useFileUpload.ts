@@ -1,192 +1,135 @@
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { toast } from "sonner";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { v4 as uuidv4 } from "uuid";
 import { useFilePreviews } from "./useFilePreviews";
 import { useFileSelection } from "./useFileSelection";
 import { useFileUploader } from "./useFileUploader";
-import { MAX_FILES } from "./constants";
+import { toast } from "sonner";
 
-export function useFileUpload(orderId?: string, existingUrls: string[] = []) {
-  const [isLoading, setIsLoading] = useState(true);
-  const { previews, updatePreviews, removePreview, clearPreviews, canTakeMore, nextPhotoIndex } = useFilePreviews();
-  const { selectedFiles, fileInputRef, handleFileSelect, addFiles, removeFile } = useFileSelection();
-  const { uploadFiles, isUploading, uploadProgress } = useFileUploader();
+export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Track if we've already loaded photos to avoid redundant loading
-  const hasLoadedPhotosRef = useRef(false);
-  // Cache loaded URLs to avoid refetching
-  const cachedUrlsRef = useRef<string[]>([]);
-
-  useEffect(() => {
-    // Only load photos if we haven't already loaded them
-    if (hasLoadedPhotosRef.current) {
-      return;
-    }
-
-    const loadExistingPhotos = async () => {
-      setIsLoading(true);
-      
-      try {
-        let photoUrls: string[] = [];
-        
-        // First add any existing URLs passed directly to the component
-        if (existingUrls && existingUrls.length > 0) {
-          photoUrls = [...existingUrls];
-        }
-        
-        // Then check storage for any additional photos if we have an orderId
-        if (orderId) {
-          const { data: files, error } = await supabase.storage
-            .from('order-photos')
-            .list(orderId);
+  const { 
+    previews, 
+    updatePreviews, 
+    removePreview, 
+    clearPreviews, 
+    canTakeMore,
+    nextPhotoIndex,
+    previewsRef,
+    initializeWithExistingUrls
+  } = useFilePreviews();
   
-          if (error) throw error;
-  
-          if (files && files.length > 0) {
-            const storageUrls = files.map(file => {
-              const { data } = supabase.storage
-                .from('order-photos')
-                .getPublicUrl(`${orderId}/${file.name}`);
-              return data.publicUrl;
-            });
-  
-            photoUrls = [...photoUrls, ...storageUrls];
-          }
-        }
-
-        // Cache the loaded URLs
-        cachedUrlsRef.current = photoUrls;
-        updatePreviews(photoUrls);
-        hasLoadedPhotosRef.current = true;
-      } catch (error) {
-        console.error('Error loading photos:', error);
-        toast.error("Fehler beim Laden der gespeicherten Fotos");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadExistingPhotos();
-  }, [orderId, updatePreviews, existingUrls]);
-
-  // Preserve loaded photos during form updates
-  useEffect(() => {
-    // If we've loaded photos before but previews are empty now (possibly due to form rerender)
-    // restore from our cache
-    if (hasLoadedPhotosRef.current && cachedUrlsRef.current.length > 0 && previews.length === 0) {
-      updatePreviews(cachedUrlsRef.current);
-    }
-  }, [previews.length, updatePreviews]);
-
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + previews.length >= MAX_FILES + 1) {
-      toast.error(`Maximal ${MAX_FILES} Bilder erlaubt`);
-      return;
-    }
-
-    const urls = files.map(file => URL.createObjectURL(file));
-    updatePreviews(urls);
-    addFiles(files);
-    
-    // Update our cache as well
-    cachedUrlsRef.current = [...cachedUrlsRef.current, ...urls].slice(0, MAX_FILES);
-  }, [previews.length, updatePreviews, addFiles]);
-
-  const handleCapture = useCallback((file: File, url: string) => {
-    if (previews.length >= MAX_FILES) {
-      toast.error(`Maximal ${MAX_FILES} Fotos erlaubt`);
-      return;
-    }
-
-    updatePreviews([url]);
-    addFiles([file]);
-    
-    // Update our cache
-    cachedUrlsRef.current = [...cachedUrlsRef.current, url].slice(0, MAX_FILES);
-    
-    toast.success(`Foto ${nextPhotoIndex} erfolgreich aufgenommen!`);
-  }, [previews.length, nextPhotoIndex, updatePreviews, addFiles]);
-
-  const handleMobilePhotosComplete = useCallback(async (files: string[]) => {
-    const newUrls: string[] = [];
-    
-    for (const url of files) {
-      if (previews.length + newUrls.length >= MAX_FILES) {
-        toast.error(`Maximal ${MAX_FILES} Fotos erlaubt`);
-        break;
-      }
-
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const file = new File([blob], `mobile-photo-${Date.now()}.jpg`, {
-          type: 'image/jpeg'
-        });
-
-        addFiles([file]);
-        newUrls.push(url);
-      } catch (error) {
-        console.error('Error processing mobile photo:', error);
-        toast.error('Fehler beim Verarbeiten des Fotos');
-      }
-    }
-    
-    if (newUrls.length > 0) {
-      updatePreviews(newUrls);
-      cachedUrlsRef.current = [...cachedUrlsRef.current, ...newUrls].slice(0, MAX_FILES);
-    }
-  }, [previews.length, updatePreviews, addFiles]);
-
-  const removeFileHandlerMemoized = useCallback((index: number) => {
-    removeFile(index);
-    removePreview(index);
-    
-    // Update cache by removing the URL at this index
-    const newCache = [...cachedUrlsRef.current];
-    newCache.splice(index, 1);
-    cachedUrlsRef.current = newCache;
-    
-    toast.success("Bild erfolgreich entfernt");
-  }, [removeFile, removePreview]);
-
-  const uploadFilesMemoized = useCallback(async (userId?: string) => {
-    if (!orderId) {
-      toast.error("Keine Auftrags-ID vorhanden");
-      return null;
-    }
-
-    const urls = await uploadFiles(orderId, userId, selectedFiles);
-    
-    if (urls) {
-      // Update cache with the new permanent URLs
-      cachedUrlsRef.current = [...urls];
-      // Update the previews with the permanent URLs
-      updatePreviews(urls);
-      return urls;
-    }
-    
-    return null;
-  }, [orderId, uploadFiles, selectedFiles, updatePreviews]);
-
-  return {
+  const { 
+    fileInputRef,
     selectedFiles,
-    previews,
+    handleFileSelect,
+    handleFileChange,
+    handleCapture,
+    removeFile
+  } = useFileSelection(updatePreviews);
+  
+  const { uploadFile } = useFileUploader({
+    onProgress: (progress) => setUploadProgress(progress)
+  });
+
+  // Initialize with existing URLs if provided
+  useEffect(() => {
+    if (existingUrls?.length > 0) {
+      initializeWithExistingUrls(existingUrls);
+    }
+  }, [existingUrls, initializeWithExistingUrls]);
+  
+  const handleMobilePhotosComplete = useCallback((files: string[]) => {
+    updatePreviews(files);
+  }, [updatePreviews]);
+  
+  const uploadFiles = async (userId?: string): Promise<string[]> => {
+    if (!selectedFiles.current.length && !previews.length) {
+      return existingUrls;
+    }
+    
+    if (!orderId) {
+      toast.error("Bitte speichern Sie zuerst den Auftrag");
+      return [];
+    }
+    
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+      
+      // Filter out only selected files that aren't already in previewsRef
+      const filesToUpload = selectedFiles.current.filter(file => {
+        const fileUrl = URL.createObjectURL(file);
+        return !previewsRef.current.includes(fileUrl);
+      });
+      
+      if (filesToUpload.length === 0) {
+        // Just return the existing previews if no new files
+        return [...previews.filter(Boolean), ...existingUrls];
+      }
+      
+      // Upload new files
+      const uploadPromises = filesToUpload.map(async (file) => {
+        try {
+          const filePath = `${orderId}/${uuidv4()}-${file.name}`;
+          const { data, error } = await supabase.storage
+            .from("order-images")
+            .upload(filePath, file, {
+              cacheControl: "3600",
+              upsert: false
+            });
+            
+          if (error) {
+            throw error;
+          }
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from("order-images")
+            .getPublicUrl(filePath);
+            
+          return publicUrl;
+        } catch (error) {
+          console.error("Error uploading file:", error);
+          return null;
+        }
+      });
+      
+      // Wait for all uploads to complete
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const validUrls = uploadedUrls.filter(Boolean) as string[];
+      
+      // Combine with existing URLs, but filter out any that might be duplicates
+      const combinedUrls = [...validUrls, ...existingUrls];
+      const uniqueUrls = Array.from(new Set(combinedUrls));
+      
+      return uniqueUrls.slice(0, 4); // Limit to 4 images
+    } catch (error) {
+      console.error("Error in uploadFiles:", error);
+      toast.error("Fehler beim Hochladen der Dateien");
+      return [];
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(100);
+    }
+  };
+  
+  return {
     fileInputRef,
     handleFileSelect,
     handleFileChange,
     handleCapture,
     handleMobilePhotosComplete,
-    removeFile: removeFileHandlerMemoized,
-    uploadFiles: uploadFilesMemoized,
+    removeFile,
+    uploadFiles,
     isUploading,
     isLoading,
     uploadProgress,
+    previews,
     canTakeMore,
-    nextPhotoIndex,
-    cachedUrls: cachedUrlsRef.current, // Expose cached URLs if needed
+    nextPhotoIndex
   };
-}
-
-export * from './constants';
+};

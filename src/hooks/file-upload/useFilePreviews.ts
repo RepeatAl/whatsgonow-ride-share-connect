@@ -1,3 +1,4 @@
+
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { MAX_FILES } from "./constants";
@@ -7,7 +8,9 @@ export const useFilePreviews = () => {
   const previewUrlsRef = useRef<string[]>([]);
   
   const initialLoadDoneRef = useRef(false);
+  const restoredFromStorageRef = useRef(false);
   
+  // Initial setup - clear previews when component mounts
   useEffect(() => {
     if (!initialLoadDoneRef.current) {
       setPreviews([]);
@@ -16,6 +19,7 @@ export const useFilePreviews = () => {
     }
   }, []);
 
+  // Function to update previews with new URLs
   const updatePreviews = useCallback((newUrls: string[]) => {
     if (newUrls.length === 0) return;
     
@@ -47,6 +51,16 @@ export const useFilePreviews = () => {
     });
   }, []);
 
+  // Function to initialize previews with existing URLs
+  const initializeWithExistingUrls = useCallback((existingUrls: string[]) => {
+    if (!existingUrls.length || restoredFromStorageRef.current) return;
+    
+    setPreviews(existingUrls.slice(0, MAX_FILES));
+    previewUrlsRef.current = existingUrls.slice(0, MAX_FILES);
+    restoredFromStorageRef.current = true;
+  }, []);
+
+  // Function to remove preview at specified index
   const removePreview = useCallback((index: number) => {
     setPreviews(prev => {
       const newPreviews = [...prev];
@@ -63,6 +77,7 @@ export const useFilePreviews = () => {
     });
   }, []);
 
+  // Function to clear all previews
   const clearPreviews = useCallback(() => {
     previewUrlsRef.current.forEach(url => {
       if (url?.startsWith('blob:')) {
@@ -71,11 +86,13 @@ export const useFilePreviews = () => {
     });
     setPreviews([]);
     previewUrlsRef.current = [];
+    restoredFromStorageRef.current = false;
   }, []);
 
   return {
     previews,
     updatePreviews,
+    initializeWithExistingUrls,
     removePreview,
     clearPreviews,
     canTakeMore: previews.filter(Boolean).length < MAX_FILES,
