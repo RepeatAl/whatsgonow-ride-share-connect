@@ -5,9 +5,9 @@ import { supabase } from "@/lib/supabaseClient";
 import { useFilePreviews } from "./useFilePreviews";
 import { useFileSelection } from "./useFileSelection";
 import { useFileUploader } from "./useFileUploader";
-import { MAX_FILES } from "./constants"; // Added import for MAX_FILES
+import { MAX_FILES } from "./constants";
 
-export function useFileUpload(orderId?: string) {
+export function useFileUpload(orderId?: string, existingUrls: string[] = []) {
   const [isLoading, setIsLoading] = useState(true);
   const { previews, updatePreviews, removePreview, canTakeMore, nextPhotoIndex } = useFilePreviews();
   const { selectedFiles, fileInputRef, handleFileSelect, addFiles, removeFile } = useFileSelection();
@@ -15,26 +15,33 @@ export function useFileUpload(orderId?: string) {
 
   useEffect(() => {
     const loadExistingPhotos = async () => {
-      if (!orderId) {
-        setIsLoading(false);
-        return;
-      }
-
+      setIsLoading(true);
+      
       try {
-        const { data: files, error } = await supabase.storage
-          .from('order-photos')
-          .list(orderId);
-
-        if (error) throw error;
-
-        const urls = files.map(file => {
-          const { data } = supabase.storage
+        // First add any existing URLs passed directly to the component
+        if (existingUrls && existingUrls.length > 0) {
+          updatePreviews(existingUrls);
+        }
+        
+        // Then check storage for any additional photos if we have an orderId
+        if (orderId) {
+          const { data: files, error } = await supabase.storage
             .from('order-photos')
-            .getPublicUrl(`${orderId}/${file.name}`);
-          return data.publicUrl;
-        });
-
-        updatePreviews(urls);
+            .list(orderId);
+  
+          if (error) throw error;
+  
+          if (files && files.length > 0) {
+            const storageUrls = files.map(file => {
+              const { data } = supabase.storage
+                .from('order-photos')
+                .getPublicUrl(`${orderId}/${file.name}`);
+              return data.publicUrl;
+            });
+  
+            updatePreviews(storageUrls);
+          }
+        }
       } catch (error) {
         console.error('Error loading photos:', error);
         toast.error("Fehler beim Laden der gespeicherten Fotos");
@@ -44,7 +51,7 @@ export function useFileUpload(orderId?: string) {
     };
 
     loadExistingPhotos();
-  }, [orderId, updatePreviews]);
+  }, [orderId, updatePreviews, existingUrls]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

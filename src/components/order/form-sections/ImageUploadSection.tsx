@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,12 +12,14 @@ interface ImageUploadSectionProps {
   userId?: string;
   orderId?: string;
   onPhotosUploaded?: (urls: string[]) => void;
+  existingUrls?: string[];
 }
 
 export const ImageUploadSection = ({
   userId,
   orderId,
-  onPhotosUploaded
+  onPhotosUploaded,
+  existingUrls = []
 }: ImageUploadSectionProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,7 +37,7 @@ export const ImageUploadSection = ({
     previews,
     canTakeMore,
     nextPhotoIndex
-  } = useFileUpload(orderId);
+  } = useFileUpload(orderId, existingUrls);
 
   const handleSave = async () => {
     if (!orderId) {
