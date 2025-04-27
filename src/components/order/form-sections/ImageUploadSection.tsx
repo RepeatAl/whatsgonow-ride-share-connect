@@ -48,14 +48,9 @@ export const ImageUploadSection = ({
     const uploadedUrls = await uploadFiles(userId);
     if (uploadedUrls && onPhotosUploaded) {
       onPhotosUploaded(uploadedUrls);
+      toast.success("Fotos erfolgreich gespeichert");
     }
   };
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center p-8">
-      <div className="animate 3s spin">Lade Fotos...</div>
-    </div>;
-  }
 
   return (
     <div className="space-y-2">
@@ -89,11 +84,12 @@ export const ImageUploadSection = ({
             </FormItem>
 
             <PreviewGrid 
-              previews={previews.filter(Boolean)}
+              previews={previews}
               onRemove={removeFile}
               onSave={handleSave}
               isUploading={isUploading}
               uploadProgress={uploadProgress}
+              isLoading={isLoading}
             />
           </div>
         </CardContent>
