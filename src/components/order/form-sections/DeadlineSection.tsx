@@ -47,9 +47,15 @@ export const DeadlineSection = ({ form }: DeadlineSectionProps) => {
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      field.onChange(date);
+                      // Close popover automatically after selection
+                      const button = document.querySelector('[data-state="open"]');
+                      if (button) (button as HTMLElement).click();
+                    }}
                     disabled={(date) => date < new Date()}
                     initialFocus
+                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>

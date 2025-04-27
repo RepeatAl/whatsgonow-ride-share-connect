@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateOrderFormValues } from '@/lib/validators/order';
+import { toast } from 'sonner';
 
 const DRAFT_KEY = "order-form-draft";
 
@@ -15,13 +16,19 @@ export function useOrderFormDraft(
   form: UseFormReturn<CreateOrderFormValues>,
   uploadedPhotoUrls: string[]
 ) {
+  // Load draft on mount
   useEffect(() => {
     const savedDraft = localStorage.getItem(DRAFT_KEY);
     if (savedDraft) {
       try {
         const draft: OrderFormDraft = JSON.parse(savedDraft);
         Object.entries(draft.formValues).forEach(([key, value]) => {
-          form.setValue(key as keyof CreateOrderFormValues, value);
+          // Convert deadline string back to Date if it exists
+          if (key === 'deadline' && value) {
+            form.setValue(key as keyof CreateOrderFormValues, new Date(value));
+          } else {
+            form.setValue(key as keyof CreateOrderFormValues, value);
+          }
         });
       } catch (error) {
         console.error('Error loading draft:', error);
@@ -30,6 +37,7 @@ export function useOrderFormDraft(
     }
   }, [form.setValue]);
 
+  // Auto-save draft on form changes
   useEffect(() => {
     const subscription = form.watch((formValues) => {
       const draft: OrderFormDraft = {

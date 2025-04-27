@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const createOrderSchema = z.object({
@@ -58,7 +57,9 @@ export const createOrderSchema = z.object({
   pickupTimeEnd: z.date().optional(),
   deliveryTimeStart: z.date().optional(),
   deliveryTimeEnd: z.date().optional(),
-  deadline: z.date(),
+  deadline: z.coerce.date({
+    required_error: "Bitte wählen Sie ein Abholdatum",
+  }),
 }).refine((data) => {
   // Wenn Versicherung gewählt ist, muss ein Warenwert angegeben sein
   if (data.insurance && (data.value === undefined || data.value <= 0)) {

@@ -1,13 +1,14 @@
-
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
 import { useAuth } from "@/contexts/AuthContext";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-
+import { Button } from "@/components/ui/button";
 import { ImageUploadSection } from "./form-sections/ImageUploadSection";
 import { GeneralInformationSection } from "./form-sections/GeneralInformationSection";
 import { ItemDetailsSection } from "./form-sections/ItemDetailsSection";
@@ -17,9 +18,11 @@ import { DeadlineSection } from "./form-sections/DeadlineSection";
 import { SubmitButton } from "./form-sections/SubmitButton";
 import { useOrderFormDraft } from "@/hooks/useOrderFormDraft";
 import { useOrderSubmit } from "@/hooks/useOrderSubmit";
+import { ArrowLeft } from "lucide-react";
 
 const CreateOrderForm = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState<string[]>([]);
   const tempOrderId = uuidv4();
 
@@ -74,31 +77,62 @@ const CreateOrderForm = () => {
     setUploadedPhotoUrls(urls);
   };
 
+  const handleSaveDraft = () => {
+    const currentValues = form.getValues();
+    localStorage.setItem('order-draft', JSON.stringify({
+      formValues: currentValues,
+      photoUrls: uploadedPhotoUrls
+    }));
+    toast.success("Auftrag als Entwurf gespeichert");
+  };
+
   const insuranceEnabled = form.watch('insurance');
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => handleSubmit(data, uploadedPhotoUrls))} className="space-y-6">
-        <ImageUploadSection
-          userId={user?.id}
-          orderId={tempOrderId}
-          onPhotosUploaded={handlePhotosUploaded}
-        />
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => navigate(-1)}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Zurück
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleSaveDraft}
+            className="mb-4"
+          >
+            Als Entwurf speichern
+          </Button>
+        </div>
 
-        <Separator />
-        <GeneralInformationSection form={form} />
-        <Separator />
-        <ItemDetailsSection form={form} insuranceEnabled={insuranceEnabled} />
-        <Separator />
-        <AddressSection form={form} type="pickup" />
-        <Separator />
-        <AddressSection form={form} type="delivery" />
-        <Separator />
-        <AdditionalOptionsSection form={form} />
-        <Separator />
-        <DeadlineSection form={form} />
-        <SubmitButton isSubmitting={isSubmitting} />
-      </form>
+        <form onSubmit={form.handleSubmit((data) => handleSubmit(data, uploadedPhotoUrls))} className="space-y-6">
+          <ImageUploadSection
+            userId={user?.id}
+            orderId={tempOrderId}
+            onPhotosUploaded={handlePhotosUploaded}
+          />
+
+          <Separator />
+          <GeneralInformationSection form={form} />
+          <Separator />
+          <ItemDetailsSection form={form} insuranceEnabled={insuranceEnabled} />
+          <Separator />
+          <AddressSection form={form} type="pickup" />
+          <Separator />
+          <AddressSection form={form} type="delivery" />
+          <Separator />
+          <AdditionalOptionsSection form={form} />
+          <Separator />
+          <DeadlineSection form={form} />
+          <SubmitButton isSubmitting={isSubmitting} />
+        </form>
+      </div>
     </Form>
   );
 };
