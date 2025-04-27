@@ -8,12 +8,15 @@ import { CalendarIcon } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { CreateOrderFormValues } from "@/lib/validators/order";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface DeadlineSectionProps {
   form: UseFormReturn<CreateOrderFormValues>;
 }
 
 export const DeadlineSection = ({ form }: DeadlineSectionProps) => {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Zeitfenster</h3>
@@ -24,7 +27,7 @@ export const DeadlineSection = ({ form }: DeadlineSectionProps) => {
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Deadline*</FormLabel>
-              <Popover>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
@@ -50,8 +53,7 @@ export const DeadlineSection = ({ form }: DeadlineSectionProps) => {
                     onSelect={(date) => {
                       field.onChange(date);
                       // Close popover automatically after selection
-                      const button = document.querySelector('[data-state="open"]');
-                      if (button) (button as HTMLElement).click();
+                      setIsCalendarOpen(false);
                     }}
                     disabled={(date) => date < new Date()}
                     initialFocus

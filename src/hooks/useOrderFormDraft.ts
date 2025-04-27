@@ -25,7 +25,10 @@ export function useOrderFormDraft(
         Object.entries(draft.formValues).forEach(([key, value]) => {
           // Convert deadline string back to Date if it exists
           if (key === 'deadline' && value) {
-            form.setValue(key as keyof CreateOrderFormValues, new Date(value));
+            // Make sure we're only passing valid date values
+            if (typeof value === 'string' || typeof value === 'number') {
+              form.setValue(key as keyof CreateOrderFormValues, new Date(value));
+            }
           } else {
             form.setValue(key as keyof CreateOrderFormValues, value);
           }
@@ -35,7 +38,7 @@ export function useOrderFormDraft(
         localStorage.removeItem(DRAFT_KEY);
       }
     }
-  }, [form.setValue]);
+  }, [form]);
 
   // Auto-save draft on form changes
   useEffect(() => {
