@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { CameraModal } from "./CameraModal";
@@ -39,7 +39,12 @@ export const ImageUploadSection = ({
     nextPhotoIndex
   } = useFileUpload(orderId, existingUrls);
 
-  const handleSave = async () => {
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleRemoveFile = useCallback((index: number) => {
+    removeFile(index);
+  }, [removeFile]);
+
+  const handleSave = useCallback(async () => {
     if (!orderId) {
       toast.error("Bitte speichern Sie zuerst den Auftrag");
       return;
@@ -50,7 +55,10 @@ export const ImageUploadSection = ({
       onPhotosUploaded(uploadedUrls);
       toast.success("Fotos erfolgreich gespeichert");
     }
-  };
+  }, [orderId, userId, uploadFiles, onPhotosUploaded]);
+
+  // Memoize previews to prevent unnecessary re-renders of PreviewGrid
+  const memoizedPreviews = useMemo(() => previews, [previews]);
 
   return (
     <div className="space-y-2">
@@ -84,8 +92,8 @@ export const ImageUploadSection = ({
             </FormItem>
 
             <PreviewGrid 
-              previews={previews}
-              onRemove={removeFile}
+              previews={memoizedPreviews}
+              onRemove={handleRemoveFile}
               onSave={handleSave}
               isUploading={isUploading}
               uploadProgress={uploadProgress}

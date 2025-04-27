@@ -100,6 +100,14 @@ export const PreviewGrid = memo(({
       )}
     </div>
   );
+}, (prevProps, nextProps) => {
+  // Custom comparison function to prevent unnecessary re-renders
+  return (
+    prevProps.isLoading === nextProps.isLoading &&
+    prevProps.isUploading === nextProps.isUploading &&
+    prevProps.uploadProgress === nextProps.uploadProgress &&
+    JSON.stringify(prevProps.previews) === JSON.stringify(nextProps.previews)
+  );
 });
 
 PreviewGrid.displayName = "PreviewGrid";

@@ -1,25 +1,48 @@
-
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { MAX_FILES } from "./constants";
 
 export const useFilePreviews = () => {
   const [previews, setPreviews] = useState<string[]>([]);
   const previewUrlsRef = useRef<string[]>([]);
+  
+  const initialLoadDoneRef = useRef(false);
+  
+  useEffect(() => {
+    if (!initialLoadDoneRef.current) {
+      setPreviews([]);
+      previewUrlsRef.current = [];
+      initialLoadDoneRef.current = true;
+    }
+  }, []);
 
   const updatePreviews = useCallback((newUrls: string[]) => {
+    if (newUrls.length === 0) return;
+    
     setPreviews(prev => {
       const newPreviews = [...prev];
-      newUrls.forEach((url, idx) => {
+      const addedUrls = new Set();
+      
+      newUrls.forEach((url) => {
+        const existingIndex = previewUrlsRef.current.findIndex(existing => existing === url);
+        
+        if (existingIndex !== -1) {
+          addedUrls.add(url);
+          return;
+        }
+        
         const nextEmptySlot = newPreviews.findIndex(p => !p);
         if (nextEmptySlot !== -1) {
           newPreviews[nextEmptySlot] = url;
           previewUrlsRef.current[nextEmptySlot] = url;
+          addedUrls.add(url);
         } else if (newPreviews.length < MAX_FILES) {
           newPreviews.push(url);
           previewUrlsRef.current.push(url);
+          addedUrls.add(url);
         }
       });
+      
       return newPreviews.slice(0, MAX_FILES);
     });
   }, []);
@@ -29,7 +52,6 @@ export const useFilePreviews = () => {
       const newPreviews = [...prev];
       const urlToRevoke = previewUrlsRef.current[index];
       
-      // Only revoke if it's a blob URL
       if (urlToRevoke?.startsWith('blob:')) {
         URL.revokeObjectURL(urlToRevoke);
       }
@@ -57,6 +79,7 @@ export const useFilePreviews = () => {
     removePreview,
     clearPreviews,
     canTakeMore: previews.filter(Boolean).length < MAX_FILES,
-    nextPhotoIndex: previews.filter(Boolean).length + 1
+    nextPhotoIndex: previews.filter(Boolean).length + 1,
+    previewsRef: previewUrlsRef,
   };
 };

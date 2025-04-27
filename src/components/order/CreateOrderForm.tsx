@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -81,7 +82,7 @@ const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
   });
 
   const { clearDraft, isLoading, isSaving } = useOrderDraftStorage(form, uploadedPhotoUrls);
-  const { handleSubmit, isSubmitting } = useOrderSubmit(user?.id, clearDraft);
+  const { handleSubmit: submitOrder, isSubmitting } = useOrderSubmit(user?.id, clearDraft);
 
   if (isLoading) {
     return (
@@ -91,9 +92,9 @@ const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
     );
   }
 
-  const handlePhotosUploaded = (urls: string[]) => {
+  const handlePhotosUploaded = useCallback((urls: string[]) => {
     setUploadedPhotoUrls(urls);
-  };
+  }, []);
 
   const handleSaveDraft = async () => {
     try {
@@ -109,8 +110,29 @@ const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
   };
 
   const handleCreateOrder = async (data: CreateOrderFormValues) => {
-    await handleSubmit(data, uploadedPhotoUrls);
-    navigate("/orders");
+    try {
+      // First upload any remaining photos
+      const result = await submitOrder(data, uploadedPhotoUrls);
+      
+      // Ensure we have a valid result before navigating
+      if (result && result.success) {
+        // Clear any local storage or form data to prevent state persistence issues
+        form.reset();
+        clearDraft();
+        localStorage.removeItem('order-draft');
+        
+        // Navigate to the orders page with a small delay to ensure cleanup is complete
+        setTimeout(() => {
+          navigate("/orders", { replace: true });
+        }, 100);
+      } else {
+        // Handle submission error
+        toast.error("Fehler beim Erstellen des Auftrags: " + (result?.error || "Unbekannter Fehler"));
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast.error("Fehler beim Erstellen des Auftrags");
+    }
   };
 
   const insuranceEnabled = form.watch('insurance');
