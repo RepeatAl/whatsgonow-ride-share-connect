@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -19,6 +20,7 @@ import { useOrderDraftStorage } from "@/hooks/useOrderDraftStorage";
 import { useOrderSubmit } from "@/hooks/useOrderSubmit";
 import { ArrowLeft, Save } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { toast } from "sonner";
 
 const CreateOrderForm = () => {
   const { user } = useAuth();
@@ -117,8 +119,8 @@ const CreateOrderForm = () => {
           >
             {isSaving ? (
               <>
-                <LoadingSpinner className="w-4 h-4 mr-2" />
-                Speichert...
+                <LoadingSpinner size="small" />
+                <span className="ml-2">Speichert...</span>
               </>
             ) : (
               <>

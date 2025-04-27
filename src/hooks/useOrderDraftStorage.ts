@@ -70,7 +70,8 @@ export function useOrderDraftStorage(
                 form.setValue(key as keyof CreateOrderFormValues, new Date(value));
               }
             } else {
-              form.setValue(key as keyof CreateOrderFormValues, value);
+              // Use type assertion to tell TypeScript that the key is valid
+              form.setValue(key as keyof CreateOrderFormValues, value as any);
             }
           });
         }
