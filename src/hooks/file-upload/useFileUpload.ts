@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
@@ -109,6 +108,7 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
     uploadProgress,
     previews,
     canTakeMore,
-    nextPhotoIndex
+    nextPhotoIndex,
+    initializeWithExistingUrls: useFilePreviews.initializeWithExistingUrls
   };
 };

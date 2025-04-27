@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { CameraModal } from "./CameraModal";
 import { UploadButtons } from "./components/UploadButtons";
 import { PreviewGrid } from "./components/PreviewGrid";
 import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
+import { useUploadInit } from "@/hooks/file-upload/useUploadInit";
 import { toast } from "sonner";
 
 interface ImageUploadSectionProps {
@@ -39,7 +39,11 @@ export const ImageUploadSection = ({
     nextPhotoIndex
   } = useFileUpload(orderId, existingUrls);
 
-  // Memoize callbacks to prevent unnecessary re-renders
+  useUploadInit({
+    existingUrls,
+    initializeWithExistingUrls: useFileUpload.initializeWithExistingUrls
+  });
+
   const handleRemoveFile = useCallback((index: number) => {
     removeFile(index);
   }, [removeFile]);
@@ -57,7 +61,6 @@ export const ImageUploadSection = ({
     }
   }, [orderId, userId, uploadFiles, onPhotosUploaded]);
 
-  // Memoize previews to prevent unnecessary re-renders of PreviewGrid
   const memoizedPreviews = useMemo(() => previews, [previews]);
 
   return (

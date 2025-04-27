@@ -1,3 +1,4 @@
+
 import { useEffect, useState, ReactNode, createContext, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
@@ -57,7 +58,7 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
         if (isInitialLoad) {
           return;
         }
-        
+
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -66,7 +67,7 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
           setLoading(false);
           return;
         }
-        
+
         if (!sessionData.session?.user) {
           console.warn("No user logged in");
           setRegion("unbekannt");
@@ -74,17 +75,16 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
           return;
         }
 
-        try {
-          const userRegion = await fetchUserRegion(supabase, sessionData.session.user.id);
-          setRegion(userRegion || "unbekannt");
-        } catch (e) {
-          console.error("Error loading region:", e);
-          setRegion("unbekannt");
-        } finally {
-          setLoading(false);
+        const userRegion = await fetchUserRegion(supabase, sessionData.session.user.id);
+        if (!userRegion) {
+          console.warn("No region found for user, redirecting to profile completion");
+          navigate("/complete-profile");
         }
-      } catch (e) {
-        console.error("Unexpected error:", e);
+        
+        setRegion(userRegion || "unbekannt");
+        setLoading(false);
+      } catch (error) {
+        console.error("Error in loadUserRegion:", error);
         setRegion("unbekannt");
         setLoading(false);
       }
