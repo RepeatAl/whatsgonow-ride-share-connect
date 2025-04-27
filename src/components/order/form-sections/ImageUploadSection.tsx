@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CameraModal } from "./CameraModal";
 import { UploadButtons } from "./components/UploadButtons";
 import { PreviewGrid } from "./components/PreviewGrid";
-import { useFileUpload } from "@/hooks/useFileUpload";
+import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
 import { toast } from "sonner";
 
 interface ImageUploadSectionProps {
