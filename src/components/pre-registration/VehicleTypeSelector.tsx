@@ -1,5 +1,6 @@
 
 import { Control, Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { PreRegistrationFormData } from "@/lib/validators/pre-registration";
@@ -12,13 +13,15 @@ interface Props {
 type VehicleType = "S" | "M" | "L" | "XL" | "XXL" | "MOPED" | "BIKE" | "BOAT" | "PLANE";
 
 export function VehicleTypeSelector({ control }: Props) {
+  const { t } = useTranslation();
+  
   return (
     <div className="space-y-4">
-      <Label>Fahrzeugtyp</Label>
+      <Label>{t('pre_register.vehicle_types.label')}</Label>
       
       <div className="space-y-4">
         <div>
-          <Label>Auto (Größen)</Label>
+          <Label>{t('pre_register.vehicle_types.car_sizes')}</Label>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-1">
             {(["S", "M", "L", "XL", "XXL"] as const).map((size) => (
               <Controller
@@ -52,11 +55,11 @@ export function VehicleTypeSelector({ control }: Props) {
 
         <div className="space-y-2">
           {([
-            { id: "MOPED" as const, label: "Moped/Motorrad" },
-            { id: "BIKE" as const, label: "Fahrrad/Lastenrad" },
-            { id: "BOAT" as const, label: "Schiff" },
-            { id: "PLANE" as const, label: "Flugzeug" }
-          ]).map(({ id, label }) => (
+            { id: "MOPED" as const, labelKey: "pre_register.vehicle_types.moped" },
+            { id: "BIKE" as const, labelKey: "pre_register.vehicle_types.bike" },
+            { id: "BOAT" as const, labelKey: "pre_register.vehicle_types.boat" },
+            { id: "PLANE" as const, labelKey: "pre_register.vehicle_types.plane" }
+          ]).map(({ id, labelKey }) => (
             <Controller
               key={id}
               control={control}
@@ -77,7 +80,7 @@ export function VehicleTypeSelector({ control }: Props) {
                         }
                       }}
                     />
-                    <Label htmlFor={`vehicle-${id}`}>{label}</Label>
+                    <Label htmlFor={`vehicle-${id}`}>{t(labelKey)}</Label>
                   </div>
                 );
               }}

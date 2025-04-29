@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,9 @@ import { preRegistrationSchema, type PreRegistrationFormData } from "@/lib/valid
 import { VehicleTypeSelector } from "./VehicleTypeSelector";
 
 export function PreRegistrationForm() {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm<PreRegistrationFormData>({
     resolver: zodResolver(preRegistrationSchema),
     defaultValues: {
@@ -58,19 +61,19 @@ export function PreRegistrationForm() {
           });
           throw new Error("Validation failed");
         }
-        throw new Error(result.error || "Registration failed");
+        throw new Error(result.error || t("errors.registration_failed"));
       }
       toast({
-        title: "Voranmeldung erfolgreich!",
-        description: "Wir informieren dich, sobald whatsgonow live geht."
+        title: t("pre_register.success.title"),
+        description: t("pre_register.success.description")
       });
 
       window.location.href = "/pre-register/success";
     } catch (error) {
       if (!(error instanceof Error && error.message === "Validation failed")) {
         toast({
-          title: "Fehler bei der Registrierung",
-          description: "Bitte versuche es später erneut.",
+          title: t("errors.registration_failed"),
+          description: t("common.retry"),
           variant: "destructive"
         });
       }
@@ -88,7 +91,7 @@ export function PreRegistrationForm() {
             name="first_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Vorname</FormLabel>
+                <FormLabel>{t("pre_register.first_name")}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -102,7 +105,7 @@ export function PreRegistrationForm() {
             name="last_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nachname</FormLabel>
+                <FormLabel>{t("pre_register.last_name")}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -117,7 +120,7 @@ export function PreRegistrationForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>E-Mail</FormLabel>
+              <FormLabel>{t("pre_register.email")}</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
               </FormControl>
@@ -131,7 +134,7 @@ export function PreRegistrationForm() {
           name="postal_code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Postleitzahl</FormLabel>
+              <FormLabel>{t("pre_register.postal_code")}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -141,7 +144,7 @@ export function PreRegistrationForm() {
         />
 
         <div className="space-y-4">
-          <Label>Registrieren als</Label>
+          <Label>{t("pre_register.register_as")}</Label>
           <div className="space-y-2">
             <FormField
               control={form.control}
@@ -156,7 +159,7 @@ export function PreRegistrationForm() {
                     />
                   </FormControl>
                   <FormLabel htmlFor="wants_driver" className="font-normal">
-                    Fahrer
+                    {t("pre_register.driver")}
                   </FormLabel>
                 </FormItem>
               )}
@@ -175,7 +178,7 @@ export function PreRegistrationForm() {
                     />
                   </FormControl>
                   <FormLabel htmlFor="wants_cm" className="font-normal">
-                    Community Manager
+                    {t("pre_register.cm")}
                   </FormLabel>
                 </FormItem>
               )}
@@ -194,7 +197,7 @@ export function PreRegistrationForm() {
                     />
                   </FormControl>
                   <FormLabel htmlFor="wants_sender" className="font-normal">
-                    Versender
+                    {t("pre_register.sender")}
                   </FormLabel>
                 </FormItem>
               )}
@@ -206,7 +209,7 @@ export function PreRegistrationForm() {
           <div className="space-y-2">
             <VehicleTypeSelector control={form.control} />
             {form.formState.errors.vehicle_types && (
-              <p className="text-sm text-red-500">{form.formState.errors.vehicle_types.message}</p>
+              <p className="text-sm text-red-500">{t("errors.vehicle_required")}</p>
             )}
           </div>
         )}
@@ -225,7 +228,7 @@ export function PreRegistrationForm() {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel htmlFor="gdpr_consent" className="font-normal">
-                  Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu
+                  {t("pre_register.gdpr_consent")}
                 </FormLabel>
                 <FormMessage />
               </div>
@@ -234,7 +237,7 @@ export function PreRegistrationForm() {
         />
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Wird verarbeitet..." : "Jetzt vorregistrieren"}
+          {isSubmitting ? t("pre_register.processing") : t("pre_register.submit")}
         </Button>
       </form>
     </Form>

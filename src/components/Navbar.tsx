@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import LogoutButton from "@/components/auth/LogoutButton";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
@@ -26,6 +27,7 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-4">
+          <LanguageToggle />
           <Button
             variant="ghost"
             size="icon"
