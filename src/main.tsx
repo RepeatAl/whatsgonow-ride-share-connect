@@ -1,4 +1,5 @@
 
+import './i18n/i18n'; // Must be imported first for i18n configuration to be loaded
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'

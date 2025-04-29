@@ -20,6 +20,12 @@ i18n
       }
     },
     fallbackLng: 'de',
+    lng: 'de', // Explicitly set German as default language
+    detection: {
+      order: ['localStorage', 'navigator'],
+      lookupLocalStorage: 'i18nextLng',
+      caches: ['localStorage']
+    },
     interpolation: {
       escapeValue: false
     }
