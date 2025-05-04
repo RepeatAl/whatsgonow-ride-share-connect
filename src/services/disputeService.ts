@@ -1,16 +1,13 @@
 
 /**
  * @deprecated This file is kept for backward compatibility
- * Please import from src/services/dispute/ instead
+ * Please import from src/services/dispute/ subdirectories directly
  */
 
-import { 
-  createDispute, 
-  resolveDispute, 
-  handleForceMajeure,
-  DisputeReason,
-  DisputeStatus
-} from './dispute';
+import { createDispute } from './dispute/createDispute';
+import { resolveDispute } from './dispute/resolveDispute';
+import { handleForceMajeure } from './dispute/forceMajeure';
+import { DisputeReason, DisputeStatus } from './dispute/types';
 
 // Re-export types and functions for backward compatibility
 export { 

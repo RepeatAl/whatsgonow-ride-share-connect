@@ -1,4 +1,12 @@
 
+/**
+ * @deprecated Please import directly from specific files:
+ * - import { createDispute } from '@/services/dispute/createDispute';
+ * - import { resolveDispute } from '@/services/dispute/resolveDispute';
+ * - import { handleForceMajeure } from '@/services/dispute/forceMajeure';
+ * - import type { DisputeReason, DisputeStatus } from '@/services/dispute/types';
+ */
+
 // Re-export all dispute service functionality
 export * from './types';
 export * from './createDispute';
