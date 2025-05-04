@@ -9,14 +9,13 @@ import {
   acceptOffer, 
   getOffersForOrder, 
   getCompetingOfferCount,
-  SubmitOfferParams,
-  Offer
 } from './deal';
 
+import type { SubmitOfferParams, Offer } from './deal';
+
 // Re-export types and functions for backward compatibility
+export type { SubmitOfferParams, Offer };
 export { 
-  SubmitOfferParams,
-  Offer,
   submitOffer, 
   acceptOffer, 
   getOffersForOrder, 
