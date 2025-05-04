@@ -47,16 +47,26 @@ export function RatingsTabContent({ userId }: RatingsTabContentProps) {
         if (error) throw error;
         
         // Transform the data to match our Rating type
-        const transformedRatings: Rating[] = (data || []).map(item => ({
-          rating_id: item.rating_id,
-          score: item.score,
-          comment: item.comment,
-          created_at: item.created_at,
-          from_user: {
-            name: item.from_user_id?.name || "Unbekannter Nutzer",
-            avatar_url: item.from_user_id?.avatar_url
-          }
-        }));
+        const transformedRatings: Rating[] = (data || []).map(item => {
+          // Debug the structure of from_user_id
+          console.log("Rating item structure:", item);
+          
+          return {
+            rating_id: item.rating_id,
+            score: item.score,
+            comment: item.comment,
+            created_at: item.created_at,
+            from_user: {
+              // Check if from_user_id exists and is an object
+              name: typeof item.from_user_id === 'object' && item.from_user_id !== null 
+                ? item.from_user_id.name || "Unbekannter Nutzer" 
+                : "Unbekannter Nutzer",
+              avatar_url: typeof item.from_user_id === 'object' && item.from_user_id !== null 
+                ? item.from_user_id.avatar_url 
+                : undefined
+            }
+          };
+        });
         
         setRatings(transformedRatings);
       } catch (err) {
