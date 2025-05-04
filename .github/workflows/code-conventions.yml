@@ -34,6 +34,9 @@ jobs:
     - name: Run role consistency check
       run: npx ts-node scripts/check-role-consistency.ts
       
+    - name: Run visibility consistency check
+      run: npx ts-node scripts/check-visibility-consistency.ts
+      
     - name: Check for failures
       if: ${{ failure() }}
       run: |

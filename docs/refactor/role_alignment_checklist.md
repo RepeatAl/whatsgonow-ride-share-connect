@@ -32,7 +32,9 @@ This document tracks the refactoring of code to align with the standards outline
 - [x] Ensure consistency between routes.tsx and visibility matrix
 - [x] Document special access rules for complex routes
 - [x] Create check-visibility-consistency.ts script
-- [ ] Run accessibility audit against visibility matrix
+- [x] Run accessibility audit against visibility matrix
+- [x] Integrate visibility consistency check in CI/CD workflow
+- [x] Perform manual testing verification of role-based access
 
 ## Files Updated
 
@@ -49,6 +51,7 @@ This document tracks the refactoring of code to align with the standards outline
 | `src/utils/rls-testing/role-access-tester.ts` | Enhanced CM region filtering tests | Complete |
 | `docs/system/visibility_matrix.md` | Created visibility matrix document | Complete |
 | `scripts/check-visibility-consistency.ts` | Created consistency check script | Complete |
+| `.github/workflows/code-conventions.yml` | Added visibility consistency check | Complete |
 
 ## Profile ID to User ID Conversion
 

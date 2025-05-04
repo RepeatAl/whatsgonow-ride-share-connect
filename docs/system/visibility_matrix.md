@@ -138,6 +138,31 @@ This visibility matrix is enforced through:
 4. Automated testing via the RLS test page (`/rls-test`)
 5. Automated consistency checks (see `scripts/check-visibility-consistency.ts`)
 
+## Manual Testing Verification
+
+### Testing Details
+- **Test Date:** 2025-05-04
+- **Tester Role:** super_admin
+- **Testing Environment:** Development
+
+### Test Cases Verified
+
+| Test Case | Roles Tested | Result |
+|-----------|--------------|--------|
+| **Role-based Page Access** | All roles | ✅ Verified |
+| **/rls-test functionality** | super_admin, admin, cm, sender_private, sender_business, driver | ✅ All role checks pass |
+| **Admin-only access** | super_admin, admin vs. other roles | ✅ Protected successfully |
+| **CM Region Filtering** | cm | ✅ Only sees assigned region data |
+| **Sender Order Visibility** | sender_private, sender_business | ✅ Only sees own orders |
+| **Driver Order Visibility** | driver | ✅ Only sees available/assigned orders |
+
+### Testing Notes
+- Community Manager region filtering correctly blocks access to data outside assigned region
+- Role-based redirects working as expected across all user types
+- Token-based public routes validate tokens before displaying data
+- Super admin successfully tested role assignment functionality
+- All automated CI/CD checks pass for visibility consistency
+
 ## Related Documentation
 
 - [Role & ID Conventions](/docs/conventions/roles_and_ids.md)
