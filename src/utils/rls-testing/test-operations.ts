@@ -75,8 +75,8 @@ export const testInsertRating = async (): Promise<TestResult> => {
       score: 5,
       comment: 'RLS Test Rating',
       // These will likely fail but we're testing RLS enforcement
-      from_user: 'user_id_placeholder',
-      to_user: 'user_id_placeholder',
+      from_user_id: 'user_id_placeholder', // Updated from from_user to from_user_id
+      to_user_id: 'user_id_placeholder',   // Updated from to_user to to_user_id
       order_id: 'order_id_placeholder'
     })
     .select();

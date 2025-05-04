@@ -27,6 +27,7 @@ export interface TestResult {
   count?: number;
   data?: any;
   error: string | null;
+  details?: string; // Added details field to support region filtering results
 }
 
 export interface TableResults {

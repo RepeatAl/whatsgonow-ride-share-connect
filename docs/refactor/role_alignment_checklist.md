@@ -55,3 +55,20 @@ All direct profile_id references have been replaced with user_id throughout the 
 - [x] Role changes appear in role_change_logs table
 - [x] CM region filtering restricts data access properly
 - [x] RLS test utility successfully tests all roles and permissions
+
+## Related Components and Files
+
+### related: Rating System
+- [x] `src/components/profile/tabs/RatingsTabContent.tsx`
+- [x] `src/components/rating/RateUser.tsx`
+- [x] `src/utils/rls-testing/test-operations.ts`
+
+### related: Community Manager
+- [x] `src/pages/CommunityManager.tsx`
+- [x] `src/components/community-manager/UserList.tsx`
+- [x] `src/utils/rls-testing/role-access-tester.ts`
+
+### related: Role Management
+- [x] `src/components/admin/users/RoleManager.tsx`
+- [x] `src/pages/RLSTest.tsx`
+- [x] `src/utils/rls-testing/types.ts`

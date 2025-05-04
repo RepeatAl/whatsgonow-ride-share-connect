@@ -84,3 +84,14 @@ EXECUTE FUNCTION public.handle_updated_at();
   ```
 - Alle neuen Supabase-Migrationen müssen auf dieses Dokument verweisen
 - Alle neuen *.tsx-Komponenten mit Rollen-/RLS-Zugriff müssen dieses Dokument referenzieren
+
+## Verwandte Dokumente
+- [Rollenabhängigkeiten](/docs/system/role_dependencies.md) - Detaillierte Matrix über Rollen, Berechtigungen und Komponenten
+- [Role Alignment Checklist](/docs/refactor/role_alignment_checklist.md) - Status der Code-Anpassung an diese Konventionen
+
+## Automatisierte Überprüfung
+Das Projekt verwendet einen automatisierten Check für die Einhaltung der Konventionen:
+```bash
+npx ts-node scripts/check-role-consistency.ts
+```
+Dieser Check wird auch bei Pull Requests über GitHub Actions ausgeführt und muss bestanden werden.

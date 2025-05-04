@@ -1,0 +1,41 @@
+
+name: Code Conventions Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+    # Only run when files that might contain role references are modified
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.sql'
+      - 'supabase/migrations/**'
+
+jobs:
+  check-role-conventions:
+    runs-on: ubuntu-latest
+    name: Check Role Naming Conventions
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run role consistency check
+      run: npx ts-node scripts/check-role-consistency.ts
+      
+    - name: Check for failures
+      if: ${{ failure() }}
+      run: |
+        echo "::error::Role naming convention violations were found! Please fix them before merging."
+        exit 1

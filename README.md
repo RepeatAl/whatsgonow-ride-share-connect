@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -60,6 +61,12 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Key Documentation
+
+- [Role & ID Conventions](/docs/conventions/roles_and_ids.md) - Standards for role naming and ID fields
+- [Role Dependencies](/docs/system/role_dependencies.md) - Mapping of roles, permissions and components
+- [Refactoring Checklist](/docs/refactor/role_alignment_checklist.md) - Status of code alignment with conventions
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/585fe714-7b43-4260-a039-ca73f0073242) and click on Share -> Publish.
@@ -71,3 +78,4 @@ Yes it is!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
