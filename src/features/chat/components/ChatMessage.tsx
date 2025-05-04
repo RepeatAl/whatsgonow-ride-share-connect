@@ -13,7 +13,7 @@ export interface ChatMessageProps {
   };
 }
 
-export default function ChatMessage({ message }: ChatMessageProps) {
+const ChatMessage = ({ message }: ChatMessageProps) => {
   const { isCurrentUser, content, timestamp, read } = message;
 
   return (
@@ -57,4 +57,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       )}
     </div>
   );
-}
+};
+
+export default ChatMessage;

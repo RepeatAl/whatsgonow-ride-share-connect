@@ -11,3 +11,6 @@ export { ChatContainer } from './components/ChatContainer';
 export { useChatMessages } from './hooks/use-chat-messages';
 export { useChatConversations } from './hooks/use-chat-conversations';
 export { useUnreadMessages } from './hooks/use-unread-messages';
+
+// Export ChatMessage component
+export { default as ChatMessage } from './components/ChatMessage';

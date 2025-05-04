@@ -39,6 +39,8 @@ import UploadComplete from "@/pages/UploadComplete";
 import DraftList from "@/pages/orders/DraftList";
 import DraftEdit from "@/pages/orders/DraftEdit";
 import MyOrders from "@/pages/orders/MyOrders";
+import Inbox from "@/pages/Inbox";
+import Messages from "@/pages/Messages";
 
 export const routes: RouteConfig[] = [
   // Public routes

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import {
   BadgeDollarSign
 } from "lucide-react";
 import { TransportRequest } from "@/data/mockData";
-import ChatMessage from "./ChatMessage";
+import ChatMessage from "@/features/chat/components/ChatMessage";
 import { TrackingStatus } from "@/pages/Tracking";
 import { PaymentStatus } from "@/types/payment";
 
