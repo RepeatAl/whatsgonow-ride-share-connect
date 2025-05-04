@@ -1,6 +1,6 @@
 
 import { supabase } from "@/lib/supabaseClient";
-import { UserRole, testUsers, RoleResults, tableTests } from "./types";
+import { UserRole, testUsers, RoleResults, tableTests, TestResult } from "./types";
 import { testInsertOrder, testInsertOffer, testInsertRating, testUpdateOrder, testUpdateOffer } from "./test-operations";
 
 /**
