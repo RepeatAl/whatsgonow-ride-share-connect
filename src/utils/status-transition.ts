@@ -1,16 +1,5 @@
 
 /**
- * @deprecated Diese Datei wird aus Kompatibilitätsgründen beibehalten.
- * Bitte importiere direkt aus dem status-transitions-Modul:
- * 
- * import { 
- *   OrderStatus, 
- *   DealStatus, 
- *   DisputeStatus,
- *   isValidStatusTransition, 
- *   performStatusChange 
- * } from '@/utils/status-transitions';
+ * @deprecated Verwende stattdessen den neuen Pfad: src/features/status/
  */
-
-// Re-exportieren aller Funktionen und Typen aus dem neuen Modul
-export * from './status-transitions';
+export * from '@/features/status';

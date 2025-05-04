@@ -158,7 +158,7 @@ Spezielle Rollen wie `system` und `super_admin` haben grundsätzlich alle Berech
 
 ## API und Implementierung
 
-Das Status-Übergangssystem wird über die zentrale Utility-Datei `src/utils/status-transition.ts` implementiert. Diese bietet folgende Hauptfunktionen:
+Das Status-Übergangssystem wird über das zentrale Feature-Modul `src/features/status` implementiert. Diese bietet folgende Hauptfunktionen:
 
 ### Status-Enums
 
