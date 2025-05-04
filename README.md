@@ -65,6 +65,7 @@ This project is built with:
 
 - [Role & ID Conventions](/docs/conventions/roles_and_ids.md) - Standards for role naming and ID fields
 - [Role Dependencies](/docs/system/role_dependencies.md) - Mapping of roles, permissions and components
+- [Visibility Matrix](/docs/system/visibility_matrix.md) - Matrix for page and API visibility and access control
 - [Refactoring Checklist](/docs/refactor/role_alignment_checklist.md) - Status of code alignment with conventions
 
 ## How can I deploy this project?
@@ -78,4 +79,3 @@ Yes it is!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-

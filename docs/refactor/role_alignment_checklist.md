@@ -26,6 +26,14 @@ This document tracks the refactoring of code to align with the standards outline
 - [x] Add region-specific tests to `/rls-test` page
 - [x] Implement proper region filtering for CM in relevant components
 
+## Visibility and Access Control
+
+- [x] Create comprehensive visibility matrix in `/docs/system/visibility_matrix.md`
+- [x] Ensure consistency between routes.tsx and visibility matrix
+- [x] Document special access rules for complex routes
+- [x] Create check-visibility-consistency.ts script
+- [ ] Run accessibility audit against visibility matrix
+
 ## Files Updated
 
 | File | Changes | Status |
@@ -39,6 +47,8 @@ This document tracks the refactoring of code to align with the standards outline
 | `src/utils/auth-utils.ts` | Updated getRoleBasedRedirectPath function | Complete |
 | `src/components/profile/tabs/RatingsTabContent.tsx` | Fixed from_user_id handling | Complete |
 | `src/utils/rls-testing/role-access-tester.ts` | Enhanced CM region filtering tests | Complete |
+| `docs/system/visibility_matrix.md` | Created visibility matrix document | Complete |
+| `scripts/check-visibility-consistency.ts` | Created consistency check script | Complete |
 
 ## Profile ID to User ID Conversion
 
@@ -55,6 +65,7 @@ All direct profile_id references have been replaced with user_id throughout the 
 - [x] Role changes appear in role_change_logs table
 - [x] CM region filtering restricts data access properly
 - [x] RLS test utility successfully tests all roles and permissions
+- [x] Route protection is consistent with visibility matrix
 
 ## Related Components and Files
 
@@ -72,3 +83,9 @@ All direct profile_id references have been replaced with user_id throughout the 
 - [x] `src/components/admin/users/RoleManager.tsx`
 - [x] `src/pages/RLSTest.tsx`
 - [x] `src/utils/rls-testing/types.ts`
+
+### related: Visibility Control
+- [x] `docs/system/visibility_matrix.md`
+- [x] `scripts/check-visibility-consistency.ts`
+- [x] `src/components/routing/ProtectedRoute.tsx`
+- [x] `src/components/routing/PublicRoute.tsx`

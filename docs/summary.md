@@ -1,3 +1,4 @@
+
 # Zusammenfassung der Dokumentation
 
 Diese Datei bietet eine strukturierte Übersicht über alle technischen und konzeptionellen Dokumente des Whatsgonow-Projekts.
@@ -20,14 +21,20 @@ Diese Datei bietet eine strukturierte Übersicht über alle technischen und konz
 - [moderation.md](./moderation.md)
 - [faq.md](./faq.md)
 
-### 3. Lokalisierung & Rechtliches
+### 3. Sicherheit und Berechtigungen
+- [Role & ID Conventions](./conventions/roles_and_ids.md) - Standards für Rollenbenennung und ID-Felder
+- [Role Dependencies](./system/role_dependencies.md) - Abhängigkeiten zwischen Rollen, Berechtigungen und Komponenten
+- [Visibility Matrix](./system/visibility_matrix.md) - Matrix für Sichtbarkeit und Zugriff auf Seiten und APIs
+- [Role Alignment Checklist](./refactor/role_alignment_checklist.md) - Status der Code-Anpassung an Konventionen
+
+### 4. Lokalisierung & Rechtliches
 - [localization.md](./localization.md)
 - [privacy.md](./privacy.md)
 - [legal.md](./legal.md)
 
-### 4. Analyse & Tracking
+### 5. Analyse & Tracking
 - [analytics.md](./analytics.md)
 
-### 5. Übersicht & Navigation
+### 6. Übersicht & Navigation
 - [index.md](./index.md)
 - [summary.md](./summary.md)
