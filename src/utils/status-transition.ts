@@ -4,7 +4,72 @@ import { AuditEventType, AuditEntityType } from '@/constants/auditEvents';
 import { useSystemAudit } from '@/hooks/use-system-audit';
 import { supabase } from '@/integrations/supabase/client';
 
+export enum OrderStatus {
+  CREATED = 'created',
+  OFFER_PENDING = 'offer_pending',
+  DEAL_ACCEPTED = 'deal_accepted',
+  CONFIRMED_BY_SENDER = 'confirmed_by_sender',
+  IN_DELIVERY = 'in_delivery',
+  DELIVERED = 'delivered',
+  COMPLETED = 'completed',
+  DISPUTE = 'dispute',
+  FORCE_MAJEURE_CANCELLED = 'force_majeure_cancelled',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+  RESOLVED = 'resolved'
+}
+
+export enum DealStatus {
+  PROPOSED = 'proposed',
+  COUNTER = 'counter',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  EXPIRED = 'expired'
+}
+
+export enum DisputeStatus {
+  OPEN = 'open',
+  UNDER_REVIEW = 'under_review',
+  ESCALATED = 'escalated',
+  RESOLVED = 'resolved'
+}
+
 type EntityType = 'order' | 'deal' | 'dispute';
+
+type StatusTransitionMap = {
+  [key: string]: string[];
+};
+
+// Direct mapping of allowed transitions by entity type and status
+export const ALLOWED_STATUS_TRANSITIONS: Record<EntityType, StatusTransitionMap> = {
+  order: {
+    [OrderStatus.CREATED]: [OrderStatus.OFFER_PENDING, OrderStatus.CANCELLED],
+    [OrderStatus.OFFER_PENDING]: [OrderStatus.DEAL_ACCEPTED, OrderStatus.EXPIRED],
+    [OrderStatus.DEAL_ACCEPTED]: [OrderStatus.CONFIRMED_BY_SENDER],
+    [OrderStatus.CONFIRMED_BY_SENDER]: [OrderStatus.IN_DELIVERY],
+    [OrderStatus.IN_DELIVERY]: [OrderStatus.DELIVERED, OrderStatus.DISPUTE],
+    [OrderStatus.DELIVERED]: [OrderStatus.COMPLETED, OrderStatus.DISPUTE],
+    [OrderStatus.DISPUTE]: [OrderStatus.RESOLVED, OrderStatus.FORCE_MAJEURE_CANCELLED],
+    [OrderStatus.CANCELLED]: [],
+    [OrderStatus.EXPIRED]: [],
+    [OrderStatus.COMPLETED]: [],
+    [OrderStatus.RESOLVED]: [],
+    [OrderStatus.FORCE_MAJEURE_CANCELLED]: []
+  },
+  deal: {
+    [DealStatus.PROPOSED]: [DealStatus.COUNTER, DealStatus.ACCEPTED, DealStatus.REJECTED, DealStatus.EXPIRED],
+    [DealStatus.COUNTER]: [DealStatus.COUNTER, DealStatus.ACCEPTED, DealStatus.REJECTED, DealStatus.EXPIRED],
+    [DealStatus.ACCEPTED]: [],
+    [DealStatus.REJECTED]: [],
+    [DealStatus.EXPIRED]: []
+  },
+  dispute: {
+    [DisputeStatus.OPEN]: [DisputeStatus.UNDER_REVIEW],
+    [DisputeStatus.UNDER_REVIEW]: [DisputeStatus.RESOLVED, DisputeStatus.ESCALATED],
+    [DisputeStatus.ESCALATED]: [DisputeStatus.RESOLVED],
+    [DisputeStatus.RESOLVED]: []
+  }
+};
 
 /**
  * Überprüft, ob ein Statusübergang für einen bestimmten Entitätstyp gültig ist.
@@ -13,6 +78,29 @@ type EntityType = 'order' | 'deal' | 'dispute';
  * @param fromStatus Ausgangsstatus
  * @param toStatus Zielstatus
  * @returns true, wenn der Übergang gültig ist, sonst false
+ */
+export function isValidStatusTransition(
+  entityType: EntityType,
+  fromStatus: string, 
+  toStatus: string
+): boolean {
+  const transitions = ALLOWED_STATUS_TRANSITIONS[entityType];
+  if (!transitions) {
+    console.error(`Ungültiger Entity-Typ: ${entityType}`);
+    return false;
+  }
+  
+  if (!transitions[fromStatus]) {
+    console.error(`Ungültiger Ausgangsstatus für ${entityType}: ${fromStatus}`);
+    return false;
+  }
+  
+  return transitions[fromStatus].includes(toStatus);
+}
+
+/**
+ * Überprüft, ob ein Statusübergang für einen bestimmten Entitätstyp gültig ist.
+ * Legacy-Funktion für Kompatibilität
  */
 export function validateStatusChange(
   entityType: EntityType,
@@ -91,8 +179,8 @@ export async function performStatusChange(
   userRole: string,
   metadata: Record<string, any> = {}
 ): Promise<{ success: boolean; error?: string }> {
-  // Validierung des Statusübergangs
-  if (!validateStatusChange(entityType, fromStatus, toStatus)) {
+  // Validierung des Statusübergangs mit neuer Funktion
+  if (!isValidStatusTransition(entityType, fromStatus, toStatus)) {
     return { 
       success: false, 
       error: `Ungültiger Statusübergang von '${fromStatus}' nach '${toStatus}' für ${entityType}`
