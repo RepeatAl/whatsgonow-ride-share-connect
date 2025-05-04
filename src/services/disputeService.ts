@@ -165,11 +165,11 @@ export const resolveDispute = async (
       }
     }
     
-    // Log dispute resolution
+    // Log dispute resolution - Fix: Use correct event type
     await logEvent({
       eventType: resolution.status === DisputeStatus.RESOLVED 
         ? AuditEventType.DISPUTE_RESOLVED 
-        : AuditEventType.DISPUTE_ESCALATED,
+        : AuditEventType.DISPUTE_OPENED, // Verwenden eines existierenden Event Types anstelle von DISPUTE_ESCALATED
       entityType: AuditEntityType.SUPPORT_TICKET,
       entityId: disputeId,
       actorId: adminId,

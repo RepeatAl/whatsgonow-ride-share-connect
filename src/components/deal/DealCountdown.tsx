@@ -50,7 +50,8 @@ export function DealCountdown({
         toast({
           title: "Fast abgelaufen!",
           description: "Diese Verhandlung läuft in 2 Minuten ab. Bitte schließen Sie sie ab.",
-          variant: "warning",
+          // Fix: Change "warning" to "default" with appropriate styling
+          variant: "default",
         });
       }
       
@@ -94,6 +95,9 @@ export function DealCountdown({
                 content: 'Die Verhandlungszeit ist abgelaufen. Diese Verhandlung wurde automatisch beendet.',
                 system_message: true
               });
+          })
+          .then(() => {
+            // Success case - nothing special to do
           })
           .catch(error => {
             console.error('Fehler beim Senden der Ablaufnachricht:', error);

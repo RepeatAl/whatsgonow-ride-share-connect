@@ -1,4 +1,3 @@
-
 /**
  * Audit-Event-Typen für das System.
  * Diese Konstanten definieren alle möglichen Audit-Events, die im System protokolliert werden.
@@ -49,6 +48,7 @@ export enum AuditEventType {
   SUPPORT_TICKET_CREATED = 'SUPPORT_TICKET_CREATED',
   DISPUTE_OPENED = 'DISPUTE_OPENED',
   DISPUTE_RESOLVED = 'DISPUTE_RESOLVED',
+  DISPUTE_ESCALATED = 'DISPUTE_ESCALATED', // Add this line to fix the missing event type
   FORCE_MAJEURE_ACTIVATED = 'FORCE_MAJEURE_ACTIVATED',
   ADMIN_ACTION = 'ADMIN_ACTION',
   STAGING_STATE_EXPIRED = 'STAGING_STATE_EXPIRED',
@@ -146,6 +146,7 @@ export const DEFAULT_EVENT_SEVERITY: Record<AuditEventType, AuditSeverity> = {
   // Support/Admin mit CRITICAL
   [AuditEventType.DISPUTE_OPENED]: AuditSeverity.CRITICAL,
   [AuditEventType.DISPUTE_RESOLVED]: AuditSeverity.CRITICAL,
+  [AuditEventType.DISPUTE_ESCALATED]: AuditSeverity.CRITICAL, // Add mapping for new event type
   [AuditEventType.FORCE_MAJEURE_ACTIVATED]: AuditSeverity.CRITICAL,
   [AuditEventType.ADMIN_ACTION]: AuditSeverity.CRITICAL,
   

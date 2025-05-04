@@ -22,16 +22,18 @@ export const submitOffer = async ({
     // Prüfen, ob der Auftrag noch für Angebote verfügbar ist
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('status, price as original_price')
+      .select('status, price')
       .eq('order_id', orderId)
       .single();
       
     if (orderError) throw orderError;
     
-    if (order.status !== 'created' && order.status !== 'offer_pending') {
+    // Fix: Explizite Typprüfung für order und order.status
+    if (!order || (order.status !== 'created' && order.status !== 'offer_pending')) {
+      const currentStatus = order?.status || 'unbekannt';
       return {
         success: false,
-        error: `Der Auftrag ist nicht mehr für Angebote verfügbar. Aktueller Status: ${order.status}`
+        error: `Der Auftrag ist nicht mehr für Angebote verfügbar. Aktueller Status: ${currentStatus}`
       };
     }
     
@@ -59,7 +61,7 @@ export const submitOffer = async ({
       targetId: orderId,
       metadata: { 
         price,
-        originalPrice: order.original_price,
+        originalPrice: order.price, // Fix: Verwenden des price-Felds statt original_price
         message
       },
       severity: AuditSeverity.INFO
