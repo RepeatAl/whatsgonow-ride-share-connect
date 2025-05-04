@@ -51,19 +51,19 @@ export function RatingsTabContent({ userId }: RatingsTabContentProps) {
           // Debug the structure of from_user_id
           console.log("Rating item structure:", item);
           
+          // Handle the case where from_user_id might be an array or an object
+          const fromUser = Array.isArray(item.from_user_id) 
+            ? item.from_user_id[0] 
+            : item.from_user_id;
+          
           return {
             rating_id: item.rating_id,
             score: item.score,
             comment: item.comment,
             created_at: item.created_at,
             from_user: {
-              // Check if from_user_id exists and is an object
-              name: typeof item.from_user_id === 'object' && item.from_user_id !== null 
-                ? item.from_user_id.name || "Unbekannter Nutzer" 
-                : "Unbekannter Nutzer",
-              avatar_url: typeof item.from_user_id === 'object' && item.from_user_id !== null 
-                ? item.from_user_id.avatar_url 
-                : undefined
+              name: fromUser?.name || "Unbekannter Nutzer",
+              avatar_url: fromUser?.avatar_url
             }
           };
         });
