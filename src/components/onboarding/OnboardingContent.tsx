@@ -70,11 +70,11 @@ export const getOnboardingSteps = (role?: string): OnboardingStep[] => {
         icon: <CheckSquare className="h-12 w-12 text-blue-500 mb-4" />,
       }
     ],
-    admin_limited: [
+    super_admin: [
       {
-        title: "Eingeschränkter Administrator",
-        description: "Verwalte ausgewählte Systemfunktionen.",
-        icon: <CheckSquare className="h-12 w-12 text-blue-500 mb-4" />,
+        title: "Super Administrator",
+        description: "Vollzugriff auf alle Systemfunktionen und -einstellungen.",
+        icon: <CheckSquare className="h-12 w-12 text-red-500 mb-4" />,
       }
     ]
   };
