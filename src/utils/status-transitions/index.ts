@@ -46,32 +46,6 @@ import {
   EntityType 
 } from './types';
 
-import { 
-  isValidStatusTransition as _isValidStatusTransition,
-  validateStatusChange as _validateStatusChange
-} from './validation';
-
-import { 
-  hasPermissionForStatusChange as _hasPermissionForStatusChange
-} from './permissions';
-
-import { 
-  getCurrentStatus as _getCurrentStatus
-} from './database';
-
-import { performStatusChange as _performStatusChange } from './core';
-
-// Für Abwärtskompatibilität mit dem alten Modul
-export {
-  OrderStatus,
-  DealStatus,
-  DisputeStatus,
-  EntityType
-};
-
-// Rückwärtskompatible Exports der Funktionen
-export const isValidStatusTransition = _isValidStatusTransition;
-export const validateStatusChange = _validateStatusChange;
-export const hasPermissionForStatusChange = _hasPermissionForStatusChange;
-export const getCurrentStatus = _getCurrentStatus;
-export const performStatusChange = _performStatusChange;
+// Re-Exporte für Abwärtskompatibilität
+export type { EntityType };
+export { OrderStatus, DealStatus, DisputeStatus };

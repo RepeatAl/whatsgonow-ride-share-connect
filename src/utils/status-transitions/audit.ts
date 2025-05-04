@@ -1,6 +1,5 @@
 
 import { AuditEventType, AuditEntityType } from '@/constants/auditEvents';
-import { useSystemAudit } from '@/hooks/use-system-audit';
 import { EntityType } from './types';
 
 /**
@@ -25,7 +24,8 @@ export async function logStatusChange(
   additionalMetadata: Record<string, any> = {}
 ): Promise<{ success: boolean; error?: any }> {
   try {
-    const { logEvent } = useSystemAudit();
+    // Import directly instead of using React hook
+    const { logEvent } = require('@/hooks/use-system-audit').default();
 
     const result = await logEvent({
       eventType: AuditEventType.STATUS_CHANGED,

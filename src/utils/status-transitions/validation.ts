@@ -1,5 +1,6 @@
 
 import { EntityType, StatusTransitionMap } from './types';
+import { VALID_TRANSITIONS } from '@/constants/statusTransitions';
 
 /**
  * Direct mapping of allowed transitions by entity type and status
@@ -70,9 +71,6 @@ export function validateStatusChange(
   fromStatus: string,
   toStatus: string
 ): boolean {
-  // Importiere VALID_TRANSITIONS aus den Konstanten
-  const { VALID_TRANSITIONS } = require('@/constants/statusTransitions');
-  
   if (!VALID_TRANSITIONS[entityType]) {
     console.error(`Ungültiger Entity-Typ: ${entityType}`);
     return false;
