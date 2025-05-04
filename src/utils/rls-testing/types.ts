@@ -2,7 +2,7 @@
 import { supabase } from "@/lib/supabaseClient";
 
 // Define the user roles 
-export type UserRole = 'driver' | 'sender' | 'cm' | 'admin';
+export type UserRole = 'driver' | 'sender' | 'cm' | 'admin' | 'super_admin';
 
 // Define test user interface
 export interface TestUser {
@@ -71,6 +71,12 @@ export const testUsers: Record<UserRole, TestUser> = {
     password: "testadmin123",
     name: "Test Admin",
     role: "admin"
+  },
+  super_admin: {
+    email: "test-superadmin@whatsgonow.de",
+    password: "testsuperadmin123",
+    name: "Test Super Admin",
+    role: "super_admin"
   }
 };
 

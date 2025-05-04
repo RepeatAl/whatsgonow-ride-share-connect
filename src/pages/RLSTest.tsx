@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { runRLSTests } from "@/utils/rls-testing";
@@ -201,11 +202,16 @@ const RLSTest = () => {
             onValueChange={(value) => setActiveTab(value as UserRole)}
           >
             <TabsList className="mb-4">
+              <TabsTrigger value="super_admin">Super Admin</TabsTrigger>
               <TabsTrigger value="admin">Admin</TabsTrigger>
               <TabsTrigger value="cm">Community Manager</TabsTrigger>
               <TabsTrigger value="sender">Auftraggeber</TabsTrigger>
               <TabsTrigger value="driver">Fahrer</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="super_admin">
+              {renderRoleResults('super_admin')}
+            </TabsContent>
             
             <TabsContent value="admin">
               {renderRoleResults('admin')}

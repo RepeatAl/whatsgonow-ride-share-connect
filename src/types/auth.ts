@@ -67,7 +67,7 @@ export type UserRole =
   | "driver"
   | "cm"
   | "admin"
-  | "admin_limited";
+  | "super_admin";
 
 // Super admin ID (should be in an env variable in production)
 export const SUPER_ADMIN_ID = "0ddb52f9-0e7a-4c53-8ae7-fca1209cd300";
