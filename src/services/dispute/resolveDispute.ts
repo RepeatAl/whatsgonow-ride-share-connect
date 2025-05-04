@@ -41,12 +41,12 @@ export const resolveDispute = async (
     
     // Handle Force Majeure if applicable
     if (resolution.forceMajeure) {
-      await handleForceMajeure(
-        dispute.order_id, 
+      await handleForceMajeure({
+        orderId: dispute.order_id, 
         adminId, 
-        resolution.refundAmount,
-        `Force Majeure aus Dispute #${disputeId}: ${resolution.notes}`
-      );
+        refundAmount: resolution.refundAmount,
+        reason: `Force Majeure aus Dispute #${disputeId}: ${resolution.notes}`
+      });
     } else {
       // Wenn nicht Force Majeure, dann Order-Status auf resolved setzen
       const { error: orderError } = await supabase
