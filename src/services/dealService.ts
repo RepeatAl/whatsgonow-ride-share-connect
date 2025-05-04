@@ -17,28 +17,31 @@ export const submitOffer = async ({
   message
 }: SubmitOfferParams) => {
   const { logEvent } = useSystemAudit();
-  
+
   try {
-    // Prüfen, ob der Auftrag noch für Angebote verfügbar ist
+    // Auftrag abrufen und prüfen
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('status, price')
       .eq('order_id', orderId)
       .single();
-      
-    if (orderError) throw orderError;
-    
-    // Fix: Explizite Typprüfung für order und order.status
-    if (!order || (order.status !== 'created' && order.status !== 'offer_pending')) {
-      const currentStatus = order?.status || 'unbekannt';
+
+    if (orderError || !order) {
       return {
         success: false,
-        error: `Der Auftrag ist nicht mehr für Angebote verfügbar. Aktueller Status: ${currentStatus}`
+        error: `Auftrag konnte nicht abgerufen werden: ${orderError?.message || 'Unbekannter Fehler'}`
       };
     }
-    
-    // Angebot in Datenbank speichern
-    const { data, error } = await supabase
+
+    if (order.status !== 'created' && order.status !== 'offer_pending') {
+      return {
+        success: false,
+        error: `Der Auftrag ist nicht mehr für Angebote verfügbar. Aktueller Status: ${order.status}`
+      };
+    }
+
+    // Angebot speichern
+    const { data: newOffer, error: insertError } = await supabase
       .from('offers')
       .insert({
         order_id: orderId,
@@ -49,40 +52,45 @@ export const submitOffer = async ({
       })
       .select()
       .single();
-      
-    if (error) throw error;
-    
-    // Log Event
+
+    if (insertError || !newOffer) {
+      return {
+        success: false,
+        error: `Angebot konnte nicht gespeichert werden: ${insertError?.message || 'Unbekannter Fehler'}`
+      };
+    }
+
+    // Audit-Log
     await logEvent({
       eventType: AuditEventType.OFFER_SUBMITTED,
       entityType: AuditEntityType.OFFER,
-      entityId: data.offer_id,
+      entityId: newOffer.offer_id,
       actorId: driverId,
       targetId: orderId,
-      metadata: { 
+      metadata: {
         price,
-        originalPrice: order.price, // Fix: Verwenden des price-Felds statt original_price
+        originalPrice: order.price,
         message
       },
       severity: AuditSeverity.INFO
     });
-    
-    // Auftragsstatus aktualisieren, falls noch nicht auf "offer_pending"
+
+    // Status aktualisieren
     if (order.status === 'created') {
       const { error: updateError } = await supabase
         .from('orders')
         .update({ status: 'offer_pending' })
         .eq('order_id', orderId);
-        
+
       if (updateError) {
-        console.error('Fehler beim Aktualisieren des Auftragsstatus:', updateError);
+        console.warn('Warnung: Auftragstatus konnte nicht aktualisiert werden:', updateError);
       }
     }
-    
-    return { success: true, data };
-    
+
+    return { success: true, data: newOffer };
+
   } catch (error) {
-    console.error('Error submitting offer:', error);
+    console.error('Fehler beim Einreichen des Angebots:', error);
     return { success: false, error: (error as Error).message };
   }
 };
