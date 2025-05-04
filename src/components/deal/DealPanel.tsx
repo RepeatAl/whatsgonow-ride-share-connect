@@ -10,8 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { getConversationPartner } from "@/utils/get-conversation-participants";
-import { ChatBox } from "@/components/chat/ChatBox";
-import { useChatRealtime } from "@/contexts/ChatRealtimeContext";
+import { ChatBox } from "@/features/chat/components/ChatBox";
+import { useChatRealtime } from "@/features/chat/context/ChatRealtimeContext";
 
 export function DealPanel({ orderId, orderInfo, onOfferSubmit }: any) {
   const [offerPrice, setOfferPrice] = useState("");

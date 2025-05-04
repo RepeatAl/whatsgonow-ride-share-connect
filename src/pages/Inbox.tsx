@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { useChatConversations } from "@/hooks/use-chat-conversations";
+import { useChatConversations } from "@/features/chat/hooks/use-chat-conversations";
 import { useAuth } from "@/contexts/AuthContext";
-import { useChatRealtime } from "@/contexts/ChatRealtimeContext";
-import { ConversationList } from "@/components/chat/ConversationList";
-import { ChatContainer } from "@/components/chat/ChatContainer";
+import { useChatRealtime } from "@/features/chat/context/ChatRealtimeContext";
+import { ConversationList } from "@/features/chat/components/ConversationList";
+import { ChatContainer } from "@/features/chat/components/ChatContainer";
 
 const Inbox = () => {
   const { conversations, loading, refresh } = useChatConversations();

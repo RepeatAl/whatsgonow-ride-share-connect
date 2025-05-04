@@ -2,9 +2,9 @@
 import React, { createContext, useContext, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useUnreadMessages } from "@/hooks/chat/use-unread-messages";
-import { useMessageSubscription } from "@/hooks/chat/use-message-subscription";
-import { useChatContextState } from "@/hooks/chat/use-chat-context-state";
+import { useUnreadMessages } from "@/features/chat/hooks/use-unread-messages";
+import { useMessageSubscription } from "@/features/chat/hooks/use-message-subscription";
+import { useChatContextState } from "@/features/chat/hooks/use-chat-context-state";
 
 type ChatRealtimeContextType = {
   unreadCount: number;

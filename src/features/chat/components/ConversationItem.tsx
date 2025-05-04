@@ -3,7 +3,7 @@ import React from "react";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { Conversation } from "@/hooks/use-chat-conversations";
+import { Conversation } from "@/features/chat/hooks/use-chat-conversations";
 
 interface ConversationItemProps {
   conversation: Conversation;

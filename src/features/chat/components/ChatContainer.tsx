@@ -2,8 +2,8 @@
 import React from "react";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChatBox } from "@/components/chat/ChatBox";
-import { Conversation } from "@/hooks/use-chat-conversations";
+import { ChatBox } from "./ChatBox";
+import { Conversation } from "@/features/chat/hooks/use-chat-conversations";
 
 interface ChatContainerProps {
   selectedConversation: string | null;

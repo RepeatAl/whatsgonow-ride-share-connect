@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Conversation } from "@/hooks/use-chat-conversations";
+import { Conversation } from "@/features/chat/hooks/use-chat-conversations";
 import { ConversationItem } from "./ConversationItem";
 import { ConversationEmptyState } from "./ConversationEmptyState";
 

@@ -1,7 +1,7 @@
 
 import React from "react";
 import ChatMessage from "./ChatMessage";
-import { ChatMessage as ChatMessageType } from "@/hooks/use-chat-messages";
+import { ChatMessage as ChatMessageType } from "@/features/chat/hooks/use-chat-messages";
 
 interface MessageGroupProps {
   date: string;

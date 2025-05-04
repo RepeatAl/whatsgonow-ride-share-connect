@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageGroup } from "./MessageGroup";
-import { ChatMessage } from "@/hooks/use-chat-messages";
+import { ChatMessage } from "@/features/chat/hooks/use-chat-messages";
 
 interface MessageListProps {
   messageGroups: Record<string, ChatMessage[]>;

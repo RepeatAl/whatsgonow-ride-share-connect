@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useChatMessages, ChatMessage as ChatMessageType } from '@/hooks/use-chat-messages';
+import { useChatMessages, ChatMessage as ChatMessageType } from '@/features/chat/hooks/use-chat-messages';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 
