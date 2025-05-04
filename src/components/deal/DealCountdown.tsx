@@ -75,6 +75,7 @@ export function DealCountdown({
         });
         
         // Send automatic message about expiration
+        // Fix: Properly chain Promise methods to handle all possible outcomes
         supabase
           .from('messages')
           .insert({
@@ -99,7 +100,7 @@ export function DealCountdown({
           .then(() => {
             // Success case - nothing special to do
           })
-          .catch(error => {
+          .catch((error) => {
             console.error('Fehler beim Senden der Ablaufnachricht:', error);
           });
         
