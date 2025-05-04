@@ -50,7 +50,6 @@ export function DealCountdown({
         toast({
           title: "Fast abgelaufen!",
           description: "Diese Verhandlung läuft in 2 Minuten ab. Bitte schließen Sie sie ab.",
-          // Fix: Change "warning" to "default" with appropriate styling
           variant: "default",
         });
       }
@@ -75,15 +74,18 @@ export function DealCountdown({
         });
         
         // Send automatic message about expiration
-        // Fix: Properly chain Promise methods to handle all possible outcomes
-        supabase
-          .from('messages')
-          .insert({
-            sender_id: 'system',
-            recipient_id: targetUserId,
-            order_id: orderId,
-            content: 'Die Verhandlungszeit ist abgelaufen. Diese Verhandlung wurde automatisch beendet.',
-            system_message: true
+        // Fix: Properly restructure the Promise chain to ensure proper error handling
+        Promise.resolve()
+          .then(() => {
+            return supabase
+              .from('messages')
+              .insert({
+                sender_id: 'system',
+                recipient_id: targetUserId,
+                order_id: orderId,
+                content: 'Die Verhandlungszeit ist abgelaufen. Diese Verhandlung wurde automatisch beendet.',
+                system_message: true
+              });
           })
           .then(() => {
             // Notify the other user as well
