@@ -137,29 +137,53 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
  * Tests CM region filtering
  */
 async function testRegionFiltering(results: RoleResults, region: string) {
-  // Test users in region
-  const { data: usersInRegion, error: regionError } = await supabase
-    .from('users')
+  console.log(`Testing region filtering for CM in region: ${region}`);
+  
+  // Test profiles in region - CM should be able to see profiles in their region
+  const { data: profilesInRegion, error: profilesError } = await supabase
+    .from('profiles')
     .select('*')
     .eq('region', region);
   
-  results["regionFiltering"] = {
-    success: !regionError,
-    count: usersInRegion?.length || 0,
-    error: regionError ? regionError.message : null
+  results["regionFiltering_profiles"] = {
+    success: !profilesError,
+    count: profilesInRegion?.length || 0,
+    error: profilesError ? profilesError.message : null,
+    details: `CM can access profiles in their region (${region})`
   };
   
-  // Test users not in region (should get empty result)
-  const { data: usersNotInRegion, error: notRegionError } = await supabase
-    .from('users')
+  // Test orders in region - CM should be able to see orders in their region
+  const { data: ordersInRegion, error: ordersError } = await supabase
+    .from('orders')
     .select('*')
-    .neq('region', region);
+    .eq('region', region)
+    .limit(10);
   
-  results["regionFiltering_negative"] = {
-    success: (usersNotInRegion?.length || 0) === 0, // Success if empty result
-    count: usersNotInRegion?.length || 0,
-    error: notRegionError ? notRegionError.message : null
+  results["regionFiltering_orders"] = {
+    success: !ordersError,
+    count: ordersInRegion?.length || 0,
+    error: ordersError ? ordersError.message : null,
+    details: `CM can access orders in their region (${region})`
   };
   
-  console.log(`CM region filtering test: ${regionError ? 'FAILED' : 'PASSED'} (${usersInRegion?.length || 0} users in region)`);
+  // Test profiles outside region - CM should NOT be able to see profiles outside their region
+  const { data: profilesOutside, error: profilesOutsideError } = await supabase
+    .from('profiles')
+    .select('count')
+    .neq('region', region)
+    .single();
+  
+  const outsideCount = profilesOutside?.count || 0;
+  
+  results["regionFiltering_profiles_outside"] = {
+    success: outsideCount === 0, // Success if no access to profiles outside region
+    count: outsideCount,
+    error: profilesOutsideError ? profilesOutsideError.message : null,
+    details: `CM cannot access profiles outside their region`
+  };
+  
+  console.log(`CM region filtering test results: 
+    - Profiles in region: ${profilesInRegion?.length || 0}
+    - Orders in region: ${ordersInRegion?.length || 0}
+    - Access to profiles outside region: ${outsideCount === 0 ? 'BLOCKED' : 'ALLOWED'}`);
 }

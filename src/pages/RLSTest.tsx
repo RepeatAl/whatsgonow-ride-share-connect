@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, AlertTriangle, Shield, Database, UserCog, UsersRound } from "lucide-react";
+import { Check, X, AlertTriangle, Shield, Database, UserCog, UsersRound, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserRole } from "@/utils/rls-testing/types";
 
@@ -76,30 +76,46 @@ const RLSTest = () => {
       );
     }
     
+    // Special handling for CM role with region filtering
+    const regionFilteringKeys = Object.keys(results[role]).filter(key => key.startsWith('regionFiltering'));
+    const hasRegionFiltering = role === 'cm' && regionFilteringKeys.length > 0;
+
     return (
       <div className="space-y-4">
-        {Object.entries(results[role]).map(([table, ops]: [string, any]) => {
-          if (table === 'error') return null;
-          
-          // Handle special CM region filtering tests
-          if (role === 'cm' && (table === 'regionFiltering' || table === 'regionFiltering_negative')) {
-            return (
-              <Card key={table}>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-md">Region Filtering: {table === 'regionFiltering' ? 'Own Region' : 'Other Regions'}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center">
-                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                      {table === 'regionFiltering' ? 'Access to own region' : 'Access to other regions'}
-                    </span>
-                    {renderResultStatus(ops.success, ops.count)}
+        {/* Display region filtering results for CM role first */}
+        {hasRegionFiltering && (
+          <Card className="border-l-4 border-l-blue-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MapPin className="h-4 w-4" /> 
+                Region-Based Access Control
+              </CardTitle>
+              <CardDescription>
+                Community Managers can only access data from their assigned region
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {regionFilteringKeys.map((key) => {
+                const result = results[role][key];
+                return (
+                  <div key={key} className="border-b pb-2 last:border-0 last:pb-0">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">
+                        {result.details || key.replace('regionFiltering_', '')}
+                      </span>
+                      {renderResultStatus(result.success, result.count)}
+                    </div>
+                    {renderErrorMessage(result.error)}
                   </div>
-                  {renderErrorMessage(ops.error)}
-                </CardContent>
-              </Card>
-            );
-          }
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Display standard table results */}
+        {Object.entries(results[role]).map(([table, ops]: [string, any]) => {
+          if (table === 'error' || table.startsWith('regionFiltering')) return null;
           
           return (
             <Card key={table}>
