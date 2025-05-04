@@ -187,3 +187,4 @@ async function testRegionFiltering(results: RoleResults, region: string) {
     - Orders in region: ${ordersInRegion?.length || 0}
     - Access to profiles outside region: ${outsideCount === 0 ? 'BLOCKED' : 'ALLOWED'}`);
 }
+
