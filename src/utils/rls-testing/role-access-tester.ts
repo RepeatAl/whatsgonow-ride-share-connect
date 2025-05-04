@@ -5,6 +5,7 @@ import { testInsertOrder, testInsertOffer, testInsertRating, testUpdateOrder, te
 
 /**
  * Tests table access for a specific user role
+ * This file follows the conventions from /docs/conventions/roles_and_ids.md
  */
 export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
   const results: RoleResults = {};
@@ -54,7 +55,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
         let insertResult;
         switch (table) {
           case 'orders':
-            if (role === 'sender') {
+            if (role === 'sender_private' || role === 'sender_business') {
               insertResult = await testInsertOrder();
             }
             break;
@@ -65,6 +66,26 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
             break;
           case 'ratings':
             insertResult = await testInsertRating();
+            break;
+          case 'role_change_logs':
+            if (role === 'super_admin') {
+              // Super admin should be able to add role changes
+              const { data, error } = await supabase
+                .from('role_change_logs')
+                .insert({
+                  changed_by: testUser.user_id,
+                  target_user: testUser.user_id, // Using self as target just for testing
+                  old_role: 'sender_private',
+                  new_role: 'driver'
+                })
+                .select();
+                
+              insertResult = {
+                success: !error,
+                data: data ? data[0] : null,
+                error: error ? error.message : null
+              };
+            }
             break;
         }
         
@@ -83,7 +104,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
             }
             break;
           case 'offers':
-            if (role === 'sender') {
+            if (role === 'sender_private' || role === 'sender_business') {
               updateResult = await testUpdateOffer();
             }
             break;
@@ -97,18 +118,7 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     
     // Special test for region filtering (for CM role)
     if (role === 'cm') {
-      const { data: usersInRegion, error: regionError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('region', testUser.region!);
-      
-      results["regionFiltering"] = {
-        success: !regionError,
-        count: usersInRegion?.length || 0,
-        error: regionError ? regionError.message : null
-      };
-      
-      console.log(`CM region filtering test: ${regionError ? 'FAILED' : 'PASSED'} (${usersInRegion?.length || 0} users in region)`);
+      await testRegionFiltering(results, testUser.region!);
     }
     
     return results;
@@ -122,3 +132,34 @@ export const testRoleAccess = async (role: UserRole): Promise<RoleResults> => {
     return errorResult;
   }
 };
+
+/**
+ * Tests CM region filtering
+ */
+async function testRegionFiltering(results: RoleResults, region: string) {
+  // Test users in region
+  const { data: usersInRegion, error: regionError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('region', region);
+  
+  results["regionFiltering"] = {
+    success: !regionError,
+    count: usersInRegion?.length || 0,
+    error: regionError ? regionError.message : null
+  };
+  
+  // Test users not in region (should get empty result)
+  const { data: usersNotInRegion, error: notRegionError } = await supabase
+    .from('users')
+    .select('*')
+    .neq('region', region);
+  
+  results["regionFiltering_negative"] = {
+    success: (usersNotInRegion?.length || 0) === 0, // Success if empty result
+    count: usersNotInRegion?.length || 0,
+    error: notRegionError ? notRegionError.message : null
+  };
+  
+  console.log(`CM region filtering test: ${regionError ? 'FAILED' : 'PASSED'} (${usersInRegion?.length || 0} users in region)`);
+}

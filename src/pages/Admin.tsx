@@ -2,24 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/lib/supabaseClient";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -31,25 +14,31 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { useAdminUsers } from "@/hooks/use-admin-users";
-import RoleBadge from "@/components/community-manager/RoleBadge";
+import { UsersTable } from "@/components/admin/users/UsersTable";
+import { RoleChangeLogViewer } from "@/components/admin/RoleChangeLogViewer";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
-  ChevronDown, 
   Trash2, 
   User as UserIcon,
-  ClipboardCheck 
+  ClipboardCheck,
+  RefreshCw
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+// This component follows the conventions from /docs/conventions/roles_and_ids.md
 const Admin = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { 
     users, 
-    loading, 
+    loading,
+    refreshUsers,
     updateUserRole, 
     toggleUserActive, 
     deleteUser 
   } = useAdminUsers();
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const isSuperAdmin = profile?.role === 'super_admin';
 
   const handleDeleteConfirm = () => {
     if (deletingUserId) {
@@ -63,10 +52,18 @@ const Admin = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <UserIcon className="h-8 w-8" />
-          Nutzerverwaltung
+          {isSuperAdmin ? 'Super-Admin Dashboard' : 'Admin Dashboard'}
         </h1>
         
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={refreshUsers}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Aktualisieren
+          </Button>
           <Button 
             variant="outline" 
             className="flex items-center gap-2"
@@ -80,73 +77,22 @@ const Admin = () => {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>E-Mail</TableHead>
-            <TableHead>Rolle</TableHead>
-            <TableHead>Region</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Aktionen</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center">
-                Laden...
-              </TableCell>
-            </TableRow>
-          ) : (
-            users.map((user) => (
-              <TableRow key={user.user_id}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <RoleBadge role={user.role} />
-                        <ChevronDown className="ml-2 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuLabel>Rolle ändern</DropdownMenuLabel>
-                      {['admin', 'driver', 'sender', 'cm'].map((role) => (
-                        <DropdownMenuItem 
-                          key={role} 
-                          onSelect={() => updateUserRole(user.user_id, role)}
-                        >
-                          {role}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-                <TableCell>{user.region}</TableCell>
-                <TableCell>
-                  <Switch 
-                    checked={user.active}
-                    onCheckedChange={(checked) => 
-                      toggleUserActive(user.user_id, checked)
-                    }
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button 
-                    variant="destructive" 
-                    size="icon" 
-                    onClick={() => setDeletingUserId(user.user_id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+      <div className="mb-8">
+        <UsersTable
+          users={users}
+          isLoading={loading}
+          onToggleActive={toggleUserActive}
+          onDeleteUser={setDeletingUserId}
+          onUserUpdated={refreshUsers}
+        />
+      </div>
+
+      {/* Show role change logs only to super admins */}
+      {isSuperAdmin && (
+        <div className="mt-12">
+          <RoleChangeLogViewer />
+        </div>
+      )}
 
       {deletingUserId && (
         <AlertDialog 

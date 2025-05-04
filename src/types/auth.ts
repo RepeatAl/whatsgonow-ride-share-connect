@@ -1,3 +1,4 @@
+
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -61,6 +62,7 @@ export interface AuthContextProps {
   refreshProfile?: (() => void) | null;
 }
 
+// Updated to follow the conventions from /docs/conventions/roles_and_ids.md
 export type UserRole =
   | "sender_private"
   | "sender_business"

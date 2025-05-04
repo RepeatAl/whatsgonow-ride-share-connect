@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, AlertTriangle, Shield, Database, UserCog } from "lucide-react";
+import { Check, X, AlertTriangle, Shield, Database, UserCog, UsersRound } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserRole } from "@/utils/rls-testing/types";
 
+// This file follows the conventions from /docs/conventions/roles_and_ids.md
 const RLSTest = () => {
   const [results, setResults] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<UserRole>("admin");
+  const [activeTab, setActiveTab] = useState<string>("admin");
   
   const handleRunTests = async () => {
     setLoading(true);
@@ -57,7 +58,7 @@ const RLSTest = () => {
     );
   };
   
-  const renderRoleResults = (role: UserRole) => {
+  const renderRoleResults = (role: string) => {
     if (!results || !results[role]) {
       return (
         <div className="p-4 text-center text-gray-500">
@@ -78,7 +79,27 @@ const RLSTest = () => {
     return (
       <div className="space-y-4">
         {Object.entries(results[role]).map(([table, ops]: [string, any]) => {
-          if (table === 'error' || table === 'regionFiltering') return null;
+          if (table === 'error') return null;
+          
+          // Handle special CM region filtering tests
+          if (role === 'cm' && (table === 'regionFiltering' || table === 'regionFiltering_negative')) {
+            return (
+              <Card key={table}>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-md">Region Filtering: {table === 'regionFiltering' ? 'Own Region' : 'Other Regions'}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                      {table === 'regionFiltering' ? 'Access to own region' : 'Access to other regions'}
+                    </span>
+                    {renderResultStatus(ops.success, ops.count)}
+                  </div>
+                  {renderErrorMessage(ops.error)}
+                </CardContent>
+              </Card>
+            );
+          }
           
           return (
             <Card key={table}>
@@ -121,24 +142,6 @@ const RLSTest = () => {
             </Card>
           );
         })}
-        
-        {role === 'cm' && results[role].regionFiltering && (
-          <Card>
-            <CardHeader className="py-3">
-              <CardTitle className="text-md">Region Filtering</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between items-center">
-                <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">Region Filter</span>
-                {renderResultStatus(
-                  results[role].regionFiltering.success, 
-                  results[role].regionFiltering.count
-                )}
-              </div>
-              {renderErrorMessage(results[role].regionFiltering.error)}
-            </CardContent>
-          </Card>
-        )}
       </div>
     );
   };
@@ -174,6 +177,7 @@ const RLSTest = () => {
               <li>INSERT/UPDATE-Berechtigungen für relevante Tabellen</li>
               <li>Regionsfilterung für Community Manager</li>
               <li>Korrekte Blockierung unberechtigter Zugriffe</li>
+              <li>Super-Admin Rollenzuweisungsfunktion</li>
             </ul>
           </CardContent>
           <CardFooter>
@@ -199,13 +203,19 @@ const RLSTest = () => {
         {results && (
           <Tabs 
             value={activeTab} 
-            onValueChange={(value) => setActiveTab(value as UserRole)}
+            onValueChange={(value) => setActiveTab(value)}
           >
             <TabsList className="mb-4">
               <TabsTrigger value="super_admin">Super Admin</TabsTrigger>
               <TabsTrigger value="admin">Admin</TabsTrigger>
-              <TabsTrigger value="cm">Community Manager</TabsTrigger>
-              <TabsTrigger value="sender">Auftraggeber</TabsTrigger>
+              <TabsTrigger value="cm">
+                <div className="flex items-center gap-1">
+                  <UsersRound className="h-3.5 w-3.5" />
+                  Community Manager
+                </div>
+              </TabsTrigger>
+              <TabsTrigger value="sender_private">Privat</TabsTrigger>
+              <TabsTrigger value="sender_business">Business</TabsTrigger>
               <TabsTrigger value="driver">Fahrer</TabsTrigger>
             </TabsList>
             
@@ -221,8 +231,12 @@ const RLSTest = () => {
               {renderRoleResults('cm')}
             </TabsContent>
             
-            <TabsContent value="sender">
-              {renderRoleResults('sender')}
+            <TabsContent value="sender_private">
+              {renderRoleResults('sender_private')}
+            </TabsContent>
+            
+            <TabsContent value="sender_business">
+              {renderRoleResults('sender_business')}
             </TabsContent>
             
             <TabsContent value="driver">

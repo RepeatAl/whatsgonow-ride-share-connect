@@ -1059,6 +1059,33 @@ export type Database = {
           },
         ]
       }
+      role_change_logs: {
+        Row: {
+          changed_by: string
+          id: string
+          new_role: string
+          old_role: string
+          target_user: string
+          timestamp: string
+        }
+        Insert: {
+          changed_by: string
+          id?: string
+          new_role: string
+          old_role: string
+          target_user: string
+          timestamp?: string
+        }
+        Update: {
+          changed_by?: string
+          id?: string
+          new_role?: string
+          old_role?: string
+          target_user?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -1317,6 +1344,10 @@ export type Database = {
       }
     }
     Functions: {
+      assign_role: {
+        Args: { target_user_id: string; new_role: string }
+        Returns: boolean
+      }
       can_view_sensitive_data: {
         Args: { requesting_user_id: string }
         Returns: boolean

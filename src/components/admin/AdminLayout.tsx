@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 
+// This component follows the conventions from /docs/conventions/roles_and_ids.md
 const adminNavItems = [
   {
     title: "Home",
@@ -38,7 +39,7 @@ const AdminLayout = () => {
   const { profile } = useAuth();
 
   // Redirect non-admin users
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'admin_limited')) {
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'super_admin')) {
     navigate('/dashboard');
     return null;
   }

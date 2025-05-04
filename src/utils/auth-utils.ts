@@ -1,8 +1,10 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { User } from "@supabase/supabase-js";
 
 /**
  * Handle authentication errors and display appropriate toast messages
+ * This file follows the conventions from /docs/conventions/roles_and_ids.md
  */
 export const handleAuthError = (error: Error, context: string = "Aktion") => {
   console.error(`❌ ${context} error:`, error);
@@ -41,8 +43,8 @@ export const getRoleBasedRedirectPath = (role?: string): string => {
   if (!role) return "/profile";  // Send to profile if no role set
   
   switch (role) {
+    case "super_admin":
     case "admin":
-    case "admin_limited":
       return "/admin";
     case "cm":
       return "/community-manager";

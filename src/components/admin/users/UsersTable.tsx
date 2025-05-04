@@ -8,14 +8,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import type { AdminUser } from "@/hooks/use-admin-users";
+import { RoleManager } from '@/components/admin/users/RoleManager';
+import { useAuth } from '@/contexts/AuthContext';
 
+// This component follows the conventions from /docs/conventions/roles_and_ids.md
 interface UsersTableProps {
   users: AdminUser[];
   isLoading: boolean;
+  onToggleActive: (userId: string, active: boolean) => void;
+  onDeleteUser: (userId: string) => void;
+  onUserUpdated: () => void;
 }
 
-export const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading }) => {
+export const UsersTable: React.FC<UsersTableProps> = ({
+  users,
+  isLoading,
+  onToggleActive,
+  onDeleteUser,
+  onUserUpdated
+}) => {
+  const { profile } = useAuth();
+  const isSuperAdmin = profile?.role === 'super_admin';
+
   if (isLoading) {
     return (
       <div className="p-8 text-center text-muted-foreground">
@@ -49,19 +67,35 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading }) => {
           <TableRow key={user.user_id}>
             <TableCell>{user.name}</TableCell>
             <TableCell>{user.email}</TableCell>
-            <TableCell>{user.role}</TableCell>
-            <TableCell>{user.region}</TableCell>
             <TableCell>
-              {user.banned_until ? (
-                <span className="text-red-500">Gesperrt</span>
-              ) : user.active ? (
-                <span className="text-green-500">Aktiv</span>
+              {isSuperAdmin ? (
+                <RoleManager 
+                  userId={user.user_id} 
+                  currentRole={user.role}
+                  onRoleChanged={onUserUpdated}
+                  userEmail={user.email}
+                />
               ) : (
-                <span className="text-yellow-500">Inaktiv</span>
+                user.role
               )}
             </TableCell>
+            <TableCell>{user.region}</TableCell>
             <TableCell>
-              {/* TODO: Add action buttons */}
+              <Switch 
+                checked={user.active}
+                onCheckedChange={(checked) => 
+                  onToggleActive(user.user_id, checked)
+                }
+              />
+            </TableCell>
+            <TableCell>
+              <Button 
+                variant="destructive" 
+                size="icon" 
+                onClick={() => onDeleteUser(user.user_id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </TableCell>
           </TableRow>
         ))}

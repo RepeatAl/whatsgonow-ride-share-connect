@@ -1,8 +1,9 @@
 
 import { supabase } from "@/lib/supabaseClient";
 
+// This file follows the conventions from /docs/conventions/roles_and_ids.md
 // Define the user roles 
-export type UserRole = 'driver' | 'sender' | 'cm' | 'admin' | 'super_admin';
+export type UserRole = 'driver' | 'sender_private' | 'sender_business' | 'cm' | 'admin' | 'super_admin';
 
 // Define test user interface
 export interface TestUser {
@@ -44,7 +45,7 @@ export interface AllResults {
 }
 
 // Test users for different roles
-export const testUsers: Record<UserRole, TestUser> = {
+export const testUsers: Record<string, TestUser> = {
   driver: {
     email: "test-driver@whatsgonow.de",
     password: "testdriver123",
@@ -52,11 +53,18 @@ export const testUsers: Record<UserRole, TestUser> = {
     role: "driver",
     region: "Berlin"
   },
-  sender: {
-    email: "test-sender@whatsgonow.de",
+  sender_private: {
+    email: "test-sender-private@whatsgonow.de",
     password: "testsender123",
-    name: "Test Auftraggeber",
-    role: "sender",
+    name: "Test Privat-Auftraggeber",
+    role: "sender_private",
+    region: "Berlin"
+  },
+  sender_business: {
+    email: "test-sender-business@whatsgonow.de",
+    password: "testsenderbusiness123",
+    name: "Test Business-Auftraggeber",
+    role: "sender_business",
     region: "Berlin"
   },
   cm: {
@@ -88,5 +96,6 @@ export const tableTests: TableTest[] = [
   { table: 'transactions', operations: ['SELECT'] },
   { table: 'ratings', operations: ['SELECT', 'INSERT', 'UPDATE'] },
   { table: 'delivery_logs', operations: ['SELECT'] },
-  { table: 'community_managers', operations: ['SELECT'] }
+  { table: 'community_managers', operations: ['SELECT'] },
+  { table: 'role_change_logs', operations: ['SELECT'] },
 ];

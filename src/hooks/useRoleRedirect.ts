@@ -1,4 +1,6 @@
+
 // src/hooks/useRoleRedirect.ts
+// This file follows the conventions from /docs/conventions/roles_and_ids.md
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +33,7 @@ export const useRoleRedirect = () => {
         navigate("/dashboard/cm", { replace: true });
         break;
       case "admin":
-      case "admin_limited":
+      case "super_admin":
         navigate("/dashboard/admin", { replace: true });
         break;
       default:
