@@ -32,7 +32,7 @@ const Admin = () => {
   const { 
     users, 
     loading,
-    refreshUsers,
+    fetchUsers,
     updateUserRole, 
     toggleUserActive, 
     deleteUser 
@@ -59,7 +59,7 @@ const Admin = () => {
           <Button
             variant="outline"
             className="flex items-center gap-2"
-            onClick={refreshUsers}
+            onClick={fetchUsers}
           >
             <RefreshCw className="h-4 w-4" />
             Aktualisieren
@@ -83,7 +83,7 @@ const Admin = () => {
           isLoading={loading}
           onToggleActive={toggleUserActive}
           onDeleteUser={setDeletingUserId}
-          onUserUpdated={refreshUsers}
+          onUserUpdated={fetchUsers}
         />
       </div>
 

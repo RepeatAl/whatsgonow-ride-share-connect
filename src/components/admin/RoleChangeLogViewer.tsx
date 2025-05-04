@@ -56,7 +56,19 @@ export function RoleChangeLogViewer() {
 
         if (error) throw error;
         
-        setLogs(data || []);
+        // Transform the data to match our RoleChange type
+        const typedData: RoleChange[] = data?.map(item => ({
+          id: item.id,
+          changed_by: item.changed_by,
+          target_user: item.target_user,
+          old_role: item.old_role,
+          new_role: item.new_role,
+          timestamp: item.timestamp,
+          changed_by_user: item.changed_by_user as unknown as RoleChange['changed_by_user'],
+          target_user_profile: item.target_user_profile as unknown as RoleChange['target_user_profile']
+        })) || [];
+        
+        setLogs(typedData);
       } catch (err) {
         console.error("Error fetching role logs:", err);
         setError("Fehler beim Laden der Rollenänderungen");

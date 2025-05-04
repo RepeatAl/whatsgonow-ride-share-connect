@@ -45,7 +45,20 @@ export function RatingsTabContent({ userId }: RatingsTabContentProps) {
           .eq("to_user_id", userId);
 
         if (error) throw error;
-        setRatings(data || []);
+        
+        // Transform the data to match our Rating type
+        const transformedRatings: Rating[] = (data || []).map(item => ({
+          rating_id: item.rating_id,
+          score: item.score,
+          comment: item.comment,
+          created_at: item.created_at,
+          from_user: {
+            name: item.from_user_id?.name || "Unbekannter Nutzer",
+            avatar_url: item.from_user_id?.avatar_url
+          }
+        }));
+        
+        setRatings(transformedRatings);
       } catch (err) {
         console.error("Error loading ratings:", err);
         setError("Konnte Bewertungen nicht laden");
