@@ -26,6 +26,7 @@ Diese Datei bietet eine strukturierte Übersicht über alle technischen und konz
 - [Role Dependencies](./system/role_dependencies.md) - Abhängigkeiten zwischen Rollen, Berechtigungen und Komponenten
 - [Visibility Matrix](./system/visibility_matrix.md) - Matrix für Sichtbarkeit und Zugriff auf Seiten und APIs (mit Verifizierungsergebnissen)
 - [Role Alignment Checklist](./refactor/role_alignment_checklist.md) - Status der Code-Anpassung an Konventionen (Phase 2 abgeschlossen)
+- [Status Transitions](./system/status_transitions.md) - Status-Übergangssystem und Berechtigungen
 
 ### 4. Lokalisierung & Rechtliches
 - [localization.md](./localization.md)

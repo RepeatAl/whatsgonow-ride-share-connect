@@ -1,3 +1,4 @@
+
 # Whatsgonow Dokumentation
 
 Willkommen zur technischen Dokumentation der Crowd-Logistikplattform **Whatsgonow**.  
@@ -21,6 +22,7 @@ Diese Sammlung enthält alle wichtigen Informationen zur Architektur, API, Daten
 - [⚖ Legal.md](./Legal.md) – Rechtliche Hinweise, AGB und Nutzungsbedingungen  
 - [🚢 Deployment.md](./Deployment.md) – Hosting, Deployment, GitHub, CI/CD  
 - [🧪 Testing.md](./Testing.md) – Teststrategie, QA-Prozesse und Coverage  
+- [⚙️ Status Transitions](./system/status_transitions.md) – Status-Übergangssystem und Berechtigungen  
 
 ---
 
