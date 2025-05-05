@@ -19,6 +19,7 @@ export enum AuditEventType {
   DEAL_ACCEPT_FAILED = 'DEAL_ACCEPT_FAILED',
   ORDER_CANCELLED = 'ORDER_CANCELLED',
   ORDER_EXPIRED = 'ORDER_EXPIRED',
+  ORDER_EXPIRATION_ASSIGNED = 'ORDER_EXPIRATION_ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
   
   // Delivery Events
@@ -100,6 +101,7 @@ export const DEFAULT_EVENT_SEVERITY: Record<AuditEventType, AuditSeverity> = {
   [AuditEventType.DEAL_EXPIRED]: AuditSeverity.WARN,
   [AuditEventType.ORDER_CANCELLED]: AuditSeverity.WARN,
   [AuditEventType.ORDER_EXPIRED]: AuditSeverity.WARN,
+  [AuditEventType.ORDER_EXPIRATION_ASSIGNED]: AuditSeverity.INFO,
   [AuditEventType.DEAL_ACCEPT_FAILED]: AuditSeverity.WARN,
   
   // Order/Deal mit CRITICAL

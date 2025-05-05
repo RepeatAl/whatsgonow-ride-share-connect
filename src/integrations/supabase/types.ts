@@ -1086,6 +1086,42 @@ export type Database = {
         }
         Relationships: []
       }
+      system_logs: {
+        Row: {
+          actor_id: string | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          event_type: string
+          log_id: string
+          metadata: Json | null
+          severity: string | null
+          visible_to: string[] | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          event_type: string
+          log_id?: string
+          metadata?: Json | null
+          severity?: string | null
+          visible_to?: string[] | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          event_type?: string
+          log_id?: string
+          metadata?: Json | null
+          severity?: string | null
+          visible_to?: string[] | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
