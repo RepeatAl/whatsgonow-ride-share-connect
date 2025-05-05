@@ -6,23 +6,29 @@ import CookieConsent from './components/CookieConsent';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import LaunchProvider from './components/launch/LaunchProvider';
+import { UserSessionProvider } from './contexts/UserSessionContext';
+import { AppBootstrap } from './components/AppBootstrap';
 
 import './App.css';
+
+// Provider-Hierarchie:
+// <Router> → <ThemeProvider> → <UserSessionProvider> → <AuthProvider> → <NotificationProvider> → <AppRoutes>
 
 function App() {
   return (
     <Router>
       <ThemeProvider>
-        <LaunchProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <AppRoutes />
-              <Toaster />
-              <CookieConsent />
-            </NotificationProvider>
-          </AuthProvider>
-        </LaunchProvider>
+        <UserSessionProvider>
+          <AppBootstrap>
+            <AuthProvider>
+              <NotificationProvider>
+                <AppRoutes />
+                <Toaster />
+                <CookieConsent />
+              </NotificationProvider>
+            </AuthProvider>
+          </AppBootstrap>
+        </UserSessionProvider>
       </ThemeProvider>
     </Router>
   );

@@ -1,0 +1,101 @@
+
+import React, { ErrorInfo, ReactNode, useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useUserSession } from "@/contexts/UserSessionContext";
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+interface ErrorFallbackProps {
+  error: Error | null;
+  resetError: () => void;
+}
+
+const ErrorFallback = ({ error, resetError }: ErrorFallbackProps) => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
+      <div className="w-full max-w-md p-6 space-y-4 bg-background border rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-destructive">Ein Fehler ist aufgetreten</h2>
+        <div className="p-4 bg-destructive/10 rounded-md">
+          <p className="text-sm text-destructive">
+            {error?.message || "Die Anwendung konnte nicht initialisiert werden."}
+          </p>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Bitte versuche es später erneut oder kontaktiere den Support, falls der Fehler bestehen bleibt.
+        </p>
+        <div className="flex justify-end">
+          <Button onClick={resetError}>Seite neu laden</Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LoadingFallback = () => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+      <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <p className="mt-4 text-muted-foreground">Anwendung wird geladen...</p>
+    </div>
+  );
+};
+
+class ErrorBoundary extends React.Component<{ children: ReactNode, fallback: React.ComponentType<ErrorFallbackProps> }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode, fallback: React.ComponentType<ErrorFallbackProps> }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error("Application error:", error, errorInfo);
+  }
+
+  resetError = () => {
+    this.setState({ hasError: false, error: undefined });
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      const ErrorFallbackComponent = this.props.fallback;
+      return <ErrorFallbackComponent error={this.state.error} resetError={this.resetError} />;
+    }
+
+    return this.props.children;
+  }
+}
+
+export const AppBootstrap = ({ children }: { children: ReactNode }) => {
+  const { loading, isInitialLoad } = useUserSession();
+  const [isAppReady, setIsAppReady] = useState(false);
+  
+  useEffect(() => {
+    // Check if the app is ready to render
+    if (!loading && !isInitialLoad) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setIsAppReady(true);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [loading, isInitialLoad]);
+  
+  if (!isAppReady) {
+    return <LoadingFallback />;
+  }
+  
+  return (
+    <ErrorBoundary fallback={ErrorFallback}>
+      {children}
+    </ErrorBoundary>
+  );
+};
