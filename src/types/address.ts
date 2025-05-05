@@ -15,4 +15,5 @@ export type AddressBookEntry = {
   is_default?: boolean;
   created_at?: string;
   updated_at?: string;
+  source_type?: 'manual' | 'auto' | 'from_order';
 };

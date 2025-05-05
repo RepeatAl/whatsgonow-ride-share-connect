@@ -5,10 +5,23 @@ import { toast } from 'sonner';
 import { CreateOrderFormValues } from "@/lib/validators/order";
 import { useOrderSubmit } from '@/hooks/useOrderSubmit';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAddressBook } from '@/hooks/useAddressBook';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 
 export function useCreateOrderSubmit(clearDraft: () => void) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { autoSaveAddressFromOrder } = useAddressBook();
+  const [showFindDriverDialog, setShowFindDriverDialog] = useState(false);
   
   const { handleSubmit: submitOrder, isSubmitting } = useOrderSubmit(user?.id, clearDraft);
 
@@ -19,14 +32,15 @@ export function useCreateOrderSubmit(clearDraft: () => void) {
       
       // Ensure we have a valid result before navigating
       if (result && result.success) {
+        // Automatische Adressspeicherung
+        await autoSaveAddressFromOrder(data);
+        
         // Clear any local storage or form data to prevent state persistence issues
         clearDraft();
         localStorage.removeItem('order-draft');
         
-        // Navigate to the orders page with a small delay to ensure cleanup is complete
-        setTimeout(() => {
-          navigate("/orders", { replace: true });
-        }, 100);
+        // Show dialog asking if user wants to find a driver
+        setShowFindDriverDialog(true);
       } else {
         // Handle submission error
         toast.error("Fehler beim Erstellen des Auftrags: " + (result?.error || "Unbekannter Fehler"));
@@ -37,9 +51,49 @@ export function useCreateOrderSubmit(clearDraft: () => void) {
     }
   };
 
+  const handleFindDriverDialogClose = (findDriver: boolean) => {
+    setShowFindDriverDialog(false);
+    
+    if (findDriver) {
+      // Weiterleitung zur Fahrer-Suche
+      navigate("/find-driver", { 
+        state: { 
+          fromNewOrder: true,
+          useAddressBook: true 
+        } 
+      });
+    } else {
+      // Weiterleitung zum Profil
+      navigate("/profile", { replace: true });
+    }
+  };
+
+  const FindDriverDialog = () => (
+    <AlertDialog open={showFindDriverDialog} onOpenChange={() => setShowFindDriverDialog(false)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Auftrag erfolgreich erstellt!</AlertDialogTitle>
+          <AlertDialogDescription>
+            Möchten Sie jetzt einen passenden Fahrer für Ihren Transport finden?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => handleFindDriverDialogClose(false)}>
+            Nein, später
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={() => handleFindDriverDialogClose(true)}>
+            Ja, Fahrer suchen
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return {
     handleCreateOrder,
     isSubmitting,
-    userId: user?.id
+    userId: user?.id,
+    FindDriverDialog,
+    showFindDriverDialog
   };
 }

@@ -3,6 +3,10 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { CreateOrderFormValues } from "@/lib/validators/order";
+import { Button } from "@/components/ui/button";
+import { Book } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
 
 interface AddressSectionProps {
   form: UseFormReturn<CreateOrderFormValues>;
@@ -12,10 +16,39 @@ interface AddressSectionProps {
 export const AddressSection = ({ form, type }: AddressSectionProps) => {
   const prefix = type === 'pickup' ? 'pickup' : 'delivery';
   const title = type === 'pickup' ? 'Abholadresse' : 'Zieladresse';
+  const { profile } = useAuth();
+  const [showAddressBook, setShowAddressBook] = useState(false);
+
+  // Funktion zum Öffnen des Adressbuch-Dialogs (wird später implementiert)
+  const openAddressBookDialog = () => {
+    setShowAddressBook(true);
+    // Hier wird später der AddressBookDialog geöffnet
+    console.log("Adressbuch für", type, "öffnen");
+  };
+
+  // Prüfen, ob der Nutzer das Adressbuch nutzen darf
+  const canUseAddressBook = profile?.role === 'sender_business' || 
+                            profile?.role === 'community_manager' || 
+                            (profile?.role === 'driver' && type === 'pickup');
 
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-medium">{title}</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">{title}</h3>
+        {canUseAddressBook && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={openAddressBookDialog}
+            className="ml-auto"
+          >
+            <Book className="mr-2 h-4 w-4" />
+            Aus Adressbuch wählen
+          </Button>
+        )}
+      </div>
+      
       <div className="grid gap-4 md:grid-cols-2">
         <FormField
           control={form.control}
@@ -129,6 +162,13 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
           )}
         />
       </div>
+      
+      {/* Platzhalter für den zukünftigen Adressbuch-Dialog */}
+      {showAddressBook && (
+        <div className="hidden">
+          {/* AddressBookDialog wird in einem zukünftigen Schritt implementiert */}
+        </div>
+      )}
     </div>
   );
 };

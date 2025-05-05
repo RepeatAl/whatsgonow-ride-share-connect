@@ -38,7 +38,7 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
     insuranceEnabled
   } = useOrderForm(initialData);
 
-  const { handleCreateOrder, isSubmitting, userId } = useCreateOrderSubmit(clearDraft);
+  const { handleCreateOrder, isSubmitting, userId, FindDriverDialog, showFindDriverDialog } = useCreateOrderSubmit(clearDraft);
 
   if (isLoading) {
     return (
@@ -91,6 +91,9 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
           <DeadlineSection form={form} />
           <SubmitButton isSubmitting={isSubmitting} />
         </form>
+        
+        {/* Dialog zur Fahrer-Suche nach erfolgreicher Auftragserstellung */}
+        {showFindDriverDialog && <FindDriverDialog />}
       </div>
     </Form>
   );

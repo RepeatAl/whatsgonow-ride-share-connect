@@ -22,6 +22,7 @@ export type Database = {
           name: string | null
           phone: string | null
           postal_code: string
+          source_type: string | null
           street: string
           type: string
           updated_at: string | null
@@ -39,6 +40,7 @@ export type Database = {
           name?: string | null
           phone?: string | null
           postal_code: string
+          source_type?: string | null
           street: string
           type: string
           updated_at?: string | null
@@ -56,27 +58,13 @@ export type Database = {
           name?: string | null
           phone?: string | null
           postal_code?: string
+          source_type?: string | null
           street?: string
           type?: string
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "address_book_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "address_book_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_regions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       analytics: {
         Row: {
