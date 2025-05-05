@@ -8,11 +8,12 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { UserSessionProvider } from './contexts/UserSessionContext';
 import { AppBootstrap } from './components/AppBootstrap';
+import LaunchProvider from './components/launch/LaunchProvider';
 
 import './App.css';
 
 // Provider-Hierarchie:
-// <Router> → <ThemeProvider> → <UserSessionProvider> → <AuthProvider> → <NotificationProvider> → <AppRoutes>
+// <Router> → <ThemeProvider> → <UserSessionProvider> → <AppBootstrap> → <LaunchProvider> → <AuthProvider> → <NotificationProvider> → <AppRoutes>
 
 function App() {
   return (
@@ -20,13 +21,15 @@ function App() {
       <ThemeProvider>
         <UserSessionProvider>
           <AppBootstrap>
-            <AuthProvider>
-              <NotificationProvider>
-                <AppRoutes />
-                <Toaster />
-                <CookieConsent />
-              </NotificationProvider>
-            </AuthProvider>
+            <LaunchProvider>
+              <AuthProvider>
+                <NotificationProvider>
+                  <AppRoutes />
+                  <Toaster />
+                  <CookieConsent />
+                </NotificationProvider>
+              </AuthProvider>
+            </LaunchProvider>
           </AppBootstrap>
         </UserSessionProvider>
       </ThemeProvider>
