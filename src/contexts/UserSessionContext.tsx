@@ -17,7 +17,8 @@ interface UserSessionContextProps {
   isInitialLoad: boolean;
   sessionExpired: boolean;
   setSessionExpired: (expired: boolean) => void;
-  signIn: (email: string, password: string) => Promise<void>;
+  // Aktualisieren der Signatur, um den tatsächlichen Rückgabetyp von supabase.auth.signInWithPassword zu reflektieren
+  signIn: (email: string, password: string) => Promise<any>; // Geändert von Promise<void> zu Promise<any>
   signUp: (
     email: string,
     password: string,

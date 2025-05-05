@@ -38,7 +38,8 @@ export interface AuthContextProps {
   isInitialLoad: boolean;
   isProfileComplete?: boolean;
   sessionExpired?: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  // Aktualisieren der signIn-Signatur, um mit UserSessionContext konsistent zu sein
+  signIn: (email: string, password: string) => Promise<any>; // Geändert zu Promise<any>
   signUp: (
     email: string,
     password: string,
