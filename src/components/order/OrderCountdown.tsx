@@ -56,7 +56,7 @@ export function OrderCountdown({
         toast({
           title: "Auftrag läuft bald ab!",
           description: "Dieser Auftrag läuft in weniger als 12 Stunden ab.",
-          variant: "warning",
+          variant: "default", // Changed from "warning" to "default"
         });
       }
       
@@ -78,27 +78,32 @@ export function OrderCountdown({
         });
         
         // Send automatic message about expiration
-        supabase
-          .from('messages')
-          .insert({
-            sender_id: 'system',
-            order_id: orderId,
-            content: 'Der Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.',
-            system_message: true
-          })
-          .then(() => {
-            toast({
-              title: "Auftrag abgelaufen",
-              description: "Dieser Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.",
-              variant: "destructive",
+        try {
+          supabase
+            .from('messages')
+            .insert({
+              sender_id: 'system',
+              order_id: orderId,
+              content: 'Der Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.',
+              system_message: true
+            })
+            .then(() => {
+              toast({
+                title: "Auftrag abgelaufen",
+                description: "Dieser Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.",
+                variant: "destructive",
+              });
+              
+              onExpire();
+            })
+            .catch(error => {
+              console.error('Fehler beim Senden der Ablaufnachricht:', error);
+              onExpire();
             });
-            
-            onExpire();
-          })
-          .catch((error) => {
-            console.error('Fehler beim Senden der Ablaufnachricht:', error);
-            onExpire();
-          });
+        } catch (error) {
+          console.error('Fehler beim Senden der Ablaufnachricht:', error);
+          onExpire();
+        }
       }
     }, 60000); // Check every minute
     

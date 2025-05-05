@@ -122,6 +122,7 @@ export const useOrderExpiration = (orderId: string) => {
         eventType: AuditEventType.ORDER_EXPIRED,
         entityType: AuditEntityType.ORDER,
         entityId: orderId,
+        actorId: 'system', // Added the missing actorId property
         metadata: { 
           previousStatus: data.status,
           manualExpiration: true
