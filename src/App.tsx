@@ -5,20 +5,23 @@ import { Toaster } from './components/ui/toaster';
 import CookieConsent from './components/CookieConsent';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 
 import './App.css';
 
 function App() {
   return (
-    <ThemeProvider>
-      <Router>
-        <NotificationProvider>
-          <AppRoutes />
-          <Toaster />
-          <CookieConsent />
-        </NotificationProvider>
-      </Router>
-    </ThemeProvider>
+    <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <AppRoutes />
+            <Toaster />
+            <CookieConsent />
+          </NotificationProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
   );
 }
 
