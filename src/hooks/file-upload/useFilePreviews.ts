@@ -1,20 +1,24 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { toast } from "sonner";
 import { MAX_FILES } from "./constants";
 
-export const useFilePreviews = () => {
+export const useFilePreviews = (initialUrls: string[] = []) => {
   const [previews, setPreviews] = useState<string[]>([]);
   const previewUrlsRef = useRef<string[]>([]);
   const initialLoadDoneRef = useRef(false);
   const restoredFromStorageRef = useRef(false);
 
-  // Initial setup - clear previews when component mounts
+  // Initial setup - clear previews when component mounts or initialize with provided URLs
   useEffect(() => {
     if (!initialLoadDoneRef.current) {
-      setPreviews([]);
-      previewUrlsRef.current = [];
+      // Initialize with empty array or initial URLs if provided
+      setPreviews(initialUrls.length > 0 ? initialUrls : []);
+      previewUrlsRef.current = initialUrls.length > 0 ? [...initialUrls] : [];
       initialLoadDoneRef.current = true;
+      
+      if (initialUrls.length > 0) {
+        restoredFromStorageRef.current = true;
+      }
     }
     
     // Cleanup function to revoke all preview URLs
@@ -25,7 +29,7 @@ export const useFilePreviews = () => {
         }
       });
     };
-  }, []);
+  }, [initialUrls]);
 
   // Function to update previews with new URLs
   const updatePreviews = useCallback((newUrls: string[]) => {

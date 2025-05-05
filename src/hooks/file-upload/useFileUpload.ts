@@ -1,7 +1,5 @@
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { v4 as uuidv4 } from "uuid";
+import { useState, useCallback, useEffect } from "react";
 import { useFilePreviews } from "./useFilePreviews";
 import { useFileSelection } from "./useFileSelection";
 import { useFileUploader } from "./useFileUploader";
@@ -21,7 +19,7 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
     nextPhotoIndex,
     previewsRef,
     initializeWithExistingUrls
-  } = useFilePreviews();
+  } = useFilePreviews(existingUrls);
   
   const { 
     fileInputRef,
@@ -39,6 +37,15 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
   const handleMobilePhotosComplete = useCallback((files: string[]) => {
     updatePreviews(files);
   }, [updatePreviews]);
+  
+  // Effekt zum Initialisieren mit existierenden URLs
+  useEffect(() => {
+    // Wenn wir existierende URLs haben und diese noch nicht initialisiert wurden,
+    // initialisieren wir sie
+    if (existingUrls?.length > 0) {
+      initializeWithExistingUrls(existingUrls);
+    }
+  }, [existingUrls, initializeWithExistingUrls]);
   
   const uploadFiles = useCallback(async (userId?: string): Promise<string[]> => {
     if (!selectedFiles.length && !previews.length) {
@@ -88,13 +95,6 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       setUploadProgress(100);
     }
   }, [existingUrls, orderId, previewsRef, previews, selectedFiles, uploaderUploadFiles]);
-  
-  // Initialize with existing URLs in a useEffect to maintain hook order
-  useEffect(() => {
-    if (existingUrls?.length > 0) {
-      initializeWithExistingUrls(existingUrls);
-    }
-  }, [existingUrls, initializeWithExistingUrls]);
   
   return {
     fileInputRef,

@@ -8,7 +8,6 @@ import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/
 import { useAuth } from "@/contexts/AuthContext";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { ImageUploadSection } from "./form-sections/ImageUploadSection";
 import { GeneralInformationSection } from "./form-sections/GeneralInformationSection";
 import { ItemDetailsSection } from "./form-sections/ItemDetailsSection";
@@ -16,9 +15,9 @@ import { AddressSection } from "./form-sections/AddressSection";
 import { AdditionalOptionsSection } from "./form-sections/AdditionalOptionsSection";
 import { DeadlineSection } from "./form-sections/DeadlineSection";
 import { SubmitButton } from "./form-sections/SubmitButton";
+import { FormNavigation } from "./form-sections/FormNavigation";
 import { useOrderDraftStorage } from "@/hooks/useOrderDraftStorage";
 import { useOrderSubmit } from "@/hooks/useOrderSubmit";
-import { ArrowLeft, Save } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 
@@ -98,7 +97,6 @@ const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
 
   const handleSaveDraft = async () => {
     try {
-      const currentValues = form.getValues();
       await clearDraft();
       localStorage.removeItem('order-draft');
       navigate("/orders/drafts");
@@ -140,36 +138,7 @@ const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
   return (
     <Form {...form}>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => navigate(-1)}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Zurück
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleSaveDraft}
-            disabled={isSaving}
-            className="mb-4"
-          >
-            {isSaving ? (
-              <>
-                <LoadingSpinner size="small" />
-                <span className="ml-2">Speichert...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Als Entwurf speichern
-              </>
-            )}
-          </Button>
-        </div>
+        <FormNavigation onSaveDraft={handleSaveDraft} isSaving={isSaving} />
 
         <form onSubmit={form.handleSubmit(handleCreateOrder)} className="space-y-6">
           <ImageUploadSection

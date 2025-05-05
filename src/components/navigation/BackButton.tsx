@@ -15,14 +15,22 @@ export const BackButton = () => {
     return null;
   }
 
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <Button 
       variant="ghost" 
       className="w-fit mb-4" 
-      onClick={() => navigate("/")}
+      onClick={handleGoBack}
     >
       <ArrowLeft className="h-4 w-4 mr-2" />
-      Zurück zur Startseite
+      Zurück
     </Button>
   );
 };

@@ -33,7 +33,7 @@ const ErrorFallback = ({ error, resetError }: ErrorFallbackProps) => {
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
-          Bitte versuche es später erneut oder kontaktiere den Support, falls der Fehler bestehen bleibt.
+          Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support, falls der Fehler bestehen bleibt.
         </p>
         <div className="flex justify-between">
           <Button onClick={handleGoHome} variant="outline">
@@ -66,14 +66,16 @@ class ErrorBoundary extends React.Component<{ children: ReactNode, fallback: Rea
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    console.error("Error captured in ErrorBoundary:", error);
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("Application error:", error, errorInfo);
+    console.error("Application error details:", error, errorInfo);
   }
 
   resetError = () => {
+    console.log("Resetting error state...");
     this.setState({ hasError: false, error: undefined });
     window.location.reload();
   };
@@ -93,6 +95,8 @@ export const AppBootstrap = ({ children }: { children: ReactNode }) => {
   const [isAppReady, setIsAppReady] = useState(false);
   
   useEffect(() => {
+    console.log("AppBootstrap: Loading state:", { loading, isInitialLoad });
+    
     // Check if the app is ready to render
     if (!loading && !isInitialLoad) {
       // Small delay to ensure smooth transition
