@@ -6,6 +6,7 @@ import CookieConsent from './components/CookieConsent';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import LaunchProvider from './components/launch/LaunchProvider';
 
 import './App.css';
 
@@ -13,13 +14,15 @@ function App() {
   return (
     <Router>
       <ThemeProvider>
-        <AuthProvider>
-          <NotificationProvider>
-            <AppRoutes />
-            <Toaster />
-            <CookieConsent />
-          </NotificationProvider>
-        </AuthProvider>
+        <LaunchProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <AppRoutes />
+              <Toaster />
+              <CookieConsent />
+            </NotificationProvider>
+          </AuthProvider>
+        </LaunchProvider>
       </ThemeProvider>
     </Router>
   );

@@ -4,7 +4,6 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { ThemeProvider } from './contexts/ThemeContext'
-import LaunchProvider from './components/launch/LaunchProvider'
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
@@ -29,11 +28,7 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("🚀 App initialization started");
     
     createRoot(rootElement).render(
-      <ThemeProvider>
-        <LaunchProvider>
-          <App />
-        </LaunchProvider>
-      </ThemeProvider>
+      <App />
     );
     
     console.log("✅ App successfully mounted");
