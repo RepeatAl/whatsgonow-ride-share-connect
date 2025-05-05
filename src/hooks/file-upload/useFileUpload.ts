@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useFilePreviews } from "./useFilePreviews";
 import { useFileSelection } from "./useFileSelection";
 import { useFileUploader } from "./useFileUploader";
@@ -36,19 +36,20 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
     onProgress: (progress) => setUploadProgress(progress)
   });
   
+  // Stable callback function for handling mobile photo uploads
   const handleMobilePhotosComplete = useCallback((files: string[]) => {
     updatePreviews(files);
   }, [updatePreviews]);
   
-  // Effect for initializing with existing URLs
+  // Effect for initializing with existing URLs - run only once
   useEffect(() => {
-    if (existingUrls?.length > 0) {
-      setIsLoading(true);
+    if (existingUrls?.length > 0 && isLoading) {
       initializeWithExistingUrls(existingUrls);
       setIsLoading(false);
     }
-  }, [existingUrls, initializeWithExistingUrls]);
+  }, [existingUrls, initializeWithExistingUrls, isLoading]);
   
+  // Stable uploadFiles function to optimize renders
   const uploadFiles = useCallback(async (userId?: string): Promise<string[]> => {
     // If no new files and we already have previews, just return those
     if (!selectedFiles.length) {
@@ -65,7 +66,7 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       setUploadProgress(0);
       
       // Filter out only selected files that aren't already in previewsRef
-      const filesToUpload = selectedFiles.filter(file => {
+      const filesToUpload = selectedFiles.filter(() => {
         // Skip files that would exceed our limit
         return previews.filter(Boolean).length < MAX_FILES;
       });
@@ -96,7 +97,7 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       setIsUploading(false);
       setUploadProgress(100);
     }
-  }, [existingUrls, orderId, previews, selectedFiles, uploaderUploadFiles]);
+  }, [orderId, previews, selectedFiles, uploaderUploadFiles]);
   
   return {
     fileInputRef,

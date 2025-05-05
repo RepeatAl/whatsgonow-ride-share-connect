@@ -23,6 +23,7 @@ export const ImageUploadSection = ({
 }: ImageUploadSectionProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Initialize file upload hook with stable references
   const {
     fileInputRef,
     handleFileSelect,
@@ -39,10 +40,12 @@ export const ImageUploadSection = ({
     nextPhotoIndex
   } = useFileUpload(orderId, existingUrls);
 
+  // Stable callback for removing files
   const handleRemoveFile = useCallback((index: number) => {
     removeFile(index);
   }, [removeFile]);
 
+  // Optimize save handler with stable dependencies
   const handleSave = useCallback(async () => {
     if (!orderId) {
       toast.error("Bitte speichern Sie zuerst den Auftrag");
@@ -56,8 +59,33 @@ export const ImageUploadSection = ({
     }
   }, [orderId, userId, uploadFiles, onPhotosUploaded]);
 
-  // Use a stable memoized version of the previews array
-  const memoizedPreviews = useMemo(() => previews, [previews]);
+  // Create stable props for child components to prevent unnecessary re-renders
+  const uploadButtonsProps = useMemo(() => ({
+    userId,
+    orderId,
+    canTakeMore,
+    nextPhotoIndex,
+    onFileSelect: handleFileSelect,
+    onCameraOpen: () => setIsModalOpen(true),
+    onMobilePhotosComplete: handleMobilePhotosComplete
+  }), [userId, orderId, canTakeMore, nextPhotoIndex, handleFileSelect, handleMobilePhotosComplete]);
+
+  const previewGridProps = useMemo(() => ({
+    previews,
+    onRemove: handleRemoveFile,
+    onSave: handleSave,
+    isUploading,
+    uploadProgress,
+    isLoading
+  }), [previews, handleRemoveFile, handleSave, isUploading, uploadProgress, isLoading]);
+
+  // Create stable modal props
+  const modalProps = useMemo(() => ({
+    isOpen: isModalOpen,
+    onClose: () => setIsModalOpen(false),
+    onCapture: handleCapture,
+    nextPhotoIndex
+  }), [isModalOpen, handleCapture, nextPhotoIndex]);
 
   return (
     <div className="space-y-2">
@@ -68,15 +96,7 @@ export const ImageUploadSection = ({
             <FormItem>
               <FormLabel>Bilder hochladen (max. 4, 2 MB pro Datei)</FormLabel>
               
-              <UploadButtons
-                userId={userId}
-                orderId={orderId}
-                canTakeMore={canTakeMore}
-                nextPhotoIndex={nextPhotoIndex}
-                onFileSelect={handleFileSelect}
-                onCameraOpen={() => setIsModalOpen(true)}
-                onMobilePhotosComplete={handleMobilePhotosComplete}
-              />
+              <UploadButtons {...uploadButtonsProps} />
 
               <input 
                 ref={fileInputRef}
@@ -90,24 +110,12 @@ export const ImageUploadSection = ({
               <FormMessage />
             </FormItem>
 
-            <PreviewGrid 
-              previews={memoizedPreviews}
-              onRemove={handleRemoveFile}
-              onSave={handleSave}
-              isUploading={isUploading}
-              uploadProgress={uploadProgress}
-              isLoading={isLoading}
-            />
+            <PreviewGrid {...previewGridProps} />
           </div>
         </CardContent>
       </Card>
 
-      <CameraModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCapture={handleCapture}
-        nextPhotoIndex={nextPhotoIndex}
-      />
+      <CameraModal {...modalProps} />
     </div>
   );
 };

@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Save, Image, X } from "lucide-react";
 import { UploadProgress } from "@/components/upload/UploadProgress";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const MAX_FILES = 4;
+import { MAX_FILES } from "@/hooks/file-upload/constants";
 
 interface PreviewGridProps {
   previews: (string | undefined)[];
@@ -25,12 +24,14 @@ export const PreviewGrid = memo(({
   isLoading = false
 }: PreviewGridProps) => {
   // Always ensure we have a fixed-length array of MAX_FILES
-  const previewSlots = Array.from({ length: MAX_FILES }, (_, idx) => previews[idx]);
+  const previewSlots = Array(MAX_FILES).fill(undefined).map((_, idx) => previews[idx]);
+  
+  const filledCount = previews.filter(Boolean).length;
 
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {Array.from({ length: MAX_FILES }).map((_, idx) => (
+        {Array(MAX_FILES).fill(0).map((_, idx) => (
           <Skeleton key={`skeleton-${idx}`} className="w-full h-32" />
         ))}
       </div>
@@ -42,7 +43,7 @@ export const PreviewGrid = memo(({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {previewSlots.map((preview, idx) => (
           <div
-            key={`preview-${idx}`}
+            key={`preview-slot-${idx}`}
             className={`relative group flex items-center justify-center w-full h-32 border-2 
               ${preview ? "border-solid" : "border-dashed"} rounded 
               ${preview ? "bg-white" : "bg-gray-50"}
@@ -81,12 +82,12 @@ export const PreviewGrid = memo(({
       
       {isUploading ? (
         <UploadProgress 
-          current={Math.round((uploadProgress / 100) * previews.filter(Boolean).length)}
-          total={previews.filter(Boolean).length}
+          current={Math.round((uploadProgress / 100) * filledCount)}
+          total={filledCount}
           progress={uploadProgress}
         />
       ) : (
-        previews.filter(Boolean).length > 0 && (
+        filledCount > 0 && (
           <div className="flex justify-end">
             <Button 
               onClick={onSave} 
@@ -101,16 +102,22 @@ export const PreviewGrid = memo(({
     </div>
   );
 }, (prevProps, nextProps) => {
-  // Enhanced comparison function to reduce unnecessary re-renders
+  // Optimized deep comparison function to reduce unnecessary re-renders
   if (prevProps.isLoading !== nextProps.isLoading) return false;
   if (prevProps.isUploading !== nextProps.isUploading) return false;
   if (prevProps.uploadProgress !== nextProps.uploadProgress) return false;
   
-  // Create predictable string representation of preview arrays for comparison
-  const prevPreviewsString = JSON.stringify(prevProps.previews.map(p => p || null));
-  const nextPreviewsString = JSON.stringify(nextProps.previews.map(p => p || null));
+  // Compare preview arrays - they must be the same length by design
+  if (prevProps.previews.length !== nextProps.previews.length) return false;
   
-  return prevPreviewsString === nextPreviewsString;
+  // Do a value-based comparison of each preview URL rather than reference comparison
+  for (let i = 0; i < MAX_FILES; i++) {
+    if (prevProps.previews[i] !== nextProps.previews[i]) {
+      return false;
+    }
+  }
+  
+  return true;
 });
 
 PreviewGrid.displayName = "PreviewGrid";
