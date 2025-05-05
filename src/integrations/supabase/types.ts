@@ -9,6 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      address_book: {
+        Row: {
+          address_extra: string | null
+          city: string
+          country: string
+          created_at: string | null
+          email: string | null
+          house_number: string
+          id: string
+          is_default: boolean | null
+          name: string | null
+          phone: string | null
+          postal_code: string
+          street: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address_extra?: string | null
+          city: string
+          country: string
+          created_at?: string | null
+          email?: string | null
+          house_number: string
+          id?: string
+          is_default?: boolean | null
+          name?: string | null
+          phone?: string | null
+          postal_code: string
+          street: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address_extra?: string | null
+          city?: string
+          country?: string
+          created_at?: string | null
+          email?: string | null
+          house_number?: string
+          id?: string
+          is_default?: boolean | null
+          name?: string | null
+          phone?: string | null
+          postal_code?: string
+          street?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "address_book_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "address_book_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics: {
         Row: {
           id: string
