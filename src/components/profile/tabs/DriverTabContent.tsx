@@ -1,7 +1,9 @@
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Car, MapPin, Calendar } from "lucide-react";
+import { Car, MapPin, Calendar, Navigation } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DriverTabContentProps {
   profile: any;
@@ -15,6 +17,13 @@ export function DriverTabContent({ profile }: DriverTabContentProps) {
         <CardDescription>Verwalte deine Fahrerinformationen und verfügbaren Transporte</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <Alert variant="default" className="bg-muted/50 border-muted-foreground/20">
+          <Navigation className="h-4 w-4 mr-2" />
+          <AlertDescription>
+            Schnellzugriff: Nutze den <span className="font-medium">"Transport anbieten"</span> Button in der Hauptnavigation, um direkt eine Transportmöglichkeit anzubieten.
+          </AlertDescription>
+        </Alert>
+
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="bg-gray-50 border">
             <CardHeader className="pb-2">
@@ -63,8 +72,10 @@ export function DriverTabContent({ profile }: DriverTabContentProps) {
         </Card>
 
         <div className="flex justify-end">
-          <Button variant="brand" className="mt-4">
-            Neuen Transport anbieten
+          <Button variant="brand" asChild className="mt-4">
+            <Link to="/offer-transport">
+              Neuen Transport anbieten
+            </Link>
           </Button>
         </div>
       </CardContent>

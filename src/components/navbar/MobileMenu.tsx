@@ -3,7 +3,23 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Package, Car, MessageCircle, User, LayoutDashboard, Shield, Database, LogIn, LogOut, Moon, Sun } from "lucide-react";
+import { 
+  Menu, 
+  X, 
+  Package, 
+  Car, 
+  MessageCircle, 
+  User, 
+  LayoutDashboard, 
+  Shield, 
+  Database, 
+  LogIn, 
+  LogOut, 
+  Moon, 
+  Sun, 
+  FileText, 
+  PlusCircle 
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -17,20 +33,30 @@ interface MobileMenuProps {
 const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const isSender = userRole?.startsWith('sender_');
 
   const navLinks = [{
-    name: "Find Transport",
+    name: "Transport finden",
     path: "/find-transport",
     icon: <Package className="h-5 w-5 mr-2" />
   }, {
-    name: "Offer Transport",
+    name: "Transport anbieten",
     path: "/offer-transport",
     icon: <Car className="h-5 w-5 mr-2" />
   }, {
-    name: "Messages",
+    name: "Nachrichten",
     path: "/inbox",
     icon: <MessageCircle className="h-5 w-5 mr-2" />
   }];
+
+  // Add create order link for senders
+  if (isSender) {
+    navLinks.push({
+      name: "Neuer Auftrag",
+      path: "/create-order",
+      icon: <FileText className="h-5 w-5 mr-2" />
+    });
+  }
 
   const adminLinks = [{
     name: "Admin Panel",
@@ -77,6 +103,18 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
             </Link>
           ) : (
             <>
+              {/* Highlight New Order for senders */}
+              {isSender && (
+                <Link 
+                  to="/create-order" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  className="flex items-center py-2 px-3 rounded-md bg-brand-primary text-white hover:bg-brand-primary/90"
+                >
+                  <PlusCircle className="h-5 w-5 mr-2" />
+                  <span className="font-medium">Neuer Auftrag</span>
+                </Link>
+              )}
+
               {navLinks.map(link => (
                 <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                   {link.icon}
@@ -113,7 +151,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               <div className="border-t my-2"></div>
               <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <User className="h-5 w-5 mr-2" />
-                <span>Profile</span>
+                <span>Profil</span>
               </Link>
               <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <LayoutDashboard className="h-5 w-5 mr-2" />

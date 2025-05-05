@@ -31,6 +31,9 @@ const Profile = () => {
   const showCMSection = profile?.role === "cm";
   const showBusinessSection = profile?.role === "sender_business";
   const canBecomeDriver = profile?.role === "sender_private" || profile?.role === "sender_business";
+  
+  // Determine if the user is a sender
+  const isSender = profile?.role?.startsWith('sender_');
 
   if (loading) {
     return (
@@ -80,6 +83,17 @@ const Profile = () => {
               userId={user.id}
               onUploadClick={() => setShowImageUploader(true)}
             />
+
+            {isSender && (
+              <div className="flex justify-end">
+                <button 
+                  onClick={() => navigate('/create-order')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-brand-orange text-white hover:bg-brand-orange/90 transition-colors"
+                >
+                  Neuen Auftrag erstellen
+                </button>
+              </div>
+            )}
 
             <ProfileTabs 
               profile={profile}

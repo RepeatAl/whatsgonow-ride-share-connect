@@ -11,8 +11,24 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading || isInitialLoad) return;
+
+    // First check for incomplete profile
     if (user && profile && !profile.profile_complete && location.pathname !== "/complete-profile") {
       navigate("/complete-profile", { state: { from: location.pathname }, replace: true });
+      return;
+    }
+
+    // If profile is complete but user is on profile page and is a sender, consider redirecting to create-order
+    // Only redirect from main profile page, not from other sections
+    if (user && 
+        profile && 
+        profile.profile_complete && 
+        profile.role?.startsWith('sender') && 
+        location.pathname === "/profile") {
+      
+      // You could add additional logic here to check if the user has no active orders
+      // For now, we'll just show a notification or hint on the profile page instead of auto-redirecting
+      // This is handled in the ProfileTabs component by setting the default tab to 'sender'
     }
   }, [profile, loading, isInitialLoad, user, navigate, location.pathname]);
 

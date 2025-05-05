@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -9,7 +10,9 @@ import {
   Shield,
   Database,
   LogIn,
-  Inbox
+  Inbox,
+  PlusCircle,
+  FileText
 } from "lucide-react";
 import { 
   Tooltip,
@@ -28,27 +31,39 @@ interface DesktopMenuProps {
 }
 
 const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) => {
+  const isSender = userRole?.startsWith('sender_');
+
   const navLinks = [
     { 
-      name: "Find Transport", 
+      name: "Transport finden", 
       path: "/find-transport", 
       icon: <Package className="h-5 w-5 mr-2" />, 
-      tooltip: "Browse available transports" 
+      tooltip: "Verfügbare Transporte durchsuchen" 
     },
     { 
-      name: "Offer Transport", 
+      name: "Transport anbieten", 
       path: "/offer-transport", 
       icon: <Car className="h-5 w-5 mr-2" />, 
-      tooltip: "Offer your transport services" 
+      tooltip: "Deine Transportdienste anbieten" 
     },
     { 
-      name: "Messages", 
+      name: "Nachrichten", 
       path: "/inbox", 
       icon: <MessageCircle className="h-5 w-5 mr-2" />, 
-      tooltip: "View your messages",
+      tooltip: "Deine Nachrichten ansehen",
       badge: unreadMessagesCount
     },
   ];
+
+  // Add create order link for senders
+  if (isSender) {
+    navLinks.push({
+      name: "Neuer Auftrag",
+      path: "/create-order",
+      icon: <FileText className="h-5 w-5 mr-2" />,
+      tooltip: "Neuen Transportauftrag erstellen"
+    });
+  }
 
   const adminLinks = [
     { 
@@ -108,7 +123,7 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Messages ({unreadMessagesCount} unread)</p>
+              <p>Nachrichten ({unreadMessagesCount} ungelesen)</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -120,12 +135,12 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
                   aria-label="Profile"
                 >
                   <User className="h-5 w-5" />
-                  <span>Profile</span>
+                  <span>Profil</span>
                 </Button>
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              <p>View your profile</p>
+              <p>Dein Profil ansehen</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -146,6 +161,27 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
             </TooltipContent>
           </Tooltip>
           <LogoutButton variant="outline" className="gap-2 hover:bg-brand-primary hover:text-white transition-colors" />
+
+          {/* Highlight new order button for senders */}
+          {isSender && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link to="/create-order">
+                  <Button 
+                    variant="brand" 
+                    className="gap-2"
+                    aria-label="Neuer Auftrag"
+                  >
+                    <PlusCircle className="h-5 w-5" />
+                    <span>Neuer Auftrag</span>
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Transportauftrag erstellen</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </>
       ) : (
         <Tooltip>

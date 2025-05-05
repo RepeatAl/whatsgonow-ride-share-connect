@@ -1,4 +1,5 @@
 
+import { useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileTabContent } from "./tabs/ProfileTabContent";
 import { RatingsTabContent } from "./tabs/RatingsTabContent";
@@ -30,6 +31,22 @@ export function ProfileTabs({
   showAdminSection,
   canBecomeDriver
 }: ProfileTabsProps) {
+  // Determine the default active tab based on user role
+  const defaultTab = useMemo(() => {
+    if (profile.role?.startsWith('sender')) return 'sender';
+    if (profile.role === 'driver') return 'driver';
+    if (profile.role === 'cm') return 'community';
+    if (profile.role === 'admin' || profile.role === 'admin_limited') return 'admin';
+    return 'profile';
+  }, [profile.role]);
+
+  // Set the default tab when the component mounts
+  useEffect(() => {
+    if (activeTab === 'profile' && defaultTab !== 'profile') {
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab, activeTab, setActiveTab]);
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">

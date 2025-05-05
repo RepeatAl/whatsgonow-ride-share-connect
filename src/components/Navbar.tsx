@@ -1,51 +1,56 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
-import LogoutButton from "@/components/auth/LogoutButton";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import { NotificationBadge } from "@/components/notifications/NotificationBadge";
-import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
+import DesktopMenu from "./navbar/DesktopMenu";
+import MobileMenu from "./navbar/MobileMenu";
+import NavbarLogo from "./navbar/NavbarLogo";
 
 const Navbar = () => {
-  const { theme, toggleTheme } = useTheme();
-  const { user } = useAuth();
+  const { theme } = useTheme();
+  const { user, profile } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+  // Set user role from profile
+  useEffect(() => {
+    if (profile) {
+      setUserRole(profile.role);
+    } else {
+      setUserRole(null);
+    }
+  }, [profile]);
+
+  // This would be replaced with actual unread messages logic
+  useEffect(() => {
+    if (user) {
+      // For demonstration purposes - replace with actual messages count logic
+      setUnreadMessagesCount(2);
+    } else {
+      setUnreadMessagesCount(0);
+    }
+  }, [user]);
 
   return (
     <nav className="w-full py-4 px-4 md:px-6 border-b shadow-sm fixed top-0 z-50 bg-background/80 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center">
-          <img 
-            src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" 
-            alt="whatsgonow logo" 
-            className="h-8 mr-2" 
+        <NavbarLogo />
+        
+        <div className="hidden md:flex">
+          <DesktopMenu 
+            user={user} 
+            userRole={userRole} 
+            unreadMessagesCount={unreadMessagesCount} 
           />
-          <span className="text-xl font-bold text-slate-950 dark:text-white">
-            whats<span className="text-brand-orange">go</span>now
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-4">
-          <LanguageToggle />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-          
-          {user && (
-            <NotificationsDropdown>
-              <NotificationBadge onClick={() => {}} />
-            </NotificationsDropdown>
-          )}
-          
-          {user && <LogoutButton />}
+        </div>
+        
+        <div className="md:hidden">
+          <MobileMenu 
+            user={user}
+            userRole={userRole}
+            unreadMessagesCount={unreadMessagesCount}
+          />
         </div>
       </div>
     </nav>
