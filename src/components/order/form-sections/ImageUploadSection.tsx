@@ -56,7 +56,7 @@ export const ImageUploadSection = ({
     }
   }, [orderId, userId, uploadFiles, onPhotosUploaded]);
 
-  // Ensure we memo the preview array to prevent unnecessary rerenders
+  // Use a stable memoized version of the previews array
   const memoizedPreviews = useMemo(() => previews, [previews]);
 
   return (

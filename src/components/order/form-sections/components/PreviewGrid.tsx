@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const MAX_FILES = 4;
 
 interface PreviewGridProps {
-  previews: string[];
+  previews: (string | undefined)[];
   onRemove: (index: number) => void;
   onSave?: () => void;
   isUploading?: boolean;
@@ -24,14 +24,14 @@ export const PreviewGrid = memo(({
   uploadProgress = 0,
   isLoading = false
 }: PreviewGridProps) => {
-  // Create an array of 4 slots, filling empty slots with undefined
+  // Always ensure we have a fixed-length array of MAX_FILES
   const previewSlots = Array.from({ length: MAX_FILES }, (_, idx) => previews[idx]);
 
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {Array.from({ length: MAX_FILES }).map((_, idx) => (
-          <Skeleton key={idx} className="w-full h-32" />
+          <Skeleton key={`skeleton-${idx}`} className="w-full h-32" />
         ))}
       </div>
     );
@@ -42,7 +42,7 @@ export const PreviewGrid = memo(({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {previewSlots.map((preview, idx) => (
           <div
-            key={idx}
+            key={`preview-${idx}`}
             className={`relative group flex items-center justify-center w-full h-32 border-2 
               ${preview ? "border-solid" : "border-dashed"} rounded 
               ${preview ? "bg-white" : "bg-gray-50"}
@@ -81,12 +81,12 @@ export const PreviewGrid = memo(({
       
       {isUploading ? (
         <UploadProgress 
-          current={Math.round((uploadProgress / 100) * previews.length)}
-          total={previews.length}
+          current={Math.round((uploadProgress / 100) * previews.filter(Boolean).length)}
+          total={previews.filter(Boolean).length}
           progress={uploadProgress}
         />
       ) : (
-        previews.length > 0 && (
+        previews.filter(Boolean).length > 0 && (
           <div className="flex justify-end">
             <Button 
               onClick={onSave} 
@@ -101,13 +101,16 @@ export const PreviewGrid = memo(({
     </div>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison function to prevent unnecessary re-renders
-  return (
-    prevProps.isLoading === nextProps.isLoading &&
-    prevProps.isUploading === nextProps.isUploading &&
-    prevProps.uploadProgress === nextProps.uploadProgress &&
-    JSON.stringify(prevProps.previews) === JSON.stringify(nextProps.previews)
-  );
+  // Enhanced comparison function to reduce unnecessary re-renders
+  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  if (prevProps.isUploading !== nextProps.isUploading) return false;
+  if (prevProps.uploadProgress !== nextProps.uploadProgress) return false;
+  
+  // Create predictable string representation of preview arrays for comparison
+  const prevPreviewsString = JSON.stringify(prevProps.previews.map(p => p || null));
+  const nextPreviewsString = JSON.stringify(nextProps.previews.map(p => p || null));
+  
+  return prevPreviewsString === nextPreviewsString;
 });
 
 PreviewGrid.displayName = "PreviewGrid";

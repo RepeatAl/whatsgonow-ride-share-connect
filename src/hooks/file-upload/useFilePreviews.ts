@@ -3,22 +3,43 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { MAX_FILES } from "./constants";
 
 export const useFilePreviews = (initialUrls: string[] = []) => {
-  const [previews, setPreviews] = useState<string[]>([]);
-  const previewUrlsRef = useRef<string[]>([]);
+  // Always use a fixed-length array with MAX_FILES slots
+  const [previews, setPreviews] = useState<(string | undefined)[]>(() => {
+    // Initialize with fixed length array
+    const initialArray = Array(MAX_FILES).fill(undefined);
+    
+    // Fill in initial values if provided
+    initialUrls.forEach((url, index) => {
+      if (index < MAX_FILES) {
+        initialArray[index] = url;
+      }
+    });
+    
+    return initialArray;
+  });
+  
+  const previewUrlsRef = useRef<(string | undefined)[]>(Array(MAX_FILES).fill(undefined));
   const initialLoadDoneRef = useRef(false);
   const restoredFromStorageRef = useRef(false);
 
   // Initial setup - clear previews when component mounts or initialize with provided URLs
   useEffect(() => {
     if (!initialLoadDoneRef.current) {
-      // Initialize with empty array or initial URLs if provided
-      setPreviews(initialUrls.length > 0 ? initialUrls : []);
-      previewUrlsRef.current = initialUrls.length > 0 ? [...initialUrls] : [];
-      initialLoadDoneRef.current = true;
-      
       if (initialUrls.length > 0) {
+        const initialArray = Array(MAX_FILES).fill(undefined);
+        
+        initialUrls.forEach((url, index) => {
+          if (index < MAX_FILES) {
+            initialArray[index] = url;
+          }
+        });
+        
+        setPreviews(initialArray);
+        previewUrlsRef.current = [...initialArray];
         restoredFromStorageRef.current = true;
       }
+      
+      initialLoadDoneRef.current = true;
     }
     
     // Cleanup function to revoke all preview URLs
@@ -37,27 +58,38 @@ export const useFilePreviews = (initialUrls: string[] = []) => {
     
     setPreviews(prev => {
       const newPreviews = [...prev];
-      const addedUrls = new Set();
       
       newUrls.forEach((url) => {
+        // Check if this URL already exists in our previews
         const existingIndex = previewUrlsRef.current.findIndex(existing => existing === url);
         
         if (existingIndex !== -1) {
-          addedUrls.add(url);
-          return;
+          return; // Skip if already exists
         }
         
+        // Find the first empty slot
         const nextEmptySlot = newPreviews.findIndex(p => !p);
+        
         if (nextEmptySlot !== -1) {
+          // Insert into empty slot
           newPreviews[nextEmptySlot] = url;
           previewUrlsRef.current[nextEmptySlot] = url;
-          addedUrls.add(url);
-        } else if (newPreviews.length < MAX_FILES) {
-          newPreviews.push(url);
-          previewUrlsRef.current.push(url);
-          addedUrls.add(url);
+        } else if (newPreviews.filter(Boolean).length < MAX_FILES) {
+          // If array isn't full yet, find first undefined
+          for (let i = 0; i < MAX_FILES; i++) {
+            if (newPreviews[i] === undefined) {
+              newPreviews[i] = url;
+              previewUrlsRef.current[i] = url;
+              break;
+            }
+          }
         }
       });
+      
+      // Ensure we always maintain MAX_FILES length
+      while (newPreviews.length < MAX_FILES) {
+        newPreviews.push(undefined);
+      }
       
       return newPreviews.slice(0, MAX_FILES);
     });
@@ -67,8 +99,16 @@ export const useFilePreviews = (initialUrls: string[] = []) => {
   const initializeWithExistingUrls = useCallback((existingUrls: string[]) => {
     if (!existingUrls.length || restoredFromStorageRef.current) return;
     
-    setPreviews(existingUrls.slice(0, MAX_FILES));
-    previewUrlsRef.current = existingUrls.slice(0, MAX_FILES);
+    const initialArray = Array(MAX_FILES).fill(undefined);
+    
+    existingUrls.forEach((url, index) => {
+      if (index < MAX_FILES) {
+        initialArray[index] = url;
+      }
+    });
+    
+    setPreviews(initialArray);
+    previewUrlsRef.current = [...initialArray];
     restoredFromStorageRef.current = true;
   }, []);
 
@@ -76,16 +116,19 @@ export const useFilePreviews = (initialUrls: string[] = []) => {
   const removePreview = useCallback((index: number) => {
     setPreviews(prev => {
       const newPreviews = [...prev];
-      const urlToRevoke = previewUrlsRef.current[index];
       
-      if (urlToRevoke?.startsWith('blob:')) {
-        URL.revokeObjectURL(urlToRevoke);
+      if (index >= 0 && index < newPreviews.length) {
+        const urlToRevoke = previewUrlsRef.current[index];
+        
+        if (urlToRevoke?.startsWith('blob:')) {
+          URL.revokeObjectURL(urlToRevoke);
+        }
+        
+        newPreviews[index] = undefined;
+        previewUrlsRef.current[index] = undefined;
       }
       
-      newPreviews[index] = undefined;
-      previewUrlsRef.current[index] = undefined;
-      
-      return newPreviews.filter(Boolean);
+      return newPreviews;
     });
   }, []);
 
@@ -96,8 +139,9 @@ export const useFilePreviews = (initialUrls: string[] = []) => {
         URL.revokeObjectURL(url);
       }
     });
-    setPreviews([]);
-    previewUrlsRef.current = [];
+    
+    setPreviews(Array(MAX_FILES).fill(undefined));
+    previewUrlsRef.current = Array(MAX_FILES).fill(undefined);
     restoredFromStorageRef.current = false;
   }, []);
 

@@ -4,12 +4,14 @@ import { useFilePreviews } from "./useFilePreviews";
 import { useFileSelection } from "./useFileSelection";
 import { useFileUploader } from "./useFileUploader";
 import { toast } from "sonner";
+import { MAX_FILES } from "./constants";
 
 export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(!!existingUrls.length);
   
+  // Initialize with fixed structure for previews
   const { 
     previews, 
     updatePreviews, 
@@ -38,18 +40,19 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
     updatePreviews(files);
   }, [updatePreviews]);
   
-  // Effekt zum Initialisieren mit existierenden URLs
+  // Effect for initializing with existing URLs
   useEffect(() => {
-    // Wenn wir existierende URLs haben und diese noch nicht initialisiert wurden,
-    // initialisieren wir sie
     if (existingUrls?.length > 0) {
+      setIsLoading(true);
       initializeWithExistingUrls(existingUrls);
+      setIsLoading(false);
     }
   }, [existingUrls, initializeWithExistingUrls]);
   
   const uploadFiles = useCallback(async (userId?: string): Promise<string[]> => {
-    if (!selectedFiles.length && !previews.length) {
-      return existingUrls;
+    // If no new files and we already have previews, just return those
+    if (!selectedFiles.length) {
+      return previews.filter(Boolean) as string[];
     }
     
     if (!orderId) {
@@ -63,15 +66,13 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       
       // Filter out only selected files that aren't already in previewsRef
       const filesToUpload = selectedFiles.filter(file => {
-        // Generate a temporary object URL for this file to check
-        const tempUrl = URL.createObjectURL(file);
-        URL.revokeObjectURL(tempUrl); // Clean up immediately
-        return !previewsRef.current.some(url => url === tempUrl);
+        // Skip files that would exceed our limit
+        return previews.filter(Boolean).length < MAX_FILES;
       });
       
       if (filesToUpload.length === 0) {
         // Just return the existing previews if no new files
-        return [...previews.filter(Boolean), ...existingUrls];
+        return previews.filter(Boolean) as string[];
       }
       
       // Upload new files
@@ -82,10 +83,11 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       );
       
       // Combine with existing URLs, but filter out any that might be duplicates
-      const combinedUrls = [...uploadedUrls, ...existingUrls];
+      const previewUrls = previews.filter(Boolean) as string[];
+      const combinedUrls = [...uploadedUrls, ...previewUrls];
       const uniqueUrls = Array.from(new Set(combinedUrls));
       
-      return uniqueUrls.slice(0, 4); // Limit to 4 images
+      return uniqueUrls.slice(0, MAX_FILES); // Limit to MAX_FILES images
     } catch (error) {
       console.error("Error in uploadFiles:", error);
       toast.error("Fehler beim Hochladen der Dateien");
@@ -94,7 +96,7 @@ export const useFileUpload = (orderId?: string, existingUrls: string[] = []) => 
       setIsUploading(false);
       setUploadProgress(100);
     }
-  }, [existingUrls, orderId, previewsRef, previews, selectedFiles, uploaderUploadFiles]);
+  }, [existingUrls, orderId, previews, selectedFiles, uploaderUploadFiles]);
   
   return {
     fileInputRef,
