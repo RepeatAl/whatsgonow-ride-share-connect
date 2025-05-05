@@ -7,6 +7,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 import { useOrderForm } from "@/hooks/useOrderForm";
 import { useCreateOrderSubmit } from "./hooks/useCreateOrderSubmit";
+import { FindDriverDialog } from "./FindDriverDialog";
 
 // Import form sections
 import { ImageUploadSection } from "./form-sections/ImageUploadSection";
@@ -38,7 +39,13 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
     insuranceEnabled
   } = useOrderForm(initialData);
 
-  const { handleCreateOrder, isSubmitting, userId, FindDriverDialog, showFindDriverDialog } = useCreateOrderSubmit(clearDraft);
+  const { 
+    handleCreateOrder, 
+    isSubmitting, 
+    userId,
+    showFindDriverDialog,
+    handleFindDriverDialogClose 
+  } = useCreateOrderSubmit(clearDraft);
 
   if (isLoading) {
     return (
@@ -93,7 +100,12 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
         </form>
         
         {/* Dialog zur Fahrer-Suche nach erfolgreicher Auftragserstellung */}
-        {showFindDriverDialog && <FindDriverDialog />}
+        {showFindDriverDialog && (
+          <FindDriverDialog 
+            open={showFindDriverDialog}
+            onClose={handleFindDriverDialogClose}
+          />
+        )}
       </div>
     </Form>
   );

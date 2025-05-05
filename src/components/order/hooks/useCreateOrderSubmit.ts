@@ -6,16 +6,6 @@ import { CreateOrderFormValues } from "@/lib/validators/order";
 import { useOrderSubmit } from '@/hooks/useOrderSubmit';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAddressBook } from '@/hooks/useAddressBook';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle 
-} from '@/components/ui/alert-dialog';
 
 export function useCreateOrderSubmit(clearDraft: () => void) {
   const { user, profile } = useAuth();
@@ -68,32 +58,11 @@ export function useCreateOrderSubmit(clearDraft: () => void) {
     }
   };
 
-  const FindDriverDialog = () => (
-    <AlertDialog open={showFindDriverDialog} onOpenChange={() => setShowFindDriverDialog(false)}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Auftrag erfolgreich erstellt!</AlertDialogTitle>
-          <AlertDialogDescription>
-            Möchten Sie jetzt einen passenden Fahrer für Ihren Transport finden?
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => handleFindDriverDialogClose(false)}>
-            Nein, später
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={() => handleFindDriverDialogClose(true)}>
-            Ja, Fahrer suchen
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-
   return {
     handleCreateOrder,
     isSubmitting,
     userId: user?.id,
-    FindDriverDialog,
-    showFindDriverDialog
+    showFindDriverDialog,
+    handleFindDriverDialogClose
   };
 }
