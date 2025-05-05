@@ -1,3 +1,4 @@
+
 import { RouteConfig } from "@/components/routing/AppRoutes";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -41,6 +42,7 @@ import DraftEdit from "@/pages/orders/DraftEdit";
 import MyOrders from "@/pages/orders/MyOrders";
 import Inbox from "@/pages/Inbox";
 import Messages from "@/pages/Messages";
+import { Navigate } from "react-router-dom";
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -119,6 +121,9 @@ export const routes: RouteConfig[] = [
       { path: "feedback", element: <FeedbackAdmin /> },
     ]
   },
+
+  // Redirect from /chat to /inbox for compatibility
+  { path: "/chat", element: <Navigate to="/inbox" replace />, public: true },
 
   // 404 - last
   { path: "*", element: <NotFound />, public: true },

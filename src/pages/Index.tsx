@@ -1,3 +1,4 @@
+
 import React from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/home/Hero";
@@ -45,7 +46,7 @@ const Index = () => {
         )}
         
         <Button asChild className="rounded-full h-14 w-14 p-0" variant="outline">
-          <Link to="/chat">
+          <Link to="/inbox">
             <MessageCircle className="h-6 w-6" />
             <span className="sr-only">Start Chat</span>
           </Link>
