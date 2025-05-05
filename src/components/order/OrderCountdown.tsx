@@ -4,6 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { useSystemAudit } from '@/hooks/use-system-audit';
 import { AuditEventType, AuditEntityType, AuditSeverity } from '@/constants/auditEvents';
 import { supabase } from '@/integrations/supabase/client';
+import { NotificationType } from '@/constants/notificationTypes';
 
 interface OrderCountdownProps {
   orderId: string;
@@ -20,6 +21,7 @@ export function OrderCountdown({
 }: OrderCountdownProps) {
   const [remainingTime, setRemainingTime] = useState<{ days: number; hours: number; minutes: number } | null>(null);
   const [isWarning, setIsWarning] = useState(false);
+  const [hasNotified, setHasNotified] = useState(false);
   const { logEvent } = useSystemAudit();
   
   const calculateRemainingTime = useCallback(() => {
@@ -40,12 +42,72 @@ export function OrderCountdown({
     return { days, hours, minutes };
   }, [startTime, expirationDays]);
   
+  // Function to send notification about expiration warning
+  const sendExpirationWarningNotification = useCallback(async (senderId: string) => {
+    try {
+      await supabase.functions.invoke('notify-user', {
+        body: {
+          userId: senderId,
+          eventType: NotificationType.ORDER_EXPIRY_WARNING,
+          entityId: orderId,
+          title: 'Auftrag läuft bald ab!',
+          message: 'Dein Auftrag läuft in weniger als 12 Stunden ab.',
+          metadata: {
+            order_id: orderId,
+            expires_at: new Date(startTime.getTime() + expirationDays * 24 * 60 * 60 * 1000).toISOString()
+          },
+          priority: 'high'
+        }
+      });
+    } catch (error) {
+      console.error('Fehler beim Senden der Benachrichtigung über Ablauf:', error);
+    }
+  }, [orderId, startTime, expirationDays]);
+
+  // Function to send notification about expiration
+  const sendExpirationNotification = useCallback(async (senderId: string) => {
+    try {
+      await supabase.functions.invoke('notify-user', {
+        body: {
+          userId: senderId,
+          eventType: NotificationType.ORDER_EXPIRED,
+          entityId: orderId,
+          title: 'Auftrag abgelaufen',
+          message: 'Dein Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.',
+          metadata: {
+            order_id: orderId
+          },
+          priority: 'medium'
+        }
+      });
+    } catch (error) {
+      console.error('Fehler beim Senden der Benachrichtigung über Ablauf:', error);
+    }
+  }, [orderId]);
+  
   useEffect(() => {
+    // Fetch the order owner first
+    const fetchOrderOwner = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("sender_id")
+          .eq("order_id", orderId)
+          .single();
+        
+        if (error) throw error;
+        return data.sender_id;
+      } catch (error) {
+        console.error('Fehler beim Abrufen des Auftragsbesitzers:', error);
+        return null;
+      }
+    };
+
     // Initial calculation
     setRemainingTime(calculateRemainingTime());
     
     // Set up timer
-    const intervalId = setInterval(() => {
+    const intervalId = setInterval(async () => {
       const remaining = calculateRemainingTime();
       setRemainingTime(remaining);
       
@@ -53,11 +115,22 @@ export function OrderCountdown({
       const totalHours = remaining.days * 24 + remaining.hours;
       if (totalHours <= 12 && totalHours > 0 && !isWarning) {
         setIsWarning(true);
+        
+        // Show toast notification
         toast({
           title: "Auftrag läuft bald ab!",
           description: "Dieser Auftrag läuft in weniger als 12 Stunden ab.",
-          variant: "default", // Changed from "warning" to "default"
+          variant: "default",
         });
+        
+        // Send notification to order owner
+        if (!hasNotified) {
+          const senderId = await fetchOrderOwner();
+          if (senderId) {
+            await sendExpirationWarningNotification(senderId);
+            setHasNotified(true);
+          }
+        }
       }
       
       // When timer expires
@@ -82,6 +155,12 @@ export function OrderCountdown({
           // Use async/await pattern instead of promise chains to handle errors properly
           const sendMessage = async () => {
             try {
+              // Send notification to order owner about expiration
+              const senderId = await fetchOrderOwner();
+              if (senderId) {
+                await sendExpirationNotification(senderId);
+              }
+              
               const { error } = await supabase
                 .from('messages')
                 .insert({
@@ -115,7 +194,7 @@ export function OrderCountdown({
     }, 60000); // Check every minute
     
     return () => clearInterval(intervalId);
-  }, [calculateRemainingTime, isWarning, logEvent, orderId, startTime, expirationDays, onExpire]);
+  }, [calculateRemainingTime, isWarning, hasNotified, logEvent, orderId, startTime, expirationDays, onExpire, sendExpirationWarningNotification, sendExpirationNotification]);
   
   if (remainingTime === null) return null;
   

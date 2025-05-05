@@ -7,6 +7,9 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { NotificationBadge } from "@/components/notifications/NotificationBadge";
+import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
@@ -36,6 +39,14 @@ const Navbar = () => {
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+          
+          {user && (
+            <NotificationProvider>
+              <NotificationsDropdown>
+                <NotificationBadge onClick={() => {}} />
+              </NotificationsDropdown>
+            </NotificationProvider>
+          )}
           
           {user && <LogoutButton />}
         </div>

@@ -662,6 +662,45 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          entity_id: string
+          event_type: string
+          id: string
+          message: string
+          metadata: Json | null
+          priority: string
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          event_type: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          priority?: string
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          event_type?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          priority?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           driver_id: string | null
