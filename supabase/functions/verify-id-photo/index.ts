@@ -49,6 +49,31 @@ async function analyzeIDPhoto(photoUrl: string): Promise<{
   }
 }
 
+// Log verification event to the database
+async function logVerificationEvent(userId: string, result: string, photoUrl: string, metadata: any): Promise<void> {
+  try {
+    // Use the SQL function we created to log the event
+    const { data, error } = await supabase.rpc(
+      'log_id_verification_event',
+      {
+        p_user_id: userId,
+        p_photo_url: photoUrl,
+        p_result: result,
+        p_source: 'mock',
+        p_metadata: metadata
+      }
+    );
+
+    if (error) {
+      console.error("Error logging verification event:", error);
+    } else {
+      console.log("Verification event logged successfully:", data);
+    }
+  } catch (err) {
+    console.error("Exception when logging verification event:", err);
+  }
+}
+
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -73,6 +98,18 @@ serve(async (req: Request) => {
     // Call AI service to analyze the photo (mocked)
     const analysisResult = await analyzeIDPhoto(photoUrl);
     console.log(`Analysis result:`, analysisResult);
+
+    // Log the verification attempt
+    await logVerificationEvent(
+      userId,
+      analysisResult.isValid && analysisResult.confidence > 0.8 ? "success" : "failed",
+      photoUrl,
+      { 
+        confidence: analysisResult.confidence, 
+        issues: analysisResult.issues,
+        timestamp: new Date().toISOString()
+      }
+    );
 
     // Update user's profile based on verification result
     if (analysisResult.isValid && analysisResult.confidence > 0.8) {

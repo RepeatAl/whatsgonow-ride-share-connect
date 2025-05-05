@@ -170,3 +170,7 @@ url = ""
 [functions]
 [functions.verify-id-photo]
 verify_jwt = true
+
+[functions.id-verification-webhook]
+verify_jwt = false
+

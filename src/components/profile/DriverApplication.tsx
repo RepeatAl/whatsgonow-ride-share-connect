@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { DriverIDVerification } from "./DriverIDVerification";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
@@ -46,6 +46,7 @@ export function DriverApplication() {
 
   const hasRequestedDriver = profile.can_become_driver;
   const isVerified = profile.id_photo_verified;
+  const isVerificationInProgress = !isVerified && profile.id_photo_url;
 
   return (
     <div className="space-y-4">
@@ -61,12 +62,26 @@ export function DriverApplication() {
             <Alert className="bg-green-50 border-green-200 mb-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-green-500" />
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
                 </div>
                 <div className="ml-3">
                   <AlertTitle className="text-green-800">Identität verifiziert</AlertTitle>
                   <AlertDescription className="text-green-700 text-sm">
                     Deine Identität wurde erfolgreich verifiziert. Du kannst jetzt Fahrer werden.
+                  </AlertDescription>
+                </div>
+              </div>
+            </Alert>
+          ) : isVerificationInProgress ? (
+            <Alert className="bg-blue-50 border-blue-200 mb-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <Clock className="h-5 w-5 text-blue-500" />
+                </div>
+                <div className="ml-3">
+                  <AlertTitle className="text-blue-800">Verifizierung läuft</AlertTitle>
+                  <AlertDescription className="text-blue-700 text-sm">
+                    Deine Identitätsverifizierung wird derzeit bearbeitet. Bitte habe etwas Geduld.
                   </AlertDescription>
                 </div>
               </div>
