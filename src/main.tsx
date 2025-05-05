@@ -1,7 +1,6 @@
 
 import './i18n/i18n'; // Must be imported first for i18n configuration to be loaded
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import App from './App.tsx'
 import './index.css'
@@ -31,15 +30,13 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("🚀 App initialization started");
     
     createRoot(rootElement).render(
-      <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider>
-            <LaunchProvider>
-              <App />
-            </LaunchProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </BrowserRouter>
+      <AuthProvider>
+        <ThemeProvider>
+          <LaunchProvider>
+            <App />
+          </LaunchProvider>
+        </ThemeProvider>
+      </AuthProvider>
     );
     
     console.log("✅ App successfully mounted");
