@@ -79,27 +79,34 @@ export function OrderCountdown({
         
         // Send automatic message about expiration
         try {
-          supabase
-            .from('messages')
-            .insert({
-              sender_id: 'system',
-              order_id: orderId,
-              content: 'Der Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.',
-              system_message: true
-            })
-            .then(() => {
+          // Use async/await pattern instead of promise chains to handle errors properly
+          const sendMessage = async () => {
+            try {
+              const { error } = await supabase
+                .from('messages')
+                .insert({
+                  sender_id: 'system',
+                  order_id: orderId,
+                  content: 'Der Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.',
+                  system_message: true
+                });
+                
+              if (error) throw error;
+              
               toast({
                 title: "Auftrag abgelaufen",
                 description: "Dieser Auftrag ist abgelaufen, da keine Angebote innerhalb der Frist angenommen wurden.",
                 variant: "destructive",
               });
-              
-              onExpire();
-            })
-            .catch(error => {
+            } catch (error) {
               console.error('Fehler beim Senden der Ablaufnachricht:', error);
+            } finally {
               onExpire();
-            });
+            }
+          };
+          
+          // Execute the async function
+          sendMessage();
         } catch (error) {
           console.error('Fehler beim Senden der Ablaufnachricht:', error);
           onExpire();
