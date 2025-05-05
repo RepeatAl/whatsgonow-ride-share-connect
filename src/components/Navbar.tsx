@@ -9,7 +9,6 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
-import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
@@ -41,11 +40,9 @@ const Navbar = () => {
           </Button>
           
           {user && (
-            <NotificationProvider>
-              <NotificationsDropdown>
-                <NotificationBadge onClick={() => {}} />
-              </NotificationsDropdown>
-            </NotificationProvider>
+            <NotificationsDropdown>
+              <NotificationBadge onClick={() => {}} />
+            </NotificationsDropdown>
           )}
           
           {user && <LogoutButton />}
