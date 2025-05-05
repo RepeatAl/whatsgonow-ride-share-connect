@@ -43,6 +43,8 @@ const supabase = createClient(
 
 async function sendConfirmationEmail(email: string, firstName: string) {
   try {
+    console.log(`Attempting to send confirmation email to: ${email}`);
+    
     const response = await fetch(
       `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-confirmation`,
       {
@@ -59,8 +61,10 @@ async function sendConfirmationEmail(email: string, firstName: string) {
       const error = await response.text();
       throw new Error(`Failed to send confirmation email: ${error}`);
     }
-
-    return await response.json();
+    
+    const result = await response.json();
+    console.log("Confirmation email sent successfully:", result);
+    return result;
   } catch (error) {
     console.error("Error calling send-confirmation function:", error);
     throw error;
@@ -75,21 +79,43 @@ serve(async (req: Request) => {
 
   try {
     const json = await req.json();
+    console.log("Received pre-registration data:", JSON.stringify(json));
+    
     const data = preRegisterSchema.parse(json);
 
+    // Log email before any potential normalization
+    console.log(`Original submitted email: ${data.email}`);
+    
+    // Extract original email domain for tracking
+    const emailParts = data.email.split('@');
+    const originalDomain = emailParts.length > 1 ? emailParts[1] : null;
+    
     // Extract UTM parameters from referer if available
     const source = req.headers.get("referer");
+    console.log(`Request source (referer): ${source}`);
 
     // Insert into database
-    const { error: dbError } = await supabase
+    console.log(`Inserting data into pre_registrations table...`);
+    const { data: insertedData, error: dbError } = await supabase
       .from("pre_registrations")
       .insert([{ 
         ...data,
         source,
-        notification_sent: false
+        notification_sent: false,
+        notes: originalDomain !== 'gmail.com' && data.email.includes('gmail.com') 
+          ? `Original domain: ${originalDomain}` 
+          : null
       }]);
 
-    if (dbError) throw dbError;
+    if (dbError) {
+      console.error("Database insertion error:", dbError);
+      throw dbError;
+    }
+
+    console.log("Pre-registration data inserted successfully");
+    
+    // Log the final email that was stored
+    console.log(`Email stored in database: ${data.email}`);
 
     // Send confirmation email
     await sendConfirmationEmail(data.email, data.first_name);

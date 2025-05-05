@@ -20,6 +20,8 @@ export const sendConfirmation = async (params: SendConfirmationParams) => {
   const { email, firstName } = params;
 
   try {
+    console.log(`Sending confirmation email to: ${email}`);
+
     const emailResponse = await resend.emails.send({
       from: "Whatsgonow <noreply@whatsgonow.com>",
       to: [email],
@@ -32,7 +34,7 @@ export const sendConfirmation = async (params: SendConfirmationParams) => {
     });
 
     console.log("Confirmation email sent:", emailResponse);
-    return { success: true };
+    return { success: true, messageId: emailResponse.id };
   } catch (error) {
     console.error("Error sending confirmation email:", error);
     throw error;
@@ -45,8 +47,26 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { email, firstName }: SendConfirmationParams = await req.json();
+    const body = await req.json();
+    console.log("Received confirmation request:", body);
+    
+    const { email, firstName }: SendConfirmationParams = body;
+    
+    // Validate inputs
+    if (!email || !firstName) {
+      const errorMsg = "Missing required fields: email or firstName";
+      console.error(errorMsg);
+      return new Response(
+        JSON.stringify({ error: errorMsg }),
+        { 
+          status: 400, 
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+    
     const result = await sendConfirmation({ email, firstName });
+    console.log("Email sending result:", result);
     
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -55,7 +75,9 @@ serve(async (req: Request) => {
   } catch (error) {
     console.error("Error in send-confirmation handler:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to send confirmation email" }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "Failed to send confirmation email" 
+      }),
       { 
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
