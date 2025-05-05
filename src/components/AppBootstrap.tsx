@@ -1,8 +1,9 @@
 
 import React, { ErrorInfo, ReactNode, useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserSession } from "@/contexts/UserSessionContext";
+import { useNavigate } from "react-router-dom";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -15,6 +16,13 @@ interface ErrorFallbackProps {
 }
 
 const ErrorFallback = ({ error, resetError }: ErrorFallbackProps) => {
+  const navigate = useNavigate();
+  
+  const handleGoHome = () => {
+    navigate("/");
+    resetError();
+  };
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
       <div className="w-full max-w-md p-6 space-y-4 bg-background border rounded-lg shadow-lg">
@@ -27,8 +35,15 @@ const ErrorFallback = ({ error, resetError }: ErrorFallbackProps) => {
         <p className="text-sm text-muted-foreground">
           Bitte versuche es später erneut oder kontaktiere den Support, falls der Fehler bestehen bleibt.
         </p>
-        <div className="flex justify-end">
-          <Button onClick={resetError}>Seite neu laden</Button>
+        <div className="flex justify-between">
+          <Button onClick={handleGoHome} variant="outline">
+            <Home className="w-4 h-4 mr-2" />
+            Zur Startseite
+          </Button>
+          <Button onClick={resetError}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Seite neu laden
+          </Button>
         </div>
       </div>
     </div>

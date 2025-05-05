@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,6 +40,7 @@ export const ImageUploadSection = ({
     initializeWithExistingUrls
   } = useFileUpload(orderId, existingUrls);
 
+  // Initialize with existing URLs only once on component mount
   useEffect(() => {
     if (existingUrls?.length > 0) {
       initializeWithExistingUrls(existingUrls);
@@ -62,6 +64,7 @@ export const ImageUploadSection = ({
     }
   }, [orderId, userId, uploadFiles, onPhotosUploaded]);
 
+  // Ensure we memo the preview array to prevent unnecessary rerenders
   const memoizedPreviews = useMemo(() => previews, [previews]);
 
   return (

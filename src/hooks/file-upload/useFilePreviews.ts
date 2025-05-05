@@ -1,3 +1,4 @@
+
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { MAX_FILES } from "./constants";
@@ -15,6 +16,15 @@ export const useFilePreviews = () => {
       previewUrlsRef.current = [];
       initialLoadDoneRef.current = true;
     }
+    
+    // Cleanup function to revoke all preview URLs
+    return () => {
+      previewUrlsRef.current.forEach(url => {
+        if (url?.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
   }, []);
 
   // Function to update previews with new URLs
@@ -87,14 +97,17 @@ export const useFilePreviews = () => {
     restoredFromStorageRef.current = false;
   }, []);
 
+  const canTakeMore = previews.filter(Boolean).length < MAX_FILES;
+  const nextPhotoIndex = previews.filter(Boolean).length + 1;
+
   return {
     previews,
     updatePreviews,
     initializeWithExistingUrls,
     removePreview,
     clearPreviews,
-    canTakeMore: previews.filter(Boolean).length < MAX_FILES,
-    nextPhotoIndex: previews.filter(Boolean).length + 1,
+    canTakeMore,
+    nextPhotoIndex,
     previewsRef: previewUrlsRef,
   };
 };

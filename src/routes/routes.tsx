@@ -68,6 +68,9 @@ export const routes: RouteConfig[] = [
     element: <UploadComplete />, 
     public: true 
   },
+  { path: "/chat", element: <Navigate to="/inbox" replace />, public: true },
+  { path: "/inbox", element: <Inbox />, public: true },
+  { path: "/messages", element: <Messages />, public: true },
 
   // Dashboard redirect entry (evaluates role)
   { path: "/dashboard", element: <DashboardSender />, protected: true },
@@ -121,9 +124,6 @@ export const routes: RouteConfig[] = [
       { path: "feedback", element: <FeedbackAdmin /> },
     ]
   },
-
-  // Redirect from /chat to /inbox for compatibility
-  { path: "/chat", element: <Navigate to="/inbox" replace />, public: true },
 
   // 404 - last
   { path: "*", element: <NotFound />, public: true },
