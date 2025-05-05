@@ -9,6 +9,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { UserSessionProvider } from './contexts/UserSessionContext';
 import { AppBootstrap } from './components/AppBootstrap';
 import LaunchProvider from './components/launch/LaunchProvider';
+import { TooltipProvider } from './components/ui/tooltip';
 
 import './App.css';
 
@@ -24,9 +25,11 @@ function App() {
             <LaunchProvider>
               <AuthProvider>
                 <NotificationProvider>
-                  <AppRoutes />
-                  <Toaster />
-                  <CookieConsent />
+                  <TooltipProvider>
+                    <AppRoutes />
+                    <Toaster />
+                    <CookieConsent />
+                  </TooltipProvider>
                 </NotificationProvider>
               </AuthProvider>
             </LaunchProvider>
