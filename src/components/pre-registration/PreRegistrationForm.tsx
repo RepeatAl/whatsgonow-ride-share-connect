@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { preRegistrationSchema, type PreRegistrationFormData } from "@/lib/validators/pre-registration";
 import { VehicleTypeSelector } from "./VehicleTypeSelector";
+import { supabase } from "@/lib/supabaseClient";
 
 export function PreRegistrationForm() {
   const { t } = useTranslation();
@@ -44,25 +44,37 @@ export function PreRegistrationForm() {
     console.log("Form data on submit:", data);
     setIsSubmitting(true);
     try {
+      // Get anon key from Supabase client
+      const { data: { session } } = await supabase.auth.getSession();
+      const anon_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ2NydXdteHFpd25qbmt4cGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzQ1ODYsImV4cCI6MjA2MDExMDU4Nn0.M90DOOmOg2E58oSWnX49wbRqnO6Od9RrfcUvgJpzGMI";
+      
       const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${anon_key}`
         },
         body: JSON.stringify(data)
       });
-      const result = await response.json();
+      
       if (!response.ok) {
-        if (result.errors) {
-          Object.entries(result.errors).forEach(([field, message]) => {
+        const errorData = await response.json();
+        console.error("Pre-registration error response:", errorData);
+        
+        if (errorData.errors) {
+          Object.entries(errorData.errors).forEach(([field, message]) => {
             form.setError(field as any, {
               message: message as string
             });
           });
           throw new Error("Validation failed");
         }
-        throw new Error(result.error || t("errors.registration_failed"));
+        throw new Error(errorData.error || t("errors.registration_failed"));
       }
+      
+      const result = await response.json();
+      console.log("Pre-registration success:", result);
+      
       toast({
         title: t("pre_register.success.title"),
         description: t("pre_register.success.description")
@@ -70,10 +82,11 @@ export function PreRegistrationForm() {
 
       window.location.href = "/pre-register/success";
     } catch (error) {
+      console.error("Pre-registration error:", error);
       if (!(error instanceof Error && error.message === "Validation failed")) {
         toast({
           title: t("errors.registration_failed"),
-          description: t("common.retry"),
+          description: error instanceof Error ? error.message : t("common.retry"),
           variant: "destructive"
         });
       }

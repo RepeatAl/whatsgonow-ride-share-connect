@@ -28,6 +28,10 @@ site_url = "http://localhost:3000"
 [realtime]
 enabled = true
 
+[functions.pre-register]
+verify_jwt = false
+path = "supabase/functions/pre-register"
+
 [functions.notify-critical-event]
 verify_jwt = true
 path = "supabase/functions/notify-critical-event"
@@ -39,6 +43,10 @@ path = "supabase/functions/notify-dispute-created"
 [functions.notify-user]
 verify_jwt = true
 path = "supabase/functions/notify-user"
+
+[functions.send-confirmation]
+verify_jwt = false
+path = "supabase/functions/send-confirmation"
 
 [[realtime.tables]]
 name = "notifications"
