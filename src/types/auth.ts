@@ -1,4 +1,3 @@
-
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -27,6 +26,8 @@ export interface UserProfile {
   can_become_driver?: boolean;
   dashboard_access_enabled?: boolean;
   wants_to_upload_items?: boolean;
+  id_photo_url?: string;           // Added missing property
+  id_photo_verified?: boolean;     // Added missing property
 }
 
 export interface AuthContextProps {
