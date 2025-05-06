@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { v4 as uuidv4 } from "uuid";
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
 import { useOrderDraftStorage } from "./useOrderDraftStorage";
+import { useNavigate } from "react-router-dom";
 
 export function useOrderForm(initialData?: {
   draft_data: Partial<CreateOrderFormValues>;
@@ -15,6 +16,7 @@ export function useOrderForm(initialData?: {
   );
   
   const tempOrderId = uuidv4();
+  const navigate = useNavigate();
 
   const form = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
@@ -66,7 +68,22 @@ export function useOrderForm(initialData?: {
     setUploadedPhotoUrls(urls);
   }, []);
 
+  const handleFormClear = useCallback(async () => {
+    // Formular zurücksetzen
+    form.reset();
+    
+    // Fotos zurücksetzen
+    setUploadedPhotoUrls([]);
+    
+    // Draft in localStorage löschen
+    await clearDraft();
+    
+    // Optional: Redirect or other actions
+    // Wir entscheiden uns hier, auf der gleichen Seite zu bleiben
+  }, [form, clearDraft]);
+  
   const insuranceEnabled = form.watch('insurance');
+  const isFormValid = form.formState.isValid;
 
   return {
     form,
@@ -76,6 +93,8 @@ export function useOrderForm(initialData?: {
     isLoading,
     isSaving,
     handlePhotosUploaded,
-    insuranceEnabled
+    handleFormClear,
+    insuranceEnabled,
+    isFormValid
   };
 }
