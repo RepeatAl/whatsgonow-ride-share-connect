@@ -6,29 +6,42 @@ import { v4 as uuidv4 } from "uuid";
 
 interface UseFileUploaderProps {
   onProgress?: (progress: number) => void;
+  bucketName?: string;
 }
 
 export const useFileUploader = (props?: UseFileUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const { onProgress } = props || {};
+  const { onProgress, bucketName = 'order-images' } = props || {};
 
-  const uploadFile = async (file: File): Promise<string | null> => {
+  const uploadFile = async (file: File, userId?: string): Promise<string | null> => {
     try {
       setIsUploading(true);
       
       const fileName = `${uuidv4()}-${file.name}`;
+      let filePath = fileName;
+      
+      // Wenn eine userId vorhanden ist, verwenden wir sie im Pfad
+      if (userId) {
+        filePath = `${userId}/${fileName}`;
+      }
+      
       const { data, error } = await supabase.storage
-        .from('order-images')
-        .upload(fileName, file, {
+        .from(bucketName)
+        .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: file.type,
+          // Setzen des Besitzers in den Metadaten für die DELETE-Policy
+          metadata: {
+            owner: userId || ''
+          }
         });
         
       if (error) throw error;
       
       const { data: { publicUrl } } = supabase.storage
-        .from('order-images')
+        .from(bucketName)
         .getPublicUrl(data.path);
       
       // Update progress
@@ -50,7 +63,8 @@ export const useFileUploader = (props?: UseFileUploaderProps) => {
   const uploadFiles = async (
     orderId: string, 
     userId: string | undefined, 
-    files: File[]
+    files: File[],
+    customBucket?: string
   ): Promise<string[]> => {
     if (!orderId) {
       toast.error("Keine Auftrags-ID vorhanden");
@@ -64,22 +78,31 @@ export const useFileUploader = (props?: UseFileUploaderProps) => {
     setIsUploading(true);
     setUploadProgress(0);
     const uploadedUrls: string[] = [];
+    const bucket = customBucket || bucketName;
 
     try {
       for (const [index, file] of files.entries()) {
-        const filePath = `${orderId}/${uuidv4()}-${file.name}`;
+        const filePath = userId 
+          ? `${userId}/${orderId}/${uuidv4()}-${file.name}` 
+          : `${orderId}/${uuidv4()}-${file.name}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('order-images')
+          .from(bucket)
           .upload(filePath, file, {
             cacheControl: '3600',
-            upsert: false
+            upsert: false,
+            contentType: file.type,
+            // Setzen des Besitzers in den Metadaten für die DELETE-Policy
+            metadata: {
+              owner: userId || '',
+              orderId: orderId
+            }
           });
 
         if (uploadError) throw uploadError;
 
         const { data } = supabase.storage
-          .from('order-images')
+          .from(bucket)
           .getPublicUrl(filePath);
 
         uploadedUrls.push(data.publicUrl);
