@@ -23,7 +23,7 @@ const FindDriverPage = () => {
   const [drivers, setDrivers] = useState<AddressBookEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const state = location.state as LocationState;
-  const useAddressBook = state?.useAddressBook || false;
+  const shouldUseAddressBook = !!state?.useAddressBook;
   
   // Check if user role is allowed to see this feature
   const isBusinessOrCM = profile?.role === 'sender_business' || profile?.role === 'cm';
@@ -43,12 +43,12 @@ const FindDriverPage = () => {
       }
     };
 
-    if (useAddressBook && isBusinessOrCM) {
+    if (shouldUseAddressBook && isBusinessOrCM) {
       loadDrivers();
     } else {
       setIsLoading(false);
     }
-  }, [getAddressBook, useAddressBook, isBusinessOrCM]);
+  }, [getAddressBook, shouldUseAddressBook, isBusinessOrCM]);
 
   // Mock function to send request to driver
   const sendDriverRequest = async (driver: AddressBookEntry) => {
@@ -80,7 +80,7 @@ const FindDriverPage = () => {
     }
 
     // If using address book drivers
-    if (useAddressBook) {
+    if (shouldUseAddressBook) {
       return (
         <AddressBookDriverList
           drivers={drivers}

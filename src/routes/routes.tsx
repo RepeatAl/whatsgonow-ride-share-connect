@@ -1,5 +1,7 @@
+
 import { RouteConfig } from "@/components/routing/AppRoutes";
 import { lazy } from "react";
+import { Navigate } from "react-router-dom";
 
 // Lazy loaded components
 const Home = lazy(() => import("@/pages/Index"));
