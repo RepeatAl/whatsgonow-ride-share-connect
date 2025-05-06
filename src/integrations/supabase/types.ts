@@ -119,27 +119,42 @@ export type Database = {
       delivery_logs: {
         Row: {
           action: string
+          delivery_verified_at: string | null
           ip_address: string | null
           log_id: string
           order_id: string | null
+          proof_photo_url: string | null
+          proof_type: string | null
+          qr_hash: string | null
           timestamp: string | null
           user_id: string | null
+          verified_by: string | null
         }
         Insert: {
           action: string
+          delivery_verified_at?: string | null
           ip_address?: string | null
           log_id?: string
           order_id?: string | null
+          proof_photo_url?: string | null
+          proof_type?: string | null
+          qr_hash?: string | null
           timestamp?: string | null
           user_id?: string | null
+          verified_by?: string | null
         }
         Update: {
           action?: string
+          delivery_verified_at?: string | null
           ip_address?: string | null
           log_id?: string
           order_id?: string | null
+          proof_photo_url?: string | null
+          proof_type?: string | null
+          qr_hash?: string | null
           timestamp?: string | null
           user_id?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -148,6 +163,50 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["order_id"]
+          },
+        ]
+      }
+      delivery_logs_audit: {
+        Row: {
+          action: string
+          audit_id: string
+          delivery_log_id: string | null
+          ip_address: string | null
+          new_state: Json | null
+          performed_by: string | null
+          previous_state: Json | null
+          timestamp: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          audit_id?: string
+          delivery_log_id?: string | null
+          ip_address?: string | null
+          new_state?: Json | null
+          performed_by?: string | null
+          previous_state?: Json | null
+          timestamp?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          audit_id?: string
+          delivery_log_id?: string | null
+          ip_address?: string | null
+          new_state?: Json | null
+          performed_by?: string | null
+          previous_state?: Json | null
+          timestamp?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_logs_audit_delivery_log_id_fkey"
+            columns: ["delivery_log_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_logs"
+            referencedColumns: ["log_id"]
           },
         ]
       }
