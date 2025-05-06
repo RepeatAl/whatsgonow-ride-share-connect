@@ -73,11 +73,11 @@ export const emailService = {
         // Kurze Wartezeit, um Rate-Limiting zu vermeiden
         setTimeout(async () => {
           try {
-            await xRechnungService.sendXRechnungEmail(
+            await xRechnungService.sendXRechnungEmail({
               orderId, 
               email, 
-              invoiceData.recipient.name
-            );
+              recipientName: invoiceData.recipient.name
+            });
           } catch (xRechnungError) {
             console.error("Fehler beim Senden der XRechnung nach normaler Rechnung:", xRechnungError);
           }
