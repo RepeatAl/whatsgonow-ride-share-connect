@@ -6,9 +6,10 @@ import { CreateOrderFormValues } from "@/lib/validators/order";
 import { Button } from "@/components/ui/button";
 import { Book, Save } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AddressBookDialog } from "@/components/address/AddressBookDialog";
 import { useAddressBook } from "@/hooks/useAddressBook";
+import { useProfileManager } from "@/hooks/use-profile-manager";
 import { toast } from "sonner";
 import { AddressBookEntry } from "@/types/address";
 
@@ -21,6 +22,7 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
   const prefix = type === 'pickup' ? 'pickup' : 'delivery';
   const title = type === 'pickup' ? 'Abholadresse' : 'Zieladresse';
   const { profile } = useAuth();
+  const { handleSave, loadingSave } = useProfileManager();
   const [showAddressBook, setShowAddressBook] = useState(false);
   const { addAddress } = useAddressBook();
 
@@ -88,16 +90,96 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
     }
   };
 
+  // Funktion zum Speichern der aktuellen Adressdaten ins Profil (nur für Abholadresse)
+  const saveToProfile = async () => {
+    try {
+      const formValues = form.getValues();
+      
+      // Validierung, dass die Pflichtfelder ausgefüllt sind
+      if (!formValues[`${prefix}Street`] || !formValues[`${prefix}HouseNumber`] || 
+          !formValues[`${prefix}PostalCode`] || !formValues[`${prefix}City`]) {
+        toast.error("Bitte füllen Sie alle Pflichtfelder aus.");
+        return;
+      }
+
+      // Profildaten aus dem Formular übernehmen
+      await handleSave({
+        street: formValues[`${prefix}Street`],
+        house_number: formValues[`${prefix}HouseNumber`],
+        postal_code: formValues[`${prefix}PostalCode`],
+        city: formValues[`${prefix}City`],
+        country: formValues[`${prefix}Country`] || "Deutschland",
+        address_extra: formValues[`${prefix}AddressExtra`]
+      });
+      
+      toast.success("Adresse wurde im Profil gespeichert");
+    } catch (error) {
+      console.error("Fehler beim Speichern ins Profil:", error);
+      toast.error("Adresse konnte nicht im Profil gespeichert werden");
+    }
+  };
+
+  // Beim ersten Rendern die Profildaten in die Abholadresse übernehmen
+  useEffect(() => {
+    // Nur für die Abholadresse und nur wenn es ein Profil gibt
+    if (type === 'pickup' && profile && 
+        (profile.role === 'sender_private' || 
+         profile.role === 'sender_business' || 
+         profile.role === 'community_manager' || 
+         profile.role === 'driver')) {
+      
+      // Nur Werte setzen, die im Profil vorhanden sind
+      if (profile.street) {
+        form.setValue(`${prefix}Street`, profile.street);
+      }
+      
+      if (profile.house_number) {
+        form.setValue(`${prefix}HouseNumber`, profile.house_number);
+      }
+      
+      if (profile.postal_code) {
+        form.setValue(`${prefix}PostalCode`, profile.postal_code);
+      }
+      
+      if (profile.city) {
+        form.setValue(`${prefix}City`, profile.city);
+      }
+      
+      if (profile.address_extra) {
+        form.setValue(`${prefix}AddressExtra`, profile.address_extra);
+      }
+
+      // Das Land standardmäßig auf "Deutschland" setzen, falls nicht im Profil angegeben
+      form.setValue(`${prefix}Country`, "Deutschland");
+      
+      // Telefon und E-Mail-Adresse aus dem Profil übernehmen
+      if (profile.phone) {
+        form.setValue(`${prefix}Phone`, profile.phone);
+      }
+      
+      if (profile.email) {
+        form.setValue(`${prefix}Email`, profile.email);
+      }
+    }
+  }, [profile, form, prefix, type]);
+
   // Prüfen, ob der Nutzer das Adressbuch nutzen darf
   const canUseAddressBook = profile?.role === 'sender_business' || 
                             profile?.role === 'community_manager' || 
                             (profile?.role === 'driver' && type === 'pickup');
 
+  // Prüfen, ob der Nutzer die Profilspeicherung nutzen darf
+  const canSaveToProfile = type === 'pickup' && 
+                          (profile?.role === 'sender_private' || 
+                           profile?.role === 'sender_business' || 
+                           profile?.role === 'community_manager' || 
+                           profile?.role === 'driver');
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">{title}</h3>
-        {canUseAddressBook && type === 'delivery' && (
+        {canUseAddressBook && (
           <Button 
             type="button" 
             variant="outline" 
@@ -225,9 +307,24 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
         />
       </div>
       
-      {/* Speichern-Button für das Adressbuch (nur für Zieladresse) */}
-      {canUseAddressBook && type === 'delivery' && (
-        <div className="flex justify-end mt-2">
+      {/* Buttons je nach Rolle und Adresstyp */}
+      <div className="flex justify-end gap-2 mt-2">
+        {/* Speichern-Button für das Profil (nur für Abholadresse) */}
+        {canSaveToProfile && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={saveToProfile}
+            disabled={loadingSave}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            Im Profil speichern
+          </Button>
+        )}
+        
+        {/* Speichern-Button für das Adressbuch */}
+        {canUseAddressBook && (
           <Button 
             type="button" 
             variant="outline" 
@@ -237,8 +334,8 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
             <Save className="mr-2 h-4 w-4" />
             Im Adressbuch speichern
           </Button>
-        </div>
-      )}
+        )}
+      </div>
       
       {/* AddressBookDialog für die Adressbuchauswahl */}
       {showAddressBook && (
