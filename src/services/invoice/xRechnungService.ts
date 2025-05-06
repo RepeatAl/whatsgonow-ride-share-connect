@@ -40,11 +40,15 @@ export const xRechnungService = {
   /**
    * Sendet eine XRechnung per E-Mail
    */
-  sendXRechnungEmail: async (
+  sendXRechnungEmail: async ({
+    orderId,
+    email,
+    recipientName
+  }: {
     orderId: string, 
     email: string, 
     recipientName: string
-  ): Promise<boolean> => {
+  }): Promise<boolean> => {
     try {
       if (!orderId || !email) {
         throw new Error("Auftrags-ID und E-Mail-Adresse sind erforderlich");
@@ -81,11 +85,15 @@ export const xRechnungService = {
   /**
    * Sendet eine XRechnung-Vorschau per E-Mail
    */
-  sendXRechnungPreview: async (
+  sendXRechnungPreview: async ({
+    orderId,
+    email,
+    recipientName
+  }: {
     orderId: string, 
     email: string, 
     recipientName: string
-  ): Promise<boolean> => {
+  }): Promise<boolean> => {
     try {
       if (!orderId || !email) {
         throw new Error("Auftrags-ID und E-Mail-Adresse sind erforderlich");
@@ -122,19 +130,23 @@ export const xRechnungService = {
   /**
    * Sendet automatisch eine XRechnung, wenn der Empfänger eine Behörde ist
    */
-  autoSendXRechnungIfGovernment: async (
+  autoSendXRechnungIfGovernment: async ({
+    orderId,
+    email,
+    recipientName
+  }: {
     orderId: string, 
     email: string, 
     recipientName: string
-  ): Promise<boolean> => {
+  }): Promise<boolean> => {
     // Prüfen, ob der Empfänger eine Behörde ist
     if (xRechnungService.isGovernmentAgency(email)) {
       try {
-        return await xRechnungService.sendXRechnungEmail(
+        return await xRechnungService.sendXRechnungEmail({
           orderId, 
           email, 
           recipientName
-        );
+        });
       } catch (error) {
         console.error("Fehler beim automatischen Senden der XRechnung:", error);
         return false;

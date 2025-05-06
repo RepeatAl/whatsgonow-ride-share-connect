@@ -68,11 +68,11 @@ const OrderInvoiceXRechnungButton = ({
 
     setIsLoading(true);
     try {
-      await invoiceService.sendXRechnungEmail(
+      await invoiceService.sendXRechnungEmail({
         orderId, 
-        recipientEmail,
-        recipientName // Passing the recipientName parameter
-      );
+        email: recipientEmail,
+        recipientName
+      });
     } catch (error) {
       console.error("Fehler beim Versenden der XRechnung:", error);
       toast({
@@ -98,12 +98,11 @@ const OrderInvoiceXRechnungButton = ({
 
     setIsLoading(true);
     try {
-      // Fix: Add all three required parameters
-      await invoiceService.sendXRechnungPreview(
+      await invoiceService.sendXRechnungPreview({
         orderId,
-        recipientEmail || 'test@xrechnung.de', // Default testing address if none provided
+        email: recipientEmail || 'test@xrechnung.de', // Default testing address if none provided
         recipientName
-      );
+      });
     } catch (error) {
       console.error("Fehler beim Versenden der XRechnung-Vorschau:", error);
       toast({

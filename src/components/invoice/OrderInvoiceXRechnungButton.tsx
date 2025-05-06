@@ -64,17 +64,17 @@ const OrderInvoiceXRechnungButton = ({
       let success;
       
       if (isPreview) {
-        success = await invoiceService.sendXRechnungPreview(
+        success = await invoiceService.sendXRechnungPreview({
           orderId, 
           email, 
           recipientName
-        );
+        });
       } else {
-        success = await invoiceService.sendXRechnungEmail(
+        success = await invoiceService.sendXRechnungEmail({
           orderId, 
           email, 
           recipientName
-        );
+        });
       }
       
       if (success) {
