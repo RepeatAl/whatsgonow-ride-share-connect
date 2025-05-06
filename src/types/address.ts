@@ -2,7 +2,7 @@
 export type AddressBookEntry = {
   id?: string;
   user_id?: string;
-  type: 'pickup' | 'delivery';
+  type: 'pickup' | 'delivery' | 'driver';
   name?: string;
   street: string;
   house_number: string;
@@ -16,4 +16,5 @@ export type AddressBookEntry = {
   created_at?: string;
   updated_at?: string;
   source_type?: 'manual' | 'auto' | 'from_order';
+  company_name?: string; // Added for business drivers
 };

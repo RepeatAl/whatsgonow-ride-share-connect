@@ -13,7 +13,7 @@ export function useAddressBook() {
    * Lädt Adressen aus dem Adressbuch basierend auf Benutzerrolle und ggf. regionaler Zuordnung
    */
   const getAddressBook = useCallback(
-    async (type?: 'pickup' | 'delivery'): Promise<AddressBookEntry[]> => {
+    async (type?: 'pickup' | 'delivery' | 'driver'): Promise<AddressBookEntry[]> => {
       if (!user || !profile) {
         console.warn("useAddressBook: Kein Benutzer angemeldet oder kein Profil geladen");
         return [];

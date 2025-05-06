@@ -44,18 +44,11 @@ export function useCreateOrderSubmit(clearDraft: () => void) {
   const handleFindDriverDialogClose = (findDriver: boolean) => {
     setShowFindDriverDialog(false);
     
-    if (findDriver) {
-      // Weiterleitung zur Fahrer-Suche
-      navigate("/find-driver", { 
-        state: { 
-          fromNewOrder: true,
-          useAddressBook: true 
-        } 
-      });
-    } else {
-      // Weiterleitung zum Profil
+    // If user closed dialog without clicking "Find Driver", navigate to profile
+    if (!findDriver) {
       navigate("/profile", { replace: true });
     }
+    // If user clicked "Find Driver", the FindDriverDialog component will handle navigation
   };
 
   return {

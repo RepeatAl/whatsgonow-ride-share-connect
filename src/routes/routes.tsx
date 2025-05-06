@@ -1,52 +1,54 @@
-
 import { RouteConfig } from "@/components/routing/AppRoutes";
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import RegisterSuccess from "@/pages/RegisterSuccess";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
-import Faq from "@/pages/Faq";
-import Support from "@/pages/Support";
-import DeliveryConfirmationPage from "@/pages/DeliveryConfirmationPage";
-import InvoiceDownload from "@/pages/InvoiceDownload";
-import Profile from "@/pages/Profile";
-import Orders from "@/pages/Orders";
-import CreateOrder from "@/pages/CreateOrder";
-import Deal from "@/pages/Deal";
-import Feedback from "@/pages/Feedback";
-import PreRegister from "@/pages/PreRegister";
-import PreRegisterSuccess from "@/pages/PreRegisterSuccess";
-import DashboardSender from "@/pages/dashboard/DashboardSender";
-import DashboardDriver from "@/pages/dashboard/DashboardDriver";
-import DashboardCM from "@/pages/dashboard/DashboardCM";
-import DashboardAdmin from "@/pages/dashboard/DashboardAdmin";
-import CommunityManager from "@/pages/CommunityManager";
-import Admin from "@/pages/Admin";
-import AdminDashboard from "@/pages/AdminDashboard";
-import ValidationAdmin from "@/pages/ValidationAdmin";
-import FeedbackAdmin from "@/pages/FeedbackAdmin";
-import AdminInvoiceTest from "@/pages/AdminInvoiceTest";
-import EmailTest from "@/pages/EmailTest";
-import NotFound from "@/pages/NotFound";
-import OfferTransport from "@/pages/OfferTransport";
-import PreRegistrationsPage from "@/pages/admin/PreRegistrationsPage";
-import AdminLayout from "@/components/admin/AdminLayout";
-import AdminHome from "@/pages/admin/index";
-import UsersPage from "@/pages/admin/users";
-import CompleteProfile from "@/pages/CompleteProfile";
-import MobileUpload from "@/pages/MobileUpload";
-import UploadComplete from "@/pages/UploadComplete";
-import DraftList from "@/pages/orders/DraftList";
-import DraftEdit from "@/pages/orders/DraftEdit";
-import MyOrders from "@/pages/orders/MyOrders";
-import Inbox from "@/pages/Inbox";
-import Messages from "@/pages/Messages";
-import { Navigate } from "react-router-dom";
+import { lazy } from "react";
+
+// Lazy loaded components
+const Home = lazy(() => import("@/pages/Index"));
+const Login = lazy(() => import("@/pages/Login"));
+const Register = lazy(() => import("@/pages/Register"));
+const RegisterSuccess = lazy(() => import("@/pages/RegisterSuccess"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const Faq = lazy(() => import("@/pages/Faq"));
+const Support = lazy(() => import("@/pages/Support"));
+const DeliveryConfirmationPage = lazy(() => import("@/pages/DeliveryConfirmationPage"));
+const InvoiceDownload = lazy(() => import("@/pages/InvoiceDownload"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const Orders = lazy(() => import("@/pages/Orders"));
+const CreateOrder = lazy(() => import("@/pages/CreateOrder"));
+const Deal = lazy(() => import("@/pages/Deal"));
+const Feedback = lazy(() => import("@/pages/Feedback"));
+const PreRegister = lazy(() => import("@/pages/PreRegister"));
+const PreRegisterSuccess = lazy(() => import("@/pages/PreRegisterSuccess"));
+const DashboardSender = lazy(() => import("@/pages/dashboard/DashboardSender"));
+const DashboardDriver = lazy(() => import("@/pages/dashboard/DashboardDriver"));
+const DashboardCM = lazy(() => import("@/pages/dashboard/DashboardCM"));
+const DashboardAdmin = lazy(() => import("@/pages/dashboard/DashboardAdmin"));
+const CommunityManager = lazy(() => import("@/pages/CommunityManager"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const ValidationAdmin = lazy(() => import("@/pages/ValidationAdmin"));
+const FeedbackAdmin = lazy(() => import("@/pages/FeedbackAdmin"));
+const AdminInvoiceTest = lazy(() => import("@/pages/AdminInvoiceTest"));
+const EmailTest = lazy(() => import("@/pages/EmailTest"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const OfferTransport = lazy(() => import("@/pages/OfferTransport"));
+const PreRegistrationsPage = lazy(() => import("@/pages/admin/PreRegistrationsPage"));
+const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
+const AdminHome = lazy(() => import("@/pages/admin/index"));
+const UsersPage = lazy(() => import("@/pages/admin/users"));
+const CompleteProfile = lazy(() => import("@/pages/CompleteProfile"));
+const MobileUpload = lazy(() => import("@/pages/MobileUpload"));
+const UploadComplete = lazy(() => import("@/pages/UploadComplete"));
+const DraftList = lazy(() => import("@/pages/orders/DraftList"));
+const DraftEdit = lazy(() => import("@/pages/orders/DraftEdit"));
+const MyOrders = lazy(() => import("@/pages/orders/MyOrders"));
+const Inbox = lazy(() => import("@/pages/Inbox"));
+const Messages = lazy(() => import("@/pages/Messages"));
+const FindDriverPage = lazy(() => import("@/pages/find-driver"));
 
 export const routes: RouteConfig[] = [
   // Public routes
-  { path: "/", element: <Index />, public: true },
+  { path: "/", element: <Home />, public: true },
   { path: "/login", element: <Login />, public: true },
   { path: "/register", element: <Register />, public: true },
   { path: "/register/success", element: <RegisterSuccess />, public: true },
@@ -127,4 +129,16 @@ export const routes: RouteConfig[] = [
 
   // 404 - last
   { path: "*", element: <NotFound />, public: true },
+  
+  // Add new routes
+  {
+    path: "/find-driver",
+    element: <FindDriverPage />,
+    protected: true,
+  },
+  {
+    path: "/find-driver/all",
+    element: <FindDriverPage />,
+    protected: true,
+  },
 ];
