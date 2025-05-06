@@ -7,6 +7,7 @@ Diese Datei dient als zentrale Referenz für Entwicklungspraktiken und wichtige 
 - [Überblick](#überblick)
 - [Komponenten-Architektur](#komponenten-architektur)
 - [Hooks](#hooks)
+- [GoBD-Compliance](#gobd-compliance)
 - [Changelog](#changelog)
 
 ## Überblick
@@ -28,8 +29,23 @@ Custom Hooks werden für wiederverwendbare Logik eingesetzt, zum Beispiel:
 - `usePreRegistrationSubmit`: Handhabt die Formular-Submission für die Voranmeldung
 - `useAuthSession`: Verwaltet den Authentifizierungsstatus
 
+## GoBD-Compliance
+Die Anwendung implementiert GoBD-konforme Archivierung für Rechnungen:
+- Die Edge Function `archive-invoices-schedule` prüft und archiviert Rechnungen automatisch
+- SHA-256 Hashing für Dokumentenintegrität und Unveränderbarkeit
+- Audit-Logs für alle Archivierungsvorgänge in `invoice_audit_log`
+- Automatische Prüfung der Hash-Konsistenz zur Sicherstellung der Unveränderbarkeit
+- Retention-Policies mit konfigurierbaren Aufbewahrungsfristen (Standard: 10 Jahre)
+
+Die Funktion verarbeitet Rechnungen mit dem Status 'sent' und setzt deren Status auf 'gobd_compliant'.
+
 ## Changelog
 ### 2025-05-06: Major Refactoring
 - PreRegistrationForm in kleinere Komponenten aufgeteilt
 - Suspense-Handling für verzögerte Komponenten implementiert
 - ErrorBoundary für bessere Fehlerbehandlung hinzugefügt
+
+### 2025-05-08: GoBD-Compliance
+- Edge Function `archive-invoices-schedule` für automatische Rechnungsarchivierung implementiert
+- SHA-256 Hashing für Dokumenten-Integritätsprüfung eingeführt
+- Retention-Policy und Löschzeitpunkt-Management implementiert

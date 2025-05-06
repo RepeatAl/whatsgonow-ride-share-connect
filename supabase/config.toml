@@ -174,3 +174,13 @@ verify_jwt = true
 [functions.id-verification-webhook]
 verify_jwt = false
 
+[functions.send-invoice-email]
+verify_jwt = false
+
+[functions.send-receipt-email]
+verify_jwt = false
+
+[functions.archive-invoices-schedule]
+verify_jwt = false
+
+

@@ -5,6 +5,11 @@ Alle wichtigen Änderungen am Projekt werden in dieser Datei dokumentiert.
 
 ## [Unreleased]
 
+### Hinzugefügt
+- GoBD-konforme Archivierungsfunktion via Edge Function `archive-invoices-schedule`
+- Automatische Integritätsprüfung für Rechnungsdokumente mittels SHA-256 Hash
+- Retention-Policy für rechtskonforme Dokumentenaufbewahrung
+
 ## [0.1.0] - 2025-05-06
 
 ### Hinzugefügt
