@@ -52,6 +52,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
+    "eslint-plugin-custom-rules": "^0.0.0",
     "eslint-plugin-react": "^7.37.5",
     "html5-qrcode": "^2.3.8",
     "i18next": "^23.7.20",

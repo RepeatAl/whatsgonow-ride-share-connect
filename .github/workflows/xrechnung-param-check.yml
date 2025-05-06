@@ -1,0 +1,71 @@
+
+name: XRechnung Parameter Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+
+jobs:
+  check-xrechnung-params:
+    runs-on: ubuntu-latest
+    name: Check XRechnung Parameter Style
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Run grep check for xRechnungService method calls
+      run: |
+        echo "Checking for incorrect xRechnungService method calls..."
+        
+        # Prüft auf Aufrufe von xRechnungService.sendXRechnungEmail mit mehr als einem Parameter (nicht im Objekt-Format)
+        GREP_RESULT_1=$(grep -r "xRechnungService.sendXRechnungEmail(" --include="*.ts" --include="*.tsx" . | grep -v "xRechnungService.sendXRechnungEmail({" || true)
+        
+        # Prüft auf Aufrufe von xRechnungService.sendXRechnungPreview mit mehr als einem Parameter
+        GREP_RESULT_2=$(grep -r "xRechnungService.sendXRechnungPreview(" --include="*.ts" --include="*.tsx" . | grep -v "xRechnungService.sendXRechnungPreview({" || true)
+        
+        # Prüft auf Aufrufe von xRechnungService.autoSendXRechnungIfGovernment mit mehr als einem Parameter 
+        GREP_RESULT_3=$(grep -r "xRechnungService.autoSendXRechnungIfGovernment(" --include="*.ts" --include="*.tsx" . | grep -v "xRechnungService.autoSendXRechnungIfGovernment({" || true)
+        
+        # Prüft auf Aufrufe von invoiceService.sendXRechnungEmail mit mehr als einem Parameter
+        GREP_RESULT_4=$(grep -r "invoiceService.sendXRechnungEmail(" --include="*.ts" --include="*.tsx" . | grep -v "invoiceService.sendXRechnungEmail({" || true)
+        
+        # Prüft auf Aufrufe von invoiceService.sendXRechnungPreview mit mehr als einem Parameter
+        GREP_RESULT_5=$(grep -r "invoiceService.sendXRechnungPreview(" --include="*.ts" --include="*.tsx" . | grep -v "invoiceService.sendXRechnungPreview({" || true)
+        
+        # Prüft auf Aufrufe von invoiceService.autoSendXRechnungIfGovernment mit mehr als einem Parameter
+        GREP_RESULT_6=$(grep -r "invoiceService.autoSendXRechnungIfGovernment(" --include="*.ts" --include="*.tsx" . | grep -v "invoiceService.autoSendXRechnungIfGovernment({" || true)
+        
+        # Kombinieren der Ergebnisse
+        COMBINED_RESULTS="${GREP_RESULT_1}${GREP_RESULT_2}${GREP_RESULT_3}${GREP_RESULT_4}${GREP_RESULT_5}${GREP_RESULT_6}"
+        
+        if [ -n "$COMBINED_RESULTS" ]; then
+          echo "::error::Falsche xRechnung-Methodenaufrufe gefunden! Bitte nutze Object-Parameter."
+          echo "$COMBINED_RESULTS"
+          echo "Beispiel für korrekten Aufruf: xRechnungService.sendXRechnungEmail({ orderId, email, recipientName });"
+          exit 1
+        else
+          echo "Alle xRechnungService Methodenaufrufe nutzen das korrekte Format mit Object-Parametern."
+        fi
+    
+    - name: Run ESLint for xRechnung params
+      if: always()  # Ausführen, auch wenn der grep-Check fehlschlägt
+      run: |
+        npm ci
+        echo 'module.exports = {
+          extends: ["./.eslintrc.js"],
+          rules: {
+            "xrechnung-object-params": "error"
+          },
+          plugins: ["custom-rules"],
+          settings: {
+            "custom-rules/dir": "./scripts/eslint-rules"
+          }
+        }' > .eslintrc-xrechnung.js
+        
+        npx eslint --no-eslintrc -c .eslintrc-xrechnung.js --plugin custom-rules --rule 'custom-rules/xrechnung-object-params: error' --rulesdir ./scripts/eslint-rules/ src/**/*.{ts,tsx}

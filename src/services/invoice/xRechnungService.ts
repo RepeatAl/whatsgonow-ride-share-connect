@@ -25,10 +25,16 @@ const GOVERNMENT_DOMAINS = [
 
 /**
  * XRechnung Service für elektronischen Rechnungsaustausch mit Behörden
+ * 
+ * WICHTIG: Alle Methoden dieses Services erwarten einen einzelnen Object-Parameter.
+ * Beispiel: xRechnungService.sendXRechnungEmail({ orderId, email, recipientName })
  */
 export const xRechnungService = {
   /**
    * Prüft, ob eine E-Mail-Adresse zu einer Behörde gehört
+   * 
+   * @param email - Die zu prüfende E-Mail-Adresse
+   * @returns true, wenn die E-Mail-Adresse zu einer Behörde gehört, sonst false
    */
   isGovernmentAgency: (email: string): boolean => {
     if (!email) return false;
@@ -39,6 +45,20 @@ export const xRechnungService = {
   
   /**
    * Sendet eine XRechnung per E-Mail
+   * 
+   * @param params - Object mit den Parametern für die XRechnung
+   * @param params.orderId - ID des Auftrags
+   * @param params.email - E-Mail-Adresse des Empfängers
+   * @param params.recipientName - Name des Empfängers
+   * @returns Promise<boolean> - true bei Erfolg, false bei Fehler
+   * 
+   * @example
+   * // Korrekter Aufruf mit Object-Parameter:
+   * await xRechnungService.sendXRechnungEmail({
+   *   orderId: '123',
+   *   email: 'behoerde@example.de',
+   *   recipientName: 'Musterbehörde'
+   * });
    */
   sendXRechnungEmail: async ({
     orderId,
@@ -84,6 +104,20 @@ export const xRechnungService = {
   
   /**
    * Sendet eine XRechnung-Vorschau per E-Mail
+   * 
+   * @param params - Object mit den Parametern für die XRechnung-Vorschau
+   * @param params.orderId - ID des Auftrags
+   * @param params.email - E-Mail-Adresse des Empfängers
+   * @param params.recipientName - Name des Empfängers
+   * @returns Promise<boolean> - true bei Erfolg, false bei Fehler
+   * 
+   * @example
+   * // Korrekter Aufruf mit Object-Parameter:
+   * await xRechnungService.sendXRechnungPreview({
+   *   orderId: '123',
+   *   email: 'test@example.de',
+   *   recipientName: 'Testempfänger'
+   * });
    */
   sendXRechnungPreview: async ({
     orderId,
@@ -129,6 +163,20 @@ export const xRechnungService = {
   
   /**
    * Sendet automatisch eine XRechnung, wenn der Empfänger eine Behörde ist
+   * 
+   * @param params - Object mit den Parametern für die automatische XRechnung
+   * @param params.orderId - ID des Auftrags
+   * @param params.email - E-Mail-Adresse des Empfängers
+   * @param params.recipientName - Name des Empfängers
+   * @returns Promise<boolean> - true bei Erfolg, false bei Fehler
+   * 
+   * @example
+   * // Korrekter Aufruf mit Object-Parameter:
+   * await xRechnungService.autoSendXRechnungIfGovernment({
+   *   orderId: '123',
+   *   email: 'behoerde@berlin.de',
+   *   recipientName: 'Senatsverwaltung'
+   * });
    */
   autoSendXRechnungIfGovernment: async ({
     orderId,
