@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabaseClient';
 import { prepareInvoiceData } from '@/utils/invoice';
 import { pdfService } from './pdfService';
@@ -7,35 +8,35 @@ import { blobToBase64 } from './helpers';
 import { toast } from "@/hooks/use-toast";
 
 /**
- * Service for handling invoice email operations
+ * Service für den Umgang mit Rechnungs-E-Mail-Operationen
  */
 export const emailService = {
   /**
-   * Send invoice via email
+   * Rechnung per E-Mail versenden
    */
   sendInvoiceEmail: async (orderId: string, email: string): Promise<boolean> => {
     try {
-      // Generate the PDF and XML
+      // PDF und XML generieren
       const pdfBlob = await pdfService.generatePDF(orderId);
       const xmlBlob = await xmlService.generateXML(orderId);
       const invoiceData = await prepareInvoiceData(orderId);
       
-      // Convert blobs to base64
+      // Blobs in Base64 konvertieren
       const pdfBase64 = await blobToBase64(pdfBlob);
       const xmlBase64 = await blobToBase64(xmlBlob);
       
       if (!pdfBase64 || !xmlBase64) {
-        throw new Error("Failed to convert files to base64");
+        throw new Error("Fehler bei der Konvertierung der Dateien");
       }
       
-      // Find invoice ID if available
+      // Rechnungs-ID suchen, falls verfügbar
       const { data: invoice } = await supabase
         .from('invoices')
         .select('invoice_id')
         .eq('order_id', orderId)
         .maybeSingle();
       
-      // Call Supabase Edge Function to send email with attachments
+      // Supabase Edge Function aufrufen, um E-Mail mit Anhängen zu versenden
       const { data, error } = await supabase.functions.invoke('send-invoice-email', {
         body: {
           orderId,
@@ -51,7 +52,7 @@ export const emailService = {
       
       if (error) throw error;
       
-      // Update invoice status if available
+      // Rechnungsstatus aktualisieren, falls verfügbar
       if (invoice?.invoice_id) {
         await supabase
           .from('invoices')
@@ -67,9 +68,9 @@ export const emailService = {
         description: "Die Rechnung wurde per E-Mail versendet."
       });
       
-      // Check if recipient is a government agency and send XRechnung if needed
+      // Prüfen, ob Empfänger eine Behörde ist und ggf. XRechnung versenden
       if (xRechnungService.isGovernmentAgency(email)) {
-        // Wait a moment before sending the XRechnung to avoid rate limiting
+        // Kurze Wartezeit, um Rate-Limiting zu vermeiden
         setTimeout(async () => {
           try {
             await xRechnungService.sendXRechnungEmail(
@@ -78,14 +79,14 @@ export const emailService = {
               invoiceData.recipient.name
             );
           } catch (xRechnungError) {
-            console.error("Error sending XRechnung after regular invoice:", xRechnungError);
+            console.error("Fehler beim Senden der XRechnung nach normaler Rechnung:", xRechnungError);
           }
         }, 2000);
       }
       
       return true;
     } catch (error) {
-      console.error("Error sending invoice email:", error);
+      console.error("Fehler beim Senden der Rechnungs-E-Mail:", error);
       toast({
         title: "Fehler",
         description: "Die Rechnung konnte nicht per E-Mail versendet werden.",
@@ -96,7 +97,7 @@ export const emailService = {
   },
 
   /**
-   * Send invoice via SMS
+   * Rechnung per SMS versenden
    */
   sendInvoiceSMS: async (
     invoiceId: string, 
@@ -104,7 +105,7 @@ export const emailService = {
     includePin: boolean = false
   ): Promise<boolean> => {
     try {
-      // Call the SMS edge function
+      // SMS-Edge-Function aufrufen
       const { data, error } = await supabase.functions.invoke('send-invoice-sms', {
         body: {
           invoiceId: invoiceId,
@@ -122,7 +123,7 @@ export const emailService = {
       
       return true;
     } catch (error) {
-      console.error("Error sending invoice SMS:", error);
+      console.error("Fehler beim Versenden der Rechnungs-SMS:", error);
       toast({
         title: "Fehler",
         description: "Die SMS konnte nicht versendet werden.",

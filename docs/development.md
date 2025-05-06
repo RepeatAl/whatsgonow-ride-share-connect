@@ -8,6 +8,7 @@ Diese Datei dient als zentrale Referenz für Entwicklungspraktiken und wichtige 
 - [Komponenten-Architektur](#komponenten-architektur)
 - [Hooks](#hooks)
 - [GoBD-Compliance](#gobd-compliance)
+- [XRechnung-Unterstützung](#xrechnung-unterstützung)
 - [Changelog](#changelog)
 
 ## Überblick
@@ -39,6 +40,17 @@ Die Anwendung implementiert GoBD-konforme Archivierung für Rechnungen:
 
 Die Funktion verarbeitet Rechnungen mit dem Status 'sent' und setzt deren Status auf 'gobd_compliant'.
 
+## XRechnung-Unterstützung
+Die Anwendung unterstützt den elektronischen Rechnungsaustausch mit Behörden gemäß XRechnung-Standard:
+- Automatische Erkennung von Behörden anhand der E-Mail-Domain
+- Generierung von XRechnung-konformen XML-Dokumenten
+- Versand von XRechnungen via Edge Function `send-xrechnung-email`
+- Validierung der XRechnung-Konformität vor dem Versand
+- Vorschaufunktion für Testzwecke
+- Auditlogging aller XRechnung-Operationen
+
+Die Funktionalität ist nahtlos in die bestehende Rechnungs-Komponenten integriert und bietet eine spezialisierte UI für XRechnung-Operationen.
+
 ## Changelog
 ### 2025-05-06: Major Refactoring
 - PreRegistrationForm in kleinere Komponenten aufgeteilt
@@ -49,3 +61,9 @@ Die Funktion verarbeitet Rechnungen mit dem Status 'sent' und setzt deren Status
 - Edge Function `archive-invoices-schedule` für automatische Rechnungsarchivierung implementiert
 - SHA-256 Hashing für Dokumenten-Integritätsprüfung eingeführt
 - Retention-Policy und Löschzeitpunkt-Management implementiert
+
+### 2025-05-10: XRechnung-Support
+- Edge Function `send-xrechnung-email` für den Versand von elektronischen Rechnungen an Behörden implementiert
+- Automatische Behördenerkennung für zielgenauen XRechnung-Versand
+- Vorschaufunktionalität für Testzwecke hinzugefügt
+- XRechnung-spezifische UI-Komponenten für verbesserte Benutzerfreundlichkeit

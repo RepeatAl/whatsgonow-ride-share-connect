@@ -6,6 +6,20 @@ Alle wichtigen Änderungen am Projekt werden in dieser Datei dokumentiert.
 ## [Unreleased]
 
 ### Hinzugefügt
+- XRechnung-Unterstützung für elektronischen Rechnungsaustausch mit Behörden
+- Edge Function `send-xrechnung-email` für automatischen XRechnung-Versand
+- Validierungssystem für XRechnungs-Konformität und E-Mail-Versand
+- Behördenerkennung für zielgerichteten XRechnung-Versand
+- Komponente `OrderInvoiceXRechnungButton` für dedizierte XRechnung-Funktionalität
+- Vorschaufunktion für XRechnungen zu Testzwecken
+
+### Verbessert
+- Integration der XRechnung-Funktionalität in bestehende Rechnungskomponenten
+- Erweiterte Dokumentation zu XRechnung und elektronischem Rechnungsaustausch
+
+## [0.1.0] - 2025-05-08
+
+### Hinzugefügt
 - GoBD-konforme Archivierungsfunktion via Edge Function `archive-invoices-schedule`
 - Automatische Integritätsprüfung für Rechnungsdokumente mittels SHA-256 Hash
 - Retention-Policy für rechtskonforme Dokumentenaufbewahrung

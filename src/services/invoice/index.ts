@@ -1,6 +1,6 @@
 
 /**
- * Main invoice service that aggregates all functionality
+ * Haupt-Invoice-Service, der alle Funktionen zusammenfasst
  */
 import { pdfService } from './pdfService';
 import { xmlService } from './xmlService';
@@ -14,45 +14,46 @@ import { archiveService } from './archiveService';
 import * as signatureService from './signature';
 
 export const invoiceService = {
-  // PDF operations
+  // PDF-Operationen
   generatePDF: pdfService.generatePDF,
   downloadPDFInvoice: pdfService.downloadPDFInvoice,
   
-  // XML operations
+  // XML-Operationen
   generateXML: xmlService.generateXML,
   downloadXMLInvoice: xmlService.downloadXMLInvoice,
   
-  // Storage operations
+  // Storage-Operationen
   storeInvoice: storageService.storeInvoice,
   getInvoiceById: storageService.getInvoiceById,
   
-  // Email operations
+  // E-Mail-Operationen
   sendInvoiceEmail: emailService.sendInvoiceEmail,
   
-  // XRechnung operations for government agencies
+  // XRechnung-Operationen für Behörden
   sendXRechnungEmail: xRechnungService.sendXRechnungEmail,
+  sendXRechnungPreview: xRechnungService.sendXRechnungPreview,
   isGovernmentAgency: xRechnungService.isGovernmentAgency,
   autoSendXRechnungIfGovernment: xRechnungService.autoSendXRechnungIfGovernment,
   
-  // Auto-invoice operations
+  // Auto-Invoice-Operationen
   handleAutoInvoice: autoInvoiceService.handleAutoInvoice,
   
-  // Detailed invoice operations
+  // Detaillierte Rechnungs-Operationen
   createDetailedInvoice: detailedInvoiceService.createDetailedInvoice,
   getDetailedInvoice: detailedInvoiceService.getDetailedInvoice,
   
-  // Validation operations
+  // Validierungs-Operationen
   validateInvoice: validationService.validateInvoice,
   validateInvoiceAll: validationService.validateInvoiceAll,
   getValidationResults: validationService.getValidationResults,
   isInvoiceValid: validationService.isInvoiceValid,
   
-  // Archive operations
+  // Archivierungs-Operationen
   archiveInvoice: archiveService.archiveInvoice,
   verifyArchiveIntegrity: archiveService.verifyArchiveIntegrity,
   getArchiveInfo: archiveService.getArchiveInfo,
   
-  // Digital signature operations
+  // Digitale Signatur-Operationen
   signInvoice: signatureService.signAndStoreInvoice,
   signInvoiceText: signatureService.signAndStoreInvoiceText,
   verifySignature: signatureService.verifySignature,
@@ -70,4 +71,4 @@ export * from './detailedInvoiceService';
 export * from './validationService';
 export * from './archiveService';
 export * from './signature';
-export * from './archiveSignatureService'; // For backward compatibility
+export * from './archiveSignatureService'; // Für Abwärtskompatibilität

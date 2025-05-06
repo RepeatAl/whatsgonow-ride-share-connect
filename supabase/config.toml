@@ -183,4 +183,5 @@ verify_jwt = false
 [functions.archive-invoices-schedule]
 verify_jwt = false
 
-
+[functions.send-xrechnung-email]
+verify_jwt = false

@@ -6,40 +6,65 @@ import { blobToBase64 } from './helpers';
 import { toast } from "@/hooks/use-toast";
 
 /**
- * Service for handling XRechnung email operations
+ * Service für den Umgang mit XRechnung-E-Mail-Operationen
  */
 export const xRechnungService = {
   /**
-   * Check if recipient email is from a government agency
+   * Prüft, ob die E-Mail-Adresse zu einer Behörde gehört
    */
   isGovernmentAgency: (email: string): boolean => {
+    if (!email) return false;
+    
     const governmentDomains = [
-      "@bdr.de", 
       "@bund.de", 
       "@bundesregierung.de", 
       "@bundeswehr.org", 
       "@zoll.de",
       "@bzst.de",
-      "@bafa.de"
+      "@bafa.de",
+      "@bayern.de",
+      "@berlin.de",
+      "@brandenburg.de",
+      "@bremen.de",
+      "@hamburg.de",
+      "@hessen.de",
+      "@mv.de", // Mecklenburg-Vorpommern
+      "@niedersachsen.de",
+      "@nrw.de",
+      "@rlp.de", // Rheinland-Pfalz
+      "@saarland.de",
+      "@sachsen.de",
+      "@sachsen-anhalt.de",
+      "@schleswig-holstein.de",
+      "@thueringen.de"
     ];
     
+    const normalizedEmail = email.toLowerCase();
     return governmentDomains.some(domain => 
-      email.toLowerCase().endsWith(domain)
-    );
+      normalizedEmail.endsWith(domain)
+    ) || normalizedEmail.includes('.kommune.de') || 
+       normalizedEmail.includes('stadt-') ||
+       normalizedEmail.includes('landkreis-') ||
+       normalizedEmail.includes('kreis-');
   },
 
   /**
-   * Send XRechnung via email to government agency
+   * Sendet eine XRechnung per E-Mail an eine Behörde
    */
-  sendXRechnungEmail: async (orderId: string, email: string, recipientName: string): Promise<boolean> => {
+  sendXRechnungEmail: async (
+    orderId: string, 
+    email: string, 
+    recipientName: string,
+    preview: boolean = false
+  ): Promise<boolean> => {
     try {
-      // Check if recipient is a government agency
-      if (!xRechnungService.isGovernmentAgency(email)) {
-        console.log("Recipient is not a government agency, skipping XRechnung email");
+      // Prüfen, ob der Empfänger eine Behörde ist
+      if (!preview && !xRechnungService.isGovernmentAgency(email)) {
+        console.log("Empfänger ist keine Behörde, XRechnung-E-Mail wird übersprungen");
         return false;
       }
 
-      // Find invoice ID if available
+      // Rechnungs-ID finden, falls verfügbar
       const { data: invoice } = await supabase
         .from('invoices')
         .select('invoice_id')
@@ -47,45 +72,34 @@ export const xRechnungService = {
         .maybeSingle();
       
       if (!invoice?.invoice_id) {
-        throw new Error("No invoice found for this order");
+        throw new Error("Keine Rechnung für diesen Auftrag gefunden");
       }
 
-      // Generate the XML
-      const xmlBlob = await xmlService.generateXML(orderId);
-      
-      // Convert blob to base64
-      const xmlBase64 = await blobToBase64(xmlBlob);
-      
-      if (!xmlBase64) {
-        throw new Error("Failed to convert XML to base64");
-      }
-      
-      // Get order number or use order ID if not available
-      const invoiceData = await prepareInvoiceData(orderId);
-      const orderNumber = invoiceData.invoiceNumber || orderId;
-      
-      // Call Supabase Edge Function to send XRechnung email
+      // Edge Function zum Senden der XRechnung-E-Mail aufrufen
       const { data, error } = await supabase.functions.invoke('send-xrechnung-email', {
         body: {
           invoiceId: invoice.invoice_id,
-          recipientEmail: email,
-          recipientName: recipientName || "Sehr geehrte Damen und Herren",
-          orderNumber,
-          xmlBase64
+          preview
         }
       });
       
       if (error) throw error;
       
-      // Show success message
+      if (!data.success) {
+        throw new Error(data.message || "Fehler beim Versenden der XRechnung");
+      }
+      
+      // Erfolg anzeigen
       toast({
-        title: "XRechnung versendet",
-        description: "Die XRechnung wurde erfolgreich an die Behörde versendet."
+        title: preview ? "XRechnung-Vorschau versendet" : "XRechnung versendet",
+        description: preview ? 
+          "Die XRechnung-Vorschau wurde erfolgreich an die Testadresse versendet." : 
+          "Die XRechnung wurde erfolgreich an die Behörde versendet."
       });
       
       return true;
     } catch (error) {
-      console.error("Error sending XRechnung email:", error);
+      console.error("Fehler beim Senden der XRechnung-E-Mail:", error);
       toast({
         title: "Fehler",
         description: "Die XRechnung konnte nicht versendet werden.",
@@ -96,7 +110,7 @@ export const xRechnungService = {
   },
 
   /**
-   * Automatically send XRechnung if recipient is a government agency
+   * Sendet automatisch eine XRechnung, wenn der Empfänger eine Behörde ist
    */
   autoSendXRechnungIfGovernment: async (
     orderId: string, 
@@ -107,5 +121,51 @@ export const xRechnungService = {
       return await xRechnungService.sendXRechnungEmail(orderId, email, recipientName);
     }
     return false;
+  },
+  
+  /**
+   * Sendet eine Vorschau der XRechnung an eine interne Test-E-Mail
+   */
+  sendXRechnungPreview: async (
+    orderId: string
+  ): Promise<boolean> => {
+    try {
+      // Find invoice ID if available
+      const { data: invoice } = await supabase
+        .from('invoices')
+        .select('invoice_id')
+        .eq('order_id', orderId)
+        .maybeSingle();
+      
+      if (!invoice?.invoice_id) {
+        throw new Error("Keine Rechnung für diesen Auftrag gefunden");
+      }
+
+      // Edge Function zum Senden der XRechnung-Vorschau aufrufen
+      const { data, error } = await supabase.functions.invoke('send-xrechnung-email', {
+        body: {
+          invoiceId: invoice.invoice_id,
+          preview: true
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Erfolg anzeigen
+      toast({
+        title: "XRechnung-Vorschau versendet",
+        description: "Die XRechnung-Vorschau wurde erfolgreich an die Testadresse versendet."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Fehler beim Senden der XRechnung-Vorschau:", error);
+      toast({
+        title: "Fehler",
+        description: "Die XRechnung-Vorschau konnte nicht versendet werden.",
+        variant: "destructive"
+      });
+      return false;
+    }
   }
 };

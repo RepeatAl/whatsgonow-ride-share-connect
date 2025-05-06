@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import OrderInvoiceXRechnungButton from "./OrderInvoiceXRechnungButton";
 
 interface OrderInvoiceButtonProps {
   orderId: string;
@@ -111,6 +112,9 @@ const OrderInvoiceButton = ({
     }
   };
 
+  // Prüft, ob es sich um eine Behörden-E-Mail handelt
+  const isGovernmentEmail = userEmail ? invoiceService.isGovernmentAgency(userEmail) : false;
+
   if (!isCompleted) {
     return (
       <Button
@@ -126,35 +130,47 @@ const OrderInvoiceButton = ({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={disabled || isLoading}
-          className="text-primary"
-        >
-          <FileText className="h-4 w-4 mr-1" />
-          Rechnung
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleDownloadPDF}>
-          <Download className="h-4 w-4 mr-2" />
-          PDF herunterladen
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDownloadXML}>
-          <BookText className="h-4 w-4 mr-2" />
-          XRechnung herunterladen
-        </DropdownMenuItem>
-        {userEmail && (
-          <DropdownMenuItem onClick={handleSendEmail}>
-            <Mail className="h-4 w-4 mr-2" />
-            Per E-Mail senden
+    <div className="flex items-center space-x-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={disabled || isLoading}
+            className="text-primary"
+          >
+            <FileText className="h-4 w-4 mr-1" />
+            Rechnung
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={handleDownloadPDF}>
+            <Download className="h-4 w-4 mr-2" />
+            PDF herunterladen
           </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuItem onClick={handleDownloadXML}>
+            <BookText className="h-4 w-4 mr-2" />
+            XRechnung herunterladen
+          </DropdownMenuItem>
+          {userEmail && (
+            <DropdownMenuItem onClick={handleSendEmail}>
+              <Mail className="h-4 w-4 mr-2" />
+              Per E-Mail senden
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* XRechnung Button für Behörden */}
+      {isGovernmentEmail && (
+        <OrderInvoiceXRechnungButton 
+          orderId={orderId}
+          disabled={disabled || isLoading}
+          isCompleted={isCompleted}
+          recipientEmail={userEmail}
+        />
+      )}
+    </div>
   );
 };
 
