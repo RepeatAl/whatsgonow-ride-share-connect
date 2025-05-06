@@ -10,6 +10,7 @@ import { UserSessionProvider } from './contexts/UserSessionContext';
 import { AppBootstrap } from './components/AppBootstrap';
 import LaunchProvider from './components/launch/LaunchProvider';
 import { TooltipProvider } from './components/ui/tooltip';
+import { ErrorBoundary } from './components/ui/error-boundary';
 
 import './App.css';
 
@@ -26,7 +27,9 @@ function App() {
               <AuthProvider>
                 <NotificationProvider>
                   <TooltipProvider>
-                    <AppRoutes />
+                    <ErrorBoundary>
+                      <AppRoutes />
+                    </ErrorBoundary>
                     <Toaster />
                     <CookieConsent />
                   </TooltipProvider>

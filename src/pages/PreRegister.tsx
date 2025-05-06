@@ -1,7 +1,9 @@
 
+import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import Layout from "@/components/Layout";
 import { PreRegistrationForm } from "@/components/pre-registration/PreRegistrationForm";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function PreRegister() {
   const { t } = useTranslation();
@@ -18,7 +20,9 @@ export default function PreRegister() {
           </p>
         </div>
 
-        <PreRegistrationForm />
+        <Suspense fallback={<LoadingScreen variant="inline" />}>
+          <PreRegistrationForm />
+        </Suspense>
       </div>
     </Layout>
   );

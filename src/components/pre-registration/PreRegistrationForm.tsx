@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -23,6 +24,7 @@ import { supabase } from "@/lib/supabaseClient";
 export function PreRegistrationForm() {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
   
   const form = useForm<PreRegistrationFormData>({
     resolver: zodResolver(preRegistrationSchema),
@@ -95,7 +97,8 @@ export function PreRegistrationForm() {
         description: t("pre_register.success.description")
       });
 
-      window.location.href = "/pre-register/success";
+      // Use React Router's navigate instead of window.location.href for client-side navigation
+      navigate("/pre-register/success", { replace: true });
     } catch (error) {
       console.error("Pre-registration error:", error);
       setIsSubmitting(false);
