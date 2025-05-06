@@ -10,6 +10,7 @@ interface OrderInvoiceXRechnungButtonProps {
   disabled?: boolean;
   isCompleted?: boolean;
   recipientEmail?: string;
+  recipientName?: string;
   variant?: "default" | "outline" | "secondary" | "ghost" | "destructive" | "link";
   size?: "default" | "sm" | "lg" | "icon";
   showIcon?: boolean;
@@ -23,6 +24,7 @@ const OrderInvoiceXRechnungButton = ({
   disabled = false,
   isCompleted = true,
   recipientEmail,
+  recipientName = "Sehr geehrte Damen und Herren",
   variant = "outline",
   size = "sm",
   showIcon = true,
@@ -69,7 +71,7 @@ const OrderInvoiceXRechnungButton = ({
       await invoiceService.sendXRechnungEmail(
         orderId, 
         recipientEmail,
-        "Sehr geehrte Damen und Herren" // Standard-Anrede für Behörden
+        recipientName // Passing the recipientName parameter
       );
     } catch (error) {
       console.error("Fehler beim Versenden der XRechnung:", error);
@@ -96,7 +98,12 @@ const OrderInvoiceXRechnungButton = ({
 
     setIsLoading(true);
     try {
-      await invoiceService.sendXRechnungPreview(orderId);
+      // Fix: Add all three required parameters
+      await invoiceService.sendXRechnungPreview(
+        orderId,
+        recipientEmail || 'test@xrechnung.de', // Default testing address if none provided
+        recipientName
+      );
     } catch (error) {
       console.error("Fehler beim Versenden der XRechnung-Vorschau:", error);
       toast({
