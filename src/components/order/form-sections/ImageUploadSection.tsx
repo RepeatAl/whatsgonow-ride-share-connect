@@ -11,6 +11,7 @@ import { toast } from "sonner";
 interface ImageUploadSectionProps {
   userId?: string;
   orderId?: string;
+  uploadedPhotoUrls?: string[];
   onPhotosUploaded?: (urls: string[]) => void;
   existingUrls?: string[];
 }
@@ -18,6 +19,7 @@ interface ImageUploadSectionProps {
 export const ImageUploadSection = ({
   userId,
   orderId,
+  uploadedPhotoUrls = [],
   onPhotosUploaded,
   existingUrls = []
 }: ImageUploadSectionProps) => {
@@ -38,7 +40,7 @@ export const ImageUploadSection = ({
     previews,
     canTakeMore,
     nextPhotoIndex
-  } = useFileUpload(orderId, existingUrls);
+  } = useFileUpload(orderId, existingUrls || uploadedPhotoUrls);
 
   // Stable callback for removing files
   const handleRemoveFile = useCallback((index: number) => {

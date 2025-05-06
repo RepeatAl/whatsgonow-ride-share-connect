@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useOrderForm } from "@/hooks/useOrderForm";
 import { useCreateOrderSubmit } from "./hooks/useCreateOrderSubmit";
 import { FindDriverDialog } from "./FindDriverDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Import form sections
 import { ImageUploadSection } from "./form-sections/ImageUploadSection";
@@ -28,6 +29,7 @@ interface OrderFormWrapperProps {
 
 export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     form,
     uploadedPhotoUrls,
@@ -36,7 +38,9 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
     isLoading,
     isSaving,
     handlePhotosUploaded,
-    insuranceEnabled
+    handleFormClear,
+    insuranceEnabled,
+    isFormValid
   } = useOrderForm(initialData);
 
   const { 
@@ -74,7 +78,15 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
   return (
     <Form {...form}>
       <div className="space-y-6">
-        <FormNavigation onSaveDraft={handleSaveDraft} isSaving={isSaving} />
+        <FormNavigation 
+          onSaveDraft={handleSaveDraft}
+          onSubmitForm={form.handleSubmit(onSubmit)} 
+          onClearForm={handleFormClear}
+          isSaving={isSaving}
+          isSubmitting={isSubmitting}
+          isValid={isFormValid}
+          isAuthenticated={!!user}
+        />
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <ImageUploadSection

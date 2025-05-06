@@ -12,9 +12,17 @@ import { FormNavigation } from "./form-sections/FormNavigation";
 import { useCreateOrderSubmit } from "./hooks/useCreateOrderSubmit";
 import { FindDriverDialog } from "./FindDriverDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { CreateOrderFormValues } from "@/lib/validators/order";
 
-const CreateOrderForm = () => {
-  const { form, uploadedPhotoUrls, isSaving, handlePhotosUploaded, handleFormClear, isFormValid } = useOrderForm();
+interface CreateOrderFormProps {
+  initialData?: {
+    draft_data: Partial<CreateOrderFormValues>;
+    photo_urls: string[];
+  };
+}
+
+const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
+  const { form, uploadedPhotoUrls, isSaving, handlePhotosUploaded, handleFormClear, isFormValid, insuranceEnabled, tempOrderId } = useOrderForm(initialData);
   const { user } = useAuth();
   const { 
     handleCreateOrder, 
@@ -58,9 +66,10 @@ const CreateOrderForm = () => {
       <GeneralInformationSection form={form} />
       <AddressSection form={form} type="pickup" />
       <AddressSection form={form} type="delivery" />
-      <ItemDetailsSection form={form} />
+      <ItemDetailsSection form={form} insuranceEnabled={insuranceEnabled} />
       <ImageUploadSection 
-        tempOrderId={form.getValues('id') || ''} 
+        userId={user?.id} 
+        orderId={tempOrderId}
         uploadedPhotoUrls={uploadedPhotoUrls}
         onPhotosUploaded={handlePhotosUploaded}
       />
@@ -69,7 +78,10 @@ const CreateOrderForm = () => {
       
       {/* Submit Button am Ende des Formulars */}
       <div className="flex justify-end">
-        <SubmitButton isSubmitting={isSubmitting} onClick={submitForm} />
+        <SubmitButton 
+          isSubmitting={isSubmitting} 
+          onClick={submitForm}
+        />
       </div>
       
       {/* Dialog für "Fahrer suchen" nach erfolgreicher Veröffentlichung */}

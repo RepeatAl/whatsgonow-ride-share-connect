@@ -6,12 +6,18 @@ import Layout from "@/components/Layout";
 import CreateOrderForm from "@/components/order/CreateOrderForm";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
+import { CreateOrderFormValues } from "@/lib/validators/order";
+
+interface DraftData {
+  draft_data: Partial<CreateOrderFormValues>;
+  photo_urls: string[];
+}
 
 const DraftEdit = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [draftData, setDraftData] = useState<any>(null);
+  const [draftData, setDraftData] = useState<DraftData | null>(null);
 
   useEffect(() => {
     const loadDraft = async () => {
@@ -23,7 +29,13 @@ const DraftEdit = () => {
           .single();
 
         if (error) throw error;
-        setDraftData(data);
+        
+        const formattedData: DraftData = {
+          draft_data: data.draft_data || {},
+          photo_urls: data.photo_urls || [],
+        };
+        
+        setDraftData(formattedData);
       } catch (error) {
         console.error("Error loading draft:", error);
         toast.error("Entwurf konnte nicht geladen werden");
