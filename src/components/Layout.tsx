@@ -5,6 +5,8 @@ import NavbarLogo from "./navbar/NavbarLogo";
 import Footer from "./Footer";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BackButton } from "./navigation/BackButton";
+import { useLocation } from "react-router-dom";
+import { isHomeRoute } from "@/routes/publicRoutes";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +16,8 @@ interface LayoutProps {
 
 const Layout = ({ children, minimal = false }: LayoutProps) => {
   const { theme } = useTheme();
+  const location = useLocation();
+  const isHome = isHomeRoute(location.pathname);
 
   return (
     <div 
@@ -31,7 +35,8 @@ const Layout = ({ children, minimal = false }: LayoutProps) => {
         )}
         
         <main className="flex-grow w-full px-4 sm:px-6 lg:px-8">
-          <BackButton />
+          {/* Only show BackButton when not on home page */}
+          {!isHome && <BackButton />}
           {children}
         </main>
 

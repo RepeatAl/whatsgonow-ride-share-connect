@@ -27,7 +27,7 @@ export default function PreRegisterSuccess() {
             {t('pre_register.success.spam_notice')}
           </p>
           <Button asChild>
-            <Link to="/">{t('pre_register.success.back_to_home')}</Link>
+            <Link to="/" replace>{t('pre_register.success.back_to_home')}</Link>
           </Button>
         </div>
       </div>
