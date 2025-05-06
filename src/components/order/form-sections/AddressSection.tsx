@@ -103,12 +103,12 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
       }
 
       // Profildaten aus dem Formular übernehmen
+      // Anstatt 'country' zu senden, das nicht Teil des UserProfile-Typs ist, lassen wir es weg
       await handleSave({
         street: formValues[`${prefix}Street`],
         house_number: formValues[`${prefix}HouseNumber`],
         postal_code: formValues[`${prefix}PostalCode`],
         city: formValues[`${prefix}City`],
-        country: formValues[`${prefix}Country`] || "Deutschland",
         address_extra: formValues[`${prefix}AddressExtra`]
       });
       
@@ -349,3 +349,4 @@ export const AddressSection = ({ form, type }: AddressSectionProps) => {
     </div>
   );
 };
+
