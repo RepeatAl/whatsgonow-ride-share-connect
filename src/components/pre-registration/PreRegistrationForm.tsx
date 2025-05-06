@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import {
   Form,
   FormControl,
@@ -43,51 +44,65 @@ export function PreRegistrationForm() {
   const onSubmit = async (data: PreRegistrationFormData) => {
     console.log("Form data on submit:", data);
     setIsSubmitting(true);
+    
     try {
-      // Get anon key from Supabase client
+      // Get session token instead of using hardcoded anon key
       const { data: { session } } = await supabase.auth.getSession();
-      const anon_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ2NydXdteHFpd25qbmt4cGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzQ1ODYsImV4cCI6MjA2MDExMDU4Nn0.M90DOOmOg2E58oSWnX49wbRqnO6Od9RrfcUvgJpzGMI";
+      const accessToken = session?.access_token;
+      
+      console.log("Sending data to pre-register endpoint with auth token");
       
       const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${anon_key}`
+          "Authorization": `Bearer ${accessToken || ""}`
         },
         body: JSON.stringify(data)
       });
       
+      // Improved error handling
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Pre-registration error response:", errorData);
-        
-        if (errorData.errors) {
-          Object.entries(errorData.errors).forEach(([field, message]) => {
-            form.setError(field as any, {
-              message: message as string
+        // Try to parse error response
+        let errorMessage;
+        try {
+          const errorData = await response.json();
+          console.error("Pre-registration error response:", errorData);
+          
+          if (errorData.errors) {
+            Object.entries(errorData.errors).forEach(([field, message]) => {
+              form.setError(field as any, {
+                message: message as string
+              });
             });
-          });
-          throw new Error("Validation failed");
+            throw new Error("Validation failed");
+          }
+          errorMessage = errorData.error || t("errors.registration_failed");
+        } catch (parseError) {
+          // If we can't parse JSON, use the text
+          const errorText = await response.text();
+          console.error("Pre-registration error text:", errorText);
+          errorMessage = t("errors.registration_failed");
         }
-        throw new Error(errorData.error || t("errors.registration_failed"));
+        
+        throw new Error(errorMessage);
       }
       
       const result = await response.json();
       console.log("Pre-registration success:", result);
       
-      toast({
-        title: t("pre_register.success.title"),
+      toast.success(t("pre_register.success.title"), {
         description: t("pre_register.success.description")
       });
 
       window.location.href = "/pre-register/success";
     } catch (error) {
       console.error("Pre-registration error:", error);
+      setIsSubmitting(false);
+      
       if (!(error instanceof Error && error.message === "Validation failed")) {
-        toast({
-          title: t("errors.registration_failed"),
-          description: error instanceof Error ? error.message : t("common.retry"),
-          variant: "destructive"
+        toast.error(t("errors.registration_failed"), {
+          description: error instanceof Error ? error.message : t("common.retry")
         });
       }
     } finally {
@@ -249,7 +264,11 @@ export function PreRegistrationForm() {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={!form.formState.isValid || isSubmitting}
+        >
           {isSubmitting ? t("pre_register.processing") : t("pre_register.submit")}
         </Button>
       </form>
