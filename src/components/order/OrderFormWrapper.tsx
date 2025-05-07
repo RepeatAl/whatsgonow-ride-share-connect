@@ -24,6 +24,7 @@ interface OrderFormWrapperProps {
   initialData?: {
     draft_data: any;
     photo_urls: string[];
+    items?: any[];
   };
 }
 
@@ -33,10 +34,15 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
   const {
     form,
     uploadedPhotoUrls,
+    items,
+    addItem,
+    removeItem,
+    saveAllItems,
     tempOrderId,
     clearDraft,
     isLoading,
     isSaving,
+    isProcessing,
     handlePhotosUploaded,
     handleFormClear,
     insuranceEnabled,
@@ -72,7 +78,13 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
   };
 
   const onSubmit = async (data: any) => {
-    await handleCreateOrder(data, uploadedPhotoUrls);
+    // Zuerst Auftrag erstellen
+    const orderId = await handleCreateOrder(data, uploadedPhotoUrls);
+    
+    // Wenn orderId zurückgegeben wurde und Artikel vorhanden sind, speichere diese
+    if (orderId && items.length > 0) {
+      await saveAllItems(orderId);
+    }
   };
 
   return (
@@ -82,33 +94,38 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
           onSaveDraft={handleSaveDraft}
           onSubmitForm={form.handleSubmit(onSubmit)} 
           onClearForm={handleFormClear}
-          isSaving={isSaving}
+          isSaving={isSaving || isProcessing}
           isSubmitting={isSubmitting}
           isValid={isFormValid}
           isAuthenticated={!!user}
         />
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <GeneralInformationSection form={form} />
+          <Separator />
+          <AddressSection form={form} type="pickup" />
+          <Separator />
+          <AddressSection form={form} type="delivery" />
+          <Separator />
+          <ItemDetailsSection 
+            form={form} 
+            insuranceEnabled={insuranceEnabled} 
+            items={items}
+            onAddItem={addItem}
+            onRemoveItem={removeItem}
+          />
+          <Separator />
           <ImageUploadSection
             userId={userId}
             orderId={tempOrderId}
             onPhotosUploaded={handlePhotosUploaded}
             existingUrls={uploadedPhotoUrls}
           />
-
-          <Separator />
-          <GeneralInformationSection form={form} />
-          <Separator />
-          <ItemDetailsSection form={form} insuranceEnabled={insuranceEnabled} />
-          <Separator />
-          <AddressSection form={form} type="pickup" />
-          <Separator />
-          <AddressSection form={form} type="delivery" />
           <Separator />
           <AdditionalOptionsSection form={form} />
           <Separator />
           <DeadlineSection form={form} />
-          <SubmitButton isSubmitting={isSubmitting} />
+          <SubmitButton isSubmitting={isSubmitting || isProcessing} />
         </form>
         
         {/* Dialog zur Fahrer-Suche nach erfolgreicher Auftragserstellung */}

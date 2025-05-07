@@ -9,19 +9,25 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
+import { ItemsList } from "./ItemsList";
+import { ItemDetails } from "@/hooks/useItemDetails";
 
 interface ItemDetailsSectionProps {
   form: UseFormReturn<CreateOrderFormValues>;
   insuranceEnabled: boolean;
   orderId?: string;
-  onAddItem?: (item: any) => void;
+  items?: ItemDetails[];
+  onAddItem?: (item: ItemDetails) => void;
+  onRemoveItem?: (index: number) => void;
 }
 
 export const ItemDetailsSection = ({ 
   form, 
   insuranceEnabled, 
   orderId, 
-  onAddItem 
+  items = [],
+  onAddItem,
+  onRemoveItem
 }: ItemDetailsSectionProps) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("basic");
@@ -38,7 +44,7 @@ export const ItemDetailsSection = ({
     }
   }, [user]);
 
-  const handleAddItem = (item: any) => {
+  const handleAddItem = (item: ItemDetails) => {
     if (onAddItem) {
       onAddItem(item);
     }
@@ -46,7 +52,7 @@ export const ItemDetailsSection = ({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <h3 className="text-lg font-medium">Artikeldetails</h3>
       
       {showItemUpload ? (
@@ -165,6 +171,13 @@ export const ItemDetailsSection = ({
                 )}
               />
             </div>
+            
+            {/* Liste der bereits hinzugefügten Artikel */}
+            {items.length > 0 && (
+              <div className="mt-6">
+                <ItemsList items={items} onRemoveItem={onRemoveItem || (() => {})} />
+              </div>
+            )}
             
             {user && (
               <div className="mt-4">

@@ -6,10 +6,13 @@ import { v4 as uuidv4 } from "uuid";
 import { createOrderSchema, type CreateOrderFormValues } from "@/lib/validators/order";
 import { useOrderDraftStorage } from "./useOrderDraftStorage";
 import { useNavigate } from "react-router-dom";
+import { ItemDetails } from "./useItemDetails";
+import { useOrderItems } from "./useOrderItems";
 
 export function useOrderForm(initialData?: {
   draft_data: Partial<CreateOrderFormValues>;
   photo_urls: string[];
+  items?: ItemDetails[];
 }) {
   const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState<string[]>(
     initialData?.photo_urls || []
@@ -62,7 +65,11 @@ export function useOrderForm(initialData?: {
     },
   });
 
-  const { clearDraft, isLoading, isSaving } = useOrderDraftStorage(form, uploadedPhotoUrls);
+  // Artikel hinzufügen
+  const { items, addItem, removeItem, resetItems, saveAllItems, isProcessing } = 
+    useOrderItems(initialData?.items || []);
+
+  const { clearDraft, isLoading, isSaving } = useOrderDraftStorage(form, uploadedPhotoUrls, items);
 
   const handlePhotosUploaded = useCallback((urls: string[]) => {
     setUploadedPhotoUrls(urls);
@@ -75,12 +82,15 @@ export function useOrderForm(initialData?: {
     // Fotos zurücksetzen
     setUploadedPhotoUrls([]);
     
+    // Artikel zurücksetzen
+    resetItems();
+    
     // Draft in localStorage löschen
     await clearDraft();
     
     // Optional: Redirect or other actions
     // Wir entscheiden uns hier, auf der gleichen Seite zu bleiben
-  }, [form, clearDraft]);
+  }, [form, clearDraft, resetItems]);
   
   const insuranceEnabled = form.watch('insurance');
   const isFormValid = form.formState.isValid;
@@ -88,10 +98,15 @@ export function useOrderForm(initialData?: {
   return {
     form,
     uploadedPhotoUrls,
+    items,
+    addItem,
+    removeItem,
+    saveAllItems,
     tempOrderId,
     clearDraft,
     isLoading,
     isSaving,
+    isProcessing,
     handlePhotosUploaded,
     handleFormClear,
     insuranceEnabled,

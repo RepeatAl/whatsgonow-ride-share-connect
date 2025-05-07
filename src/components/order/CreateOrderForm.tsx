@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useOrderForm } from "@/hooks/useOrderForm";
 import { GeneralInformationSection } from "./form-sections/GeneralInformationSection";
 import { AddressSection } from "./form-sections/AddressSection";
@@ -13,24 +13,44 @@ import { useCreateOrderSubmit } from "./hooks/useCreateOrderSubmit";
 import { FindDriverDialog } from "./FindDriverDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreateOrderFormValues } from "@/lib/validators/order";
+import { Form } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
 
 interface CreateOrderFormProps {
   initialData?: {
     draft_data: Partial<CreateOrderFormValues>;
     photo_urls: string[];
+    items?: any[];
   };
 }
 
 const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
-  const { form, uploadedPhotoUrls, isSaving, handlePhotosUploaded, handleFormClear, isFormValid, insuranceEnabled, tempOrderId } = useOrderForm(initialData);
+  const { 
+    form, 
+    uploadedPhotoUrls, 
+    items,
+    addItem,
+    removeItem,
+    saveAllItems,
+    tempOrderId, 
+    isSaving, 
+    isProcessing,
+    handlePhotosUploaded, 
+    handleFormClear, 
+    isFormValid, 
+    insuranceEnabled 
+  } = useOrderForm(initialData);
+  
   const { user } = useAuth();
   const { 
     handleCreateOrder, 
     isSubmitting, 
     showFindDriverDialog,
-    handleFindDriverDialogClose
+    handleFindDriverDialogClose,
+    userId
   } = useCreateOrderSubmit(() => {
     // Leere Funktion, da clearDraft bereits in useCreateOrderSubmit verwendet wird
+    return Promise.resolve(true);
   });
 
   // Funktion zum Speichern als Entwurf
@@ -45,53 +65,72 @@ const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
     const valid = await form.trigger();
     if (valid) {
       const formValues = form.getValues();
-      await handleCreateOrder(formValues, uploadedPhotoUrls);
+      const orderId = await handleCreateOrder(formValues, uploadedPhotoUrls);
+      
+      // Wenn orderId zurückgegeben wurde und Artikel vorhanden sind, speichere diese
+      if (orderId && items.length > 0) {
+        await saveAllItems(orderId);
+      }
     }
   };
 
   return (
-    <form className="space-y-8">
-      {/* Navigationsleiste für Formular-Aktionen */}
-      <FormNavigation 
-        onSaveDraft={saveDraft}
-        onSubmitForm={submitForm}
-        onClearForm={handleFormClear}
-        isSaving={isSaving}
-        isSubmitting={isSubmitting}
-        isValid={isFormValid}
-        isAuthenticated={!!user}
-      />
-      
-      {/* Bestehende Formular-Sektionen */}
-      <GeneralInformationSection form={form} />
-      <AddressSection form={form} type="pickup" />
-      <AddressSection form={form} type="delivery" />
-      <ItemDetailsSection form={form} insuranceEnabled={insuranceEnabled} />
-      <ImageUploadSection 
-        userId={user?.id} 
-        orderId={tempOrderId}
-        uploadedPhotoUrls={uploadedPhotoUrls}
-        onPhotosUploaded={handlePhotosUploaded}
-      />
-      <AdditionalOptionsSection form={form} />
-      <DeadlineSection form={form} />
-      
-      {/* Submit Button am Ende des Formulars */}
-      <div className="flex justify-end">
-        <SubmitButton 
-          isSubmitting={isSubmitting} 
-          onClick={submitForm}
+    <Form {...form}>
+      <div className="space-y-6">
+        {/* Navigationsleiste für Formular-Aktionen */}
+        <FormNavigation 
+          onSaveDraft={saveDraft}
+          onSubmitForm={submitForm}
+          onClearForm={handleFormClear}
+          isSaving={isSaving || isProcessing}
+          isSubmitting={isSubmitting}
+          isValid={isFormValid}
+          isAuthenticated={!!user}
         />
+        
+        {/* Bestehende Formular-Sektionen */}
+        <GeneralInformationSection form={form} />
+        <Separator />
+        <AddressSection form={form} type="pickup" />
+        <Separator />
+        <AddressSection form={form} type="delivery" />
+        <Separator />
+        <ItemDetailsSection 
+          form={form} 
+          insuranceEnabled={insuranceEnabled}
+          items={items}
+          onAddItem={addItem}
+          onRemoveItem={removeItem}
+        />
+        <Separator />
+        <ImageUploadSection 
+          userId={user?.id} 
+          orderId={tempOrderId}
+          uploadedPhotoUrls={uploadedPhotoUrls}
+          onPhotosUploaded={handlePhotosUploaded}
+        />
+        <Separator />
+        <AdditionalOptionsSection form={form} />
+        <Separator />
+        <DeadlineSection form={form} />
+        
+        {/* Submit Button am Ende des Formulars */}
+        <div className="flex justify-end">
+          <SubmitButton 
+            isSubmitting={isSubmitting || isProcessing} 
+            onClick={submitForm}
+          />
+        </div>
+        
+        {/* Dialog für "Fahrer suchen" nach erfolgreicher Veröffentlichung */}
+        {showFindDriverDialog && (
+          <FindDriverDialog
+            open={showFindDriverDialog}
+            onClose={handleFindDriverDialogClose}
+          />
+        )}
       </div>
-      
-      {/* Dialog für "Fahrer suchen" nach erfolgreicher Veröffentlichung */}
-      {showFindDriverDialog && (
-        <FindDriverDialog
-          open={showFindDriverDialog}
-          onClose={handleFindDriverDialogClose}
-        />
-      )}
-    </form>
+    </Form>
   );
 };
 

@@ -86,6 +86,8 @@ export const ItemDetailsUpload: React.FC<ItemDetailsUploadProps> = ({
       }
     } else if (onSaveItem) {
       onSaveItem(itemData);
+      resetForm();
+      setImagePreview(null);
     }
   };
 

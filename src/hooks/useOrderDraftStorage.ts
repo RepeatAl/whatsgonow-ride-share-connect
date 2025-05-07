@@ -5,16 +5,19 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "lodash";
+import { ItemDetails } from "./useItemDetails";
 
 export const useOrderDraftStorage = (
   form: UseFormReturn<any>,
-  photoUrls: string[]
+  photoUrls: string[],
+  items: ItemDetails[] = []
 ) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [lastSavedData, setLastSavedData] = useState<{formValues: any, photos: string[]}>({
+  const [lastSavedData, setLastSavedData] = useState<{formValues: any, photos: string[], items: ItemDetails[]}>({
     formValues: {},
-    photos: []
+    photos: [],
+    items: []
   });
   
   // Get current form values
@@ -22,15 +25,16 @@ export const useOrderDraftStorage = (
 
   // Debounced save function to reduce flickering from frequent saves
   const debouncedSave = useCallback(
-    debounce(async (data: any, photos: string[]) => {
+    debounce(async (data: any, photos: string[], items: ItemDetails[]) => {
       try {
         setIsSaving(true);
         
         // Check if anything has actually changed before saving
         const formChanged = JSON.stringify(data) !== JSON.stringify(lastSavedData.formValues);
         const photosChanged = JSON.stringify(photos) !== JSON.stringify(lastSavedData.photos);
+        const itemsChanged = JSON.stringify(items) !== JSON.stringify(lastSavedData.items);
         
-        if (!formChanged && !photosChanged) {
+        if (!formChanged && !photosChanged && !itemsChanged) {
           setIsSaving(false);
           return;
         }
@@ -39,6 +43,7 @@ export const useOrderDraftStorage = (
         const draft = {
           formValues: data,
           photos,
+          items,
           lastUpdated: new Date().toISOString()
         };
         localStorage.setItem('order-draft', JSON.stringify(draft));
@@ -53,7 +58,7 @@ export const useOrderDraftStorage = (
         
         if (error) throw error;
         
-        setLastSavedData({formValues: data, photos});
+        setLastSavedData({formValues: data, photos, items});
       } catch (error) {
         console.error('Error saving draft:', error);
       } finally {
@@ -74,7 +79,11 @@ export const useOrderDraftStorage = (
         if (savedDraft) {
           const draft = JSON.parse(savedDraft);
           form.reset(draft.formValues);
-          setLastSavedData({formValues: draft.formValues, photos: draft.photos || []});
+          setLastSavedData({
+            formValues: draft.formValues, 
+            photos: draft.photos || [], 
+            items: draft.items || []
+          });
         }
       } catch (error) {
         console.error('Error loading draft:', error);
@@ -89,13 +98,13 @@ export const useOrderDraftStorage = (
   // Effect to auto-save draft when form changes
   useEffect(() => {
     if (!isLoading) {
-      debouncedSave(formValues, photoUrls);
+      debouncedSave(formValues, photoUrls, items);
     }
     
     return () => {
       debouncedSave.cancel();
     };
-  }, [formValues, photoUrls, isLoading, debouncedSave]);
+  }, [formValues, photoUrls, items, isLoading, debouncedSave]);
   
   // Function to clear draft
   const clearDraft = useCallback(async () => {
