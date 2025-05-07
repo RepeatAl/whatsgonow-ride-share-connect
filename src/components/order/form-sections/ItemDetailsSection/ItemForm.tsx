@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +21,7 @@ export function ItemForm({ onSaveItem, orderId }: ItemFormProps) {
     }
   });
   
-  const { fileInputRef, handleFileSelect, handleFileChange, previews, uploadFiles } = useFileUpload();
+  const { fileInputRef, handleFileSelect, handleFileChange, previews, uploadFiles } = useFileUpload(orderId);
   
   const handleSubmit = async (data: ItemDetailsFormValues) => {
     try {
@@ -36,11 +35,7 @@ export function ItemForm({ onSaveItem, orderId }: ItemFormProps) {
           imageUrl = previews[0];
         } else {
           // Sonst laden wir die Datei hoch
-          const files = fileInputRef.current?.files 
-            ? Array.from(fileInputRef.current.files) 
-            : [];
-            
-          const uploadedUrls = await uploadFiles(files);
+          const uploadedUrls = await uploadFiles();
           
           if (uploadedUrls.length > 0) {
             imageUrl = uploadedUrls[0];

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,7 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
     }
   });
   
-  const { fileInputRef, handleFileSelect, handleFileChange, previews, uploadFiles } = useFileUpload();
+  const { fileInputRef, handleFileSelect, handleFileChange, previews, uploadFiles } = useFileUpload(orderId);
   
   const handleSubmit = async (data: ItemDetailsFormValues) => {
     try {
@@ -44,11 +43,7 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
           imageUrl = previews[0];
         } else {
           // Sonst laden wir die Datei hoch
-          const files = fileInputRef.current?.files 
-            ? Array.from(fileInputRef.current.files) 
-            : [];
-            
-          const uploadedUrls = await uploadFiles(files);
+          const uploadedUrls = await uploadFiles(user?.id);
           
           if (uploadedUrls.length > 0) {
             imageUrl = uploadedUrls[0];
