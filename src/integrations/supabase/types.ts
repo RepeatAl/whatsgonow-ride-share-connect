@@ -955,6 +955,7 @@ export type Database = {
           order_id: string
           preferred_vehicle_type: string
           price: number
+          published_at: string | null
           qr_code_token: string | null
           security_measures: string
           sender_id: string | null
@@ -977,6 +978,7 @@ export type Database = {
           order_id?: string
           preferred_vehicle_type?: string
           price?: number
+          published_at?: string | null
           qr_code_token?: string | null
           security_measures?: string
           sender_id?: string | null
@@ -999,6 +1001,7 @@ export type Database = {
           order_id?: string
           preferred_vehicle_type?: string
           price?: number
+          published_at?: string | null
           qr_code_token?: string | null
           security_measures?: string
           sender_id?: string | null

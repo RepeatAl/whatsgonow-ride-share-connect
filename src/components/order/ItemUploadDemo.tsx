@@ -1,17 +1,42 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ItemDetailsUpload } from "./form-sections/ItemDetailsUpload";
 import { ItemDetails } from "@/hooks/useItemDetails";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { v4 as uuidv4 } from "uuid";
+import { PublishOrderButton } from "./PublishOrderButton";
+import { supabase } from "@/lib/supabaseClient";
 
 const ItemUploadDemo = () => {
   const [savedItems, setSavedItems] = useState<ItemDetails[]>([]);
   // Demo-Auftrags-ID, in der Produktion würde diese vom tatsächlichen Auftrag kommen
   const demoOrderId = uuidv4();
+  const [isPublished, setIsPublished] = useState(false);
+
+  // Überprüfen, ob der Auftrag bereits veröffentlicht wurde
+  useEffect(() => {
+    const checkPublishedStatus = async () => {
+      // In einem echten Szenario würde hier der Auftragsstatus aus der Datenbank geladen
+      // Für die Demo simulieren wir nur den Status
+      const { data } = await supabase
+        .from("orders")
+        .select("published_at")
+        .eq("id", demoOrderId)
+        .single();
+
+      setIsPublished(!!data?.published_at);
+    };
+
+    checkPublishedStatus();
+  }, [demoOrderId]);
 
   const handleSaveItem = (item: ItemDetails) => {
     setSavedItems([...savedItems, { ...item }]);
+  };
+
+  const handlePublishSuccess = () => {
+    setIsPublished(true);
+    // Hier könnten weitere Aktionen nach erfolgreicher Veröffentlichung erfolgen
   };
 
   return (
@@ -23,9 +48,16 @@ const ItemUploadDemo = () => {
           Hier können Sie Artikel mit Titel, Beschreibung und Bild hinzufügen.
         </p>
         
-        <p className="text-sm text-gray-500 mb-4">
-          Demo Auftrags-ID: {demoOrderId}
-        </p>
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-sm text-gray-500">
+            Demo Auftrags-ID: {demoOrderId}
+          </p>
+          <PublishOrderButton 
+            orderId={demoOrderId}
+            isPublished={isPublished}
+            onSuccess={handlePublishSuccess}
+          />
+        </div>
         
         <ItemDetailsUpload onSaveItem={handleSaveItem} orderId={demoOrderId} />
         
@@ -56,6 +88,6 @@ const ItemUploadDemo = () => {
       </div>
     </div>
   );
-};
+}
 
 export default ItemUploadDemo;
