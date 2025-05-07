@@ -1,4 +1,3 @@
-
 import { RouteConfig } from "@/components/routing/AppRoutes";
 import { lazy } from "react";
 import { Navigate } from "react-router-dom";
@@ -47,6 +46,7 @@ const MyOrders = lazy(() => import("@/pages/orders/MyOrders"));
 const Inbox = lazy(() => import("@/pages/Inbox"));
 const Messages = lazy(() => import("@/pages/Messages"));
 const FindDriverPage = lazy(() => import("@/pages/find-driver"));
+const OrderPreviewPage = lazy(() => import("@/pages/driver/OrderPreviewPage"));
 
 export const routes: RouteConfig[] = [
   // Public routes
@@ -141,6 +141,11 @@ export const routes: RouteConfig[] = [
   {
     path: "/find-driver/all",
     element: <FindDriverPage />,
+    protected: true,
+  },
+  {
+    path: "/driver/order-preview",
+    element: <OrderPreviewPage />,
     protected: true,
   },
 ];
