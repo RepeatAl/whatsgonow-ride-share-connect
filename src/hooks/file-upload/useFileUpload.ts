@@ -1,54 +1,113 @@
-
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useUploadHandler } from "../useUploadHandler";
+import { useFileUploader } from "./useFileUploader";
+import { useFilePreviews } from "./useFilePreviews";
+import { validateFile } from "./fileValidation";
 import { v4 as uuidv4 } from "uuid";
+import { MAX_FILES } from "./constants";
+import { toast } from "sonner";
 
-export function useFileUpload() {
-  const [previews, setPreviews] = useState<(string | ArrayBuffer)[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
+  // Get a session ID for upload tracking
   const sessionId = uuidv4();
+  
+  // Basic file input handling
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Simplify uploadHandler to avoid repeating the session ID
-  const { uploadFile, isUploading, currentProgress, error } = useUploadHandler({
+  // Initialize the file uploader hook
+  const { uploadFile, uploadFiles: uploadFilesToStorage, isUploading, uploadProgress } = useFileUploader();
+  
+  // Initialize the file previews hook
+  const { 
+    previews, 
+    updatePreviews, 
+    removePreview: removeFile, 
+    clearPreviews,
+    canTakeMore,
+    nextPhotoIndex
+  } = useFilePreviews(initialUrls);
+  
+  // From uploadHandler - keep this for compatibility
+  const { error } = useUploadHandler({
     sessionId,
     onProgress: (progress) => console.log("Upload progress:", progress),
   });
 
-  const handleFileSelect = () => {
+  // Handle file select button click
+  const handleFileSelect = useCallback(() => {
+    if (!canTakeMore) {
+      toast.error(`Maximal ${MAX_FILES} Bilder erlaubt`);
+      return;
+    }
     fileInputRef.current?.click();
-  };
+  }, [canTakeMore]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle file input change
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0) return;
+    if (!files?.length) return;
 
-    // Create URL previews for each file
-    const previewUrls: (string | ArrayBuffer)[] = [];
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result) {
-          setPreviews((prev) => [...prev, reader.result as string | ArrayBuffer]);
-          previewUrls.push(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  // Update the uploadFiles function to only accept files parameter
-  const uploadFiles = async (files: File[]): Promise<string[]> => {
-    try {
-      // Upload each file and collect the URLs
-      const urls: string[] = [];
-      for (const file of files) {
-        const url = await uploadFile(file);
-        urls.push(url);
+    const newFiles: File[] = [];
+    const newUrls: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      if (validateFile(files[i])) {
+        newFiles.push(files[i]);
+        const url = URL.createObjectURL(files[i]);
+        newUrls.push(url);
       }
-      return urls;
+    }
+    
+    updatePreviews(newUrls);
+    
+    // Reset the file input
+    e.target.value = '';
+  }, [updatePreviews]);
+
+  // Handle capture from camera
+  const handleCapture = useCallback((file: File, previewUrl: string) => {
+    if (validateFile(file)) {
+      updatePreviews([previewUrl]);
+    }
+  }, [updatePreviews]);
+
+  // Handle mobile photos upload completion
+  const handleMobilePhotosComplete = useCallback((urls: string[]) => {
+    updatePreviews(urls);
+  }, [updatePreviews]);
+
+  // Upload all files
+  const uploadFiles = async (userId?: string): Promise<string[]> => {
+    try {
+      setIsLoading(true);
+      
+      if (!fileInputRef.current?.files?.length && previews.length === 0) {
+        return [];
+      }
+      
+      // Get files from file input
+      const files = fileInputRef.current?.files 
+        ? Array.from(fileInputRef.current.files) 
+        : [];
+      
+      // Make sure we have a valid order ID
+      const effectiveOrderId = orderId || uuidv4();
+      
+      // Upload the files to storage
+      const uploadedUrls = await uploadFilesToStorage(
+        effectiveOrderId, 
+        userId, 
+        files
+      );
+      
+      return uploadedUrls;
     } catch (error) {
       console.error("Error uploading files:", error);
+      toast.error("Fehler beim Hochladen der Dateien");
       return [];
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,10 +115,17 @@ export function useFileUpload() {
     fileInputRef,
     handleFileSelect,
     handleFileChange,
-    previews,
+    handleCapture,
+    handleMobilePhotosComplete,
+    removeFile,
     uploadFiles,
+    previews,
     isUploading,
-    currentProgress,
+    isLoading,
+    uploadProgress,
+    currentProgress: uploadProgress,
+    canTakeMore,
+    nextPhotoIndex,
     error,
   };
 }

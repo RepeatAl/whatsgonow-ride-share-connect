@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MAX_FILES } from "@/hooks/file-upload/constants";
 
 interface PreviewGridProps {
-  previews: (string | undefined)[];
+  previews: (string | ArrayBuffer | undefined)[];
   onRemove: (index: number) => void;
   onSave?: () => void;
   isUploading?: boolean;
@@ -52,7 +52,7 @@ export const PreviewGrid = memo(({
             {preview ? (
               <>
                 <img
-                  src={preview}
+                  src={typeof preview === "string" ? preview : ""}
                   alt={`Foto ${idx + 1}`}
                   className="w-full h-full object-cover rounded transition-opacity duration-200"
                   loading="lazy"
