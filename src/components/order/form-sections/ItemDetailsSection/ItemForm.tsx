@@ -1,25 +1,17 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { itemDetailsSchema, ItemDetailsFormValues } from "./schema";
+import { ItemFormProps } from "./types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
-import { useAuth } from "@/contexts/AuthContext";
-import { ItemDetails } from "@/hooks/useItemDetails";
-import { itemDetailsSchema, ItemDetailsFormValues } from "./ItemDetailsSection/schema";
+import { toast } from "sonner";
 
-interface ItemDetailsUploadProps {
-  onSaveItem: (item: ItemDetails) => void;
-  orderId?: string;
-}
-
-export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProps) => {
-  const { user } = useAuth();
+export function ItemForm({ onSaveItem, orderId }: ItemFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<ItemDetailsFormValues>({
@@ -44,7 +36,7 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
           imageUrl = previews[0];
         } else {
           // Sonst laden wir die Datei hoch
-          const uploadedUrls = await uploadFiles(orderId || "temp", user?.id, 
+          const uploadedUrls = await uploadFiles(orderId || "temp", undefined, 
             fileInputRef.current?.files ? Array.from(fileInputRef.current.files) : []);
           
           if (uploadedUrls.length > 0) {
@@ -58,6 +50,7 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
         title: data.title,
         description: data.description,
         imageUrl: imageUrl || undefined,
+        orderId
       };
       
       // An Parent-Komponente übergeben
@@ -69,6 +62,8 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
         description: "",
       });
       
+      toast.success("Artikel hinzugefügt");
+      
     } catch (error) {
       console.error("Fehler beim Speichern des Artikels:", error);
       toast.error("Fehler beim Speichern des Artikels");
@@ -76,7 +71,7 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
       setIsSubmitting(false);
     }
   };
-
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -113,7 +108,7 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
         />
         
         <div className="space-y-2">
-          <Label>Artikelbild</Label>
+          <label className="text-sm font-medium">Artikelbild</label>
           <div className="flex gap-4">
             <div 
               className="border border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors w-full h-32"
@@ -143,7 +138,14 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
           </div>
         </div>
         
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-between pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => form.reset()}
+          >
+            Zurücksetzen
+          </Button>
           <Button 
             type="submit"
             disabled={isSubmitting}
@@ -154,4 +156,4 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
       </form>
     </Form>
   );
-};
+}
