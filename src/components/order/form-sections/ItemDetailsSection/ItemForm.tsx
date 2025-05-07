@@ -36,8 +36,11 @@ export function ItemForm({ onSaveItem, orderId }: ItemFormProps) {
           imageUrl = previews[0];
         } else {
           // Sonst laden wir die Datei hoch
-          const uploadedUrls = await uploadFiles(orderId || "temp", undefined, 
-            fileInputRef.current?.files ? Array.from(fileInputRef.current.files) : []);
+          const files = fileInputRef.current?.files 
+            ? Array.from(fileInputRef.current.files) 
+            : [];
+            
+          const uploadedUrls = await uploadFiles(files);
           
           if (uploadedUrls.length > 0) {
             imageUrl = uploadedUrls[0];
@@ -116,7 +119,7 @@ export function ItemForm({ onSaveItem, orderId }: ItemFormProps) {
             >
               {previews[0] ? (
                 <img 
-                  src={previews[0]} 
+                  src={previews[0] as string} 
                   alt="Artikelbild" 
                   className="max-h-full max-w-full object-contain" 
                 />
