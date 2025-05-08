@@ -17,11 +17,17 @@ export function PublishOrderButton({
   onSuccess 
 }: PublishOrderButtonProps) {
   const [isPublishing, setIsPublishing] = useState(false);
+  // Lokaler State für optimistisches UI-Update
+  const [localIsPublished, setLocalIsPublished] = useState(isPublished);
 
   const handlePublish = async () => {
-    if (isPublished || isPublishing) return;
+    // Nichts tun wenn bereits veröffentlicht oder gerade im Veröffentlichungsprozess
+    if (localIsPublished || isPublishing) return;
 
+    // Optimistisches UI-Update
+    setLocalIsPublished(true);
     setIsPublishing(true);
+    
     try {
       const result = await publishOrder(orderId);
       
@@ -29,9 +35,13 @@ export function PublishOrderButton({
         toast.success("Auftrag veröffentlicht – Fahrer werden informiert");
         if (onSuccess) onSuccess();
       } else {
+        // Bei Fehler den lokalen Status zurücksetzen
+        setLocalIsPublished(false);
         toast.error(result.error || "Fehler beim Veröffentlichen");
       }
     } catch (error) {
+      // Bei Exception den lokalen Status zurücksetzen
+      setLocalIsPublished(false);
       console.error("Fehler beim Veröffentlichen:", error);
       toast.error("Unerwarteter Fehler beim Veröffentlichen");
     } finally {
@@ -42,8 +52,8 @@ export function PublishOrderButton({
   return (
     <Button
       onClick={handlePublish}
-      disabled={isPublished || isPublishing}
-      variant={isPublished ? "outline" : "brand"}
+      disabled={localIsPublished || isPublishing}
+      variant={localIsPublished ? "outline" : "brand"}
       className="flex items-center gap-2"
     >
       {isPublishing ? (
@@ -51,7 +61,7 @@ export function PublishOrderButton({
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>Wird veröffentlicht...</span>
         </>
-      ) : isPublished ? (
+      ) : localIsPublished ? (
         <span>Bereits veröffentlicht</span>
       ) : (
         <>

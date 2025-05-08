@@ -43,12 +43,28 @@ export function DriverOrderPreview() {
 
     loadOrders();
 
-    // Realtime subscription
+    // Optimierte Realtime-Subscription
+    // Beobachte nur relevante Änderungen an Orders
     const channel = supabase
       .channel("driver-order-preview")
       .on(
         "postgres_changes", 
-        { event: "*", schema: "public", table: "orders" }, 
+        { 
+          event: "UPDATE", 
+          schema: "public", 
+          table: "orders",
+          filter: "status=eq.open" 
+        }, 
+        () => loadOrders()
+      )
+      .on(
+        "postgres_changes", 
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "orders",
+          filter: "status=eq.open" 
+        }, 
         () => loadOrders()
       )
       .subscribe();

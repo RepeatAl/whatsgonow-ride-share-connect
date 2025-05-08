@@ -10,6 +10,7 @@ export type Order = {
   sender_id?: string;
   verified_at?: string;
   region?: string;
+  published_at?: string; // Hinzugefügt für Veröffentlichungsstatus
 };
 
 export type UserWithRole = {
@@ -17,4 +18,3 @@ export type UserWithRole = {
   role: string;
   region?: string;
 };
-

@@ -47,7 +47,8 @@ serve(async (req) => {
     }
 
     // Request-Body parsen
-    const { orderId } = await req.json();
+    const reqBody = await req.json();
+    const { orderId } = reqBody;
 
     if (!orderId) {
       return new Response(
@@ -65,7 +66,7 @@ serve(async (req) => {
     const { data: orderData, error: orderError } = await supabaseClient
       .from("orders")
       .select("*")
-      .eq("id", orderId)
+      .eq("order_id", orderId)
       .single();
 
     if (orderError) {
@@ -110,7 +111,7 @@ serve(async (req) => {
         status: "open",
         published_at: new Date().toISOString(),
       })
-      .eq("id", orderId);
+      .eq("order_id", orderId);
 
     if (updateError) {
       console.error("Fehler beim Veröffentlichen des Auftrags:", updateError);
