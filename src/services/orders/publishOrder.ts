@@ -1,6 +1,7 @@
 
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
+import { matchDriversToOrder } from "@/services/matching/matchDriversToOrder";
 
 interface PublishOrderResult {
   success: boolean;
@@ -21,8 +22,13 @@ export async function publishOrder(orderId: string): Promise<PublishOrderResult>
       };
     }
 
-    // Optional: Hier könnte später das Matching gestartet werden
-    // await matchDriversToOrder(orderId);
+    // Nach erfolgreicher Veröffentlichung das Matching starten
+    try {
+      await matchDriversToOrder(orderId);
+    } catch (matchError) {
+      // Matching-Fehler loggen, aber den Erfolg der Veröffentlichung nicht beeinflussen
+      console.warn("Matching konnte nicht durchgeführt werden:", matchError);
+    }
 
     return { 
       success: true 
