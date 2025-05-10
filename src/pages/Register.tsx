@@ -8,6 +8,13 @@ import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
+/**
+ * Registration page component
+ * 
+ * SECURITY NOTE: This component handles users who have been redirected here
+ * because they have a valid authentication session but no associated profile.
+ * The security redirect happens in ProfileCheck.tsx using hasValidProfile() utility.
+ */
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,7 +31,7 @@ const Register = () => {
       }
       
       // If user has a session but no profile, show the form with a notice
-      // This handles users redirected from ProfileCheck
+      // This handles users redirected from ProfileCheck - SECURITY FIX
       if (user && !profile) {
         setIsRedirectedUser(true);
         setShowForm(true);

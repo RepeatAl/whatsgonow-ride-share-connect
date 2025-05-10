@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { hasValidProfile } from "@/utils/profile-check";
 
 export function ProfileCheck({ children }: { children: React.ReactNode }) {
   const { profile, loading, isInitialLoad, user } = useAuth();
@@ -13,7 +14,9 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
     if (loading || isInitialLoad) return;
 
     // First check for users with valid session but no profile - SECURITY FIX
-    if (user && !profile) {
+    // Verhindert, dass eingeloggte User ohne verknüpftes Profil geschützte Seiten betreten
+    // Essentielle Absicherung bei Supabase-basierten Architekturen
+    if (user && !hasValidProfile(profile)) {
       console.warn("⚠️ Kein Profil gefunden – Weiterleitung zu /register");
       navigate("/register", { state: { from: location.pathname }, replace: true });
       return;

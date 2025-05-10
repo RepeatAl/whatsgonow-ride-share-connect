@@ -7,6 +7,11 @@ import { fetchUserRegion } from "@/utils/regionUtils";
 
 /**
  * Hook to handle user profile fetching and management
+ * 
+ * SECURITY NOTE: This hook implements a critical security check that ensures 
+ * authenticated users without profiles cannot access protected routes.
+ * When a user has a valid session but no corresponding profile in the database,
+ * this hook sets profile to null, which triggers the security redirect in ProfileCheck.tsx.
  */
 export function useProfile(user: User | null) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -78,6 +83,8 @@ export function useProfile(user: User | null) {
         setRegion(transformedProfile.region || null);
         console.log("✅ Profile loaded successfully");
       } else {
+        // SECURITY NOTE: Critical to set profile to null when no profile exists
+        // This triggers the security redirect in ProfileCheck.tsx
         console.warn("⚠️ Kein Profil gefunden für User", user.id);
         setProfile(null);
       }

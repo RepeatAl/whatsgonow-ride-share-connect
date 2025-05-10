@@ -28,3 +28,13 @@ Der Prozess umfasst:
 - Öffentliche Routen (z.B. Login, Registrierung, Voranmeldung) sind ohne Authentifizierung zugänglich
 - Geschützte Routen erfordern eine gültige Authentifizierung
 - Die Routenkonfiguration in `routes.tsx` definiert den Zugriff mittels `public` und `protected` Flags
+
+## 🔒 Profile-Sicherheitsprüfung
+- Authentifizierte Nutzer ohne Profil werden sofort auf /register umgeleitet
+- Implementiert via ProfileCheck.tsx + useProfile.ts + hasValidProfile() Utility
+- Ziel: Kein Zugriff auf geschützte Bereiche ohne gültiges Nutzerprofil
+- Diese Sicherheitsmaßnahme ist essentiell für Supabase-basierte Architekturen, da ein gültiges JWT-Token
+  allein nicht garantiert, dass ein entsprechender Profileintrag in der Datenbank vorhanden ist
+- Der hasValidProfile()-Check wird in ProfileCheck.tsx angewendet und verhindert Zugriff auf
+  alle geschützten Routen, solange kein vollständiges Profil existiert
+
