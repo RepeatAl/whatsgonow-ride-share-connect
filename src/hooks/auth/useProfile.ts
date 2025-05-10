@@ -78,7 +78,8 @@ export function useProfile(user: User | null) {
         setRegion(transformedProfile.region || null);
         console.log("✅ Profile loaded successfully");
       } else {
-        console.warn("⚠️ No profile found for user", user.id);
+        console.warn("⚠️ Kein Profil gefunden für User", user.id);
+        setProfile(null);
       }
 
       // Check if region is a test region

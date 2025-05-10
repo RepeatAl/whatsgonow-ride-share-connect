@@ -45,3 +45,8 @@ export const getMissingProfileFields = (profile: UserProfile | null): string[] =
     })
     .map(([_, label]) => label);
 };
+
+// Neue Hilfsfunktion zur Dokumentation der Sicherheitsmaßnahme
+export const hasValidProfile = (profile: UserProfile | null): boolean => {
+  return profile !== null;
+};

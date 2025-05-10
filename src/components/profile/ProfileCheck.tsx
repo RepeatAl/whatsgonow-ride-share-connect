@@ -12,7 +12,14 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading || isInitialLoad) return;
 
-    // First check for incomplete profile
+    // First check for users with valid session but no profile - SECURITY FIX
+    if (user && !profile) {
+      console.warn("⚠️ Kein Profil gefunden – Weiterleitung zu /register");
+      navigate("/register", { state: { from: location.pathname }, replace: true });
+      return;
+    }
+
+    // Then check for incomplete profile
     if (user && profile && !profile.profile_complete && location.pathname !== "/complete-profile") {
       navigate("/complete-profile", { state: { from: location.pathname }, replace: true });
       return;
@@ -63,22 +70,7 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="container max-w-md mx-auto py-20">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profil nicht gefunden</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center">
-              Dein Profil konnte nicht geladen werden. Bitte lade die Seite neu oder versuche es später erneut.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Removed the profile check display - we're now redirecting instead
 
   return <>{children}</>;
 }
