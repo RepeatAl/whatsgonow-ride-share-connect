@@ -1,0 +1,25 @@
+
+version: 2
+updates:
+  # Halte npm Pakete aktuell
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    # Gruppiere Updates, um die Anzahl der PRs zu reduzieren
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    # Ignoriere bestimmte Pakete, wenn nötig
+    # ignore:
+    #  - dependency-name: "lodash"
+    #    versions: ["^1.0.0"]
+
+  # Halte GitHub Actions aktuell
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5

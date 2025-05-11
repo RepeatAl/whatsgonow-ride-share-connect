@@ -38,3 +38,8 @@ Der Prozess umfasst:
 - Der hasValidProfile()-Check wird in ProfileCheck.tsx angewendet und verhindert Zugriff auf
   alle geschützten Routen, solange kein vollständiges Profil existiert
 
+## Dependency-Management & Sicherheit
+- Synchronität zwischen package.json und package-lock.json wird in CI automatisch validiert
+- Husky Pre-Commit-Hooks verhindern Commits mit nicht-synchronisierten Paketdateien
+- Post-Merge-Hooks stellen sicher, dass nach Dependency-Änderungen npm install ausgeführt wird
+- Regelmäßige Aktualisierungen durch Dependabot erhöhen die Sicherheit durch aktuelle Pakete

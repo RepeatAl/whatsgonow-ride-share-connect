@@ -9,15 +9,52 @@ on:
     paths:
       - '**/*.ts'
       - '**/*.tsx'
+      - 'package.json'
+      - 'package-lock.json'
 
 jobs:
+  validate-package-files:
+    runs-on: ubuntu-latest
+    name: Validate Package Files
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Validate package files
+      run: |
+        if ! npm ci --dry-run > /dev/null; then
+          echo "❌ package.json and package-lock.json are not in sync!"
+          echo "Run 'npm install' locally and commit the updated package-lock.json file."
+          exit 1
+        else
+          echo "✅ Package files are in sync!"
+        fi
+        
   check-xrechnung-params:
+    needs: validate-package-files
     runs-on: ubuntu-latest
     name: Check XRechnung Parameter Style
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies (with fallback)
+      run: |
+        npm ci || (echo "npm ci failed, falling back to npm install..." && npm install)
       
     - name: Run grep check for xRechnungService method calls
       run: |
@@ -56,16 +93,4 @@ jobs:
     - name: Run ESLint for xRechnung params
       if: always()  # Ausführen, auch wenn der grep-Check fehlschlägt
       run: |
-        npm ci
-        echo 'module.exports = {
-          extends: ["./.eslintrc.js"],
-          rules: {
-            "xrechnung-object-params": "error"
-          },
-          plugins: ["custom-rules"],
-          settings: {
-            "custom-rules/dir": "./scripts/eslint-rules"
-          }
-        }' > .eslintrc-xrechnung.js
-        
         npx eslint --no-eslintrc -c .eslintrc-xrechnung.js --plugin custom-rules --rule 'custom-rules/xrechnung-object-params: error' --rulesdir ./scripts/eslint-rules/ src/**/*.{ts,tsx}

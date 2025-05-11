@@ -1,0 +1,39 @@
+
+name: Package Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  validate-package-files:
+    runs-on: ubuntu-latest
+    name: Validate package.json and package-lock.json sync
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Validate package files
+      run: |
+        if ! npm ci --dry-run > /dev/null; then
+          echo "❌ package.json and package-lock.json are not in sync!"
+          echo "Run 'npm install' locally and commit the updated package-lock.json file."
+          exit 1
+        else
+          echo "✅ Package files are in sync!"
+        fi

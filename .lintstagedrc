@@ -1,0 +1,10 @@
+
+{
+  "*.{js,jsx,ts,tsx}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "package.json": [
+    "node -e \"if(require('./package-lock.json').lockfileVersion !== 3) { console.log('⚠️ package-lock.json muss aktualisiert werden'); process.exit(1); }\""
+  ]
+}

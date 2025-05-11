@@ -1,3 +1,4 @@
+
 # Deployment Strategy – Whatsgonow
 
 Dieses Dokument beschreibt die geplante Deployment-Strategie für die Crowd-Logistikplattform Whatsgonow. Ziel ist ein sicheres, automatisiertes und skalierbares Ausrollen der Anwendung in der Cloud, beginnend mit dem MVP und erweitert im Rahmen der Post-MVP-Roadmap.
@@ -34,7 +35,7 @@ Dieses Dokument beschreibt die geplante Deployment-Strategie für die Crowd-Logi
 
 ### Schritte:
 1. **Push auf `main`** → Trigger für Build & Tests
-2. **Linting / Type Checking** (z. B. ESLint, TypeScript)
+2. **Linting / Type Checking** (z. B. ESLint, TypeScript)
 3. **Build** (Next.js oder Vite Build)
 4. **Deployment zu Elastic Beanstalk**
 5. **Slack/Discord-Notification** bei Erfolg oder Fehler
@@ -85,7 +86,29 @@ NEXT_PUBLIC_MAPBOX_TOKEN=...
 
 ## 8. Weiterentwicklung
 
-In Phase 7 („Go Beyond“) folgt:
+In Phase 7 („Go Beyond") folgt:
 - Containerisierung mit Docker
 - Migration zu Kubernetes (EKS)
 - Infrastruktur als Code (Terraform/CloudFormation)
+
+---
+
+## 9. Dependency Management & CI/CD
+
+### 9.1 Package-Validierung
+
+- Automatische Prüfung der Synchronisation zwischen `package.json` und `package-lock.json` via GitHub Actions
+- Pre-Commit-Hooks mit Husky und lint-staged zur Validierung von Änderungen
+- Post-Merge-Hook für automatische Dependency-Installation bei package.json-Änderungen
+
+### 9.2 Dependabot-Integration
+
+- Wöchentliche Prüfung auf Aktualisierungen von npm-Paketen
+- Automatische Pull Requests für Paket-Updates
+- Gruppierung von Updates, um die Anzahl der PRs zu reduzieren
+
+### 9.3 Best Practices
+
+- Verwende `npm ci` in CI/CD-Umgebungen für reproduzierbare Builds
+- Validiere immer die Synchronität von package.json und package-lock.json
+- Integriere Sicherheitschecks für Abhängigkeiten in den CI-Workflow
