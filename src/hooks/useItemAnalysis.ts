@@ -80,13 +80,13 @@ export function useItemAnalysis() {
     if (!suggestion) return;
 
     if (suggestion.title) {
-      // Wir verwenden jetzt einen Type Cast, um TypeScript mitzuteilen, dass wir wissen was wir tun
-      form.setValue('title' as unknown as keyof T, suggestion.title as any);
+      // Verwenden eines String-Literals mit Type Assertion für Path<T>
+      form.setValue('title' as any, suggestion.title);
     }
 
     if (suggestion.category) {
-      // Hier ebenfalls ein Type Cast für die Category
-      form.setValue('category' as unknown as keyof T, suggestion.category as any);
+      // Verwenden eines String-Literals mit Type Assertion für Path<T>
+      form.setValue('category' as any, suggestion.category);
     }
 
     // Weitere Felder könnten hier ebenfalls befüllt werden
