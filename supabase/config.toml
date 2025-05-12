@@ -41,5 +41,5 @@ enabled = true
 [edge_functions]
 enabled = true
 
-[functions.publish-order]
+[functions.analyze-item-photo]
 verify_jwt = true

@@ -1,16 +1,26 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+
+import React, { useState, useCallback } from "react";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
-import { useAuth } from "@/contexts/AuthContext";
+import { Form } from "@/components/ui/form";
+import { Card, CardContent } from "@/components/ui/card";
+import { ImageUploader } from "../../ImageUploader";
+import { ItemPhotoAnalysis } from "../ItemPhotoAnalysis";
+import { AnalysisResultDisplay } from "./components/AnalysisResultDisplay";
 import { ItemDetails } from "@/hooks/useItemDetails";
-import { itemDetailsSchema, ItemDetailsFormValues } from "./ItemDetailsSection/schema";
+
+// Schema für das Formular
+const itemDetailsSchema = z.object({
+  title: z.string().min(2, "Titel muss mindestens 2 Zeichen lang sein"),
+  description: z.string().optional(),
+});
+
+type ItemDetailsFormValues = z.infer<typeof itemDetailsSchema>;
 
 interface ItemDetailsUploadProps {
   onSaveItem: (item: ItemDetails) => void;
@@ -18,135 +28,121 @@ interface ItemDetailsUploadProps {
 }
 
 export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProps) => {
-  const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
   
   const form = useForm<ItemDetailsFormValues>({
     resolver: zodResolver(itemDetailsSchema),
     defaultValues: {
       title: "",
       description: "",
-    }
+    },
   });
-  
-  const { fileInputRef, handleFileSelect, handleFileChange, previews, uploadFiles } = useFileUpload(orderId);
-  
-  const handleSubmit = async (data: ItemDetailsFormValues) => {
-    try {
-      setIsSubmitting(true);
-      
-      // Wenn es ein Bild gibt, laden wir es hoch
-      let imageUrl = "";
-      if (previews[0]) {
-        // Wenn es eine URL ist, verwenden wir sie direkt
-        if (typeof previews[0] === "string" && previews[0].startsWith("http")) {
-          imageUrl = previews[0];
-        } else {
-          // Sonst laden wir die Datei hoch
-          const uploadedUrls = await uploadFiles(user?.id);
-          
-          if (uploadedUrls.length > 0) {
-            imageUrl = uploadedUrls[0];
-          }
-        }
-      }
-      
-      // Artikel-Objekt erstellen
-      const newItem = {
-        title: data.title,
-        description: data.description,
-        imageUrl: imageUrl || undefined,
-      };
-      
-      // An Parent-Komponente übergeben
-      onSaveItem(newItem);
-      
-      // Formular zurücksetzen
-      form.reset({
-        title: "",
-        description: "",
-      });
-      
-    } catch (error) {
-      console.error("Fehler beim Speichern des Artikels:", error);
-      toast.error("Fehler beim Speichern des Artikels");
-    } finally {
-      setIsSubmitting(false);
+
+  const handleUploadComplete = useCallback((url: string) => {
+    setUploadedImageUrl(url);
+  }, []);
+
+  const handleAnalysisComplete = useCallback((results: any) => {
+    console.log("Analysis results:", results);
+    setAnalysisResults(results);
+    
+    // Wenn eine Kategorie erkannt wurde, setze sie als Titel, falls leer
+    if (results.results?.categoryGuess && !form.getValues().title) {
+      form.setValue("title", results.results.categoryGuess);
     }
+  }, [form]);
+
+  const onSubmit = (data: ItemDetailsFormValues) => {
+    const newItem: ItemDetails = {
+      title: data.title,
+      description: data.description,
+      image_url: uploadedImageUrl,
+      category_suggestion: analysisResults?.results?.categoryGuess,
+      labels_raw: analysisResults?.results?.labels,
+      analysis_status: analysisResults ? 'success' : undefined,
+    };
+    
+    onSaveItem(newItem);
+    
+    // Formular zurücksetzen
+    form.reset();
+    setUploadedImageUrl("");
+    setAnalysisResults(null);
   };
+
+  // Generiere eine temporäre ID für die Analyse
+  const tempItemId = orderId ? `temp-${orderId}-${Date.now()}` : `temp-${Date.now()}`;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Titel*</FormLabel>
-              <FormControl>
-                <Input placeholder="z.B. Antiker Schrank" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Beschreibung</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Artikelbeschreibung eingeben..." 
-                  className="min-h-[120px]" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="space-y-2">
-          <Label>Artikelbild</Label>
-          <div className="flex gap-4">
-            <div 
-              className="border border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors w-full h-32"
-              onClick={handleFileSelect}
-            >
-              {previews[0] ? (
-                <img 
-                  src={previews[0] as string} 
-                  alt="Artikelbild" 
-                  className="max-h-full max-w-full object-contain" 
-                />
-              ) : (
-                <>
-                  <p className="text-gray-500 text-sm text-center">
-                    Klicken, um ein Bild hochzuladen
-                  </p>
-                </>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div>
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Artikelname*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Sofa" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-            <input 
-              type="file" 
-              ref={fileInputRef}
-              className="hidden" 
-              accept="image/*" 
-              onChange={handleFileChange}
             />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem className="mt-4">
+                  <FormLabel>Beschreibung (optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Detaillierte Beschreibung des Artikels..." 
+                      className="min-h-[120px]" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {analysisResults && (
+              <div className="mt-4">
+                <AnalysisResultDisplay 
+                  labels={analysisResults.results.labels}
+                  categoryGuess={analysisResults.results.categoryGuess}
+                  brandGuess={analysisResults.results.brandGuess}
+                  confidenceScores={analysisResults.results.confidenceScores}
+                />
+              </div>
+            )}
+          </div>
+          
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="p-4">
+                <ImageUploader onUploadComplete={handleUploadComplete} />
+              </CardContent>
+            </Card>
+            
+            {uploadedImageUrl && (
+              <ItemPhotoAnalysis 
+                itemId={tempItemId}
+                photoUrl={uploadedImageUrl}
+                onAnalysisComplete={handleAnalysisComplete}
+              />
+            )}
           </div>
         </div>
         
-        <div className="flex justify-end pt-4">
-          <Button 
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Wird gespeichert..." : "Artikel hinzufügen"}
+        <div className="flex justify-end">
+          <Button type="submit">
+            Artikel hinzufügen
           </Button>
         </div>
       </form>

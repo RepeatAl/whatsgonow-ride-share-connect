@@ -698,6 +698,47 @@ export type Database = {
           },
         ]
       }
+      item_analysis: {
+        Row: {
+          analysis_id: string
+          brand_guess: string | null
+          confidence_scores: Json | null
+          created_at: string | null
+          item_id: string | null
+          labels: Json | null
+          photo_url: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_id?: string
+          brand_guess?: string | null
+          confidence_scores?: Json | null
+          created_at?: string | null
+          item_id?: string | null
+          labels?: Json | null
+          photo_url?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_id?: string
+          brand_guess?: string | null
+          confidence_scores?: Json | null
+          created_at?: string | null
+          item_id?: string | null
+          labels?: Json | null
+          photo_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_analysis_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["item_id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -909,26 +950,35 @@ export type Database = {
       }
       order_items: {
         Row: {
+          analysis_status: string | null
+          category_suggestion: string | null
           created_at: string | null
           description: string | null
           image_url: string | null
           item_id: string
+          labels_raw: Json | null
           order_id: string | null
           title: string
         }
         Insert: {
+          analysis_status?: string | null
+          category_suggestion?: string | null
           created_at?: string | null
           description?: string | null
           image_url?: string | null
           item_id?: string
+          labels_raw?: Json | null
           order_id?: string | null
           title: string
         }
         Update: {
+          analysis_status?: string | null
+          category_suggestion?: string | null
           created_at?: string | null
           description?: string | null
           image_url?: string | null
           item_id?: string
+          labels_raw?: Json | null
           order_id?: string | null
           title?: string
         }
