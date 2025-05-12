@@ -80,13 +80,13 @@ export function useItemAnalysis() {
     if (!suggestion) return;
 
     if (suggestion.title) {
-      // Verwenden eines String-Literals mit Type Assertion für Path<T>
-      form.setValue('title' as any, suggestion.title);
+      // Beide Typen müssen mit `as any` umgewandelt werden, um die TypeScript-Fehler zu beheben
+      form.setValue('title' as any, suggestion.title as any);
     }
 
     if (suggestion.category) {
-      // Verwenden eines String-Literals mit Type Assertion für Path<T>
-      form.setValue('category' as any, suggestion.category);
+      // Beide Typen müssen mit `as any` umgewandelt werden, um die TypeScript-Fehler zu beheben
+      form.setValue('category' as any, suggestion.category as any);
     }
 
     // Weitere Felder könnten hier ebenfalls befüllt werden
