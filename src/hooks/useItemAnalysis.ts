@@ -72,6 +72,7 @@ export function useItemAnalysis() {
   };
 
   // Neue Funktion um Vorschläge auf das Formular anzuwenden
+  // Die generische Typisierung erlaubt uns, mit verschiedenen Formularstrukturen zu arbeiten
   const applySuggestionToForm = <T extends Record<string, any>>(
     suggestion: Suggestion, 
     form: UseFormReturn<T>
@@ -79,11 +80,13 @@ export function useItemAnalysis() {
     if (!suggestion) return;
 
     if (suggestion.title) {
-      form.setValue('title' as any, suggestion.title);
+      // Wir verwenden jetzt einen Type Cast, um TypeScript mitzuteilen, dass wir wissen was wir tun
+      form.setValue('title' as unknown as keyof T, suggestion.title as any);
     }
 
     if (suggestion.category) {
-      form.setValue('category' as any, suggestion.category);
+      // Hier ebenfalls ein Type Cast für die Category
+      form.setValue('category' as unknown as keyof T, suggestion.category as any);
     }
 
     // Weitere Felder könnten hier ebenfalls befüllt werden
