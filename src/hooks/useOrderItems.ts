@@ -39,7 +39,7 @@ export function useOrderItems(initialItems: ItemDetails[] = []) {
         order_id: orderId,
         title: item.title,
         description: item.description,
-        image_url: item.imageUrl
+        image_url: item.image_url
       }));
 
       // Einfügen der Artikel in die Datenbank

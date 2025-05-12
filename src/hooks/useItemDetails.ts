@@ -8,7 +8,7 @@ export interface ItemDetails {
   id?: string;
   title: string;
   description?: string;
-  image_url?: string;
+  image_url?: string;  // Konsistent image_url statt imageUrl verwenden
   analysis_status?: 'pending' | 'success' | 'error';
   category_suggestion?: string;
   labels_raw?: Record<string, number>;

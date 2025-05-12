@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -70,8 +69,7 @@ export function AnalysisResultDisplay({
                   </Badge>
                   <Progress 
                     value={confidence * 100} 
-                    className="h-1 w-20" 
-                    indicatorClassName="bg-green-600"
+                    className="h-1 w-20 bg-gray-200" 
                   />
                 </div>
               ))}

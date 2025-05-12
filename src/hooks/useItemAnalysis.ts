@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
+import { UseFormReturn } from "react-hook-form";
 
 interface AnalysisRequest {
   item_id: string;
@@ -18,9 +19,22 @@ interface AnalysisResult {
   };
 }
 
+export interface Suggestion {
+  title?: string;
+  category?: string;
+  brand?: string;
+  confidence?: {
+    title?: number;
+    category?: number;
+    brand?: number;
+    overall?: number;
+  };
+}
+
 export function useItemAnalysis() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [userFeedback, setUserFeedback] = useState<"accepted" | "rejected" | null>(null);
 
   const analyzeItemPhoto = async (data: AnalysisRequest) => {
     try {
@@ -57,9 +71,57 @@ export function useItemAnalysis() {
     }
   };
 
+  // Neue Funktion um Vorschläge auf das Formular anzuwenden
+  const applySuggestionToForm = <T extends Record<string, any>>(
+    suggestion: Suggestion, 
+    form: UseFormReturn<T>
+  ) => {
+    if (!suggestion) return;
+
+    if (suggestion.title) {
+      form.setValue('title' as any, suggestion.title);
+    }
+
+    if (suggestion.category) {
+      form.setValue('category' as any, suggestion.category);
+    }
+
+    // Weitere Felder könnten hier ebenfalls befüllt werden
+
+    setUserFeedback("accepted");
+    toast.success("Vorschläge wurden übernommen");
+  };
+
+  // Funktion zum Ignorieren der Vorschläge
+  const ignoreSuggestion = () => {
+    setUserFeedback("rejected");
+    toast.info("Vorschläge wurden ignoriert");
+  };
+
+  // Funktion um ein Suggestion-Objekt aus dem Analyseergebnis zu erstellen
+  const createSuggestionFromAnalysis = (analysis: AnalysisResult | null): Suggestion | null => {
+    if (!analysis) return null;
+
+    return {
+      title: analysis.results.categoryGuess,
+      category: analysis.results.categoryGuess,
+      brand: analysis.results.brandGuess,
+      confidence: {
+        category: analysis.results.confidenceScores?.category,
+        brand: analysis.results.confidenceScores?.brand,
+        overall: analysis.results.confidenceScores?.overall
+      }
+    };
+  };
+
   return {
     analyzeItemPhoto,
     isAnalyzing,
-    analysisResult
+    analysisResult,
+    applySuggestionToForm,
+    ignoreSuggestion,
+    createSuggestionFromAnalysis,
+    userFeedback,
+    setUserFeedback
   };
 }

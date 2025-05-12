@@ -62,7 +62,7 @@ export function ItemPhotoAnalysis({ itemId, photoUrl, onAnalysisComplete }: Item
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Bildanalyse</span>
-          {analysisComplete && <Badge variant="success">Analysiert</Badge>}
+          {analysisComplete && <Badge variant="secondary">Analysiert</Badge>}
         </CardTitle>
         <CardDescription>
           KI-gestützte Erkennung von Kategorie & Eigenschaften

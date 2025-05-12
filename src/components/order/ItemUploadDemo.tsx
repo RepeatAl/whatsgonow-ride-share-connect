@@ -71,9 +71,9 @@ const ItemUploadDemo = () => {
                     <CardTitle>{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {item.imageUrl && (
+                    {item.image_url && (
                       <img 
-                        src={item.imageUrl} 
+                        src={item.image_url} 
                         alt={item.title} 
                         className="w-full h-48 object-cover rounded-md mb-3"
                       />

@@ -9,10 +9,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
-import { ImageUploader } from "../../ImageUploader";
+import ImageUploader from "../../ImageUploader";
 import { ItemPhotoAnalysis } from "../ItemPhotoAnalysis";
 import { AnalysisResultDisplay } from "./components/AnalysisResultDisplay";
 import { ItemDetails } from "@/hooks/useItemDetails";
+import { useItemAnalysis, Suggestion } from "@/hooks/useItemAnalysis";
+import { ItemAutoSuggestDisplay } from "./ItemDetailsSection/ItemAutoSuggestDisplay";
 
 // Schema für das Formular
 const itemDetailsSchema = z.object({
@@ -30,6 +32,13 @@ interface ItemDetailsUploadProps {
 export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProps) => {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
   const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const { 
+    userFeedback, 
+    setUserFeedback, 
+    applySuggestionToForm, 
+    ignoreSuggestion, 
+    createSuggestionFromAnalysis 
+  } = useItemAnalysis();
   
   const form = useForm<ItemDetailsFormValues>({
     resolver: zodResolver(itemDetailsSchema),
@@ -41,17 +50,32 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
 
   const handleUploadComplete = useCallback((url: string) => {
     setUploadedImageUrl(url);
-  }, []);
+    // Reset user feedback when new image is uploaded
+    setUserFeedback(null);
+  }, [setUserFeedback]);
 
   const handleAnalysisComplete = useCallback((results: any) => {
     console.log("Analysis results:", results);
     setAnalysisResults(results);
+    setUserFeedback(null); // Reset feedback state on new analysis
+  }, [setUserFeedback]);
+
+  const handleAcceptSuggestion = useCallback(() => {
+    if (!analysisResults) return;
     
-    // Wenn eine Kategorie erkannt wurde, setze sie als Titel, falls leer
-    if (results.results?.categoryGuess && !form.getValues().title) {
-      form.setValue("title", results.results.categoryGuess);
-    }
-  }, [form]);
+    const suggestion: Suggestion = {
+      title: analysisResults.results?.categoryGuess,
+      category: analysisResults.results?.categoryGuess,
+      brand: analysisResults.results?.brandGuess,
+      confidence: {
+        category: analysisResults.results?.confidenceScores?.category,
+        brand: analysisResults.results?.confidenceScores?.brand,
+        overall: analysisResults.results?.confidenceScores?.overall
+      }
+    };
+    
+    applySuggestionToForm(suggestion, form);
+  }, [analysisResults, applySuggestionToForm, form]);
 
   const onSubmit = (data: ItemDetailsFormValues) => {
     const newItem: ItemDetails = {
@@ -69,10 +93,27 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
     form.reset();
     setUploadedImageUrl("");
     setAnalysisResults(null);
+    setUserFeedback(null);
   };
 
   // Generiere eine temporäre ID für die Analyse
   const tempItemId = orderId ? `temp-${orderId}-${Date.now()}` : `temp-${Date.now()}`;
+
+  // Erstelle Vorschlagsobjekt aus Analyseergebnissen
+  const suggestion = analysisResults ? {
+    title: analysisResults.results?.categoryGuess,
+    category: analysisResults.results?.categoryGuess,
+    brand: analysisResults.results?.brandGuess,
+    confidence: {
+      category: analysisResults.results?.confidenceScores?.category,
+      brand: analysisResults.results?.confidenceScores?.brand,
+      overall: analysisResults.results?.confidenceScores?.overall
+    }
+  } : null;
+
+  const showSuggestions = analysisResults?.results && 
+                         analysisResults.results.categoryGuess && 
+                         analysisResults.results.labels;
 
   return (
     <Form {...form}>
@@ -111,6 +152,17 @@ export const ItemDetailsUpload = ({ onSaveItem, orderId }: ItemDetailsUploadProp
               )}
             />
             
+            {showSuggestions && suggestion && (
+              <div className="mt-4">
+                <ItemAutoSuggestDisplay
+                  suggestion={suggestion}
+                  onAccept={handleAcceptSuggestion}
+                  onIgnore={ignoreSuggestion}
+                  userFeedback={userFeedback}
+                />
+              </div>
+            )}
+
             {analysisResults && (
               <div className="mt-4">
                 <AnalysisResultDisplay 
