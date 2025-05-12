@@ -80,19 +80,27 @@ export function useItemAnalysis() {
     if (!suggestion) return;
 
     if (suggestion.title) {
-      // Fix: Beide Parameter werden als any typisiert
-      form.setValue('title' as any, suggestion.title as any, {
-        shouldDirty: true,
-        shouldTouch: true
-      });
+      // Verwende eine vollständige Type Assertion, um TypeScript-Fehler zu vermeiden
+      form.setValue(
+        'title' as unknown as keyof T & string, 
+        suggestion.title as unknown as any, 
+        {
+          shouldDirty: true,
+          shouldTouch: true
+        }
+      );
     }
 
     if (suggestion.category) {
-      // Fix: Beide Parameter werden als any typisiert
-      form.setValue('category' as any, suggestion.category as any, {
-        shouldDirty: true,
-        shouldTouch: true
-      });
+      // Verwende eine vollständige Type Assertion, um TypeScript-Fehler zu vermeiden
+      form.setValue(
+        'category' as unknown as keyof T & string, 
+        suggestion.category as unknown as any, 
+        {
+          shouldDirty: true,
+          shouldTouch: true
+        }
+      );
     }
 
     // Weitere Felder könnten hier ebenfalls befüllt werden
