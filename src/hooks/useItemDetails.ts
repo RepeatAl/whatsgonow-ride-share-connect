@@ -3,13 +3,14 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { AnalysisStatus } from "@/components/order/form-sections/ItemDetailsSection/types";
 
 export interface ItemDetails {
   id?: string;
   title: string;
   description?: string;
   image_url?: string;  // Konsistent image_url statt imageUrl verwenden
-  analysis_status?: 'pending' | 'success' | 'failed';
+  analysis_status?: AnalysisStatus; // Den importierten Typ verwenden
   category_suggestion?: string;
   labels_raw?: Record<string, number>;
 }

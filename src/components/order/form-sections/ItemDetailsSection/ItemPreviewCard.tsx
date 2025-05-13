@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, CheckCircle } from "lucide-react";
-import { ItemPreviewCardProps } from "./types";
+import { ItemPreviewCardProps, AnalysisStatus } from "./types";
 import { Badge } from "@/components/ui/badge";
 
 export function ItemPreviewCard({ item, index, onRemove }: ItemPreviewCardProps) {

@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { UseFormReturn } from "react-hook-form";
+import { AnalysisStatus } from "@/components/order/form-sections/ItemDetailsSection/types";
 
 interface AnalysisRequest {
   item_id: string;
@@ -29,7 +29,7 @@ export interface Suggestion {
     brand?: number;
     overall?: number;
   };
-  analysis_status?: 'pending' | 'success' | 'failed';
+  analysis_status?: AnalysisStatus; // Den importierten Typ verwenden
 }
 
 export function useItemAnalysis() {

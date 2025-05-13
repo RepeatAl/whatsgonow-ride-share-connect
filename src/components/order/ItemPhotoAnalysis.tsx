@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Image, Check, AlertCircle } from "lucide-react";
 import { useItemAnalysis } from "@/hooks/useItemAnalysis";
+import { AnalysisStatus } from "./form-sections/ItemDetailsSection/types";
 
 interface ItemPhotoAnalysisProps {
   itemId: string;

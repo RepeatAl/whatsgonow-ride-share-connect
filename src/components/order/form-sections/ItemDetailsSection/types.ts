@@ -2,12 +2,15 @@
 import { UseFormReturn } from "react-hook-form";
 import { CreateOrderFormValues } from "@/lib/validators/order";
 
+// Zentraler Enum für Analysestatus
+export type AnalysisStatus = 'pending' | 'success' | 'failed';
+
 export interface ItemDetails {
   title: string;
   description?: string;
-  image_url?: string;  // Changed from imageUrl to image_url for consistency
+  image_url?: string;
   orderId?: string;
-  analysis_status?: 'pending' | 'success' | 'failed'; // Added for optional badge display
+  analysis_status?: AnalysisStatus; // Verwende den neuen Typ
 }
 
 export interface ItemFormProps {
