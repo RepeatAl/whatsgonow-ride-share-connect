@@ -1,148 +1,121 @@
 
-import { useState, useEffect, ReactNode } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { QRCodeSVG } from "qrcode.react";
+import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/lib/supabaseClient";
-import { Smartphone } from "lucide-react";
 
 interface UploadQrCodeProps {
-  userId: string;
+  userId?: string;
   target: string;
-  onSessionCreated?: (sessionId: string) => void;
-  onComplete?: (files: string[]) => void;
-  children?: ReactNode;
+  onComplete?: (urls: string[]) => void;
+  children?: React.ReactNode;
+  compact?: boolean;
 }
 
-interface DatabaseUploadEvent {
-  session_id: string;
-  event_type: 'file_uploaded' | 'session_completed';
-  payload: {
-    file_url?: string;
-    files?: string[];
-  };
-}
-
-export function UploadQrCode({ userId, target, onSessionCreated, onComplete, children }: UploadQrCodeProps) {
+export const UploadQrCode: React.FC<UploadQrCodeProps> = ({
+  userId,
+  target,
+  onComplete,
+  children,
+  compact = false
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-  const { toast } = useToast();
+  const [uploadId, setUploadId] = useState("");
+  const [uploadUrls, setUploadUrls] = useState<string[]>([]);
 
+  // Generate a new upload ID when the component mounts or when isOpen changes
   useEffect(() => {
-    let channel: any;
+    if (isOpen) {
+      setUploadId(uuidv4());
+    }
+  }, [isOpen]);
 
-    if (sessionId) {
-      channel = supabase
-        .channel(`upload_events:${sessionId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'upload_events',
-            filter: `session_id=eq.${sessionId}`,
-          },
-          (payload) => {
-            const event = payload.new as DatabaseUploadEvent;
-            if (event.event_type === 'file_uploaded' && event.payload?.file_url) {
-              setUploadedFiles(prev => {
-                const newFiles = [...prev, event.payload.file_url!];
-                if (event.payload.files?.length === newFiles.length) {
-                  onComplete?.(newFiles);
-                  setIsOpen(false);
-                }
-                return newFiles;
-              });
-            }
+  // Listen for upload completion events
+  useEffect(() => {
+    if (!isOpen || !uploadId) return;
+    
+    const channel = supabase
+      .channel(`upload-${uploadId}`)
+      .on('broadcast', { event: 'upload-complete' }, (payload) => {
+        if (payload.payload && payload.payload.urls && Array.isArray(payload.payload.urls)) {
+          setUploadUrls(payload.payload.urls);
+          
+          if (onComplete) {
+            onComplete(payload.payload.urls);
           }
-        )
-        .subscribe();
-    }
-
+          
+          // Close the dialog after a short delay
+          setTimeout(() => {
+            setIsOpen(false);
+          }, 2000);
+        }
+      })
+      .subscribe();
+    
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      channel.unsubscribe();
     };
-  }, [sessionId, onComplete]);
+  }, [isOpen, uploadId, onComplete]);
 
-  const createSession = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('upload_sessions')
-        .insert({
-          user_id: userId,
-          target,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setSessionId(data.session_id);
-      onSessionCreated?.(data.session_id);
-      setIsOpen(true);
-    } catch (error) {
-      console.error('Error creating session:', error);
-      toast({
-        title: "Fehler",
-        description: "Session konnte nicht erstellt werden",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const qrCodeValue = sessionId ? 
-    JSON.stringify({
-      sessionId,
-      userId,
-      target
-    }) : "";
+  const qrCodeUrl = `${window.location.origin}/mobile-upload?target=${target}&id=${uploadId}${userId ? `&userId=${userId}` : ''}`;
 
   return (
     <>
-      <Button onClick={createSession} variant="outline" className="whitespace-nowrap">
-        <Smartphone className="h-4 w-4 mr-2" />
-        {children || "Mit Smartphone aufnehmen"}
-      </Button>
+      {compact ? (
+        <span onClick={() => setIsOpen(true)}>
+          {children || (
+            <Button 
+              type="button" 
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M8.5 8.5h.01" />
+                <path d="M15.5 15.5h.01" />
+                <path d="M8.5 15.5h.01" />
+                <path d="M15.5 8.5h.01" />
+              </svg>
+            </Button>
+          )}
+        </span>
+      ) : (
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => setIsOpen(true)}
+        >
+          {children || "Mit Smartphone aufnehmen"}
+        </Button>
+      )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>QR-Code scannen</DialogTitle>
+            <DialogTitle>Fotos mit dem Smartphone aufnehmen</DialogTitle>
+            <DialogDescription>
+              Scannen Sie diesen QR-Code mit Ihrem Smartphone, um Fotos direkt hochzuladen.
+            </DialogDescription>
           </DialogHeader>
-
-          <div className="flex flex-col items-center space-y-6 py-4">
-            {qrCodeValue && (
-              <QRCodeSVG 
-                value={qrCodeValue}
-                size={256}
-                includeMargin
-                level="M"
-              />
-            )}
-
-            <div className="text-sm text-muted-foreground text-center">
-              Scanne den QR-Code mit deinem Smartphone, um Fotos aufzunehmen
+          
+          <div className="flex items-center justify-center p-4">
+            <div className="bg-white p-4 rounded-lg">
+              <QRCodeSVG value={qrCodeUrl} size={200} />
             </div>
-
-            {uploadedFiles.length > 0 && (
-              <div className="grid grid-cols-4 gap-2 w-full">
-                {uploadedFiles.map((url, idx) => (
-                  <img 
-                    key={idx}
-                    src={url} 
-                    alt={`Upload ${idx + 1}`}
-                    className="w-full h-16 object-cover rounded"
-                  />
-                ))}
-              </div>
-            )}
           </div>
+          
+          {uploadUrls.length > 0 && (
+            <div className="bg-green-50 p-4 rounded-lg text-center">
+              <p className="text-green-700 font-medium">
+                {uploadUrls.length} Fotos erfolgreich hochgeladen!
+              </p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>
   );
-}
+};
