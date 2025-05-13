@@ -36,16 +36,14 @@ export function MultiItemSuggestionBox({
 
   // Handler für das Speichern eines Artikels
   const handleSaveArticle = (articleId: string, data: Partial<ArticleForm>) => {
-    if (finalizeArticle(articleId, 'draft')) {
-      toast.success("Artikel als Entwurf gespeichert");
-    }
+    finalizeArticle(articleId, 'draft');
+    toast.success("Artikel als Entwurf gespeichert");
   };
 
   // Handler für das Veröffentlichen eines Artikels
   const handlePublishArticle = (articleId: string) => {
-    if (finalizeArticle(articleId, 'published')) {
-      toast.success("Artikel bereit zur Veröffentlichung");
-    }
+    finalizeArticle(articleId, 'published');
+    toast.success("Artikel bereit zur Veröffentlichung");
   };
 
   // Handler für das Löschen eines Artikels
