@@ -1,3 +1,4 @@
+
 import { useState, useRef, useCallback } from "react";
 import { useUploadHandler } from "../useUploadHandler";
 import { useFileUploader } from "./useFileUploader";
@@ -6,7 +7,14 @@ import { validateFile } from "./fileValidation";
 import { v4 as uuidv4 } from "uuid";
 import { MAX_FILES } from "./constants";
 import { toast } from "sonner";
+import { ItemAnalysisResult } from "@/hooks/useItemAnalysis";
 
+export interface FileUploadResult {
+  fileUrl: string;
+  analysis: ItemAnalysisResult | null;
+}
+
+// Phase 4.5: Bulk Item Upload – vgl. docs/modules/item-upload-multiphoto.md
 export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
   // Get a session ID for upload tracking
   const sessionId = uuidv4();
@@ -14,9 +22,18 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
   // Basic file input handling
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Neuer Status für analysierte Bilder (Phase 4.5)
+  const [analyzedFiles, setAnalyzedFiles] = useState<FileUploadResult[]>([]);
 
   // Initialize the file uploader hook
-  const { uploadFile, uploadFiles: uploadFilesToStorage, isUploading, uploadProgress } = useFileUploader();
+  const { 
+    uploadFile, 
+    uploadFiles: uploadFilesToStorage, 
+    uploadAndAnalyzeImages, 
+    isUploading, 
+    uploadProgress 
+  } = useFileUploader();
   
   // Initialize the file previews hook
   const { 
@@ -111,6 +128,35 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
     }
   };
 
+  // Neue Funktion für Phase 4.5: Upload und Analyse mehrerer Bilder
+  const uploadAndAnalyzeMultipleImages = useCallback(async (userId?: string): Promise<FileUploadResult[]> => {
+    try {
+      setIsLoading(true);
+      
+      // Holen Sie die Dateien aus dem Datei-Eingabefeld
+      if (!fileInputRef.current?.files?.length) {
+        toast.error("Keine Dateien zum Hochladen ausgewählt");
+        return [];
+      }
+      
+      const files = Array.from(fileInputRef.current.files);
+      
+      // Analysiere jedes Bild einzeln
+      const results = await uploadAndAnalyzeImages(files, userId);
+      
+      // Speichere die Ergebnisse im lokalen Zustand
+      setAnalyzedFiles(results);
+      
+      return results;
+    } catch (error) {
+      console.error("Error uploading and analyzing files:", error);
+      toast.error("Fehler beim Hochladen und Analysieren der Dateien");
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, [uploadAndAnalyzeImages]);
+
   return {
     fileInputRef,
     handleFileSelect,
@@ -127,5 +173,8 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
     canTakeMore,
     nextPhotoIndex,
     error,
+    // Neue Funktionen für Phase 4.5
+    uploadAndAnalyzeMultipleImages,
+    analyzedFiles
   };
 }

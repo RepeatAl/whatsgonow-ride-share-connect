@@ -11,6 +11,8 @@ export interface ItemDetails {
   image_url?: string;
   orderId?: string;
   analysis_status?: AnalysisStatus; // Verwende den neuen Typ
+  id?: string; // Neue ID für die Identifikation
+  category?: string; // Kategorie für die Artikelsortierung
 }
 
 export interface ItemFormProps {
@@ -36,4 +38,29 @@ export interface ItemDetailsSectionProps {
   items?: ItemDetails[];
   onAddItem?: (item: ItemDetails) => void;
   onRemoveItem?: (index: number) => void;
+}
+
+// Neue Interfaces für Phase 4.5: Bulk Item Upload
+export interface ItemAnalysisCardProps {
+  imageUrl: string;
+  suggestion: any;
+  index: number;
+  onAccept: (index: number) => void;
+  onIgnore: (index: number) => void;
+}
+
+export interface ItemPhotoAnalysisGridProps {
+  analyzedImages: Array<{
+    fileUrl: string;
+    suggestion: any;
+  }>;
+  onAcceptImage: (index: number) => void;
+  onIgnoreImage: (index: number) => void;
+}
+
+export interface MultiItemSuggestionBoxProps {
+  suggestions: Record<string, any>;
+  onAccept: (imageUrl: string) => void;
+  onIgnore: (imageUrl: string) => void;
+  form: UseFormReturn<any>;
 }

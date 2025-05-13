@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
+import { ItemAnalysisResult, AnalysisRequest } from "@/hooks/useItemAnalysis";
 
 interface UseFileUploaderProps {
   onProgress?: (progress: number) => void;
@@ -123,9 +124,97 @@ export const useFileUploader = (props?: UseFileUploaderProps) => {
     }
   };
 
+  // Neue Funktion für Phase 4.5: Bilder hochladen und analysieren
+  const uploadAndAnalyzeImages = async (
+    files: File[],
+    userId?: string
+  ): Promise<{ fileUrl: string; analysis: ItemAnalysisResult | null }[]> => {
+    if (files.length === 0) {
+      return [];
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    const results: { fileUrl: string; analysis: ItemAnalysisResult | null }[] = [];
+    const tempOrderId = uuidv4(); // Temporäre ID für den Ordner
+    
+    try {
+      // Upload files one by one
+      for (const [index, file] of files.entries()) {
+        try {
+          // 1. Upload das Bild
+          const filePath = userId 
+            ? `${userId}/temp/${tempOrderId}/${uuidv4()}-${file.name}` 
+            : `temp/${tempOrderId}/${uuidv4()}-${file.name}`;
+          
+          const { error: uploadError, data } = await supabase.storage
+            .from(bucketName)
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: file.type,
+              metadata: {
+                owner: userId || ''
+              }
+            });
+            
+          if (uploadError) throw uploadError;
+          
+          const { data: urlData } = supabase.storage
+            .from(bucketName)
+            .getPublicUrl(filePath);
+          
+          if (!urlData.publicUrl) throw new Error("Konnte keine öffentliche URL für das Bild erhalten");
+          
+          // 2. Analysiere das Bild
+          const response = await supabase.functions.invoke("analyze-item-photo", {
+            body: {
+              item_id: crypto.randomUUID(),
+              photo_url: urlData.publicUrl
+            }
+          });
+          
+          let analysisResult: ItemAnalysisResult | null = null;
+          
+          if (response.error) {
+            console.error("Fehler bei der Bildanalyse:", response.error);
+            toast.error(`Analyse für Bild ${index + 1} fehlgeschlagen`);
+          } else {
+            analysisResult = response.data as ItemAnalysisResult;
+          }
+          
+          // Speichere Ergebnis
+          results.push({
+            fileUrl: urlData.publicUrl,
+            analysis: analysisResult
+          });
+          
+          // Update progress
+          const progress = ((index + 1) / files.length) * 100;
+          setUploadProgress(progress);
+          if (onProgress) {
+            onProgress(progress);
+          }
+        } catch (error) {
+          console.error(`Fehler bei Bild ${index + 1}:`, error);
+          toast.error(`Bild ${index + 1} konnte nicht verarbeitet werden`);
+        }
+      }
+      
+      return results;
+    } catch (error) {
+      console.error('Fehler beim Hochladen und Analysieren:', error);
+      toast.error("Der Prozess konnte nicht abgeschlossen werden");
+      return results;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return {
     uploadFile,
     uploadFiles,
+    uploadAndAnalyzeImages,
     isUploading,
     uploadProgress
   };
