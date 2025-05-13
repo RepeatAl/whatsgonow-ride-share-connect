@@ -11,7 +11,6 @@ import { useItemAnalysis, Suggestion } from "@/hooks/useItemAnalysis";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { BulkUploadProvider } from "@/contexts/BulkUploadContext";
-import { ImageUploadSection } from "../ImageUploadSection";
 
 export function ItemDetailsSection({ 
   form, 
@@ -38,9 +37,6 @@ export function ItemDetailsSection({
     ignoreSuggestion,
     createSuggestionsFromMultiAnalysis 
   } = useItemAnalysis();
-  
-  // Wenn der Benutzer eingeloggt ist und eine Sender-Rolle hat, zeigen wir den erweiterten Upload an
-  const isUser = !!user;
 
   // Handler für Bild-Upload vom ItemPhotoSection Component
   const handleImageUpload = useCallback(async (file: File) => {
@@ -111,7 +107,7 @@ export function ItemDetailsSection({
     setSuggestion(null);
   };
   
-  // Neue Handler für Mehrfachanalyse
+  // Handler für Mehrfachanalyse
   const handleAcceptMultiSuggestion = (imageUrl: string) => {
     const suggestion = multiSuggestions[imageUrl];
     if (suggestion) {
@@ -132,12 +128,6 @@ export function ItemDetailsSection({
     
     toast.info("Vorschlag wurde ignoriert");
   };
-  
-  // Handler für Fotos wurden hochgeladen
-  const handlePhotosUploaded = useCallback((urls: string[]) => {
-    // Hier könnten wir die Bilder automatisch analysieren
-    toast.success(`${urls.length} Bilder wurden hochgeladen`);
-  }, []);
 
   return (
     <BulkUploadProvider>
@@ -156,14 +146,6 @@ export function ItemDetailsSection({
             <AccordionContent>
               <div className="space-y-6 pt-2">
                 <ItemDetailsForm form={form} insuranceEnabled={insuranceEnabled} />
-                
-                {isUser && (
-                  <ImageUploadSection 
-                    userId={user?.id}
-                    orderId={orderId}
-                    onPhotosUploaded={handlePhotosUploaded}
-                  />
-                )}
                 
                 {suggestion && (
                   <ItemSuggestionBox 
