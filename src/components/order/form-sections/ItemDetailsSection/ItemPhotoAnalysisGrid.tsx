@@ -6,7 +6,8 @@ import { ItemAnalysisCard } from "./ItemAnalysisCard";
 export function ItemPhotoAnalysisGrid({
   analyzedImages,
   onAcceptImage,
-  onIgnoreImage
+  onIgnoreImage,
+  showAssignOptions = false
 }: ItemPhotoAnalysisGridProps) {
   if (!analyzedImages || analyzedImages.length === 0) {
     return null;
@@ -24,6 +25,7 @@ export function ItemPhotoAnalysisGrid({
             index={index}
             onAccept={onAcceptImage}
             onIgnore={onIgnoreImage}
+            showAssignOptions={showAssignOptions}
           />
         ))}
       </div>

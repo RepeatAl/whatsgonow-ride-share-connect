@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
@@ -49,6 +49,9 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
     isFormValid
   } = useOrderForm(initialData);
 
+  // Track if we're in bulk upload mode
+  const [isBulkUploadMode, setIsBulkUploadMode] = useState(false);
+
   const { 
     handleCreateOrder, 
     isSubmitting, 
@@ -78,6 +81,14 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
   };
 
   const onSubmit = async (data: any) => {
+    // Check if we have enough images for publication (at least 2)
+    const hasEnoughImages = uploadedPhotoUrls.length >= 2;
+    
+    if (!hasEnoughImages) {
+      toast.warning("Für die Veröffentlichung werden mindestens 2 Bilder benötigt");
+      return;
+    }
+    
     // Zuerst Auftrag erstellen
     const orderId = await handleCreateOrder(data, uploadedPhotoUrls);
     
@@ -98,6 +109,7 @@ export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData 
           isSubmitting={isSubmitting}
           isValid={isFormValid}
           isAuthenticated={!!user}
+          imageCount={uploadedPhotoUrls.length}
         />
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

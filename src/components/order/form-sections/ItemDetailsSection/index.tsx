@@ -15,6 +15,7 @@ import { useItemAnalysis, Suggestion } from "@/hooks/useItemAnalysis";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
+import { BulkUploadProvider } from "@/contexts/BulkUploadContext";
 
 export function ItemDetailsSection({ 
   form, 
@@ -210,152 +211,154 @@ export function ItemDetailsSection({
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium">Artikeldetails</h3>
-      
-      <Accordion 
-        type="single" 
-        collapsible
-        value={activeAccordion}
-        onValueChange={setActiveAccordion}
-        className="w-full"
-      >
-        <AccordionItem value="basic-info">
-          <AccordionTrigger>Basis-Informationen</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-6 pt-2">
-              <ItemDetailsForm form={form} insuranceEnabled={insuranceEnabled} />
-              
-              {isUser && !showMultiUpload && (
-                <ItemPhotoSection 
-                  imageUrl={tempImage || undefined} 
-                  onImageUpload={handleImageUpload}
-                  analysis_status={analysisInProgress ? 'pending' : suggestion ? 'success' : undefined}
-                  onRequestAnalysis={handleRequestAnalysis}
-                />
-              )}
-              
-              {isUser && showMultiUpload && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium">Mehrere Artikelbilder hochladen</label>
+    <BulkUploadProvider>
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Artikeldetails</h3>
+        
+        <Accordion 
+          type="single" 
+          collapsible
+          value={activeAccordion}
+          onValueChange={setActiveAccordion}
+          className="w-full"
+        >
+          <AccordionItem value="basic-info">
+            <AccordionTrigger>Basis-Informationen</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-6 pt-2">
+                <ItemDetailsForm form={form} insuranceEnabled={insuranceEnabled} />
+                
+                {isUser && !showMultiUpload && (
+                  <ItemPhotoSection 
+                    imageUrl={tempImage || undefined} 
+                    onImageUpload={handleImageUpload}
+                    analysis_status={analysisInProgress ? 'pending' : suggestion ? 'success' : undefined}
+                    onRequestAnalysis={handleRequestAnalysis}
+                  />
+                )}
+                
+                {isUser && showMultiUpload && (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium">Mehrere Artikelbilder hochladen</label>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={toggleMultiUploadMode}
+                      >
+                        Einzelbild-Modus
+                      </Button>
+                    </div>
+                    
+                    <div className="flex flex-col gap-4">
+                      <div className="flex gap-4">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={handleFileSelect}
+                          className="flex-1"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Bilder auswählen
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="default"
+                          onClick={handleMultipleFilesAnalysis}
+                          disabled={!fileInputRef.current?.files?.length || analysisInProgress}
+                          className="flex-1"
+                        >
+                          Bilder analysieren
+                        </Button>
+                      </div>
+                      
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        className="hidden" 
+                        accept="image/*" 
+                        multiple
+                        onChange={handleFileChange}
+                      />
+                      
+                      {fileInputRef.current?.files?.length > 0 && (
+                        <div className="text-sm text-gray-600">
+                          {fileInputRef.current.files.length} Bilder ausgewählt
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {isUser && !showMultiUpload && (
+                  <div className="mt-2">
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="sm" 
                       onClick={toggleMultiUploadMode}
                     >
-                      Einzelbild-Modus
+                      Mehrere Bilder hochladen
                     </Button>
                   </div>
-                  
-                  <div className="flex flex-col gap-4">
-                    <div className="flex gap-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={handleFileSelect}
-                        className="flex-1"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Bilder auswählen
-                      </Button>
-                      
-                      <Button 
-                        type="button" 
-                        variant="default"
-                        onClick={handleMultipleFilesAnalysis}
-                        disabled={!fileInputRef.current?.files?.length || analysisInProgress}
-                        className="flex-1"
-                      >
-                        Bilder analysieren
-                      </Button>
-                    </div>
-                    
-                    <input 
-                      type="file" 
-                      ref={fileInputRef}
-                      className="hidden" 
-                      accept="image/*" 
-                      multiple
-                      onChange={handleFileChange}
-                    />
-                    
-                    {fileInputRef.current?.files?.length > 0 && (
-                      <div className="text-sm text-gray-600">
-                        {fileInputRef.current.files.length} Bilder ausgewählt
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {isUser && !showMultiUpload && (
-                <div className="mt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={toggleMultiUploadMode}
-                  >
-                    Mehrere Bilder hochladen
-                  </Button>
-                </div>
-              )}
-              
-              {suggestion && !showMultiUpload && (
-                <ItemSuggestionBox 
-                  suggestion={suggestion}
-                  onAccept={handleAcceptSuggestion}
-                  onIgnore={handleIgnoreSuggestion}
-                  form={form}
-                />
-              )}
-              
-              {Object.keys(multiSuggestions).length > 0 && (
-                <MultiItemSuggestionBox
-                  suggestions={multiSuggestions}
-                  onAccept={handleAcceptMultiSuggestion}
-                  onIgnore={handleIgnoreMultiSuggestion}
-                  form={form}
-                />
-              )}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {isUser && (
-          <AccordionItem value="additional-items">
-            <AccordionTrigger>Weitere Artikel hinzufügen</AccordionTrigger>
-            <AccordionContent>
-              {showItemForm ? (
-                <ItemForm 
-                  onSaveItem={handleAddItem} 
-                  orderId={orderId}
-                />
-              ) : (
-                <div className="flex justify-center py-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowItemForm(true)}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Neuen Artikel hinzufügen
-                  </Button>
-                </div>
-              )}
+                )}
+                
+                {suggestion && !showMultiUpload && (
+                  <ItemSuggestionBox 
+                    suggestion={suggestion}
+                    onAccept={handleAcceptSuggestion}
+                    onIgnore={handleIgnoreSuggestion}
+                    form={form}
+                  />
+                )}
+                
+                {Object.keys(multiSuggestions).length > 0 && showMultiUpload && (
+                  <MultiItemSuggestionBox
+                    suggestions={multiSuggestions}
+                    onAccept={handleAcceptMultiSuggestion}
+                    onIgnore={handleIgnoreMultiSuggestion}
+                    form={form}
+                  />
+                )}
+              </div>
             </AccordionContent>
           </AccordionItem>
+
+          {isUser && !showMultiUpload && (
+            <AccordionItem value="additional-items">
+              <AccordionTrigger>Weitere Artikel hinzufügen</AccordionTrigger>
+              <AccordionContent>
+                {showItemForm ? (
+                  <ItemForm 
+                    onSaveItem={handleAddItem} 
+                    orderId={orderId}
+                  />
+                ) : (
+                  <div className="flex justify-center py-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowItemForm(true)}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Neuen Artikel hinzufügen
+                    </Button>
+                  </div>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          )}
+        </Accordion>
+        
+        {/* Liste der bereits hinzugefügten Artikel */}
+        {items.length > 0 && (
+          <div className="mt-6">
+            <ItemList items={items} onRemoveItem={onRemoveItem || (() => {})} />
+          </div>
         )}
-      </Accordion>
-      
-      {/* Liste der bereits hinzugefügten Artikel */}
-      {items.length > 0 && (
-        <div className="mt-6">
-          <ItemList items={items} onRemoveItem={onRemoveItem || (() => {})} />
-        </div>
-      )}
-    </div>
+      </div>
+    </BulkUploadProvider>
   );
 }
 

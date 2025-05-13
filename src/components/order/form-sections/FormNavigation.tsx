@@ -1,108 +1,121 @@
 
-import React, { useState } from "react";
-import { Save, Send, Trash2 } from "lucide-react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { toast } from "sonner";
+import { Save, Send, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface FormNavigationProps {
-  onSaveDraft: () => Promise<void>;
-  onSubmitForm: () => Promise<void>;
+  onSaveDraft: () => void;
+  onSubmitForm: () => void;
   onClearForm: () => void;
   isSaving: boolean;
   isSubmitting: boolean;
   isValid: boolean;
   isAuthenticated: boolean;
+  imageCount?: number;
 }
 
-export const FormNavigation = ({ 
-  onSaveDraft, 
+export const FormNavigation: React.FC<FormNavigationProps> = ({
+  onSaveDraft,
   onSubmitForm,
   onClearForm,
-  isSaving, 
+  isSaving,
   isSubmitting,
   isValid,
-  isAuthenticated
-}: FormNavigationProps) => {
+  isAuthenticated,
+  imageCount = 0
+}) => {
   const navigate = useNavigate();
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-
-  // Prüfen, ob der Benutzer angemeldet ist
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  const handleClearFormConfirmed = () => {
-    onClearForm();
-    setShowClearConfirm(false);
-    toast.success("Formular wurde zurückgesetzt");
+  const [showClearDialog, setShowClearDialog] = React.useState(false);
+  
+  // Check if we have enough images for publication (minimum 2)
+  const hasEnoughImages = imageCount >= 2;
+  
+  const handleSubmit = () => {
+    if (!isAuthenticated) {
+      navigate("/login?redirect=/create-order");
+      return;
+    }
+    
+    if (!hasEnoughImages) {
+      // Display warning but allow to proceed
+      onSubmitForm();
+      return;
+    }
+    
+    onSubmitForm();
   };
 
   return (
-    <>
-      <div className="flex flex-wrap justify-end items-center gap-3 mb-4">
+    <div className="bg-white sticky top-0 z-10 py-3 border-b flex justify-between items-center">
+      <div className="flex items-center gap-2">
         <Button
           type="button"
           variant="outline"
-          onClick={() => setShowClearConfirm(true)}
-          className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+          onClick={() => setShowClearDialog(true)}
+          size="sm"
         >
-          <Trash2 className="w-4 h-4 mr-2" />
-          Alle Angaben löschen
+          <Trash2 className="h-4 w-4 mr-1" />
+          Formular leeren
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onSaveDraft}
+          disabled={isSaving}
+          size="sm"
+        >
+          <Save className="h-4 w-4 mr-1" />
+          Als Entwurf speichern
         </Button>
         
         <Button
           type="button"
-          variant="secondary"
-          onClick={onSaveDraft}
-          disabled={isSaving}
+          onClick={handleSubmit}
+          disabled={isSubmitting || !isValid}
+          size="sm"
         >
-          {isSaving ? (
-            <>
-              <LoadingSpinner size="small" />
-              <span className="ml-2">Speichert...</span>
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4 mr-2" />
-              Als Entwurf speichern
-            </>
-          )}
+          <Send className="h-4 w-4 mr-1" />
+          {hasEnoughImages 
+            ? "Auftrag veröffentlichen" 
+            : "Als Entwurf speichern"}
         </Button>
-        
-        {isValid && (
-          <Button
-            type="button"
-            variant="brand"
-            onClick={onSubmitForm}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <LoadingSpinner size="small" />
-                <span className="ml-2">Veröffentlicht...</span>
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Artikel veröffentlichen
-              </>
-            )}
-          </Button>
-        )}
       </div>
-      
-      <ConfirmDialog
-        open={showClearConfirm}
-        onOpenChange={setShowClearConfirm}
-        title="Formular zurücksetzen"
-        description="Möchten Sie wirklich alle eingegebenen Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden."
-        confirmLabel="Ja, löschen"
-        cancelLabel="Abbrechen"
-        onConfirm={handleClearFormConfirmed}
-      />
-    </>
+
+      {/* Bestätigungsdialog für Formular-Reset */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Formular leeren?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Diese Aktion kann nicht rückgängig gemacht werden. Alle
+              eingegebenen Daten werden gelöscht.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              onClearForm();
+              setShowClearDialog(false);
+            }}>
+              Formular leeren
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 };

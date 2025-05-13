@@ -47,6 +47,7 @@ export interface ItemAnalysisCardProps {
   index: number;
   onAccept: (index: number) => void;
   onIgnore: (index: number) => void;
+  showAssignOptions?: boolean;
 }
 
 export interface ItemPhotoAnalysisGridProps {
@@ -56,6 +57,7 @@ export interface ItemPhotoAnalysisGridProps {
   }>;
   onAcceptImage: (index: number) => void;
   onIgnoreImage: (index: number) => void;
+  showAssignOptions?: boolean;
 }
 
 export interface MultiItemSuggestionBoxProps {

@@ -5,16 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Loader } from "lucide-react";
 import { ItemAnalysisCardProps } from "./types";
+import { ImageAssignButton } from "./ImageAssignButton";
+import { useBulkUpload } from "@/contexts/BulkUploadContext";
 
 export function ItemAnalysisCard({
   imageUrl,
   suggestion,
   index,
   onAccept,
-  onIgnore
+  onIgnore,
+  showAssignOptions = false
 }: ItemAnalysisCardProps) {
   // Bestimme den Status der Analyse
   const status = suggestion?.analysis_status || 'pending';
+  const { imageToArticleMap } = useBulkUpload();
+  
+  // Check if this image is already assigned to an article
+  const isAssigned = imageToArticleMap && imageUrl in imageToArticleMap;
   
   // Extrahiere die wichtigsten Informationen aus dem Vorschlag
   const title = suggestion?.title || 'Unbekannter Artikel';
@@ -56,6 +63,11 @@ export function ItemAnalysisCard({
               Fehler
             </Badge>
           )}
+          {isAssigned && (
+            <Badge className="mt-1 bg-blue-100 text-blue-800 border-blue-200">
+              Zugewiesen
+            </Badge>
+          )}
         </div>
       </div>
       
@@ -68,27 +80,33 @@ export function ItemAnalysisCard({
       </CardContent>
       
       <CardFooter className="p-3 pt-0 gap-2 justify-between">
-        <Button 
-          type="button" 
-          variant="outline"
-          size="sm"
-          onClick={() => onIgnore(index)}
-          disabled={status !== 'success'}
-          className="flex-1"
-        >
-          <X className="h-4 w-4 mr-1" />
-          Ignorieren
-        </Button>
-        <Button 
-          type="button"
-          size="sm"
-          onClick={() => onAccept(index)}
-          disabled={status !== 'success'}
-          className="flex-1"
-        >
-          <Check className="h-4 w-4 mr-1" />
-          Übernehmen
-        </Button>
+        {!showAssignOptions ? (
+          <>
+            <Button 
+              type="button" 
+              variant="outline"
+              size="sm"
+              onClick={() => onIgnore(index)}
+              disabled={status !== 'success'}
+              className="flex-1"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Ignorieren
+            </Button>
+            <Button 
+              type="button"
+              size="sm"
+              onClick={() => onAccept(index)}
+              disabled={status !== 'success'}
+              className="flex-1"
+            >
+              <Check className="h-4 w-4 mr-1" />
+              Übernehmen
+            </Button>
+          </>
+        ) : (
+          <ImageAssignButton imageUrl={imageUrl} />
+        )}
       </CardFooter>
     </Card>
   );
