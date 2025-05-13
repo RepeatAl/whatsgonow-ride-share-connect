@@ -5,8 +5,9 @@ import { CreateOrderFormValues } from "@/lib/validators/order";
 export interface ItemDetails {
   title: string;
   description?: string;
-  imageUrl?: string;
+  image_url?: string;  // Changed from imageUrl to image_url for consistency
   orderId?: string;
+  analysis_status?: 'pending' | 'success' | 'failed'; // Added for optional badge display
 }
 
 export interface ItemFormProps {

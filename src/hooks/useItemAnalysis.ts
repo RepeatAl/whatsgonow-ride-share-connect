@@ -29,6 +29,7 @@ export interface Suggestion {
     brand?: number;
     overall?: number;
   };
+  analysis_status?: 'pending' | 'success' | 'failed';
 }
 
 export function useItemAnalysis() {
@@ -127,7 +128,8 @@ export function useItemAnalysis() {
         category: analysis.results.confidenceScores?.category,
         brand: analysis.results.confidenceScores?.brand,
         overall: analysis.results.confidenceScores?.overall
-      }
+      },
+      analysis_status: 'success'  // Setze den Status auf 'success', wenn Analyse erfolgreich ist
     };
   };
 
