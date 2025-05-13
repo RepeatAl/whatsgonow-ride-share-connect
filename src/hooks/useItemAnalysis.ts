@@ -80,10 +80,10 @@ export function useItemAnalysis() {
     if (!suggestion) return;
 
     if (suggestion.title) {
-      // Verwende eine vollständige Type Assertion, um TypeScript-Fehler zu vermeiden
+      // Wir verwenden das 'as any' Pattern für beide Parameter, um die TypeScript-Fehler zu beheben
       form.setValue(
-        'title' as unknown as keyof T & string, 
-        suggestion.title as unknown as any, 
+        'title' as any, 
+        suggestion.title as any, 
         {
           shouldDirty: true,
           shouldTouch: true
@@ -92,10 +92,10 @@ export function useItemAnalysis() {
     }
 
     if (suggestion.category) {
-      // Verwende eine vollständige Type Assertion, um TypeScript-Fehler zu vermeiden
+      // Wir verwenden das 'as any' Pattern für beide Parameter, um die TypeScript-Fehler zu beheben
       form.setValue(
-        'category' as unknown as keyof T & string, 
-        suggestion.category as unknown as any, 
+        'category' as any, 
+        suggestion.category as any, 
         {
           shouldDirty: true,
           shouldTouch: true
