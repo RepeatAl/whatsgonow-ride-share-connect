@@ -1,22 +1,16 @@
 
 import React, { useState, useCallback } from "react";
-import { ItemDetailsSectionProps, ItemDetails } from "./types";
+import { ItemDetailsSectionProps } from "./types";
 import { ItemDetailsForm } from "./ItemDetailsForm";
-import { ItemPhotoSection } from "./ItemPhotoSection";
 import { ItemSuggestionBox } from "./ItemSuggestionBox";
 import { MultiItemSuggestionBox } from "./MultiItemSuggestionBox";
-import { ItemForm } from "./ItemForm";
 import { ItemList } from "./ItemList";
-import { ItemPhotoAnalysisGrid } from "./ItemPhotoAnalysisGrid";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
 import { useItemAnalysis, Suggestion } from "@/hooks/useItemAnalysis";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { BulkUploadProvider } from "@/contexts/BulkUploadContext";
-import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
 import { ImageUploadSection } from "../ImageUploadSection";
 
 export function ItemDetailsSection({ 
@@ -28,7 +22,6 @@ export function ItemDetailsSection({
   onRemoveItem
 }: ItemDetailsSectionProps) {
   const { user } = useAuth();
-  const [showItemForm, setShowItemForm] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string | undefined>("basic-info");
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [tempImageFile, setTempImageFile] = useState<File | null>(null);
@@ -48,17 +41,6 @@ export function ItemDetailsSection({
   
   // Wenn der Benutzer eingeloggt ist und eine Sender-Rolle hat, zeigen wir den erweiterten Upload an
   const isUser = !!user;
-  
-  const handleAddItem = (item: any) => {
-    if (onAddItem) {
-      onAddItem(item);
-    }
-    setActiveAccordion("basic-info");
-    setShowItemForm(false);
-    setTempImage(null);
-    setTempImageFile(null);
-    setSuggestion(null);
-  };
 
   // Handler für Bild-Upload vom ItemPhotoSection Component
   const handleImageUpload = useCallback(async (file: File) => {
@@ -133,17 +115,6 @@ export function ItemDetailsSection({
   const handleAcceptMultiSuggestion = (imageUrl: string) => {
     const suggestion = multiSuggestions[imageUrl];
     if (suggestion) {
-      // Erstelle ein neues Item aus dem Vorschlag
-      const newItem: ItemDetails = {
-        title: suggestion.title || "Unbenannter Artikel",
-        category: suggestion.category,
-        image_url: imageUrl,
-        analysis_status: 'success'
-      };
-      
-      // Füge das Item zur Liste hinzu
-      handleAddItem(newItem);
-      
       // Entferne den Vorschlag aus der Liste der offenen Vorschläge
       const newSuggestions = { ...multiSuggestions };
       delete newSuggestions[imageUrl];
@@ -214,30 +185,6 @@ export function ItemDetailsSection({
               </div>
             </AccordionContent>
           </AccordionItem>
-
-          {isUser && (
-            <AccordionItem value="additional-items">
-              <AccordionTrigger>Weitere Artikel hinzufügen</AccordionTrigger>
-              <AccordionContent>
-                {showItemForm ? (
-                  <ItemForm 
-                    onSaveItem={handleAddItem} 
-                    orderId={orderId}
-                  />
-                ) : (
-                  <div className="flex justify-center py-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowItemForm(true)}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Neuen Artikel hinzufügen
-                    </Button>
-                  </div>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          )}
         </Accordion>
         
         {/* Liste der bereits hinzugefügten Artikel */}
