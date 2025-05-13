@@ -1,14 +1,18 @@
 
-import React, { useState, useEffect } from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useAuth } from "@/contexts/AuthContext";
-import { ItemDetailsSectionProps } from "./types";
+import React, { useState, useCallback } from "react";
+import { ItemDetailsSectionProps, ItemDetails } from "./types";
+import { ItemDetailsForm } from "./ItemDetailsForm";
+import { ItemPhotoSection } from "./ItemPhotoSection";
+import { ItemSuggestionBox } from "./ItemSuggestionBox";
 import { ItemForm } from "./ItemForm";
 import { ItemList } from "./ItemList";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import { useItemAnalysis, Suggestion } from "@/hooks/useItemAnalysis";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 export function ItemDetailsSection({ 
   form, 
@@ -21,26 +25,93 @@ export function ItemDetailsSection({
   const { user } = useAuth();
   const [showItemForm, setShowItemForm] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string | undefined>("basic-info");
+  const [tempImage, setTempImage] = useState<string | null>(null);
+  const [tempImageFile, setTempImageFile] = useState<File | null>(null);
+  const [analysisInProgress, setAnalysisInProgress] = useState(false);
+  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  
+  const { analyzeItemPhoto, createSuggestionFromAnalysis, applySuggestionToForm, ignoreSuggestion } = useItemAnalysis();
   
   // Wenn der Benutzer eingeloggt ist und eine Sender-Rolle hat, zeigen wir den erweiterten Upload an
-  useEffect(() => {
-    if (user) {
-      // Check if user has a sender role (sender_private, sender_business)
-      const isSender = user.role?.includes("sender_");
-      if (!isSender) {
-        setShowItemForm(false);
-      }
-    } else {
-      setShowItemForm(false);
-    }
-  }, [user]);
-
+  const isUser = !!user;
+  const isSender = user?.role?.includes("sender_");
+  
   const handleAddItem = (item: any) => {
     if (onAddItem) {
       onAddItem(item);
     }
     setActiveAccordion("basic-info");
     setShowItemForm(false);
+    setTempImage(null);
+    setTempImageFile(null);
+    setSuggestion(null);
+  };
+
+  const handleImageUpload = useCallback(async (file: File) => {
+    if (!file) return;
+    
+    // Generieren einer temporären URL für die Vorschau
+    const preview = URL.createObjectURL(file);
+    setTempImage(preview);
+    setTempImageFile(file);
+    setSuggestion(null);
+  }, []);
+
+  const handleRequestAnalysis = useCallback(async () => {
+    if (!tempImage || !tempImageFile) {
+      toast.error("Kein Bild zum Analysieren vorhanden");
+      return;
+    }
+    
+    try {
+      setAnalysisInProgress(true);
+      
+      // Hochladen des Bildes zu Storage für Analyse
+      const tempId = crypto.randomUUID();
+      const filePath = `temp/${tempId}-${tempImageFile.name}`;
+      
+      const { error: uploadError, data } = await supabase.storage
+        .from('order-images')
+        .upload(filePath, tempImageFile);
+      
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      const { data: urlData } = supabase.storage
+        .from('order-images')
+        .getPublicUrl(filePath);
+      
+      // API-Aufruf zur Analyse
+      const result = await analyzeItemPhoto({
+        item_id: tempId,
+        photo_url: urlData.publicUrl
+      });
+      
+      if (result) {
+        const newSuggestion = createSuggestionFromAnalysis(result);
+        if (newSuggestion) {
+          setSuggestion(newSuggestion);
+        }
+      }
+    } catch (err) {
+      console.error("Analyse-Fehler:", err);
+      toast.error("Fehler bei der Bildanalyse");
+    } finally {
+      setAnalysisInProgress(false);
+    }
+  }, [tempImage, tempImageFile, analyzeItemPhoto, createSuggestionFromAnalysis]);
+
+  const handleAcceptSuggestion = () => {
+    if (suggestion) {
+      applySuggestionToForm(suggestion, form);
+      setSuggestion(null);
+    }
+  };
+
+  const handleIgnoreSuggestion = () => {
+    ignoreSuggestion();
+    setSuggestion(null);
   };
 
   return (
@@ -57,118 +128,30 @@ export function ItemDetailsSection({
         <AccordionItem value="basic-info">
           <AccordionTrigger>Basis-Informationen</AccordionTrigger>
           <AccordionContent>
-            <div className="grid gap-4 md:grid-cols-2 pt-2">
-              <FormField
-                control={form.control}
-                name="itemName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Artikelname*</FormLabel>
-                    <FormControl>
-                      <Input placeholder="z.B. Sofa" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kategorie*</FormLabel>
-                    <FormControl>
-                      <Input placeholder="z.B. Möbel" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="weight"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gewicht (kg)*</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.1" placeholder="z.B. 15.5" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="value"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {insuranceEnabled ? "Warenwert (€)*" : "Warenwert (€, optional)"}
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
-                        placeholder="z.B. 499.99" 
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3 mt-4">
-              <FormField
-                control={form.control}
-                name="width"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Breite (cm)*</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.1" placeholder="z.B. 100" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="space-y-6 pt-2">
+              <ItemDetailsForm form={form} insuranceEnabled={insuranceEnabled} />
               
-              <FormField
-                control={form.control}
-                name="height"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Höhe (cm)*</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.1" placeholder="z.B. 50" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {isUser && (
+                <ItemPhotoSection 
+                  imageUrl={tempImage || undefined} 
+                  onImageUpload={handleImageUpload}
+                  onRequestAnalysis={handleRequestAnalysis}
+                />
+              )}
               
-              <FormField
-                control={form.control}
-                name="depth"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tiefe (cm)*</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.1" placeholder="z.B. 30" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {suggestion && (
+                <ItemSuggestionBox 
+                  suggestion={suggestion}
+                  onAccept={handleAcceptSuggestion}
+                  onIgnore={handleIgnoreSuggestion}
+                  form={form}
+                />
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {user && (
+        {isUser && (
           <AccordionItem value="additional-items">
             <AccordionTrigger>Weitere Artikel hinzufügen</AccordionTrigger>
             <AccordionContent>
@@ -207,4 +190,7 @@ export function ItemDetailsSection({
 export { ItemForm } from "./ItemForm";
 export { ItemList } from "./ItemList";
 export { ItemPreviewCard } from "./ItemPreviewCard";
+export { ItemDetailsForm } from "./ItemDetailsForm";
+export { ItemPhotoSection } from "./ItemPhotoSection";
+export { ItemSuggestionBox } from "./ItemSuggestionBox";
 export type { ItemDetails, ItemDetailsSectionProps } from "./types";

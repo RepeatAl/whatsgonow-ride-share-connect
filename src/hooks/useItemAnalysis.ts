@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
@@ -29,7 +30,7 @@ export interface Suggestion {
     brand?: number;
     overall?: number;
   };
-  analysis_status?: AnalysisStatus; // Den importierten Typ verwenden
+  analysis_status?: AnalysisStatus;
 }
 
 export function useItemAnalysis() {
@@ -82,7 +83,7 @@ export function useItemAnalysis() {
 
     if (suggestion.title) {
       form.setValue(
-        'title' as any, 
+        'itemName' as any, // Anpassung auf das tatsächliche Feld "itemName"
         suggestion.title as any, 
         {
           shouldDirty: true,
@@ -127,7 +128,7 @@ export function useItemAnalysis() {
         brand: analysis.results.confidenceScores?.brand,
         overall: analysis.results.confidenceScores?.overall
       },
-      analysis_status: 'success'  // Setze den Status auf 'success', wenn Analyse erfolgreich ist
+      analysis_status: 'success'
     };
   };
 
