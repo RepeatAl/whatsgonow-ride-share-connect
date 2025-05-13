@@ -81,7 +81,6 @@ export function useItemAnalysis() {
     if (!suggestion) return;
 
     if (suggestion.title) {
-      // Wir verwenden das 'as any' Pattern für beide Parameter, um die TypeScript-Fehler zu beheben
       form.setValue(
         'title' as any, 
         suggestion.title as any, 
@@ -93,7 +92,6 @@ export function useItemAnalysis() {
     }
 
     if (suggestion.category) {
-      // Wir verwenden das 'as any' Pattern für beide Parameter, um die TypeScript-Fehler zu beheben
       form.setValue(
         'category' as any, 
         suggestion.category as any, 

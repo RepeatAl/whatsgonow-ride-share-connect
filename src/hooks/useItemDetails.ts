@@ -9,7 +9,7 @@ export interface ItemDetails {
   title: string;
   description?: string;
   image_url?: string;  // Konsistent image_url statt imageUrl verwenden
-  analysis_status?: 'pending' | 'success' | 'error';
+  analysis_status?: 'pending' | 'success' | 'failed';
   category_suggestion?: string;
   labels_raw?: Record<string, number>;
 }
