@@ -135,6 +135,7 @@ export function ItemDetailsSection({
                 <ItemPhotoSection 
                   imageUrl={tempImage || undefined} 
                   onImageUpload={handleImageUpload}
+                  analysis_status={analysisInProgress ? 'pending' : suggestion ? 'success' : undefined}
                   onRequestAnalysis={handleRequestAnalysis}
                 />
               )}
