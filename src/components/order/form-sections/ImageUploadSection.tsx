@@ -3,7 +3,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { CameraModal } from "./CameraModal";
-import { PreviewGrid } from "./components/PreviewGrid";
+import { PreviewGrid } from "./components/image-preview";
 import { useFileUpload } from "@/hooks/file-upload/useFileUpload";
 import { toast } from "sonner";
 import { BulkUploadProvider } from "@/contexts/BulkUploadContext";
