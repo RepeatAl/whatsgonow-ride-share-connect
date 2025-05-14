@@ -61,10 +61,17 @@ export const UploadQrCode: React.FC<UploadQrCodeProps> = ({
 
   const qrCodeUrl = `${window.location.origin}/mobile-upload?target=${target}&id=${uploadId}${userId ? `&userId=${userId}` : ''}`;
 
+  // Handler zum Öffnen des Dialogs, mit stopPropagation
+  const handleOpenDialog = (e: React.MouseEvent) => {
+    // Verhindert, dass das Click-Event an Parent-Handler weitergegeben wird
+    e.stopPropagation();
+    setIsOpen(true);
+  };
+
   return (
     <>
       {compact ? (
-        <span onClick={() => setIsOpen(true)}>
+        <span onClick={handleOpenDialog}>
           {children || (
             <Button 
               type="button" 
@@ -86,7 +93,7 @@ export const UploadQrCode: React.FC<UploadQrCodeProps> = ({
         <Button 
           type="button" 
           variant="outline" 
-          onClick={() => setIsOpen(true)}
+          onClick={handleOpenDialog}
         >
           {children || "Mit Smartphone aufnehmen"}
         </Button>

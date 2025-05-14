@@ -70,10 +70,13 @@ export const PreviewGrid = memo(({
     }
   };
 
-  const handleSlotClick = (index: number, hasPreview: boolean) => {
-    if (hasPreview) return; // If there's already an image, do nothing on click
+  // Geändert: stopPropagation hinzugefügt, um Konflikt zu vermeiden
+  const handleSlotClick = (e: React.MouseEvent, index: number, hasPreview: boolean) => {
+    // Bei existierendem Bild nichts tun
+    if (hasPreview) return;
     
-    if (onFileSelect) {
+    // Nur wenn direktes Target das übergeordnete div ist, Datei-Upload auslösen
+    if (e.currentTarget === e.target && onFileSelect) {
       onFileSelect(index);
     }
   };
@@ -87,13 +90,19 @@ export const PreviewGrid = memo(({
     }
   };
 
-  const openFileInput = (index: number) => {
+  // Geändert: stopPropagation hinzugefügt, um Ereignisüberlappung zu vermeiden
+  const openFileInput = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation(); // Verhindert Bubble-Up zum handleSlotClick
+    
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index]?.click();
     }
   };
 
-  const handleCameraClick = (index: number) => {
+  // Geändert: stopPropagation hinzugefügt, um Ereignisüberlappung zu vermeiden
+  const handleCameraClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation(); // Verhindert Bubble-Up zum handleSlotClick
+    
     if (onCameraOpen) {
       onCameraOpen(index);
     }
@@ -150,7 +159,7 @@ export const PreviewGrid = memo(({
               }}
               onDragLeave={() => setDragOver(null)}
               onDrop={(e) => handleFileDrop(e, idx)}
-              onClick={() => handleSlotClick(idx, !!preview)}
+              onClick={(e) => handleSlotClick(e, idx, !!preview)}
               role="button"
               tabIndex={0}
             >
@@ -214,11 +223,12 @@ export const PreviewGrid = memo(({
                             variant="secondary" 
                             size="icon" 
                             className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            onClick={(e) => e.stopPropagation()} // Verhindert, dass es den Slot-Click auslöst
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
+                        <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                           <DropdownMenuItem onClick={() => handleCreateArticle(previewUrl)}>
                             Neuen Artikel erstellen
                           </DropdownMenuItem>
@@ -268,10 +278,7 @@ export const PreviewGrid = memo(({
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openFileInput(idx);
-                      }}
+                      onClick={(e) => openFileInput(e, idx)}
                     >
                       <Upload className="h-4 w-4" />
                     </Button>
@@ -282,31 +289,30 @@ export const PreviewGrid = memo(({
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCameraClick(idx);
-                        }}
+                        onClick={(e) => handleCameraClick(e, idx)}
                       >
                         <Camera className="h-4 w-4" />
                       </Button>
                     )}
                     
                     {deviceType === 'desktop' && userId && orderId && (
-                      <UploadQrCode
-                        userId={userId}
-                        target={`order-${orderId}`}
-                        onComplete={onUploadComplete || (() => {})}
-                        compact
-                      >
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <UploadQrCode
+                          userId={userId}
+                          target={`order-${orderId}`}
+                          onComplete={onUploadComplete || (() => {})}
+                          compact
                         >
-                          <Camera className="h-4 w-4" />
-                        </Button>
-                      </UploadQrCode>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <Camera className="h-4 w-4" />
+                          </Button>
+                        </UploadQrCode>
+                      </div>
                     )}
                   </div>
                   
@@ -318,6 +324,7 @@ export const PreviewGrid = memo(({
                     className="hidden" 
                     accept="image/jpeg,image/png,image/webp,image/gif" 
                     onChange={(e) => handleFileInputChange(idx, e)} 
+                    onClick={(e) => e.stopPropagation()} 
                   />
                 </div>
               )}
