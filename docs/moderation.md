@@ -44,11 +44,24 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 - Die Historie bietet Transparenz und dient als Grundlage für Eskalationen
 - Markierungshistorie ist nur für CM und Admin-Rollen sichtbar
 
-### 3. Eskalationsprozess
+### 3. Eskalationssystem
 
-- System markiert gemeldete Inhalte zur Prüfung durch CM/Admin
-- Wiederholte Meldungen erhöhen Eskalationsstufe automatisch
-- Kritische Vorfälle (z. B. Betrug, Gewaltandrohung) werden sofort an das Supportteam geleitet
+#### a) Eskalationskriterien
+- Trust-Score ≤ 30 → automatische Vorwarnung aktivieren
+- ≥ 3 Flags innerhalb von 30 Tagen → automatische Vorwarnung
+- ≥ 2 Disputes mit negativem Urteil in 60 Tagen → automatische Vorwarnung
+- Schwellenwerte sind konfigurierbar in der `moderation_thresholds`-Tabelle
+
+#### b) Eskalationsprozess
+- Eskalationen werden in der `escalation_log`-Tabelle dokumentiert
+- CM kann einen Nutzer in den Pre-Suspend-Status versetzen
+- Ein Admin entscheidet endgültig über Sperrung oder Auflösung der Eskalation
+- Jede Eskalation muss dokumentiert und begründet werden
+
+#### c) Pre-Suspend-Status
+- Zwischenstufe vor einer permanenten Sperrung
+- Zeigt dem Community-Manager und Admin, dass ein Fall schwerwiegend ist
+- Kann jederzeit von einem Admin aufgehoben werden
 
 ### 4. Verwarnungen und Sperrungen
 
@@ -81,7 +94,8 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 
 ### Spezifische Audit-Tabellen
 - **user_flag_audit**: Speziell für Nutzer-Flagging Aktionen
-- Speichert Details zu jeder Markierung/Entmarkierung
+- **escalation_log**: Speziell für Eskalationsaktionen und deren Lebenszyklus
+- Speichert Details zu jeder Markierung/Entmarkierung/Eskalation
 - Enthält Informationen über ausführenden CM/Admin, Grund, Zeitpunkt
 - Dient der Nachvollziehbarkeit und zukünftiger Eskalation
 
@@ -108,6 +122,35 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 | role       | TEXT          | Rolle des ausführenden CM/Admin              |
 | created_at | TIMESTAMP     | Zeitpunkt der Aktion                         |
 
+### escalation_log
+| Feld           | Typ           | Beschreibung                                  |
+|----------------|---------------|----------------------------------------------|
+| id             | UUID          | Primärschlüssel                              |
+| user_id        | UUID          | Referenz zum eskalierten Nutzer              |
+| escalation_type| TEXT          | Typ der Eskalation (trust_drop, auto_flag_threshold, etc.) |
+| trigger_reason | TEXT          | Detaillierte Begründung der Eskalation       |
+| triggered_at   | TIMESTAMP     | Zeitpunkt der Eskalationserstellung          |
+| resolved_at    | TIMESTAMP     | Zeitpunkt der Auflösung (nullable)           |
+| resolved_by    | UUID          | Admin, der die Eskalation aufgelöst hat      |
+| notes          | TEXT          | Zusätzliche Kontext- oder Auflösungsnotizen  |
+| metadata       | JSONB         | Zusätzliche strukturierte Informationen      |
+
+### moderation_thresholds
+| Feld           | Typ           | Beschreibung                                  |
+|----------------|---------------|----------------------------------------------|
+| key            | TEXT          | Primärschlüssel, Schwellenwert-Identifier     |
+| value          | INTEGER       | Numerischer Schwellenwert                     |
+| description    | TEXT          | Beschreibung des Schwellenwerts               |
+| updated_at     | TIMESTAMP     | Zuletzt geändert am                           |
+| updated_by     | UUID          | Geändert von (Admin-ID)                       |
+
+### profiles (Eskalationserweiterung)
+| Feld              | Typ           | Beschreibung                                  |
+|-------------------|---------------|----------------------------------------------|
+| is_pre_suspended  | BOOLEAN       | Ob der Nutzer im Pre-Suspend-Status ist      |
+| pre_suspend_reason| TEXT          | Grund für den Pre-Suspend-Status             |
+| pre_suspend_at    | TIMESTAMP     | Zeitpunkt der Pre-Suspension                 |
+
 ---
 
 ## FAQ für Moderatoren
@@ -127,3 +170,15 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 
 **Was ist, wenn ein Trust Score kritisch ist, aber kein Flagging besteht?**  
 → Das System zeigt Empfehlungen für Nutzer mit kritischem Trust Score an, aber die endgültige Entscheidung zum Flagging liegt beim CM.
+
+**In welchen Fällen sollte eine Eskalation verwendet werden statt nur eines Flaggings?**  
+→ Eskalation sollte bei wiederholten Problemen oder kritischen Einzelfällen verwendet werden, wo eine mögliche Kontosperrung in Betracht gezogen werden muss. Flagging ist für allgemeine Markierung und Überwachung gedacht.
+
+**Kann ein CM einen bereits eskalierten Nutzer wieder "enteskalieren"?**  
+→ Nein, nur Admins können Eskalationen auflösen. CMs können jedoch zusätzliche Notizen und Informationen hinzufügen.
+
+**Was ist der "Pre-Suspend"-Status genau?**  
+→ Es ist eine Vorstufe zur Sperrung, die anzeigt, dass ein Nutzer unter besonderer Beobachtung steht und seine Fälle priorisiert geprüft werden sollten. Die Funktionalität ist noch nicht eingeschränkt.
+
+**Werden automatische Eskalationen dem Nutzer mitgeteilt?**  
+→ Nein, die Eskalation ist ein internes Werkzeug für CMs und Admins. Nutzer werden erst bei konkreten Maßnahmen informiert.

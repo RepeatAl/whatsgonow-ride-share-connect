@@ -210,6 +210,71 @@ export type Database = {
           },
         ]
       }
+      escalation_log: {
+        Row: {
+          escalation_type: string
+          id: string
+          metadata: Json | null
+          notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          trigger_reason: string
+          triggered_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          escalation_type: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          trigger_reason: string
+          triggered_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          escalation_type?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          trigger_reason?: string
+          triggered_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escalation_log_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "escalation_log_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "escalation_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback: {
         Row: {
           content: string
@@ -819,6 +884,45 @@ export type Database = {
           },
         ]
       }
+      moderation_thresholds: {
+        Row: {
+          description: string
+          key: string
+          updated_at: string | null
+          updated_by: string | null
+          value: number
+        }
+        Insert: {
+          description: string
+          key: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value: number
+        }
+        Update: {
+          description?: string
+          key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_thresholds_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "moderation_thresholds_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -1155,11 +1259,14 @@ export type Database = {
           flagged_at: string | null
           flagged_by_cm: boolean | null
           house_number: string | null
+          is_pre_suspended: boolean | null
           last_name: string
           name_affix: string | null
           onboarding_complete: boolean
           phone: string
           postal_code: string
+          pre_suspend_at: string | null
+          pre_suspend_reason: string | null
           profile_complete: boolean
           region: string
           role: string
@@ -1183,11 +1290,14 @@ export type Database = {
           flagged_at?: string | null
           flagged_by_cm?: boolean | null
           house_number?: string | null
+          is_pre_suspended?: boolean | null
           last_name: string
           name_affix?: string | null
           onboarding_complete?: boolean
           phone: string
           postal_code: string
+          pre_suspend_at?: string | null
+          pre_suspend_reason?: string | null
           profile_complete?: boolean
           region: string
           role: string
@@ -1211,11 +1321,14 @@ export type Database = {
           flagged_at?: string | null
           flagged_by_cm?: boolean | null
           house_number?: string | null
+          is_pre_suspended?: boolean | null
           last_name?: string
           name_affix?: string | null
           onboarding_complete?: boolean
           phone?: string
           postal_code?: string
+          pre_suspend_at?: string | null
+          pre_suspend_reason?: string | null
           profile_complete?: boolean
           region?: string
           role?: string
@@ -1455,6 +1568,65 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      trust_score_audit: {
+        Row: {
+          actor_id: string | null
+          created_at: string | null
+          id: string
+          previous_score: number | null
+          reason: string | null
+          score: number
+          user_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string | null
+          id?: string
+          previous_score?: number | null
+          reason?: string | null
+          score: number
+          user_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string | null
+          id?: string
+          previous_score?: number | null
+          reason?: string | null
+          score?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trust_score_audit_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "trust_score_audit_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trust_score_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "trust_score_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1699,6 +1871,10 @@ export type Database = {
         Args: { requesting_user_id: string }
         Returns: boolean
       }
+      evaluate_escalation: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       flag_user: {
         Args: { target_user_id: string; flag_reason: string }
         Returns: boolean
@@ -1721,6 +1897,14 @@ export type Database = {
       }
       is_profile_complete: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      pre_suspend_user: {
+        Args: { target_user_id: string; reason: string }
+        Returns: boolean
+      }
+      resolve_escalation: {
+        Args: { escalation_id: string; resolution_notes: string }
         Returns: boolean
       }
       unflag_user: {

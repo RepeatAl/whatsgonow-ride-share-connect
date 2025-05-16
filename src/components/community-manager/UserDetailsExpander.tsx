@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User } from "@/hooks/use-fetch-users";
 import { TrustScoreHistoryDialog } from "@/components/trust/TrustScoreHistoryDialog";
 import { useTrustScore } from "@/hooks/use-trust-score";
@@ -10,6 +10,9 @@ import UserFlaggingControls from "./UserFlaggingControls";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTrustScoreHistory } from "@/hooks/use-trust-score-history";
 import FlagHistoryDialog from "../flagging/FlagHistoryDialog";
+import { EscalationStatus } from "../escalation/EscalationStatus";
+import { PreSuspendDialog } from "../escalation/PreSuspendDialog";
+import { useEscalation } from "@/hooks/use-escalation";
 
 interface UserDetailsExpanderProps {
   user: User;
@@ -20,11 +23,37 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
   const { score } = useTrustScore(user.user_id);
   const { history } = useTrustScoreHistory(user.user_id, 30);
   const [showFlaggingControls, setShowFlaggingControls] = useState(true);
+  const { fetchUserEscalationStatus, evaluateUser } = useEscalation();
+  const [escalationStatus, setEscalationStatus] = useState({
+    hasActiveEscalation: false,
+    isPreSuspended: false,
+    presSuspendReason: null as string | null,
+    preSuspendAt: null as string | null
+  });
   
   // Count disputes/conflicts (in a real app this would be a proper query)
   // For demo purposes, we'll count significant trust score drops as "disputes"
   const significantDrops = history.filter(entry => entry.delta < -15).length;
   const needsEscalation = (score !== null && score < 50) && significantDrops > 1;
+  
+  useEffect(() => {
+    loadEscalationStatus();
+  }, [user.user_id]);
+
+  const loadEscalationStatus = async () => {
+    const status = await fetchUserEscalationStatus(user.user_id);
+    setEscalationStatus(status);
+  };
+
+  const handleUserEscalated = () => {
+    loadEscalationStatus();
+    if (onUserUpdated) onUserUpdated();
+  };
+
+  const handleEvaluateEscalation = async () => {
+    await evaluateUser(user.user_id);
+    loadEscalationStatus();
+  };
   
   return (
     <div className="px-4 py-3 bg-gray-50">
@@ -40,6 +69,15 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
       
       <Separator className="my-2" />
       
+      {escalationStatus.isPreSuspended && (
+        <EscalationStatus 
+          isPreSuspended={escalationStatus.isPreSuspended}
+          preSuspendReason={escalationStatus.presSuspendReason}
+          preSuspendAt={escalationStatus.preSuspendAt}
+          className="mb-3"
+        />
+      )}
+      
       {user.flagged_by_cm && (
         <div className="mb-3 flex items-center gap-2 text-red-500">
           <Flag className="h-4 w-4" />
@@ -54,11 +92,17 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
         </div>
       )}
       
-      {needsEscalation && !user.flagged_by_cm && (
+      {needsEscalation && !escalationStatus.isPreSuspended && (
         <Alert className="mb-3 border-amber-200 bg-amber-50">
           <AlertCircle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-700">
-            Dieser Nutzer erfüllt die Kriterien für eine Eskalation. Bitte prüfen Sie eine manuelle Markierung.
+          <AlertDescription className="text-amber-700 flex justify-between items-center">
+            <span>Dieser Nutzer erfüllt die Kriterien für eine Eskalation. Bitte prüfen Sie eine manuelle Markierung.</span>
+            <button 
+              onClick={handleEvaluateEscalation}
+              className="text-xs underline text-amber-800 hover:text-amber-900"
+            >
+              Automatisch prüfen
+            </button>
           </AlertDescription>
         </Alert>
       )}
@@ -90,13 +134,21 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
       <Separator className="my-4" />
       
       {showFlaggingControls && (
-        <div className="mt-4">
+        <div className="mt-4 flex justify-between items-start">
           <UserFlaggingControls 
             userId={user.user_id}
             isFlagged={!!user.flagged_by_cm}
             flagReason={user.flag_reason}
             onFlagChange={onUserUpdated}
           />
+          
+          {!escalationStatus.isPreSuspended && (
+            <PreSuspendDialog 
+              userId={user.user_id}
+              userName={user.name}
+              onEscalated={handleUserEscalated}
+            />
+          )}
         </div>
       )}
     </div>
