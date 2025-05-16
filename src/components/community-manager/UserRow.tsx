@@ -2,13 +2,15 @@
 import React from "react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Plus, Clock, Mail, Phone } from "lucide-react";
+import { Eye, Plus, Clock, Mail, Phone, AlertTriangle } from "lucide-react";
 import RoleBadge from "./RoleBadge";
 import UserRating from "./UserRating";
 import { User } from "@/hooks/use-fetch-users";
 import UserDetailsExpander from "./UserDetailsExpander";
 import TrustBadge from "../trust/TrustBadge";
 import { useTrustScore } from "@/hooks/use-trust-score";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTrustScoreHistory } from "@/hooks/use-trust-score-history";
 
 interface UserRowProps {
   user: User;
@@ -23,9 +25,12 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
 
   const isExpanded = expandedUser === user.user_id;
   const { score } = useTrustScore(user.user_id);
+  const { hasRecentDrop, isTrendingDown } = useTrustScoreHistory(user.user_id, 5);
   
   // Determine if the user needs a visual warning indicator
-  const needsAttention = score !== null && score < 60;
+  const needsAttention = 
+    (score !== null && score < 60) || // Critical score
+    (score !== null && hasRecentDrop); // Recent significant drop
   
   return (
     <>
@@ -45,7 +50,27 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
             }
           </Button>
         </TableCell>
-        <TableCell className="font-medium">{user.name}</TableCell>
+        <TableCell className="font-medium">
+          <div className="flex items-center gap-2">
+            {user.name}
+            {needsAttention && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertTriangle className="h-4 w-4 text-red-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="w-64">
+                      {score !== null && score < 60 ? "Kritischer Vertrauenswert" : ""}
+                      {(score !== null && score < 60) && hasRecentDrop ? " und " : ""}
+                      {hasRecentDrop ? "Drastischer Vertrauensverlust in letzter Zeit" : ""}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        </TableCell>
         <TableCell><RoleBadge role={user.role} /></TableCell>
         <TableCell className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5 text-muted-foreground" />

@@ -16,7 +16,7 @@ export const TrustScoreHistory: React.FC<TrustScoreHistoryProps> = ({
   userId,
   limit = 10
 }) => {
-  const { history, loading, error } = useTrustScoreHistory(userId, limit);
+  const { history, loading, error, isTrendingDown } = useTrustScoreHistory(userId, limit);
 
   if (loading) {
     return (
