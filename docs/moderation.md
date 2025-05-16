@@ -1,3 +1,4 @@
+
 # Moderation & Community Governance
 
 Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten, Nutzerverhalten und Community-Richtlinien auf der Whatsgonow-Plattform.
@@ -29,19 +30,33 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 - Jeder registrierte Nutzer kann Nachrichten, Angebote oder Profile melden
 - Meldungstypen: unangemessen, beleidigend, Spam, Betrug, verdächtiges Verhalten
 
-### 2. Eskalationsprozess
+### 2. Nutzer-Flagging System
+
+#### a) Funktion und Zweck
+- Community Manager können Nutzer als "kritisch" markieren (flaggen)
+- Eine Begründung muss angegeben werden (z.B. "Betrugsverdacht", "Mehrfache Beschwerden")
+- Markierte Nutzer werden visuell hervorgehoben und können gefiltert werden
+- Das System unterstützt manuelle Markierungen und gibt Empfehlungen bei kritischem Trust Score
+
+#### b) Flagging-Historie
+- Jede Markierungs- und Entmarkierungsaktion wird in einer Audit-Tabelle gespeichert
+- Community Manager können den vollständigen Verlauf einsehen (wer, wann, warum)
+- Die Historie bietet Transparenz und dient als Grundlage für Eskalationen
+- Markierungshistorie ist nur für CM und Admin-Rollen sichtbar
+
+### 3. Eskalationsprozess
 
 - System markiert gemeldete Inhalte zur Prüfung durch CM/Admin
 - Wiederholte Meldungen erhöhen Eskalationsstufe automatisch
-- Kritische Vorfälle (z. B. Betrug, Gewaltandrohung) werden sofort an das Supportteam geleitet
+- Kritische Vorfälle (z. B. Betrug, Gewaltandrohung) werden sofort an das Supportteam geleitet
 
-### 3. Verwarnungen und Sperrungen
+### 4. Verwarnungen und Sperrungen
 
 - Verwarnsystem (3-Strikes-Policy)
 - Temporäre Sperren bei Verstoß gegen Community-Richtlinien
 - Permanente Sperrung bei grobem oder wiederholtem Fehlverhalten
 
-### 4. Konfliktlösung
+### 5. Konfliktlösung
 
 - CMs moderieren Streitfälle lokal
 - Eskalierte Konflikte werden von zentralem Supportteam geprüft
@@ -53,15 +68,22 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 
 - Keyword-Erkennung in Nachrichten
 - Analyse von Reaktionszeiten und Auffälligkeiten
-- Bewertung von Nutzerfeedback (z. B. wiederholt 1-Sterne-Bewertungen)
+- Bewertung von Nutzerfeedback (z. B. wiederholt 1-Sterne-Bewertungen)
 
 ---
 
 ## Moderationslog (Audit Trail)
 
+### System-weites Logging
 - Jede Moderationsaktion wird im Backend protokolliert
 - Zugriff nur durch berechtigte Rollen
 - Einträge enthalten: Timestamp, CM/Admin, Aktion, Nutzer-ID, optional Kommentar
+
+### Spezifische Audit-Tabellen
+- **user_flag_audit**: Speziell für Nutzer-Flagging Aktionen
+- Speichert Details zu jeder Markierung/Entmarkierung
+- Enthält Informationen über ausführenden CM/Admin, Grund, Zeitpunkt
+- Dient der Nachvollziehbarkeit und zukünftiger Eskalation
 
 ---
 
@@ -70,6 +92,21 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 - Nutzer werden über Maßnahmen informiert
 - Widerspruchsrecht bei Sperrung oder Bewertung
 - DSGVO-konforme Speicherung und Löschfristen
+
+---
+
+## Datenmodell
+
+### user_flag_audit
+| Feld       | Typ           | Beschreibung                                  |
+|------------|---------------|----------------------------------------------|
+| id         | UUID          | Primärschlüssel                              |
+| user_id    | UUID          | Referenz zum markierten Nutzer               |
+| flagged    | BOOLEAN       | TRUE für Markierung, FALSE für Entmarkierung |
+| reason     | TEXT          | Begründung der Markierung (nur bei flagged=TRUE) |
+| actor_id   | UUID          | ID des ausführenden CM/Admin                 |
+| role       | TEXT          | Rolle des ausführenden CM/Admin              |
+| created_at | TIMESTAMP     | Zeitpunkt der Aktion                         |
 
 ---
 
@@ -83,4 +120,11 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 
 **Wer entscheidet über eine permanente Sperrung?**  
 → Nur das zentrale Supportteam in Rücksprache mit der Geschäftsführung
+
+**Wie wird zwischen user_flag_audit und system_logs unterschieden?**  
+→ user_flag_audit enthält nur Flagging-spezifische Aktionen und dient der direkten Darstellung im UI.
+→ system_logs enthält allgemeine Systemereignisse und dient primär der Fehleranalyse und Administration.
+
+**Was ist, wenn ein Trust Score kritisch ist, aber kein Flagging besteht?**  
+→ Das System zeigt Empfehlungen für Nutzer mit kritischem Trust Score an, aber die endgültige Entscheidung zum Flagging liegt beim CM.
 
