@@ -1151,6 +1151,9 @@ export type Database = {
           dashboard_access_enabled: boolean | null
           email: string
           first_name: string
+          flag_reason: string | null
+          flagged_at: string | null
+          flagged_by_cm: boolean | null
           house_number: string | null
           last_name: string
           name_affix: string | null
@@ -1176,6 +1179,9 @@ export type Database = {
           dashboard_access_enabled?: boolean | null
           email: string
           first_name: string
+          flag_reason?: string | null
+          flagged_at?: string | null
+          flagged_by_cm?: boolean | null
           house_number?: string | null
           last_name: string
           name_affix?: string | null
@@ -1201,6 +1207,9 @@ export type Database = {
           dashboard_access_enabled?: boolean | null
           email?: string
           first_name?: string
+          flag_reason?: string | null
+          flagged_at?: string | null
+          flagged_by_cm?: boolean | null
           house_number?: string | null
           last_name?: string
           name_affix?: string | null
@@ -1508,6 +1517,65 @@ export type Database = {
         }
         Relationships: []
       }
+      user_flag_audit: {
+        Row: {
+          actor_id: string | null
+          created_at: string | null
+          flagged: boolean | null
+          id: string
+          reason: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string | null
+          flagged?: boolean | null
+          id?: string
+          reason?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string | null
+          flagged?: boolean | null
+          id?: string
+          reason?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_flag_audit_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_flag_audit_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_flag_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_flag_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profile_creation_log: {
         Row: {
           created_at: string | null
@@ -1631,6 +1699,10 @@ export type Database = {
         Args: { requesting_user_id: string }
         Returns: boolean
       }
+      flag_user: {
+        Args: { target_user_id: string; flag_reason: string }
+        Returns: boolean
+      }
       get_user_region: {
         Args: { user_id: string }
         Returns: string
@@ -1649,6 +1721,10 @@ export type Database = {
       }
       is_profile_complete: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      unflag_user: {
+        Args: { target_user_id: string }
         Returns: boolean
       }
     }

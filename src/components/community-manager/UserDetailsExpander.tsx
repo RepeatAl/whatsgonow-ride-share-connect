@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import UserFlaggingControls from "./UserFlaggingControls";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTrustScoreHistory } from "@/hooks/use-trust-score-history";
+import FlagHistoryDialog from "../flagging/FlagHistoryDialog";
 
 interface UserDetailsExpanderProps {
   user: User;
@@ -29,9 +30,12 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
     <div className="px-4 py-3 bg-gray-50">
       <div className="flex items-center justify-between mb-3">
         <h4 className="font-medium">Erweiterte Nutzerinformationen</h4>
-        {score !== null && (
-          <TrustScoreHistoryDialog userId={user.user_id} userName={user.name} />
-        )}
+        <div className="space-x-2">
+          {score !== null && (
+            <TrustScoreHistoryDialog userId={user.user_id} userName={user.name} />
+          )}
+          <FlagHistoryDialog userId={user.user_id} userName={user.name} />
+        </div>
       </div>
       
       <Separator className="my-2" />

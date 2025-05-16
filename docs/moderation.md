@@ -127,4 +127,3 @@ Dieses Dokument beschreibt die geplanten Funktionen zur Moderation von Inhalten,
 
 **Was ist, wenn ein Trust Score kritisch ist, aber kein Flagging besteht?**  
 → Das System zeigt Empfehlungen für Nutzer mit kritischem Trust Score an, aber die endgültige Entscheidung zum Flagging liegt beim CM.
-

@@ -106,4 +106,3 @@ created_at: TIMESTAMP WITH TIME ZONE
 - Integration von Eskalationsstufen basierend auf `user_flag_audit`
 - Automatisierte Benachrichtigungen bei Schwellenwert-Überschreitungen
 - Erweiterte Statistiken für Community Manager Dashboard
-

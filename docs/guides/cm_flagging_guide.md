@@ -97,4 +97,3 @@ A: Alle Community Manager, Admins und Super-Admins können die vollständige His
 
 **F: Werden gelöschte Markierungen auch protokolliert?**  
 A: Ja, sowohl Markierungen als auch Entmarkierungen werden in der Historie gespeichert und bleiben auch nach Löschung des Flags sichtbar.
-

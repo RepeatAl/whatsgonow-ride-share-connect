@@ -272,4 +272,3 @@ export function useFlagHistory(userId: string) {
 - Automatische Flagging-Empfehlungen basierend auf Trust Score und Aktivitätsmustern
 - Mehrere Eskalationsstufen (z.B. Warnung, Beobachtung, Sperrung)
 - Integration mit Benachrichtigungssystem für Admin-Alerts
-
