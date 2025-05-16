@@ -1,5 +1,5 @@
 
-import { Profile } from "@/types/auth"; // Changed import path to use auth instead of ./profile
+import { UserProfile } from "@/types/auth"; // Changed to import UserProfile instead of Profile
 
 export type SuspensionType = 'hard' | 'temporary' | 'soft';
 
