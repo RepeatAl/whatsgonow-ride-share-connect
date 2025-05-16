@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
@@ -21,6 +20,13 @@ export interface EscalationFilter {
   status?: 'active' | 'resolved' | 'all';
   type?: string;
   userId?: string;
+}
+
+export interface EscalationStatus {
+  hasActiveEscalation: boolean;
+  isPreSuspended: boolean;
+  preSuspendReason: string | null;
+  preSuspendAt: string | null;
 }
 
 export function useEscalation() {
@@ -97,9 +103,14 @@ export function useEscalation() {
     }
   };
 
-  const fetchUserEscalationStatus = async (userId: string) => {
+  const fetchUserEscalationStatus = async (userId: string): Promise<EscalationStatus> => {
     if (!canViewEscalations) {
-      return { hasActiveEscalation: false, isPreSuspended: false };
+      return { 
+        hasActiveEscalation: false, 
+        isPreSuspended: false,
+        preSuspendReason: null,
+        preSuspendAt: null
+      };
     }
     
     try {
@@ -127,13 +138,18 @@ export function useEscalation() {
       return {
         hasActiveEscalation: (count || 0) > 0,
         isPreSuspended: profileData.is_pre_suspended || false,
-        presSuspendReason: profileData.pre_suspend_reason || null,
+        preSuspendReason: profileData.pre_suspend_reason || null,
         preSuspendAt: profileData.pre_suspend_at || null
       };
     } catch (err) {
       console.error('Error fetching user escalation status:', err);
       setError(err instanceof Error ? err : new Error('Unknown error'));
-      return { hasActiveEscalation: false, isPreSuspended: false };
+      return { 
+        hasActiveEscalation: false, 
+        isPreSuspended: false,
+        preSuspendReason: null,
+        preSuspendAt: null 
+      };
     } finally {
       setLoading(false);
     }

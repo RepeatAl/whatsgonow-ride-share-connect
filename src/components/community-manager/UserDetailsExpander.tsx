@@ -12,7 +12,7 @@ import { useTrustScoreHistory } from "@/hooks/use-trust-score-history";
 import FlagHistoryDialog from "../flagging/FlagHistoryDialog";
 import { EscalationStatus } from "../escalation/EscalationStatus";
 import { PreSuspendDialog } from "../escalation/PreSuspendDialog";
-import { useEscalation } from "@/hooks/use-escalation";
+import { useEscalation, EscalationStatus as EscalationStatusType } from "@/hooks/use-escalation";
 
 interface UserDetailsExpanderProps {
   user: User;
@@ -24,11 +24,11 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
   const { history } = useTrustScoreHistory(user.user_id, 30);
   const [showFlaggingControls, setShowFlaggingControls] = useState(true);
   const { fetchUserEscalationStatus, evaluateUser } = useEscalation();
-  const [escalationStatus, setEscalationStatus] = useState({
+  const [escalationStatus, setEscalationStatus] = useState<EscalationStatusType>({
     hasActiveEscalation: false,
     isPreSuspended: false,
-    presSuspendReason: null as string | null,
-    preSuspendAt: null as string | null
+    preSuspendReason: null,
+    preSuspendAt: null
   });
   
   // Count disputes/conflicts (in a real app this would be a proper query)
@@ -72,7 +72,7 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
       {escalationStatus.isPreSuspended && (
         <EscalationStatus 
           isPreSuspended={escalationStatus.isPreSuspended}
-          preSuspendReason={escalationStatus.presSuspendReason}
+          preSuspendReason={escalationStatus.preSuspendReason}
           preSuspendAt={escalationStatus.preSuspendAt}
           className="mb-3"
         />
