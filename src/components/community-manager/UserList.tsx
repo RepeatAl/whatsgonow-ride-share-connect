@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Table, 
@@ -22,12 +23,19 @@ interface UserListProps {
 }
 
 const UserList = ({ region }: UserListProps) => {
-  const { users, loading } = useFetchUsers(region);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [showOnlyLowTrustUsers, setShowOnlyLowTrustUsers] = useState(false);
+  const [showOnlyFlaggedUsers, setShowOnlyFlaggedUsers] = useState(false);
+  const [orderFlagged, setOrderFlagged] = useState(true);
 
   // Cache trust scores to avoid multiple hooks for the same user
   const [trustScoreCache, setTrustScoreCache] = useState<Record<string, number | null>>({});
+  
+  // Fetch users with flagging options
+  const { users, loading } = useFetchUsers(region, {
+    onlyFlagged: showOnlyFlaggedUsers,
+    orderFlagged
+  });
 
   const toggleExpand = (userId: string) => {
     if (expandedUser === userId) {
@@ -60,6 +68,12 @@ const UserList = ({ region }: UserListProps) => {
       })
     : users;
 
+  // Handler for user updates (like flagging)
+  const handleUserUpdated = () => {
+    // Re-fetch users would be ideal here, but for now we'll just close the expanded panel
+    setExpandedUser(null);
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -83,20 +97,42 @@ const UserList = ({ region }: UserListProps) => {
     cacheTrustScore(userId, score);
     return null;
   };
+  
+  const flaggedCount = users.filter(user => user.flagged_by_cm).length;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2 mb-4">
-        <Checkbox 
-          id="show-low-trust" 
-          checked={showOnlyLowTrustUsers}
-          onCheckedChange={(checked) => setShowOnlyLowTrustUsers(checked as boolean)}
-        />
-        <Label htmlFor="show-low-trust" className="cursor-pointer">Nur Nutzer mit Trust Score unter 80 anzeigen</Label>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 mb-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="show-low-trust" 
+            checked={showOnlyLowTrustUsers}
+            onCheckedChange={(checked) => setShowOnlyLowTrustUsers(checked as boolean)}
+          />
+          <Label htmlFor="show-low-trust" className="cursor-pointer">Nur Nutzer mit Trust Score unter 80 anzeigen</Label>
+        </div>
         
-        {showOnlyLowTrustUsers && (
-          <Badge variant="outline" className="ml-auto bg-amber-50 text-amber-800 border-amber-200">
-            Gefiltert: {filteredUsers.length} von {users.length} Nutzern
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="show-flagged" 
+            checked={showOnlyFlaggedUsers}
+            onCheckedChange={(checked) => setShowOnlyFlaggedUsers(checked as boolean)}
+          />
+          <Label htmlFor="show-flagged" className="cursor-pointer">Nur markierte Nutzer anzeigen</Label>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="order-flagged" 
+            checked={orderFlagged}
+            onCheckedChange={(checked) => setOrderFlagged(checked as boolean)}
+          />
+          <Label htmlFor="order-flagged" className="cursor-pointer">Markierte Nutzer zuerst</Label>
+        </div>
+        
+        {flaggedCount > 0 && (
+          <Badge variant="outline" className="ml-auto bg-red-50 text-red-800 border-red-200">
+            {flaggedCount} markierte Nutzer
           </Badge>
         )}
       </div>
@@ -124,8 +160,10 @@ const UserList = ({ region }: UserListProps) => {
             {filteredUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-6">
-                  {showOnlyLowTrustUsers 
-                    ? "Keine Nutzer mit niedrigem Trust Score gefunden" 
+                  {showOnlyFlaggedUsers 
+                    ? "Keine markierten Nutzer gefunden" 
+                    : showOnlyLowTrustUsers
+                    ? "Keine Nutzer mit niedrigem Trust Score gefunden"
                     : "Keine Nutzer gefunden"}
                 </TableCell>
               </TableRow>

@@ -2,7 +2,7 @@
 import React from "react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Plus, Clock, Mail, Phone, AlertTriangle } from "lucide-react";
+import { Eye, Plus, Clock, Mail, Phone, AlertTriangle, Flag } from "lucide-react";
 import RoleBadge from "./RoleBadge";
 import UserRating from "./UserRating";
 import { User } from "@/hooks/use-fetch-users";
@@ -32,11 +32,21 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
     (score !== null && score < 60) || // Critical score
     (score !== null && hasRecentDrop); // Recent significant drop
   
+  // New flag indicator
+  const isFlagged = user.flagged_by_cm;
+  
+  // Border class based on user status
+  const borderClass = isFlagged 
+    ? "border-l-4 border-red-500" 
+    : needsAttention 
+      ? "border-l-4 border-amber-500"
+      : "";
+  
   return (
     <>
       <TableRow 
         key={user.user_id}
-        className={needsAttention ? "border-l-4 border-red-500" : ""}
+        className={borderClass}
       >
         <TableCell>
           <Button 
@@ -53,11 +63,25 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
         <TableCell className="font-medium">
           <div className="flex items-center gap-2">
             {user.name}
-            {needsAttention && (
+            {isFlagged && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <AlertTriangle className="h-4 w-4 text-red-500" />
+                    <Flag className="h-4 w-4 text-red-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="w-64">
+                      Markierter Nutzer: {user.flag_reason || 'Keine Begründung angegeben'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {needsAttention && !isFlagged && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="w-64">
@@ -86,16 +110,21 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
             <Button size="icon" variant="ghost" title={user.email}>
               <Mail className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="ghost" title="Anrufen">
-              <Phone className="h-4 w-4" />
-            </Button>
+            {user.phone && (
+              <Button size="icon" variant="ghost" title="Anrufen">
+                <Phone className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </TableCell>
       </TableRow>
       {isExpanded && (
         <TableRow>
           <TableCell colSpan={7} className="p-0 border-t-0">
-            <UserDetailsExpander user={user} />
+            <UserDetailsExpander 
+              user={user} 
+              onUserUpdated={() => toggleExpand(user.user_id)} 
+            />
           </TableCell>
         </TableRow>
       )}
