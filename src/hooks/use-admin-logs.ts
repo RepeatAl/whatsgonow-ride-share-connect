@@ -31,6 +31,16 @@ export interface UserSummary {
   senders: number;
 }
 
+export interface AdminStatsData {
+  totalUsers: number;
+  activeUsers: number;
+  pendingKyc: number;
+  totalOrders: number;
+  completedOrders: number;
+  totalCommission: number;
+  verifiedUsers: number;
+}
+
 export const useAdminLogs = (daysBack: number = 30, region?: string) => {
   const [logs, setLogs] = useState<AdminLogEntry[]>([]);
   const [transactions, setTransactions] = useState<TransactionEntry[]>([]);
@@ -38,10 +48,14 @@ export const useAdminLogs = (daysBack: number = 30, region?: string) => {
   const [timeRange, setTimeRange] = useState<string>(daysBack.toString());
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(region);
   const [loading, setLoading] = useState<boolean>(true);
-  const [stats, setStats] = useState({
-    totalDeliveries: 0,
-    totalTransactions: 0,
-    averageRating: 4.7 // Default value
+  const [stats, setStats] = useState<AdminStatsData>({
+    totalUsers: 0,
+    activeUsers: 0,
+    pendingKyc: 0,
+    totalOrders: 0,
+    completedOrders: 0,
+    totalCommission: 0,
+    verifiedUsers: 0
   });
 
   // Fetch admin logs
@@ -125,14 +139,28 @@ export const useAdminLogs = (daysBack: number = 30, region?: string) => {
       
       const totalTxAmount = formattedTx.reduce((sum, tx) => sum + (tx.amount || 0), 0);
       
+      // Aggregate user data to calculate stats
+      const totalUsers = userData ? userData.reduce((sum: number, region: any) => 
+        sum + (region.total_users || 0), 0) : 0;
+      
+      const activeUsers = userData ? userData.reduce((sum: number, region: any) => 
+        sum + (region.active_users || 0), 0) : 0;
+      
+      const verifiedUsers = userData ? userData.reduce((sum: number, region: any) => 
+        sum + (region.verified_users || 0), 0) : 0;
+      
       // Update state
       setLogs(formattedLogs);
       setTransactions(formattedTx);
       setUserSummaries(userData || []);
       setStats({
-        totalDeliveries,
-        totalTransactions: totalTxAmount,
-        averageRating: 4.7 // This would ideally be calculated from ratings data
+        totalUsers,
+        activeUsers,
+        pendingKyc: Math.round(totalUsers * 0.05), // Estimate for demo purposes
+        totalOrders: totalDeliveries * 1.5, // Estimate for demo purposes
+        completedOrders: totalDeliveries,
+        totalCommission: totalTxAmount,
+        verifiedUsers: verifiedUsers || Math.round(totalUsers * 0.3) // Fallback if not available
       });
     } catch (error) {
       console.error('Error fetching admin data:', error);
