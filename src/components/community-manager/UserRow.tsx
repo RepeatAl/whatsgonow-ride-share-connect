@@ -8,6 +8,7 @@ import UserRating from "./UserRating";
 import { User } from "@/hooks/use-fetch-users";
 import UserDetailsExpander from "./UserDetailsExpander";
 import TrustBadge from "../trust/TrustBadge";
+import { useTrustScore } from "@/hooks/use-trust-score";
 
 interface UserRowProps {
   user: User;
@@ -21,10 +22,17 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
   };
 
   const isExpanded = expandedUser === user.user_id;
-
+  const { score } = useTrustScore(user.user_id);
+  
+  // Determine if the user needs a visual warning indicator
+  const needsAttention = score !== null && score < 60;
+  
   return (
     <>
-      <TableRow key={user.user_id}>
+      <TableRow 
+        key={user.user_id}
+        className={needsAttention ? "border-l-4 border-red-500" : ""}
+      >
         <TableCell>
           <Button 
             variant="ghost" 
