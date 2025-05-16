@@ -4,7 +4,7 @@ import { User } from "@/hooks/use-fetch-users";
 import { TrustScoreHistoryDialog } from "@/components/trust/TrustScoreHistoryDialog";
 import { useTrustScore } from "@/hooks/use-trust-score";
 import { Separator } from "@/components/ui/separator";
-import { Flag, AlertCircle } from "lucide-react";
+import { Flag, AlertCircle, Ban } from "lucide-react";
 import { format } from "date-fns";
 import UserFlaggingControls from "./UserFlaggingControls";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,6 +13,11 @@ import FlagHistoryDialog from "../flagging/FlagHistoryDialog";
 import { EscalationStatus } from "../escalation/EscalationStatus";
 import { PreSuspendDialog } from "../escalation/PreSuspendDialog";
 import { useEscalation, EscalationStatus as EscalationStatusType } from "@/hooks/use-escalation";
+import { useSuspension } from "@/hooks/use-suspension";
+import { UserSuspensionStatus } from "../suspension/UserSuspensionStatus";
+import { SuspendUserDialog } from "../suspension/SuspendUserDialog";
+import { SuspensionHistoryDialog } from "../suspension/SuspensionHistoryDialog";
+import { Button } from "../ui/button";
 
 interface UserDetailsExpanderProps {
   user: User;
@@ -31,6 +36,16 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
     preSuspendAt: null
   });
   
+  const { fetchUserSuspensionStatus } = useSuspension();
+  const [suspensionStatus, setSuspensionStatus] = useState({
+    is_suspended: false,
+    suspended_until: null,
+    suspension_reason: null
+  });
+  
+  const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  
   // Count disputes/conflicts (in a real app this would be a proper query)
   // For demo purposes, we'll count significant trust score drops as "disputes"
   const significantDrops = history.filter(entry => entry.delta < -15).length;
@@ -38,11 +53,17 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
   
   useEffect(() => {
     loadEscalationStatus();
+    loadSuspensionStatus();
   }, [user.user_id]);
 
   const loadEscalationStatus = async () => {
     const status = await fetchUserEscalationStatus(user.user_id);
     setEscalationStatus(status);
+  };
+
+  const loadSuspensionStatus = async () => {
+    const status = await fetchUserSuspensionStatus(user.user_id);
+    setSuspensionStatus(status);
   };
 
   const handleUserEscalated = () => {
@@ -54,6 +75,11 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
     await evaluateUser(user.user_id);
     loadEscalationStatus();
   };
+
+  const handleUserSuspended = () => {
+    loadSuspensionStatus();
+    if (onUserUpdated) onUserUpdated();
+  };
   
   return (
     <div className="px-4 py-3 bg-gray-50">
@@ -64,12 +90,29 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
             <TrustScoreHistoryDialog userId={user.user_id} userName={user.name} />
           )}
           <FlagHistoryDialog userId={user.user_id} userName={user.name} />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setIsHistoryDialogOpen(true)}
+          >
+            <Ban className="h-3.5 w-3.5 mr-1" />
+            Suspendierungen
+          </Button>
         </div>
       </div>
       
       <Separator className="my-2" />
       
-      {escalationStatus.isPreSuspended && (
+      {/* Suspension Status */}
+      {suspensionStatus.is_suspended && (
+        <UserSuspensionStatus 
+          status={suspensionStatus}
+          className="mb-3"
+        />
+      )}
+      
+      {/* Escalation Status */}
+      {escalationStatus.isPreSuspended && !suspensionStatus.is_suspended && (
         <EscalationStatus 
           isPreSuspended={escalationStatus.isPreSuspended}
           preSuspendReason={escalationStatus.preSuspendReason}
@@ -92,7 +135,7 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
         </div>
       )}
       
-      {needsEscalation && !escalationStatus.isPreSuspended && (
+      {needsEscalation && !escalationStatus.isPreSuspended && !suspensionStatus.is_suspended && (
         <Alert className="mb-3 border-amber-200 bg-amber-50">
           <AlertCircle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-700 flex justify-between items-center">
@@ -142,15 +185,45 @@ const UserDetailsExpander: React.FC<UserDetailsExpanderProps> = ({ user, onUserU
             onFlagChange={onUserUpdated}
           />
           
-          {!escalationStatus.isPreSuspended && (
-            <PreSuspendDialog 
-              userId={user.user_id}
-              userName={user.name}
-              onEscalated={handleUserEscalated}
-            />
-          )}
+          <div className="space-x-2">
+            {!suspensionStatus.is_suspended && escalationStatus.isPreSuspended && (
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => setIsSuspendDialogOpen(true)}
+              >
+                <Ban className="h-3.5 w-3.5 mr-1" />
+                Suspendieren
+              </Button>
+            )}
+            
+            {!suspensionStatus.is_suspended && !escalationStatus.isPreSuspended && (
+              <PreSuspendDialog 
+                userId={user.user_id}
+                userName={user.name}
+                onEscalated={handleUserEscalated}
+              />
+            )}
+          </div>
         </div>
       )}
+      
+      {/* Suspension Dialog */}
+      <SuspendUserDialog
+        userId={user.user_id}
+        userName={user.name}
+        isOpen={isSuspendDialogOpen}
+        onClose={() => setIsSuspendDialogOpen(false)}
+        onSuspended={handleUserSuspended}
+      />
+      
+      {/* Suspension History Dialog */}
+      <SuspensionHistoryDialog
+        userId={user.user_id}
+        userName={user.name}
+        open={isHistoryDialogOpen}
+        onOpenChange={setIsHistoryDialogOpen}
+      />
     </div>
   );
 };
