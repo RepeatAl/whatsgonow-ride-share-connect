@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UsersIcon, Shield, Ban } from "lucide-react";
-import { SuspendedUsersTab } from "@/components/suspension";
+import { SuspendedUsersTab, UnsuspendExpiredUsersButton } from "@/components/suspension";
 
 const DashboardAdmin = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
@@ -65,6 +65,10 @@ const DashboardAdmin = () => {
           </TabsContent>
           
           <TabsContent value="suspensions" className="space-y-6 mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Suspendierte Nutzer</h2>
+              <UnsuspendExpiredUsersButton />
+            </div>
             <SuspendedUsersTab />
           </TabsContent>
         </Tabs>

@@ -5,3 +5,4 @@ export { default as UserSuspensionStatus } from './UserSuspensionStatus';
 export { default as SuspensionHistoryDialog } from './SuspensionHistoryDialog';
 export { default as SuspendedUsersTab } from './SuspendedUsersTab';
 export { default as UserSuspensionNotice } from './UserSuspensionNotice';
+export { default as UnsuspendExpiredUsersButton } from '../admin/UnsuspendExpiredUsersButton';

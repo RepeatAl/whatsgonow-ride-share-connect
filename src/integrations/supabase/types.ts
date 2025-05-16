@@ -1911,6 +1911,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      unsuspend_expired_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       feedback_type: "suggestion" | "bug" | "compliment" | "question"
