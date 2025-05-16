@@ -113,26 +113,27 @@ export const ImageUploadSection = ({
     }
   }, [orderId, userId, uploadFiles, onPhotosUploaded]);
   
-  // Create stable props for PreviewGrid
-  const previewGridProps = useMemo(() => ({
-    previews,
-    onRemove: handleRemoveFile,
-    onSave: handleSave,
-    isUploading,
-    uploadProgress,
-    isLoading,
-    onFileSelect: handleSlotFileSelect,
-    onCameraOpen: handleSlotCameraOpen,
-    userId,
-    orderId,
-    onUploadComplete: handleMobilePhotosComplete,
-    analysisStatus,
-    onAnalyze: handleAnalyzeImage
-  }), [
-    previews, handleRemoveFile, handleSave, isUploading, uploadProgress, isLoading,
-    handleSlotFileSelect, handleSlotCameraOpen, userId, orderId, 
-    handleMobilePhotosComplete, analysisStatus, handleAnalyzeImage
-  ]);
+  // Convert previews to the format expected by PreviewGrid
+  const imageList = useMemo(() => {
+    return previews.length > 0 ? previews : Array(4).fill(null);
+  }, [previews]);
+  
+  const handleImageChange = useCallback((index: number, file: File) => {
+    // Handle file change using our existing handlers
+    if (file) {
+      const fileList = new DataTransfer();
+      fileList.items.add(file);
+      
+      const syntheticEvent = {
+        target: {
+          files: fileList.files,
+          value: ""
+        }
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      
+      handleFileChange(syntheticEvent);
+    }
+  }, [handleFileChange]);
 
   // Create stable modal props
   const modalProps = useMemo(() => ({
@@ -152,7 +153,16 @@ export const ImageUploadSection = ({
               <FormItem>
                 <FormLabel>Bilder hochladen (max. 4, 2 MB pro Datei)</FormLabel>
                 
-                <PreviewGrid {...previewGridProps} />
+                <PreviewGrid 
+                  images={imageList}
+                  onImageChange={handleImageChange}
+                  onImageRemove={handleRemoveFile}
+                  imageCount={4}
+                  deviceType="desktop"
+                  userId={userId}
+                  orderId={orderId}
+                  onUploadComplete={handleMobilePhotosComplete}
+                />
                 
                 <input 
                   ref={fileInputRef}

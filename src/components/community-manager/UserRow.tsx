@@ -4,7 +4,7 @@ import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, Plus, Clock, Mail, Phone } from "lucide-react";
 import RoleBadge from "./RoleBadge";
-import UserRating from "../rating/UserRating";
+import UserRating from "./UserRating";
 import { User } from "@/hooks/use-fetch-users";
 import UserDetailsExpander from "./UserDetailsExpander";
 import TrustBadge from "../trust/TrustBadge";

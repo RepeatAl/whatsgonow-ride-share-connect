@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/components/Layout';
 import AdminToolsGrid from '@/components/admin/dashboard/AdminToolsGrid';
-import KPICards from '@/components/admin/dashboard/KPICards';
+import { DashboardStats } from '@/components/admin/dashboard/KPICards';
 import UserActivityTable from '@/components/admin/dashboard/UserActivityTable';
 import TransactionsTable from '@/components/admin/dashboard/TransactionsTable';
 import LogsTable from '@/components/admin/dashboard/LogsTable';
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">{t('admin.dashboard.title', 'Admin Dashboard')}</h1>
         
-        <KPICards stats={stats} timeRange={parseInt(timeRange)} />
+        <DashboardStats stats={stats} timeRange={parseInt(timeRange)} />
         
         <AdminToolsGrid />
         

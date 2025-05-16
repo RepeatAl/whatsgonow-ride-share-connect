@@ -1,7 +1,7 @@
 
 import React from "react";
 
-interface UserRatingProps {
+export interface UserRatingProps {
   rating: number;
 }
 

@@ -1,8 +1,8 @@
 
 import { Users, Package, BadgeCheck, Banknote, Shield } from "lucide-react";
-import { StatCard } from "./StatCard";
-import { StatsGrid } from "./StatsGrid";
-import { StatsSkeleton } from "./StatsSkeleton";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { StatsGrid } from "@/components/dashboard/StatsGrid";
+import { StatsSkeleton } from "@/components/dashboard/StatsSkeleton";
 
 interface StatsData {
   totalUsers: number;
@@ -18,6 +18,7 @@ interface DashboardStatsProps {
   role?: string;
   stats?: StatsData;
   isLoading?: boolean;
+  timeRange?: number;
 }
 
 export const DashboardStats = ({ 
@@ -90,3 +91,6 @@ export const DashboardStats = ({
     </StatsGrid>
   );
 };
+
+// Create a default export that re-exports the named export
+export default DashboardStats;
