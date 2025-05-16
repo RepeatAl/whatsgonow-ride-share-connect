@@ -41,6 +41,31 @@ export const trustService = {
   },
   
   /**
+   * Get the trust score history for a user
+   * 
+   * @param userId The user ID to get the trust score history for
+   * @param limit The maximum number of history entries to return (default: 10)
+   * @returns Array of trust score audit entries
+   */
+  getTrustScoreHistory: async (userId: string, limit = 10): Promise<TrustScoreAuditEntry[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('trust_score_audit')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+        
+      if (error) throw error;
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching trust score history:', error);
+      return [];
+    }
+  },
+  
+  /**
    * Recalculate trust scores for all users (admin only)
    * 
    * @returns The number of user scores updated
@@ -59,3 +84,16 @@ export const trustService = {
     }
   }
 };
+
+/**
+ * Trust score audit entry from the database
+ */
+export interface TrustScoreAuditEntry {
+  id: string;
+  user_id: string;
+  old_score: number | null;
+  new_score: number | null;
+  delta: number;
+  reason: string;
+  created_at: string;
+}
