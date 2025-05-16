@@ -1,52 +1,92 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Truck, BadgeDollarSign, Star } from "lucide-react";
+import { Users, Package, BadgeCheck, Banknote, Shield } from "lucide-react";
+import { StatCard } from "./StatCard";
+import { StatsGrid } from "./StatsGrid";
+import { StatsSkeleton } from "./StatsSkeleton";
 
-interface KPICardsProps {
-  stats: {
-    totalDeliveries: number;
-    totalTransactions: number;
-    averageRating: number;
-  };
-  timeRange: number;
+interface StatsData {
+  totalUsers: number;
+  activeUsers: number;
+  pendingKyc: number;
+  totalOrders: number;
+  completedOrders: number;
+  totalCommission: number;
+  verifiedUsers?: number;
 }
 
-const KPICards = ({ stats, timeRange }: KPICardsProps) => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">Lieferungen</CardTitle>
-        <Truck className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{stats.totalDeliveries}</div>
-        <p className="text-xs text-muted-foreground">In den letzten {timeRange} Tagen</p>
-      </CardContent>
-    </Card>
-    
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">Transaktionsvolumen</CardTitle>
-        <BadgeDollarSign className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">€{stats.totalTransactions.toFixed(2)}</div>
-        <p className="text-xs text-muted-foreground">In den letzten {timeRange} Tagen</p>
-      </CardContent>
-    </Card>
-    
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">Ø Bewertung</CardTitle>
-        <Star className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{stats.averageRating}</div>
-        <p className="text-xs text-muted-foreground">In den letzten {timeRange} Tagen</p>
-      </CardContent>
-    </Card>
-  </div>
-);
+interface DashboardStatsProps {
+  role?: string;
+  stats?: StatsData;
+  isLoading?: boolean;
+}
 
-export default KPICards;
+export const DashboardStats = ({ 
+  role = 'sender', 
+  stats = {
+    totalUsers: 0,
+    activeUsers: 0,
+    pendingKyc: 0,
+    totalOrders: 0,
+    completedOrders: 0,
+    totalCommission: 0,
+    verifiedUsers: 0
+  }, 
+  isLoading = false 
+}: DashboardStatsProps) => {
+  if (isLoading) {
+    return <StatsSkeleton />;
+  }
 
+  const statItems = [
+    {
+      title: "Total Users",
+      value: stats.totalUsers,
+      icon: <Users className="h-5 w-5 text-blue-500" aria-hidden="true" />,
+      description: `${stats.activeUsers} active in last 30 days`,
+      tooltip: "Total number of registered users on the platform",
+    },
+    {
+      title: "Total Orders",
+      value: stats.totalOrders,
+      icon: <Package className="h-5 w-5 text-green-500" aria-hidden="true" />,
+      description: `${stats.completedOrders} completed`,
+      tooltip: "Total number of transport orders created",
+    },
+    {
+      title: "Pending KYC",
+      value: stats.pendingKyc,
+      icon: <BadgeCheck className="h-5 w-5 text-amber-500" aria-hidden="true" />,
+      description: "Users requiring verification",
+      tooltip: "Users waiting for KYC verification approval",
+    },
+    {
+      title: "Verified Users",
+      value: stats.verifiedUsers || 0,
+      icon: <Shield className="h-5 w-5 text-indigo-500" aria-hidden="true" />,
+      description: "Users with verified accounts",
+      tooltip: "Total number of users with verified ID or vehicle",
+    },
+    {
+      title: "Total Commission",
+      value: `$${stats.totalCommission.toFixed(2)}`,
+      icon: <Banknote className="h-5 w-5 text-purple-500" aria-hidden="true" />,
+      description: "From completed orders",
+      tooltip: "Total commission earned from completed transport orders",
+    },
+  ];
+
+  return (
+    <StatsGrid>
+      {statItems.map((item) => (
+        <StatCard
+          key={item.title}
+          title={item.title}
+          value={item.value}
+          icon={item.icon}
+          description={item.description}
+          tooltip={item.tooltip}
+        />
+      ))}
+    </StatsGrid>
+  );
+};

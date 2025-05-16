@@ -11,6 +11,7 @@ import LogsTable from '@/components/admin/dashboard/LogsTable';
 import FilterOptions from '@/components/admin/dashboard/FilterOptions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminLogs } from '@/hooks/use-admin-logs';
+import TrustScoreAdminPanel from '@/components/admin/TrustScoreAdminPanel';
 
 const AdminDashboard = () => {
   const { profile, loading: authLoading } = useAuth();
@@ -81,6 +82,8 @@ const AdminDashboard = () => {
           </div>
           
           <div className="lg:col-span-4">
+            <TrustScoreAdminPanel />
+            <div className="h-6"></div>
             <LogsTable logs={logs} timeRange={parseInt(timeRange)} />
           </div>
         </div>

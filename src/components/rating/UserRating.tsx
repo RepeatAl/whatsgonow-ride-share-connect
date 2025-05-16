@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Star, Award, Shield, ShieldCheck, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ratingService } from "@/services/ratingService";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import TrustBadge from "@/components/trust/TrustBadge";
 
 interface UserRatingProps {
   userId: string;
@@ -13,6 +13,7 @@ interface UserRatingProps {
   showBadge?: boolean;
   showDetails?: boolean;
   className?: string;
+  showTrustScore?: boolean;
 }
 
 interface RatingDetail {
@@ -22,7 +23,14 @@ interface RatingDetail {
   timestamp: Date;
 }
 
-const UserRating = ({ userId, size = "md", showBadge = true, showDetails = false, className }: UserRatingProps) => {
+const UserRating = ({ 
+  userId, 
+  size = "md", 
+  showBadge = true, 
+  showDetails = false, 
+  className = "",
+  showTrustScore = true
+}: UserRatingProps) => {
   const [averageRating, setAverageRating] = useState<number | null>(null);
   const [ratingCount, setRatingCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -177,6 +185,11 @@ const UserRating = ({ userId, size = "md", showBadge = true, showDetails = false
         </span>
         
         {showBadge && getTrustBadge()}
+
+        {/* Add Trust Score Badge */}
+        {showTrustScore && (
+          <TrustBadge userId={userId} size={size} />
+        )}
 
         {showDetails && ratingCount > 0 && (
           <Button 

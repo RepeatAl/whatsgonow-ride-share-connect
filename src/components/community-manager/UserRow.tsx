@@ -4,9 +4,10 @@ import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, Plus, Clock, Mail, Phone } from "lucide-react";
 import RoleBadge from "./RoleBadge";
-import UserRating from "./UserRating";
+import UserRating from "../rating/UserRating";
 import { User } from "@/hooks/use-fetch-users";
 import UserDetailsExpander from "./UserDetailsExpander";
+import TrustBadge from "../trust/TrustBadge";
 
 interface UserRowProps {
   user: User;
@@ -43,8 +44,9 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
           {formatDate(user.created_at)}
         </TableCell>
         <TableCell>{user.orders_count}</TableCell>
-        <TableCell>
+        <TableCell className="flex items-center gap-2">
           <UserRating rating={user.rating_avg} />
+          <TrustBadge userId={user.user_id} size="sm" />
         </TableCell>
         <TableCell>
           <div className="flex space-x-2">
