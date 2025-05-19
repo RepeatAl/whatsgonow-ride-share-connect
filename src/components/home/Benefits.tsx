@@ -11,10 +11,11 @@ import {
 import { useTranslation } from "react-i18next";
 
 const Benefits = () => {
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
+  const isRTL = i18n.language === 'ar';
   
   return (
-    <section className="py-16 container mx-auto px-4">
+    <section className="py-16 container mx-auto px-4" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="text-center mb-16">
         <h2 className="text-3xl font-bold">{t('benefits.title')}</h2>
         <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
@@ -70,9 +71,12 @@ interface BenefitCardProps {
 }
 
 const BenefitCard = ({ icon, title, description }: BenefitCardProps) => {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
+  
   return (
     <Card className="border-none shadow hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-center gap-4 pb-2">
+      <CardHeader className={`flex flex-row items-center gap-4 pb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <div className="rounded-full bg-orange-100 dark:bg-orange-900/20 p-2">
           {icon}
         </div>

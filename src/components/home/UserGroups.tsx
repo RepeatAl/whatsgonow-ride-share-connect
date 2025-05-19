@@ -6,10 +6,11 @@ import { Package, Truck, Building, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const UserGroups = () => {
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
+  const isRTL = i18n.language === 'ar';
   
   return (
-    <section className="py-16 bg-gray-50 dark:bg-gray-900">
+    <section className="py-16 bg-gray-50 dark:bg-gray-900" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold">{t('user_groups.title')}</h2>

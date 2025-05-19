@@ -28,6 +28,7 @@ import deFaq from './locales/de/faq.json';
 // Import Arabic translations
 import arCommon from './locales/ar/common.json';
 import arFaq from './locales/ar/faq.json';
+import arLanding from './locales/ar/landing.json';
 
 // Configure namespaces for each feature
 const resources = {
@@ -55,7 +56,8 @@ const resources = {
   },
   ar: {
     common: arCommon,
-    faq: arFaq
+    faq: arFaq,
+    landing: arLanding
   }
 };
 

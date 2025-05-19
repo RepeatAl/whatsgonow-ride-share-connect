@@ -4,7 +4,8 @@ import { StarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const Testimonials = () => {
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
+  const isRTL = i18n.language === 'ar';
 
   const testimonials = [
     {
@@ -31,7 +32,7 @@ const Testimonials = () => {
   ];
 
   return (
-    <section className="py-16 container mx-auto px-4">
+    <section className="py-16 container mx-auto px-4" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="text-center mb-16">
         <h2 className="text-3xl font-bold">{t('testimonials.title')}</h2>
         <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
@@ -57,6 +58,9 @@ interface TestimonialCardProps {
 }
 
 const TestimonialCard = ({ name, role, text, rating, image }: TestimonialCardProps) => {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
+
   return (
     <Card className="border-none shadow-md h-full flex flex-col">
       <CardContent className="pt-6 flex-grow">
@@ -70,7 +74,7 @@ const TestimonialCard = ({ name, role, text, rating, image }: TestimonialCardPro
         </div>
         <p className="text-gray-600 dark:text-gray-300 italic">"{text}"</p>
       </CardContent>
-      <CardFooter className="flex items-center gap-4 border-t pt-4">
+      <CardFooter className={`flex items-center gap-4 border-t pt-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <div className="w-12 h-12 rounded-full overflow-hidden">
           <img 
             src={image} 

@@ -8,17 +8,20 @@ import { useTranslation } from "react-i18next";
 const Hero = () => {
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
   };
 
+  const isRTL = i18n.language === 'ar';
+
   return <div className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
     <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/20 to-brand-blue/10 z-0"></div>
     
     <div className="container mx-auto px-4 relative z-10">
-      <div className="grid md:grid-cols-2 gap-12 items-center">
+      <div className="grid md:grid-cols-2 gap-12 items-center"
+           dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="space-y-6">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight" 
               dangerouslySetInnerHTML={{__html: t('hero.title')}} />
