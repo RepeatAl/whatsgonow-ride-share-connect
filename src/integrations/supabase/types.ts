@@ -1198,6 +1198,7 @@ export type Database = {
           first_name: string
           gdpr_consent: boolean
           id: string
+          language: string | null
           last_name: string
           notes: string | null
           notification_sent: boolean
@@ -1215,6 +1216,7 @@ export type Database = {
           first_name: string
           gdpr_consent?: boolean
           id?: string
+          language?: string | null
           last_name: string
           notes?: string | null
           notification_sent?: boolean
@@ -1232,6 +1234,7 @@ export type Database = {
           first_name?: string
           gdpr_consent?: boolean
           id?: string
+          language?: string | null
           last_name?: string
           notes?: string | null
           notification_sent?: boolean

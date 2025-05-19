@@ -94,6 +94,23 @@ serve(async (req: Request) => {
     const source = req.headers.get("referer");
     console.log(`Request source (referer): ${source}`);
 
+    // Get the language from the Accept-Language header or default to 'de'
+    const acceptLanguage = req.headers.get("Accept-Language") || "de";
+    // Extract the language code (can be improved to better parse Accept-Language)
+    let language = acceptLanguage.split(',')[0].split('-')[0];
+    
+    // Check if a specific language was provided in the request body
+    if (json.language) {
+      language = json.language;
+    }
+    
+    // Only accept supported languages
+    if (!['de', 'en', 'ar'].includes(language)) {
+      language = 'de'; // Default to German if unsupported
+    }
+    
+    console.log(`Using language for registration: ${language}`);
+
     // Insert into database
     console.log(`Inserting data into pre_registrations table...`);
     const { data: insertedData, error: dbError } = await supabase
@@ -101,6 +118,7 @@ serve(async (req: Request) => {
       .insert([{ 
         ...data,
         source,
+        language,
         notification_sent: false,
         notes: originalDomain !== 'gmail.com' && data.email.includes('gmail.com') 
           ? `Original domain: ${originalDomain}` 

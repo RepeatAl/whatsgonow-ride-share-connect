@@ -29,6 +29,8 @@ import deFaq from './locales/de/faq.json';
 import arCommon from './locales/ar/common.json';
 import arFaq from './locales/ar/faq.json';
 import arLanding from './locales/ar/landing.json';
+import arPreRegister from './locales/ar/pre_register.json';
+import arErrors from './locales/ar/errors.json';
 
 // Configure namespaces for each feature
 const resources = {
@@ -57,7 +59,9 @@ const resources = {
   ar: {
     common: arCommon,
     faq: arFaq,
-    landing: arLanding
+    landing: arLanding,
+    pre_register: arPreRegister,
+    errors: arErrors
   }
 };
 

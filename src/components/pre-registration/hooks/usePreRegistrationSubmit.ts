@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { PreRegistrationFormData } from "@/lib/validators/pre-registration";
 import { supabase } from "@/lib/supabaseClient";
+import i18next from "i18next";
 
 export function usePreRegistrationSubmit() {
   const { t } = useTranslation();
@@ -20,15 +21,22 @@ export function usePreRegistrationSubmit() {
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
       
+      // Add the current language to the form data
+      const submissionData = {
+        ...data,
+        language: i18next.language // Include the current language
+      };
+      
       console.log("Sending data to pre-register endpoint with auth token");
       
       const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken || ""}`
+          "Authorization": `Bearer ${accessToken || ""}`,
+          "Accept-Language": i18next.language // Also send as header for fallback
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(submissionData)
       });
       
       // Improved error handling
@@ -56,8 +64,9 @@ export function usePreRegistrationSubmit() {
       const result = await response.json();
       console.log("Pre-registration success:", result);
       
-      toast.success(t("pre_register.success.title"), {
-        description: t("pre_register.success.description")
+      // Use the correct translation namespace for success messages
+      toast.success(t("success.title", { ns: 'pre_register' }), {
+        description: t("success.description", { ns: 'pre_register' })
       });
 
       // Use React Router's navigate instead of window.location.href for client-side navigation
