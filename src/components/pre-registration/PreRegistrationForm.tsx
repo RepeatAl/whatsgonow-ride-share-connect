@@ -15,7 +15,7 @@ import { RoleSelectionFields } from "./RoleSelectionFields";
 import { GdprConsentField } from "./GdprConsentField";
 
 export function PreRegistrationForm() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pre_register');
   const { isSubmitting, handleSubmit: submitRegistration } = usePreRegistrationSubmit();
   
   const form = useForm<PreRegistrationFormData>({
@@ -58,7 +58,7 @@ export function PreRegistrationForm() {
           <div className="space-y-2">
             <VehicleTypeSelector control={form.control} />
             {form.formState.errors.vehicle_types && (
-              <p className="text-sm text-red-500">{t("errors.vehicle_required")}</p>
+              <p className="text-sm text-red-500">{t('vehicle_types.error', { ns: 'errors' })}</p>
             )}
           </div>
         )}
@@ -70,7 +70,7 @@ export function PreRegistrationForm() {
           className="w-full" 
           disabled={!form.formState.isValid || isSubmitting}
         >
-          {isSubmitting ? t("pre_register.processing") : t("pre_register.submit")}
+          {isSubmitting ? t("processing") : t("submit")}
         </Button>
       </form>
     </Form>

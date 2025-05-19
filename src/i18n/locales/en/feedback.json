@@ -1,0 +1,61 @@
+
+{
+  "header": {
+    "title": "Share Your Feedback",
+    "submitted_title": "Feedback Submitted",
+    "description": "Help us improve Whatsgonow by sharing your experience",
+    "submitted_description": "Thank you for helping us improve Whatsgonow!"
+  },
+  "form": {
+    "type_label": "What type of feedback do you have?",
+    "types": {
+      "suggestion": "Suggestion",
+      "bug": "Bug Report",
+      "compliment": "Compliment",
+      "question": "Question"
+    },
+    "satisfaction_label": "How satisfied are you?",
+    "satisfaction_stars": "stars",
+    "features_label": "Which features have you used?",
+    "features": {
+      "find_transport": "Find Transport",
+      "offer_transport": "Offer Transport",
+      "messaging": "Messaging",
+      "tracking": "Tracking",
+      "payments": "Payments"
+    },
+    "feedback_label": "Your Feedback",
+    "feedback_placeholder": "Share your thoughts, ideas, or issues with us...",
+    "submit": "Submit Feedback",
+    "submitting": "Submitting..."
+  },
+  "toast": {
+    "success": "Thank you for your feedback!",
+    "error": "Failed to submit feedback.",
+    "response_added": "Response has been sent.",
+    "response_error": "Failed to send response.",
+    "status_updated": "Feedback status has been updated."
+  },
+  "status": {
+    "open": "Open",
+    "in_progress": "In Progress",
+    "resolved": "Resolved"
+  },
+  "filter": {
+    "all": "All",
+    "status": {
+      "label": "Status",
+      "open": "Open Only",
+      "in_progress": "In Progress",
+      "resolved": "Resolved"
+    },
+    "type": {
+      "label": "Feedback Type",
+      "all": "All Types",
+      "suggestion": "Suggestions",
+      "bug": "Bugs",
+      "compliment": "Compliments",
+      "question": "Questions"
+    }
+  }
+}

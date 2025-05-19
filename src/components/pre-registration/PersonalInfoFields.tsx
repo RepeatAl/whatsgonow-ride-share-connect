@@ -16,7 +16,7 @@ interface PersonalInfoFieldsProps {
 }
 
 export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pre_register');
   
   return (
     <>
@@ -26,7 +26,7 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
           name="first_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("pre_register.first_name")}</FormLabel>
+              <FormLabel>{t("first_name")}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -40,7 +40,7 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
           name="last_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("pre_register.last_name")}</FormLabel>
+              <FormLabel>{t("last_name")}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -55,7 +55,7 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t("pre_register.email")}</FormLabel>
+            <FormLabel>{t("email")}</FormLabel>
             <FormControl>
               <Input type="email" {...field} />
             </FormControl>
@@ -69,7 +69,7 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
         name="postal_code"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t("pre_register.postal_code")}</FormLabel>
+            <FormLabel>{t("postal_code")}</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>

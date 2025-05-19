@@ -1,0 +1,10 @@
+
+{
+  "required": "Dieses Feld ist erforderlich",
+  "min_length": "Mindestens {{count}} Zeichen erforderlich",
+  "invalid_email": "Ungültige E-Mail-Adresse",
+  "invalid_postal": "Ungültige Postleitzahl",
+  "gdpr_required": "Bitte stimmen Sie den Datenschutzbestimmungen zu",
+  "vehicle_required": "Bitte mindestens eine Fahrzeuggröße auswählen",
+  "registration_failed": "Registrierung fehlgeschlagen. Bitte versuche es später erneut."
+}

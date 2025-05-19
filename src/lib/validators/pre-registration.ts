@@ -3,13 +3,13 @@ import * as z from "zod";
 import i18next from "i18next";
 
 export const createPreRegistrationSchema = () => {
-  const t = i18next.t;
+  const t = (key: string, options?: any) => i18next.t(key, { ...options, ns: 'errors' });
   
   return z.object({
-    first_name: z.string().min(2, t("errors.min_length", { count: 2 })),
-    last_name: z.string().min(2, t("errors.min_length", { count: 2 })),
-    email: z.string().email(t("errors.invalid_email")),
-    postal_code: z.string().min(4, t("errors.invalid_postal")),
+    first_name: z.string().min(2, t("min_length", { count: 2 })),
+    last_name: z.string().min(2, t("min_length", { count: 2 })),
+    email: z.string().email(t("invalid_email")),
+    postal_code: z.string().min(4, t("invalid_postal")),
     wants_driver: z.boolean().default(false),
     wants_cm: z.boolean().default(false),
     wants_sender: z.boolean().default(false),
@@ -17,7 +17,7 @@ export const createPreRegistrationSchema = () => {
       z.enum(["S", "M", "L", "XL", "XXL", "MOPED", "BIKE", "BOAT", "PLANE"])
     ).optional(),
     gdpr_consent: z.boolean().refine((val) => val === true, {
-      message: t("errors.gdpr_required")
+      message: t("gdpr_required")
     })
   }).superRefine((data, ctx) => {
     if (data.wants_driver) {
@@ -25,7 +25,7 @@ export const createPreRegistrationSchema = () => {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["vehicle_types"],
-          message: t("errors.vehicle_required")
+          message: t("vehicle_required")
         });
       }
     }

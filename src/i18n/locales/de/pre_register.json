@@ -1,0 +1,33 @@
+
+{
+  "title": "Sei dabei, wenn whatsgonow startet!",
+  "subtitle": "Registriere dich jetzt für die Warteliste und sei einer der Ersten, die whatsgonow nutzen können.",
+  "heading": "Voranmeldung",
+  "first_name": "Vorname",
+  "last_name": "Nachname",
+  "email": "E-Mail",
+  "postal_code": "Postleitzahl",
+  "register_as": "Registrieren als",
+  "driver": "Fahrer",
+  "cm": "Community Manager",
+  "sender": "Versender",
+  "vehicle_types": {
+    "label": "Fahrzeugtyp",
+    "car_sizes": "Auto (Größen)",
+    "moped": "Moped/Motorrad",
+    "bike": "Fahrrad/Lastenrad",
+    "boat": "Schiff",
+    "plane": "Flugzeug"
+  },
+  "gdpr_consent": "Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu",
+  "submit": "Jetzt vorregistrieren",
+  "processing": "Wird verarbeitet...",
+  "success": {
+    "title": "Voranmeldung erfolgreich!",
+    "description": "Vielen Dank für dein Interesse an whatsgonow. Wir haben dir (falls technisch möglich) eine Bestätigungs-E-Mail geschickt.",
+    "confirm_notice": "Bitte klicke auf den Bestätigungslink in dieser E-Mail, um deinen Zugang zu aktivieren.",
+    "login_notice": "Danach kannst du dich jederzeit einloggen!",
+    "spam_notice": "Sollte die E-Mail nicht ankommen, prüfe deinen Spam-Ordner oder versuch es später erneut.",
+    "back_to_home": "Zurück zur Startseite"
+  }
+}

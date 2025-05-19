@@ -8,10 +8,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/hooks/use-language";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export const LanguageToggle = () => {
   const { changeLanguage, currentLanguage, loading } = useLanguage();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleLanguageChange = async (lang: string) => {
     if (currentLanguage === lang) return;

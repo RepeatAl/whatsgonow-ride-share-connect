@@ -16,7 +16,7 @@ interface GdprConsentFieldProps {
 }
 
 export function GdprConsentField({ control }: GdprConsentFieldProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pre_register');
   
   return (
     <FormField
@@ -33,7 +33,7 @@ export function GdprConsentField({ control }: GdprConsentFieldProps) {
           </FormControl>
           <div className="space-y-1 leading-none">
             <FormLabel htmlFor="gdpr_consent" className="font-normal">
-              {t("pre_register.gdpr_consent")}
+              {t("gdpr_consent")}
             </FormLabel>
             <FormMessage />
           </div>

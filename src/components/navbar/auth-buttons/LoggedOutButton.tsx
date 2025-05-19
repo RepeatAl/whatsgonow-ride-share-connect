@@ -11,7 +11,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 const LoggedOutButton = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
   
   return (
     <Tooltip>
@@ -20,15 +20,15 @@ const LoggedOutButton = () => {
           <Button 
             variant="brand" 
             className="gap-2"
-            aria-label={t('auth.login')}
+            aria-label={t('login')}
           >
             <LogIn className="h-5 w-5" />
-            <span>{t('auth.login')}</span>
+            <span>{t('login')}</span>
           </Button>
         </Link>
       </TooltipTrigger>
       <TooltipContent>
-        <p>{t('auth.login')} {t('auth.register')}</p>
+        <p>{t('login')} {t('register')}</p>
       </TooltipContent>
     </Tooltip>
   );

@@ -1,0 +1,33 @@
+
+{
+  "title": "Join whatsgonow when we launch!",
+  "subtitle": "Register now for the waiting list and be one of the first to use whatsgonow.",
+  "heading": "Pre-registration",
+  "first_name": "First Name",
+  "last_name": "Last Name",
+  "email": "Email",
+  "postal_code": "Postal Code",
+  "register_as": "Register as",
+  "driver": "Driver",
+  "cm": "Community Manager",
+  "sender": "Sender",
+  "vehicle_types": {
+    "label": "Vehicle Type",
+    "car_sizes": "Car (Sizes)",
+    "moped": "Moped/Motorcycle",
+    "bike": "Bicycle/Cargo Bike",
+    "boat": "Boat",
+    "plane": "Airplane"
+  },
+  "gdpr_consent": "I agree to the processing of my data according to the privacy policy",
+  "submit": "Pre-register now",
+  "processing": "Processing...",
+  "success": {
+    "title": "Pre-registration successful!",
+    "description": "Thank you for your interest in whatsgonow. We have sent you a confirmation email (if technically possible).",
+    "confirm_notice": "Please click on the confirmation link in this email to activate your access.",
+    "login_notice": "After that, you can log in anytime!",
+    "spam_notice": "If the email does not arrive, check your spam folder or try again later.",
+    "back_to_home": "Back to home"
+  }
+}

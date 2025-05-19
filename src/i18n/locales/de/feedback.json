@@ -1,0 +1,61 @@
+
+{
+  "header": {
+    "title": "Feedback teilen",
+    "submitted_title": "Feedback gesendet",
+    "description": "Helfen Sie uns, Whatsgonow durch Ihr Feedback zu verbessern",
+    "submitted_description": "Vielen Dank, dass Sie uns helfen, Whatsgonow zu verbessern!"
+  },
+  "form": {
+    "type_label": "Welche Art von Feedback haben Sie?",
+    "types": {
+      "suggestion": "Vorschlag",
+      "bug": "Fehlerbericht",
+      "compliment": "Kompliment",
+      "question": "Frage"
+    },
+    "satisfaction_label": "Wie zufrieden sind Sie?",
+    "satisfaction_stars": "Sterne",
+    "features_label": "Welche Features haben Sie genutzt?",
+    "features": {
+      "find_transport": "Transport finden",
+      "offer_transport": "Transport anbieten",
+      "messaging": "Messaging",
+      "tracking": "Tracking",
+      "payments": "Zahlungen"
+    },
+    "feedback_label": "Ihr Feedback",
+    "feedback_placeholder": "Teilen Sie uns Ihre Gedanken, Ideen oder Probleme mit...",
+    "submit": "Feedback absenden",
+    "submitting": "Wird gesendet..."
+  },
+  "toast": {
+    "success": "Vielen Dank für Ihr Feedback!",
+    "error": "Feedback konnte nicht gesendet werden.",
+    "response_added": "Antwort wurde gesendet.",
+    "response_error": "Antwort konnte nicht gesendet werden.",
+    "status_updated": "Feedback-Status wurde aktualisiert."
+  },
+  "status": {
+    "open": "Offen",
+    "in_progress": "In Bearbeitung",
+    "resolved": "Erledigt"
+  },
+  "filter": {
+    "all": "Alle",
+    "status": {
+      "label": "Status",
+      "open": "Nur Offene",
+      "in_progress": "In Bearbeitung",
+      "resolved": "Erledigte"
+    },
+    "type": {
+      "label": "Feedback-Typ",
+      "all": "Alle Typen",
+      "suggestion": "Vorschläge",
+      "bug": "Fehler",
+      "compliment": "Lob",
+      "question": "Fragen"
+    }
+  }
+}

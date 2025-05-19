@@ -1,0 +1,10 @@
+
+{
+  "required": "This field is required",
+  "min_length": "At least {{count}} characters required",
+  "invalid_email": "Invalid email address",
+  "invalid_postal": "Invalid postal code",
+  "gdpr_required": "Please agree to the privacy policy",
+  "vehicle_required": "Please select at least one vehicle size",
+  "registration_failed": "Registration failed. Please try again later."
+}

@@ -6,17 +6,17 @@ import { PreRegistrationForm } from "@/components/pre-registration/PreRegistrati
 import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function PreRegister() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pre_register');
   
   return (
     <Layout>
       <div className="container py-12">
         <div className="max-w-2xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
-            {t('pre_register.title')}
+            {t('title')}
           </h1>
           <p className="text-lg text-muted-foreground">
-            {t('pre_register.subtitle')}
+            {t('subtitle')}
           </p>
         </div>
 

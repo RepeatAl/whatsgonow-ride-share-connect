@@ -15,7 +15,7 @@ interface CreateOrderButtonProps {
 }
 
 const CreateOrderButton = ({ isSender }: CreateOrderButtonProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('dashboard');
   
   if (!isSender) return null;
   
@@ -26,15 +26,15 @@ const CreateOrderButton = ({ isSender }: CreateOrderButtonProps) => {
           <Button 
             variant="brand" 
             className="gap-2"
-            aria-label={t('dashboard.newOrder')}
+            aria-label={t('newOrder')}
           >
             <PlusCircle className="h-5 w-5" />
-            <span>{t('dashboard.newOrder')}</span>
+            <span>{t('newOrder')}</span>
           </Button>
         </Link>
       </TooltipTrigger>
       <TooltipContent>
-        <p>{t('dashboard.newOrder')}</p>
+        <p>{t('newOrder')}</p>
       </TooltipContent>
     </Tooltip>
   );

@@ -9,7 +9,7 @@ interface AdminLinksProps {
 }
 
 const AdminLinks = ({ isAdmin }: AdminLinksProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
   
   if (!isAdmin) return null;
   
@@ -19,8 +19,8 @@ const AdminLinks = ({ isAdmin }: AdminLinksProps) => {
       <NavLink 
         to="/admin"
         icon={<Shield className="h-5 w-5 mr-2" />}
-        name={t('landing.nav.admin')}
-        tooltip={t('landing.nav.admin')}
+        name={t('nav.admin')}
+        tooltip={t('nav.admin')}
       />
     </>
   );
