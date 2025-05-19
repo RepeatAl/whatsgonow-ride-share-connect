@@ -6,5 +6,6 @@
   "invalid_postal": "Invalid postal code",
   "gdpr_required": "Please agree to the privacy policy",
   "vehicle_required": "Please select at least one vehicle size",
+  "vehicle_types.error": "Please select at least one vehicle size",
   "registration_failed": "Registration failed. Please try again later."
 }

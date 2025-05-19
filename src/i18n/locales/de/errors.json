@@ -6,5 +6,6 @@
   "invalid_postal": "Ungültige Postleitzahl",
   "gdpr_required": "Bitte stimmen Sie den Datenschutzbestimmungen zu",
   "vehicle_required": "Bitte mindestens eine Fahrzeuggröße auswählen",
+  "vehicle_types.error": "Bitte mindestens eine Fahrzeuggröße auswählen",
   "registration_failed": "Registrierung fehlgeschlagen. Bitte versuche es später erneut."
 }
