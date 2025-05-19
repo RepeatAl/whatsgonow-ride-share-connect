@@ -25,38 +25,38 @@ const Benefits = () => {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         <BenefitCard 
           icon={<Clock className="h-6 w-6 text-brand-orange" />}
-          title={t('landing.benefits.time_saving.title')}
-          description={t('landing.benefits.time_saving.description')}
+          title={t('benefits.time_saving.title')}
+          description={t('benefits.time_saving.description')}
         />
         
         <BenefitCard 
           icon={<DollarSign className="h-6 w-6 text-brand-orange" />}
-          title={t('landing.benefits.cost_saving.title')}
-          description={t('landing.benefits.cost_saving.description')}
+          title={t('benefits.cost_saving.title')}
+          description={t('benefits.cost_saving.description')}
         />
         
         <BenefitCard 
           icon={<Leaf className="h-6 w-6 text-brand-orange" />}
-          title={t('landing.benefits.environmentally_friendly.title')}
-          description={t('landing.benefits.environmentally_friendly.description')}
+          title={t('benefits.environmentally_friendly.title')}
+          description={t('benefits.environmentally_friendly.description')}
         />
         
         <BenefitCard 
           icon={<ShieldCheck className="h-6 w-6 text-brand-orange" />}
-          title={t('landing.benefits.security.title')}
-          description={t('landing.benefits.security.description')}
+          title={t('benefits.security.title')}
+          description={t('benefits.security.description')}
         />
         
         <BenefitCard 
           icon={<TrendingUp className="h-6 w-6 text-brand-orange" />}
-          title={t('landing.benefits.flexibility.title')}
-          description={t('landing.benefits.flexibility.description')}
+          title={t('benefits.flexibility.title')}
+          description={t('benefits.flexibility.description')}
         />
         
         <BenefitCard 
           icon={<Users className="h-6 w-6 text-brand-orange" />}
-          title={t('landing.benefits.community.title')}
-          description={t('landing.benefits.community.description')}
+          title={t('benefits.community.title')}
+          description={t('benefits.community.description')}
         />
       </div>
     </section>

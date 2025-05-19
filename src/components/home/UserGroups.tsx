@@ -21,30 +21,30 @@ const UserGroups = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <UserGroupCard 
             icon={<Package className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.user_groups.private.title')}
-            description={t('landing.user_groups.private.description')}
-            buttonText={t('landing.user_groups.private.button')}
+            title={t('user_groups.private.title')}
+            description={t('user_groups.private.description')}
+            buttonText={t('user_groups.private.button')}
           />
           
           <UserGroupCard 
             icon={<Building className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.user_groups.business.title')}
-            description={t('landing.user_groups.business.description')}
-            buttonText={t('landing.user_groups.business.button')}
+            title={t('user_groups.business.title')}
+            description={t('user_groups.business.description')}
+            buttonText={t('user_groups.business.button')}
           />
           
           <UserGroupCard 
             icon={<Truck className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.user_groups.driver.title')}
-            description={t('landing.user_groups.driver.description')}
-            buttonText={t('landing.user_groups.driver.button')}
+            title={t('user_groups.driver.title')}
+            description={t('user_groups.driver.description')}
+            buttonText={t('user_groups.driver.button')}
           />
 
           <UserGroupCard 
             icon={<Users className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.user_groups.cm.title')}
-            description={t('landing.user_groups.cm.description')}
-            buttonText={t('landing.user_groups.cm.button')}
+            title={t('user_groups.cm.title')}
+            description={t('user_groups.cm.description')}
+            buttonText={t('user_groups.cm.button')}
           />
         </div>
       </div>

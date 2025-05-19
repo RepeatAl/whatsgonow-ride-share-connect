@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { StarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -32,9 +33,9 @@ const Testimonials = () => {
   return (
     <section className="py-16 container mx-auto px-4">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold">{t('landing.testimonials.title')}</h2>
+        <h2 className="text-3xl font-bold">{t('testimonials.title')}</h2>
         <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-          {t('landing.testimonials.description')}
+          {t('testimonials.description')}
         </p>
       </div>
       

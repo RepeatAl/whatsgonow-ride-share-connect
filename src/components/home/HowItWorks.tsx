@@ -19,29 +19,29 @@ const HowItWorks = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <StepCard 
             icon={<Package className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.how_it_works.step1.title')}
-            description={t('landing.how_it_works.step1.description')}
+            title={t('how_it_works.step1.title')}
+            description={t('how_it_works.step1.description')}
             step={1}
           />
           
           <StepCard 
             icon={<Search className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.how_it_works.step2.title')}
-            description={t('landing.how_it_works.step2.description')}
+            title={t('how_it_works.step2.title')}
+            description={t('how_it_works.step2.description')}
             step={2}
           />
           
           <StepCard 
             icon={<FileCheck className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.how_it_works.step3.title')}
-            description={t('landing.how_it_works.step3.description')}
+            title={t('how_it_works.step3.title')}
+            description={t('how_it_works.step3.description')}
             step={3}
           />
           
           <StepCard 
             icon={<Truck className="h-10 w-10 text-brand-orange" />}
-            title={t('landing.how_it_works.step4.title')}
-            description={t('landing.how_it_works.step4.description')}
+            title={t('how_it_works.step4.title')}
+            description={t('how_it_works.step4.description')}
             step={4}
           />
         </div>
