@@ -77,7 +77,27 @@ i18n
     defaultNS: 'common',
     interpolation: {
       escapeValue: false
+    },
+    react: {
+      useSuspense: true,
+      bindI18n: 'languageChanged loaded', // Make sure components refresh when language changes
+      bindI18nStore: 'added removed', // React to resource changes
+      transEmptyNodeValue: '' // Value for empty translations
     }
   });
+
+// Debug logging for i18n in development mode
+if (process.env.NODE_ENV === 'development') {
+  i18n.on('initialized', () => {
+    console.log('[i18n] Initialization complete');
+    console.log('[i18n] Current language:', i18n.language);
+    console.log('[i18n] RTL mode:', i18n.language === 'ar');
+  });
+
+  i18n.on('languageChanged', (lng) => {
+    console.log('[i18n] Language changed to:', lng);
+    console.log('[i18n] RTL mode:', lng === 'ar');
+  });
+}
 
 export default i18n;

@@ -3,7 +3,6 @@ import './i18n/i18n'; // Must be imported first for i18n configuration to be loa
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { ThemeProvider } from './contexts/ThemeContext'
 import i18n from './i18n/i18n';
 
 const rootElement = document.getElementById("root");
@@ -12,9 +11,22 @@ if (!rootElement) throw new Error("Root element not found");
 // Set the initial document direction
 document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
 
+// Log initial language state in development mode
+if (process.env.NODE_ENV === 'development') {
+  console.log('[DEBUG-INIT] Initial language:', i18n.language);
+  console.log('[DEBUG-INIT] Initial document.dir:', document.documentElement.dir);
+}
+
 // Listen for language changes to update the document direction
 i18n.on('languageChanged', (lng) => {
-  document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
+  const isRTL = lng === 'ar';
+  document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[DEBUG-CHANGE] Language changed to:', lng);
+    console.log('[DEBUG-CHANGE] Document direction set to:', document.documentElement.dir);
+    console.log('[DEBUG-CHANGE] Is RTL:', isRTL);
+  }
 });
 
 // Starte mit einer einfachen Ladeanimation, bis die App initialisiert ist

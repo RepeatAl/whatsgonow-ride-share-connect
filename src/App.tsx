@@ -11,6 +11,7 @@ import { AppBootstrap } from './components/AppBootstrap';
 import LaunchProvider from './components/launch/LaunchProvider';
 import { TooltipProvider } from './components/ui/tooltip';
 import { ErrorBoundary } from './components/ui/error-boundary';
+import { RTLDebugBanner } from './components/RTLDebugBanner';
 
 import './App.css';
 
@@ -28,6 +29,7 @@ function App() {
                 <NotificationProvider>
                   <TooltipProvider>
                     <ErrorBoundary>
+                      <RTLDebugBanner />
                       <AppRoutes />
                     </ErrorBoundary>
                     <Toaster />

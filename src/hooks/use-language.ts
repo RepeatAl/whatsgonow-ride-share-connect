@@ -46,6 +46,14 @@ export const useLanguage = () => {
       
       // Set the HTML dir attribute based on language
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      
+      // Debug logging for Arabic language in development mode
+      if (process.env.NODE_ENV === 'development' && lang === 'ar') {
+        console.log('[DEBUG] Sprache auf Arabisch gesetzt');
+        console.log('[DEBUG] document.dir:', document.documentElement.dir);
+        console.log('[DEBUG] i18n.language:', i18n.language);
+        console.log('[DEBUG] Components should re-render with RTL support');
+      }
     } finally {
       setLoading(false);
     }

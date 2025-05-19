@@ -9,23 +9,45 @@ import {
 import { useLanguage } from "@/hooks/use-language";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 
 export const LanguageToggle = () => {
   const { changeLanguage, currentLanguage, loading } = useLanguage();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [shouldReload, setShouldReload] = useState(false);
+
+  useEffect(() => {
+    // If we determined a reload is needed (especially for RTL changes)
+    if (shouldReload) {
+      setShouldReload(false);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[DEBUG] Reloading page to ensure proper RTL rendering');
+      }
+      // Small delay to ensure language is saved in localStorage
+      setTimeout(() => window.location.reload(), 100);
+    }
+  }, [shouldReload]);
 
   const handleLanguageChange = async (lang: string) => {
     if (currentLanguage === lang) return;
     
     try {
       await changeLanguage(lang);
+      
+      // If switching to/from Arabic, we may need a full reload for proper RTL
+      const needsReload = (currentLanguage === 'ar' || lang === 'ar');
+      
       toast({
         description: 
           lang === 'de' ? "Sprache wurde auf Deutsch geändert" : 
           lang === 'en' ? "Language changed to English" :
           "تم تغيير اللغة إلى العربية",
       });
+      
+      if (needsReload) {
+        setShouldReload(true);
+      }
     } catch (error) {
       toast({
         variant: "destructive",
@@ -88,6 +110,7 @@ export const LanguageToggle = () => {
         <DropdownMenuItem 
           onClick={() => handleLanguageChange('ar')}
           className={`cursor-pointer ${currentLanguage === 'ar' ? 'bg-accent' : ''}`}
+          data-testid="arabic-language-option"
         >
           <span className="mr-2">🇸🇦</span>
           العربية
