@@ -1,30 +1,29 @@
-
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { StarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const Testimonials = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation('landing');
 
   const testimonials = [
     {
-      name: t('landing.testimonials.testimonial1.name'),
-      role: t('landing.testimonials.testimonial1.role'),
-      text: t('landing.testimonials.testimonial1.text'),
+      name: t('testimonials.testimonial1.name'),
+      role: t('testimonials.testimonial1.role'),
+      text: t('testimonials.testimonial1.text'),
       rating: 5,
       image: "/lovable-uploads/1310b47b-6ab3-443c-88cc-2b6fe8b77f0c.png"
     },
     {
-      name: t('landing.testimonials.testimonial2.name'),
-      role: t('landing.testimonials.testimonial2.role'),
-      text: t('landing.testimonials.testimonial2.text'),
+      name: t('testimonials.testimonial2.name'),
+      role: t('testimonials.testimonial2.role'),
+      text: t('testimonials.testimonial2.text'),
       rating: 4,
       image: "/lovable-uploads/38c76c60-9ce4-40c9-b580-8da351655c67.png"
     },
     {
-      name: t('landing.testimonials.testimonial3.name'),
-      role: t('landing.testimonials.testimonial3.role'),
-      text: t('landing.testimonials.testimonial3.text'),
+      name: t('testimonials.testimonial3.name'),
+      role: t('testimonials.testimonial3.role'),
+      text: t('testimonials.testimonial3.text'),
       rating: 5,
       image: "/lovable-uploads/25ba838f-17f9-4e58-9599-0dc83993fe74.png"
     }

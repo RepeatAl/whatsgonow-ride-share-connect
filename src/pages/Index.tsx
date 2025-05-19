@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 const Index = () => {
   const { isLaunchReady, isTest } = useLaunch();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
   
   const showFeedbackButton = isLaunchReady || isTest;
   

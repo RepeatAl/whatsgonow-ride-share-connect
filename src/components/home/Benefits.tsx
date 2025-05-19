@@ -11,14 +11,14 @@ import {
 import { useTranslation } from "react-i18next";
 
 const Benefits = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
   
   return (
     <section className="py-16 container mx-auto px-4">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold">{t('landing.benefits.title')}</h2>
+        <h2 className="text-3xl font-bold">{t('benefits.title')}</h2>
         <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-          {t('landing.benefits.description')}
+          {t('benefits.description')}
         </p>
       </div>
       

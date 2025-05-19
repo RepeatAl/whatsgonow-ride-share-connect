@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 const Hero = () => {
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
@@ -21,20 +21,20 @@ const Hero = () => {
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight" 
-              dangerouslySetInnerHTML={{__html: t('landing.hero.title')}} />
+              dangerouslySetInnerHTML={{__html: t('hero.title')}} />
           
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-lg">
-            {t('landing.hero.description')}
+            {t('hero.description')}
           </p>
 
           <div className="flex flex-col items-center gap-4 pt-4">
             <div className="flex flex-wrap justify-center gap-4 w-full">
               <Button asChild size="lg" variant="brand" className="w-full max-w-md">
-                <Link to="/pre-register" className="px-0">{t('landing.hero.cta_primary')}</Link>
+                <Link to="/pre-register" className="px-0">{t('hero.cta_primary')}</Link>
               </Button>
               
               <Button asChild size="lg" variant="outline" className="w-full max-w-md">
-                <Link to="/faq">{t('landing.hero.cta_secondary')}</Link>
+                <Link to="/faq">{t('hero.cta_secondary')}</Link>
               </Button>
             </div>
           </div>

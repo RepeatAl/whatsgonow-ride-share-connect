@@ -4,15 +4,15 @@ import { Package, Truck, Search, FileCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const HowItWorks = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
 
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-900" id="how-it-works">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold">{t('landing.how_it_works.title')}</h2>
+          <h2 className="text-3xl font-bold">{t('how_it_works.title')}</h2>
           <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-            {t('landing.how_it_works.description')}
+            {t('how_it_works.description')}
           </p>
         </div>
         

@@ -6,15 +6,15 @@ import { Package, Truck, Building, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const UserGroups = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
   
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold">{t('landing.user_groups.title')}</h2>
+          <h2 className="text-3xl font-bold">{t('user_groups.title')}</h2>
           <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-            {t('landing.user_groups.description')}
+            {t('user_groups.description')}
           </p>
         </div>
         
