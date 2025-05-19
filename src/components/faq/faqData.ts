@@ -1,29 +1,46 @@
-import { FAQItem } from "@/types/faq";
 
-export const faqItems: FAQItem[] = [
-  {
-    category: "Allgemein",
-    question: "Was ist Whatsgonow?",
-    answer: "Whatsgonow ist eine Crowd-Logistikplattform, die spontane oder geplante Lieferungen durch Privatpersonen oder lokale Fahrer ermöglicht. Die Plattform vermittelt Aufträge, ermöglicht Preisverhandlungen und bietet ein sicheres Zahlungs- und Bewertungssystem."
-  },
-  {
-    category: "Registrierung & Sicherheit",
-    question: "Ist eine Registrierung notwendig?",
-    answer: "Ja, sowohl Fahrer als auch Auftraggeber müssen sich registrieren. Für Fahrer ist zudem eine Verifizierung (KYC) erforderlich."
-  },
-  {
-    category: "Aufträge & Matching",
-    question: "Wie finde ich passende Transportaufträge?",
-    answer: "Als Fahrer erhältst du Vorschläge basierend auf deiner Route, deinem Umkreis und deinem Transportprofil."
-  },
-  {
-    category: "Bezahlung & Sicherheit",
-    question: "Wie funktioniert die Bezahlung?",
-    answer: "Die Zahlung wird bei Deal-Bestätigung vorgemerkt (z. B. via PayPal) und nach erfolgreicher Lieferung freigegeben."
-  },
-  {
-    category: "Support & Community",
-    question: "Was mache ich bei Problemen?",
-    answer: "Nutze den Support-Button oder melde einen Vorfall im Deal-Chat. Community Manager unterstützen dich in deiner Region."
-  }
-];
+import { FAQItem } from "@/types/faq";
+import i18next from "i18next";
+
+// Helper function to get translated content
+const getTranslatedFAQ = (): FAQItem[] => {
+  const t = i18next.getFixedT(i18next.language, 'faq');
+  
+  return [
+    {
+      category: t('categories.general'),
+      question: t('questions.what_is_whatsgonow.question'),
+      answer: t('questions.what_is_whatsgonow.answer')
+    },
+    {
+      category: t('categories.registration'),
+      question: t('questions.registration_required.question'),
+      answer: t('questions.registration_required.answer')
+    },
+    {
+      category: t('categories.orders'),
+      question: t('questions.find_transport_orders.question'),
+      answer: t('questions.find_transport_orders.answer')
+    },
+    {
+      category: t('categories.payment'),
+      question: t('questions.payment_process.question'),
+      answer: t('questions.payment_process.answer')
+    },
+    {
+      category: t('categories.support'),
+      question: t('questions.problem_handling.question'),
+      answer: t('questions.problem_handling.answer')
+    }
+  ];
+};
+
+// Export a function that will always return the current language's FAQs
+export const faqItems: FAQItem[] = getTranslatedFAQ();
+
+// Add a listener to update FAQ items when language changes
+i18next.on('languageChanged', () => {
+  const updatedFAQs = getTranslatedFAQ();
+  // Replace all items in the array
+  faqItems.splice(0, faqItems.length, ...updatedFAQs);
+});

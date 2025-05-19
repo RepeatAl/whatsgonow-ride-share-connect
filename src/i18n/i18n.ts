@@ -12,6 +12,7 @@ import enFeedback from './locales/en/feedback.json';
 import enPreRegister from './locales/en/pre_register.json';
 import enErrors from './locales/en/errors.json';
 import enLanding from './locales/en/landing.json';
+import enFaq from './locales/en/faq.json';
 
 // Import German translations
 import deCommon from './locales/de/common.json';
@@ -22,6 +23,7 @@ import deFeedback from './locales/de/feedback.json';
 import dePreRegister from './locales/de/pre_register.json';
 import deErrors from './locales/de/errors.json';
 import deLanding from './locales/de/landing.json';
+import deFaq from './locales/de/faq.json';
 
 // Configure namespaces for each feature
 const resources = {
@@ -33,7 +35,8 @@ const resources = {
     feedback: enFeedback,
     pre_register: enPreRegister,
     errors: enErrors,
-    landing: enLanding
+    landing: enLanding,
+    faq: enFaq
   },
   de: {
     common: deCommon,
@@ -43,7 +46,8 @@ const resources = {
     feedback: deFeedback,
     pre_register: dePreRegister,
     errors: deErrors,
-    landing: deLanding
+    landing: deLanding,
+    faq: deFaq
   }
 };
 
@@ -59,7 +63,7 @@ i18n
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage']
     },
-    ns: ['common', 'auth', 'dashboard', 'analytics', 'feedback', 'pre_register', 'errors', 'landing'],
+    ns: ['common', 'auth', 'dashboard', 'analytics', 'feedback', 'pre_register', 'errors', 'landing', 'faq'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false

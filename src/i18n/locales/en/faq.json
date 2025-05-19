@@ -1,0 +1,45 @@
+
+{
+  "page_title": "Frequently Asked Questions",
+  "page_description": "Here you can find answers to the most common questions about our platform",
+  "back": "Back",
+  "search": {
+    "placeholder": "Search in FAQs...",
+    "no_results": "No results found for",
+    "reset_search": "Reset search"
+  },
+  "categories": {
+    "general": "General",
+    "registration": "Registration & Security",
+    "orders": "Orders & Matching",
+    "payment": "Payment & Security",
+    "support": "Support & Community"
+  },
+  "questions": {
+    "what_is_whatsgonow": {
+      "question": "What is Whatsgonow?",
+      "answer": "Whatsgonow is a crowd logistics platform that enables spontaneous or planned deliveries by private individuals or local drivers. The platform mediates orders, enables price negotiations, and provides a secure payment and rating system."
+    },
+    "registration_required": {
+      "question": "Is registration necessary?",
+      "answer": "Yes, both drivers and contractors must register. Drivers additionally need to complete a verification (KYC) process."
+    },
+    "find_transport_orders": {
+      "question": "How do I find suitable transport orders?",
+      "answer": "As a driver, you'll receive suggestions based on your route, your area, and your transport profile."
+    },
+    "payment_process": {
+      "question": "How does the payment work?",
+      "answer": "Payment is reserved when the deal is confirmed (e.g., via PayPal) and released after successful delivery."
+    },
+    "problem_handling": {
+      "question": "What should I do if I encounter problems?",
+      "answer": "Use the support button or report an incident in the deal chat. Community managers will support you in your region."
+    }
+  },
+  "contact_support": {
+    "title": "Still have questions?",
+    "description": "If you couldn't find an answer to your question, please contact our support team.",
+    "button": "Contact Support"
+  }
+}

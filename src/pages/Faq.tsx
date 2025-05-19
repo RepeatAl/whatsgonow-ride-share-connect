@@ -9,8 +9,10 @@ import FaqCategory from "@/components/faq/FaqCategory";
 import FaqContactSupport from "@/components/faq/FaqContactSupport";
 import { faqItems } from "@/components/faq/faqData";
 import { FAQItem } from "@/types/faq";
+import { useTranslation } from "react-i18next";
 
 const Faq = () => {
+  const { t } = useTranslation('faq');
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredFAQs = faqItems.filter(
@@ -35,15 +37,15 @@ const Faq = () => {
           <Link to="/">
             <Button variant="outline" size="sm" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Zurück
+              {t('back')}
             </Button>
           </Link>
           <div className="flex items-center gap-2 mb-2">
             <HelpCircle className="h-8 w-8 text-brand-primary" />
-            <h1 className="text-3xl font-bold">Häufig gestellte Fragen</h1>
+            <h1 className="text-3xl font-bold">{t('page_title')}</h1>
           </div>
           <p className="text-muted-foreground mb-6">
-            Hier findest du Antworten auf die häufigsten Fragen zu unserer Plattform
+            {t('page_description')}
           </p>
           
           <FaqSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -56,10 +58,10 @@ const Faq = () => {
         ) : (
           <div className="text-center py-10">
             <p className="text-muted-foreground mb-4">
-              Keine Ergebnisse gefunden für "{searchQuery}"
+              {t('search.no_results')} "{searchQuery}"
             </p>
             <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Suche zurücksetzen
+              {t('search.reset_search')}
             </Button>
           </div>
         )}
