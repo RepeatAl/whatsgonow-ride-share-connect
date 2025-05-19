@@ -4,9 +4,18 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { ThemeProvider } from './contexts/ThemeContext'
+import i18n from './i18n/i18n';
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
+
+// Set the initial document direction
+document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+
+// Listen for language changes to update the document direction
+i18n.on('languageChanged', (lng) => {
+  document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
+});
 
 // Starte mit einer einfachen Ladeanimation, bis die App initialisiert ist
 rootElement.innerHTML = `

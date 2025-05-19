@@ -25,6 +25,10 @@ import deErrors from './locales/de/errors.json';
 import deLanding from './locales/de/landing.json';
 import deFaq from './locales/de/faq.json';
 
+// Import Arabic translations
+import arCommon from './locales/ar/common.json';
+import arFaq from './locales/ar/faq.json';
+
 // Configure namespaces for each feature
 const resources = {
   en: {
@@ -48,6 +52,10 @@ const resources = {
     errors: deErrors,
     landing: deLanding,
     faq: deFaq
+  },
+  ar: {
+    common: arCommon,
+    faq: arFaq
   }
 };
 

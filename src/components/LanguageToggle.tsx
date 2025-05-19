@@ -21,16 +21,18 @@ export const LanguageToggle = () => {
     try {
       await changeLanguage(lang);
       toast({
-        description: lang === 'de' ? 
-          "Sprache wurde auf Deutsch geändert" : 
-          "Language changed to English",
+        description: 
+          lang === 'de' ? "Sprache wurde auf Deutsch geändert" : 
+          lang === 'en' ? "Language changed to English" :
+          "تم تغيير اللغة إلى العربية",
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        description: lang === 'de' ? 
-          "Fehler beim Ändern der Sprache" : 
-          "Error changing language",
+        description: 
+          lang === 'de' ? "Fehler beim Ändern der Sprache" : 
+          lang === 'en' ? "Error changing language" :
+          "خطأ في تغيير اللغة",
       });
     }
   };
@@ -50,10 +52,15 @@ export const LanguageToggle = () => {
               <span className="mr-1">🇩🇪</span>
               <span className="hidden sm:inline">Deutsch</span>
             </>
-          ) : (
+          ) : currentLanguage === 'en' ? (
             <>
               <span className="mr-1">🇬🇧</span>
               <span className="hidden sm:inline">English</span>
+            </>
+          ) : (
+            <>
+              <span className="mr-1">🇸🇦</span>
+              <span className="hidden sm:inline">العربية</span>
             </>
           )}
           {loading && (
@@ -77,6 +84,14 @@ export const LanguageToggle = () => {
           <span className="mr-2">🇬🇧</span>
           English
           {currentLanguage === 'en' && <span className="ml-auto">✓</span>}
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => handleLanguageChange('ar')}
+          className={`cursor-pointer ${currentLanguage === 'ar' ? 'bg-accent' : ''}`}
+        >
+          <span className="mr-2">🇸🇦</span>
+          العربية
+          {currentLanguage === 'ar' && <span className="ml-auto">✓</span>}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

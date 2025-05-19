@@ -12,7 +12,7 @@ import { FAQItem } from "@/types/faq";
 import { useTranslation } from "react-i18next";
 
 const Faq = () => {
-  const { t } = useTranslation('faq');
+  const { t, i18n } = useTranslation('faq');
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredFAQs = faqItems.filter(
@@ -30,9 +30,15 @@ const Faq = () => {
     groupedFAQs[item.category].push(item);
   });
 
+  // Set direction based on language
+  const isRTL = i18n.language === 'ar';
+
   return (
     <Layout>
-      <div className="container max-w-4xl px-4 py-8">
+      <div 
+        className="container max-w-4xl px-4 py-8" 
+        dir={isRTL ? 'rtl' : 'ltr'}
+      >
         <div className="mb-6">
           <Link to="/">
             <Button variant="outline" size="sm" className="mb-4">

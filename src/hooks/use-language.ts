@@ -38,8 +38,17 @@ export const useLanguage = () => {
   }, [user, i18n]);
 
   const changeLanguage = async (lang: string) => {
-    await i18n.changeLanguage(lang);
-    await updateUserLanguage(lang);
+    setLoading(true);
+    
+    try {
+      await i18n.changeLanguage(lang);
+      await updateUserLanguage(lang);
+      
+      // Set the HTML dir attribute based on language
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    } finally {
+      setLoading(false);
+    }
   };
 
   return { changeLanguage, currentLanguage: i18n.language, loading };
