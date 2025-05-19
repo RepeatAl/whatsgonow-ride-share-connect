@@ -1,44 +1,47 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Truck, Search, FileCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const HowItWorks = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-900" id="how-it-works">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold">So funktioniert Whatsgonow</h2>
+          <h2 className="text-3xl font-bold">{t('landing.how_it_works.title')}</h2>
           <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-            Eine einfache Art, Transporte zu organisieren und Leerfahrten zu reduzieren
+            {t('landing.how_it_works.description')}
           </p>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <StepCard 
             icon={<Package className="h-10 w-10 text-brand-orange" />}
-            title="Ladung anmelden" 
-            description="Gib an, was du transportieren möchtest und wohin es gehen soll."
+            title={t('landing.how_it_works.step1.title')}
+            description={t('landing.how_it_works.step1.description')}
             step={1}
           />
           
           <StepCard 
             icon={<Search className="h-10 w-10 text-brand-orange" />}
-            title="Fahrer finden" 
-            description="Finde Fahrer, die bereits eine Fahrt auf deiner Route planen."
+            title={t('landing.how_it_works.step2.title')}
+            description={t('landing.how_it_works.step2.description')}
             step={2}
           />
           
           <StepCard 
             icon={<FileCheck className="h-10 w-10 text-brand-orange" />}
-            title="Deal abschließen" 
-            description="Verhandle den Preis und schließe den Deal ab."
+            title={t('landing.how_it_works.step3.title')}
+            description={t('landing.how_it_works.step3.description')}
             step={3}
           />
           
           <StepCard 
             icon={<Truck className="h-10 w-10 text-brand-orange" />}
-            title="Transport erledigt" 
-            description="Der Fahrer holt dein Paket ab und liefert es am Zielort ab."
+            title={t('landing.how_it_works.step4.title')}
+            description={t('landing.how_it_works.step4.description')}
             step={4}
           />
         </div>

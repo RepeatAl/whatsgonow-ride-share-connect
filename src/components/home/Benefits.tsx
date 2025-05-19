@@ -8,52 +8,55 @@ import {
   DollarSign, 
   Users
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Benefits = () => {
+  const { t } = useTranslation();
+  
   return (
     <section className="py-16 container mx-auto px-4">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold">Vorteile von Whatsgonow</h2>
+        <h2 className="text-3xl font-bold">{t('landing.benefits.title')}</h2>
         <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-          Whatsgonow bringt viele Vorteile für Auftraggeber und Fahrer
+          {t('landing.benefits.description')}
         </p>
       </div>
       
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         <BenefitCard 
           icon={<Clock className="h-6 w-6 text-brand-orange" />}
-          title="Zeitersparnis" 
-          description="Spare Zeit durch effiziente Zustellung und einfache Vermittlung"
+          title={t('landing.benefits.time_saving.title')}
+          description={t('landing.benefits.time_saving.description')}
         />
         
         <BenefitCard 
           icon={<DollarSign className="h-6 w-6 text-brand-orange" />}
-          title="Kosteneinsparung" 
-          description="Reduziere Transportkosten und schaffe zusätzliche Einnahmequellen"
+          title={t('landing.benefits.cost_saving.title')}
+          description={t('landing.benefits.cost_saving.description')}
         />
         
         <BenefitCard 
           icon={<Leaf className="h-6 w-6 text-brand-orange" />}
-          title="Umweltfreundlich" 
-          description="Weniger Leerfahrten bedeuten weniger CO₂-Emissionen"
+          title={t('landing.benefits.environmentally_friendly.title')}
+          description={t('landing.benefits.environmentally_friendly.description')}
         />
         
         <BenefitCard 
           icon={<ShieldCheck className="h-6 w-6 text-brand-orange" />}
-          title="Sicherheit" 
-          description="Verifizierte Profile und Bewertungssystem für mehr Sicherheit"
+          title={t('landing.benefits.security.title')}
+          description={t('landing.benefits.security.description')}
         />
         
         <BenefitCard 
           icon={<TrendingUp className="h-6 w-6 text-brand-orange" />}
-          title="Flexibilität" 
-          description="Plane Transporte spontan oder im Voraus nach deinen Bedürfnissen"
+          title={t('landing.benefits.flexibility.title')}
+          description={t('landing.benefits.flexibility.description')}
         />
         
         <BenefitCard 
           icon={<Users className="h-6 w-6 text-brand-orange" />}
-          title="Community" 
-          description="Werde Teil einer wachsenden Community von Fahrern und Auftraggebern"
+          title={t('landing.benefits.community.title')}
+          description={t('landing.benefits.community.description')}
         />
       </div>
     </section>

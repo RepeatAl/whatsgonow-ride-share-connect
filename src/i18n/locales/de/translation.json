@@ -1,3 +1,4 @@
+
 {
   "common": {
     "welcome": "Willkommen",
@@ -123,5 +124,121 @@
     "gdpr_required": "Bitte stimmen Sie den Datenschutzbestimmungen zu",
     "vehicle_required": "Bitte mindestens eine Fahrzeuggröße auswählen",
     "registration_failed": "Registrierung fehlgeschlagen. Bitte versuche es später erneut."
+  },
+  "landing": {
+    "hero": {
+      "title": "Teile deine Fahrt, <span>verbinde</span> Menschen",
+      "description": "Whatsgonow ist die Plattform, die spontane und planbare Transporte zwischen Auftraggebern und mobilen Fahrern vermittelt.",
+      "cta_primary": "Dabeisein wenn Whatsgonow startet",
+      "cta_secondary": "Mehr erfahren"
+    },
+    "how_it_works": {
+      "title": "So funktioniert Whatsgonow",
+      "description": "Eine einfache Art, Transporte zu organisieren und Leerfahrten zu reduzieren",
+      "step1": {
+        "title": "Ladung anmelden",
+        "description": "Gib an, was du transportieren möchtest und wohin es gehen soll."
+      },
+      "step2": {
+        "title": "Fahrer finden",
+        "description": "Finde Fahrer, die bereits eine Fahrt auf deiner Route planen."
+      },
+      "step3": {
+        "title": "Deal abschließen",
+        "description": "Verhandle den Preis und schließe den Deal ab."
+      },
+      "step4": {
+        "title": "Transport erledigt",
+        "description": "Der Fahrer holt dein Paket ab und liefert es am Zielort ab."
+      }
+    },
+    "benefits": {
+      "title": "Vorteile von Whatsgonow",
+      "description": "Whatsgonow bringt viele Vorteile für Auftraggeber und Fahrer",
+      "time_saving": {
+        "title": "Zeitersparnis",
+        "description": "Spare Zeit durch effiziente Zustellung und einfache Vermittlung"
+      },
+      "cost_saving": {
+        "title": "Kosteneinsparung",
+        "description": "Reduziere Transportkosten und schaffe zusätzliche Einnahmequellen"
+      },
+      "environmentally_friendly": {
+        "title": "Umweltfreundlich",
+        "description": "Weniger Leerfahrten bedeuten weniger CO₂-Emissionen"
+      },
+      "security": {
+        "title": "Sicherheit",
+        "description": "Verifizierte Profile und Bewertungssystem für mehr Sicherheit"
+      },
+      "flexibility": {
+        "title": "Flexibilität",
+        "description": "Plane Transporte spontan oder im Voraus nach deinen Bedürfnissen"
+      },
+      "community": {
+        "title": "Community",
+        "description": "Werde Teil einer wachsenden Community von Fahrern und Auftraggebern"
+      }
+    },
+    "user_groups": {
+      "title": "Für wen ist Whatsgonow?",
+      "description": "Whatsgonow ist für alle, die Güter transportieren oder Transportkapazitäten anbieten möchten",
+      "private": {
+        "title": "Privatkunden",
+        "description": "Du möchtest etwas transportieren lassen und suchst eine günstige und zuverlässige Lösung?",
+        "button": "Als Privatkunde starten"
+      },
+      "business": {
+        "title": "Geschäftskunden",
+        "description": "Du brauchst regelmäßige Transporte für dein Unternehmen und willst Kosten optimieren?",
+        "button": "Als Geschäftskunde starten"
+      },
+      "driver": {
+        "title": "Fahrer",
+        "description": "Du bist unterwegs und möchtest deine Fahrt nutzen, um zusätzliches Geld zu verdienen?",
+        "button": "Als Fahrer starten"
+      },
+      "cm": {
+        "title": "Community Manager",
+        "description": "Du möchtest als Community Manager Whatsgonow in deiner Region voranbringen?",
+        "button": "Als Community Manager starten"
+      }
+    },
+    "testimonials": {
+      "title": "Das sagen unsere Nutzer",
+      "description": "Erfahrungen von Kunden und Fahrern auf Whatsgonow",
+      "testimonial1": {
+        "text": "Ich brauchte dringend Hilfe beim Transport eines Schranks. Über whatsgonow fand ich schnell einen Fahrer, der in meine Richtung fuhr. Super einfach und kostengünstig!",
+        "name": "Marie Schmidt",
+        "role": "Privatkundin"
+      },
+      "testimonial2": {
+        "text": "Als Fahrer nutze ich meine Fahrten jetzt produktiv und verdiene zusätzliches Geld. Die App ist intuitiv und die Abwicklung unkompliziert.",
+        "name": "Thomas Becker",
+        "role": "Fahrer"
+      },
+      "testimonial3": {
+        "text": "Für unser kleines Unternehmen ist whatsgonow perfekt. Wir sparen Lieferkosten und unterstützen gleichzeitig die lokale Community.",
+        "name": "Laura Müller",
+        "role": "Geschäftskundin"
+      }
+    },
+    "cta": {
+      "title": "Bereit für effizientere Transporte?",
+      "description": "Registriere dich jetzt bei whatsgonow und entdecke, wie einfach du Transporte organisieren oder als Fahrer Geld verdienen kannst.",
+      "button_primary": "Jetzt kostenlos registrieren",
+      "button_secondary": "Mehr erfahren"
+    },
+    "nav": {
+      "find_transport": "Transport finden",
+      "offer_transport": "Transport anbieten",
+      "messages": "Nachrichten",
+      "order": "Neuer Auftrag",
+      "profile": "Profil",
+      "dashboard": "Dashboard",
+      "login": "Anmelden",
+      "register": "Registrieren",
+      "admin": "Admin"
+    }
   }
 }

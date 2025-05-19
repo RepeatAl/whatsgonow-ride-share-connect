@@ -1,38 +1,41 @@
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { StarIcon } from "lucide-react";
-
-const testimonials = [
-  {
-    name: "Marie Schmidt",
-    role: "Privatkundin",
-    text: "Ich brauchte dringend Hilfe beim Transport eines Schranks. Über whatsgonow fand ich schnell einen Fahrer, der in meine Richtung fuhr. Super einfach und kostengünstig!",
-    rating: 5,
-    image: "/lovable-uploads/1310b47b-6ab3-443c-88cc-2b6fe8b77f0c.png"
-  },
-  {
-    name: "Thomas Becker",
-    role: "Fahrer",
-    text: "Als Fahrer nutze ich meine Fahrten jetzt produktiv und verdiene zusätzliches Geld. Die App ist intuitiv und die Abwicklung unkompliziert.",
-    rating: 4,
-    image: "/lovable-uploads/38c76c60-9ce4-40c9-b580-8da351655c67.png"
-  },
-  {
-    name: "Laura Müller",
-    role: "Geschäftskundin",
-    text: "Für unser kleines Unternehmen ist whatsgonow perfekt. Wir sparen Lieferkosten und unterstützen gleichzeitig die lokale Community.",
-    rating: 5,
-    image: "/lovable-uploads/25ba838f-17f9-4e58-9599-0dc83993fe74.png"
-  }
-];
+import { useTranslation } from "react-i18next";
 
 const Testimonials = () => {
+  const { t, i18n } = useTranslation();
+
+  const testimonials = [
+    {
+      name: t('landing.testimonials.testimonial1.name'),
+      role: t('landing.testimonials.testimonial1.role'),
+      text: t('landing.testimonials.testimonial1.text'),
+      rating: 5,
+      image: "/lovable-uploads/1310b47b-6ab3-443c-88cc-2b6fe8b77f0c.png"
+    },
+    {
+      name: t('landing.testimonials.testimonial2.name'),
+      role: t('landing.testimonials.testimonial2.role'),
+      text: t('landing.testimonials.testimonial2.text'),
+      rating: 4,
+      image: "/lovable-uploads/38c76c60-9ce4-40c9-b580-8da351655c67.png"
+    },
+    {
+      name: t('landing.testimonials.testimonial3.name'),
+      role: t('landing.testimonials.testimonial3.role'),
+      text: t('landing.testimonials.testimonial3.text'),
+      rating: 5,
+      image: "/lovable-uploads/25ba838f-17f9-4e58-9599-0dc83993fe74.png"
+    }
+  ];
+
   return (
     <section className="py-16 container mx-auto px-4">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold">Das sagen unsere Nutzer</h2>
+        <h2 className="text-3xl font-bold">{t('landing.testimonials.title')}</h2>
         <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-          Erfahrungen von Kunden und Fahrern auf Whatsgonow
+          {t('landing.testimonials.description')}
         </p>
       </div>
       

@@ -1,3 +1,4 @@
+
 {
   "common": {
     "welcome": "Welcome",
@@ -123,5 +124,121 @@
     "gdpr_required": "Please agree to the privacy policy",
     "vehicle_required": "Please select at least one vehicle size",
     "registration_failed": "Registration failed. Please try again later."
+  },
+  "landing": {
+    "hero": {
+      "title": "Share your journey, <span>connect</span> people",
+      "description": "Whatsgonow is the platform that connects contractors and mobile drivers for spontaneous and plannable transports.",
+      "cta_primary": "Join Whatsgonow at launch",
+      "cta_secondary": "Learn more"
+    },
+    "how_it_works": {
+      "title": "How Whatsgonow works",
+      "description": "A simple way to organize transport and reduce empty trips",
+      "step1": {
+        "title": "Register shipment",
+        "description": "Specify what you want to transport and where it should go."
+      },
+      "step2": {
+        "title": "Find driver",
+        "description": "Find drivers who are already planning a trip on your route."
+      },
+      "step3": {
+        "title": "Close deal",
+        "description": "Negotiate the price and conclude the deal."
+      },
+      "step4": {
+        "title": "Transport completed",
+        "description": "The driver picks up your package and delivers it to the destination."
+      }
+    },
+    "benefits": {
+      "title": "Benefits of Whatsgonow",
+      "description": "Whatsgonow brings many benefits for contractors and drivers",
+      "time_saving": {
+        "title": "Time saving",
+        "description": "Save time through efficient delivery and easy arrangement"
+      },
+      "cost_saving": {
+        "title": "Cost saving",
+        "description": "Reduce transport costs and create additional sources of income"
+      },
+      "environmentally_friendly": {
+        "title": "Environmentally friendly",
+        "description": "Fewer empty journeys mean fewer CO₂ emissions"
+      },
+      "security": {
+        "title": "Security",
+        "description": "Verified profiles and rating system for more safety"
+      },
+      "flexibility": {
+        "title": "Flexibility",
+        "description": "Plan transports spontaneously or in advance according to your needs"
+      },
+      "community": {
+        "title": "Community",
+        "description": "Become part of a growing community of drivers and contractors"
+      }
+    },
+    "user_groups": {
+      "title": "Who is Whatsgonow for?",
+      "description": "Whatsgonow is for anyone who wants to transport goods or offer transport capacity",
+      "private": {
+        "title": "Private customers",
+        "description": "You want to have something transported and are looking for an affordable and reliable solution?",
+        "button": "Start as a private customer"
+      },
+      "business": {
+        "title": "Business customers",
+        "description": "You need regular transports for your company and want to optimize costs?",
+        "button": "Start as a business customer"
+      },
+      "driver": {
+        "title": "Drivers",
+        "description": "You are on the road and want to use your journey to earn extra money?",
+        "button": "Start as a driver"
+      },
+      "cm": {
+        "title": "Community Managers",
+        "description": "You want to advance Whatsgonow in your region as a Community Manager?",
+        "button": "Start as a Community Manager"
+      }
+    },
+    "testimonials": {
+      "title": "What our users say",
+      "description": "Experiences from customers and drivers on Whatsgonow",
+      "testimonial1": {
+        "text": "I urgently needed help transporting a wardrobe. Through whatsgonow I quickly found a driver who was heading in my direction. Super easy and cost-effective!",
+        "name": "Marie Schmidt",
+        "role": "Private customer"
+      },
+      "testimonial2": {
+        "text": "As a driver, I now use my journeys productively and earn additional money. The app is intuitive and the process is uncomplicated.",
+        "name": "Thomas Becker",
+        "role": "Driver"
+      },
+      "testimonial3": {
+        "text": "Whatsgonow is perfect for our small business. We save on delivery costs while supporting the local community.",
+        "name": "Laura Müller",
+        "role": "Business customer"
+      }
+    },
+    "cta": {
+      "title": "Ready for more efficient transport?",
+      "description": "Register now with whatsgonow and discover how easily you can organize transport or earn money as a driver.",
+      "button_primary": "Register now for free",
+      "button_secondary": "Learn more"
+    },
+    "nav": {
+      "find_transport": "Find Transport",
+      "offer_transport": "Offer Transport",
+      "messages": "Messages",
+      "order": "New Order",
+      "profile": "Profile",
+      "dashboard": "Dashboard",
+      "login": "Login",
+      "register": "Register",
+      "admin": "Admin"
+    }
   }
 }

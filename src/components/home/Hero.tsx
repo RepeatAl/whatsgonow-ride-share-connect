@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Hero = () => {
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const { t } = useTranslation();
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
@@ -18,22 +20,21 @@ const Hero = () => {
     <div className="container mx-auto px-4 relative z-10">
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-            Teile deine Fahrt, <span className="text-brand-orange">verbinde</span> Menschen
-          </h1>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight" 
+              dangerouslySetInnerHTML={{__html: t('landing.hero.title')}} />
           
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-lg">
-            Whatsgonow ist die Plattform, die spontane und planbare Transporte zwischen Auftraggebern und mobilen Fahrern vermittelt.
+            {t('landing.hero.description')}
           </p>
 
           <div className="flex flex-col items-center gap-4 pt-4">
             <div className="flex flex-wrap justify-center gap-4 w-full">
               <Button asChild size="lg" variant="brand" className="w-full max-w-md">
-                <Link to="/pre-register" className="px-0">Dabeisein wenn Whatsgonow startet</Link>
+                <Link to="/pre-register" className="px-0">{t('landing.hero.cta_primary')}</Link>
               </Button>
               
               <Button asChild size="lg" variant="outline" className="w-full max-w-md">
-                <Link to="/faq">Mehr erfahren</Link>
+                <Link to="/faq">{t('landing.hero.cta_secondary')}</Link>
               </Button>
             </div>
           </div>
@@ -45,7 +46,7 @@ const Hero = () => {
               <button
                 onClick={toggleMute}
                 className="absolute top-4 right-4 z-30 p-2.5 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors shadow-lg hover:scale-105 transform duration-200"
-                aria-label={isMuted ? "Ton einschalten" : "Ton ausschalten"}
+                aria-label={isMuted ? t('common.unmute', 'Unmute') : t('common.mute', 'Mute')}
               >
                 {isMuted ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
               </button>

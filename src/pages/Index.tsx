@@ -12,10 +12,12 @@ import { Link } from "react-router-dom";
 import { MessageSquare, LogIn, LayoutDashboard, MessageCircle } from "lucide-react";
 import { useLaunch } from "@/components/launch/LaunchProvider";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
   const { isLaunchReady, isTest } = useLaunch();
   const { user } = useAuth();
+  const { t } = useTranslation();
   
   const showFeedbackButton = isLaunchReady || isTest;
   
@@ -33,14 +35,14 @@ const Index = () => {
           <Button asChild className="rounded-full h-14 w-14 p-0" variant="accent">
             <Link to="/dashboard">
               <LayoutDashboard className="h-6 w-6" />
-              <span className="sr-only">Dashboard</span>
+              <span className="sr-only">{t('landing.nav.dashboard')}</span>
             </Link>
           </Button>
         ) : (
           <Button asChild className="rounded-full h-14 w-14 p-0" variant="accent">
             <Link to="/login">
               <LogIn className="h-6 w-6" />
-              <span className="sr-only">Login</span>
+              <span className="sr-only">{t('auth.login')}</span>
             </Link>
           </Button>
         )}
@@ -48,7 +50,7 @@ const Index = () => {
         <Button asChild className="rounded-full h-14 w-14 p-0" variant="outline">
           <Link to="/inbox">
             <MessageCircle className="h-6 w-6" />
-            <span className="sr-only">Start Chat</span>
+            <span className="sr-only">{t('landing.nav.messages')}</span>
           </Link>
         </Button>
         
@@ -56,7 +58,7 @@ const Index = () => {
           <Button asChild className="rounded-full h-14 w-14 p-0">
             <Link to="/feedback">
               <MessageSquare className="h-6 w-6" />
-              <span className="sr-only">Share Feedback</span>
+              <span className="sr-only">{t('feedback.header.title')}</span>
             </Link>
           </Button>
         )}

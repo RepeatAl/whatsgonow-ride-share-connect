@@ -23,6 +23,7 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import NavLink from "./NavLink";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { useTranslation } from "react-i18next";
 
 interface DesktopMenuProps {
   user: any;
@@ -31,26 +32,27 @@ interface DesktopMenuProps {
 }
 
 const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) => {
+  const { t } = useTranslation();
   const isSender = userRole?.startsWith('sender_');
 
   const navLinks = [
     { 
-      name: "Transport finden", 
+      name: t('landing.nav.find_transport'), 
       path: "/find-transport", 
       icon: <Package className="h-5 w-5 mr-2" />, 
-      tooltip: "Verfügbare Transporte durchsuchen" 
+      tooltip: t('landing.nav.find_transport')
     },
     { 
-      name: "Transport anbieten", 
+      name: t('landing.nav.offer_transport'), 
       path: "/offer-transport", 
       icon: <Car className="h-5 w-5 mr-2" />, 
-      tooltip: "Deine Transportdienste anbieten" 
+      tooltip: t('landing.nav.offer_transport')
     },
     { 
-      name: "Nachrichten", 
+      name: t('landing.nav.messages'), 
       path: "/inbox", 
       icon: <MessageCircle className="h-5 w-5 mr-2" />, 
-      tooltip: "Deine Nachrichten ansehen",
+      tooltip: t('landing.nav.messages'),
       badge: unreadMessagesCount
     },
   ];
@@ -58,19 +60,19 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
   // Add create order link for senders
   if (isSender) {
     navLinks.push({
-      name: "Neuer Auftrag",
+      name: t('landing.nav.order'),
       path: "/create-order",
       icon: <FileText className="h-5 w-5 mr-2" />,
-      tooltip: "Neuen Transportauftrag erstellen"
+      tooltip: t('dashboard.newOrder')
     });
   }
 
   const adminLinks = [
     { 
-      name: "Admin", 
+      name: t('landing.nav.admin'), 
       path: "/admin", 
       icon: <Shield className="h-5 w-5 mr-2" />, 
-      tooltip: "Admin Panel" 
+      tooltip: t('landing.nav.admin')
     }
   ];
 
@@ -111,7 +113,7 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
           <Tooltip>
             <TooltipTrigger asChild>
               <Link to="/inbox">
-                <Button variant="ghost" size="icon" className="relative" aria-label="Messages">
+                <Button variant="ghost" size="icon" className="relative" aria-label={t('landing.nav.messages')}>
                   <Inbox className="h-5 w-5" />
                   {unreadMessagesCount > 0 && (
                     <div 
@@ -123,7 +125,7 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Nachrichten ({unreadMessagesCount} ungelesen)</p>
+              <p>{t('landing.nav.messages')} ({unreadMessagesCount} ungelesen)</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -132,15 +134,15 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
                 <Button 
                   variant="outline" 
                   className="gap-2 hover:bg-brand-primary hover:text-white transition-colors"
-                  aria-label="Profile"
+                  aria-label={t('landing.nav.profile')}
                 >
                   <User className="h-5 w-5" />
-                  <span>Profil</span>
+                  <span>{t('landing.nav.profile')}</span>
                 </Button>
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Dein Profil ansehen</p>
+              <p>{t('dashboard.profile')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -149,15 +151,15 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
                 <Button 
                   variant="outline" 
                   className="gap-2 hover:bg-brand-primary hover:text-white transition-colors"
-                  aria-label="Dashboard"
+                  aria-label={t('landing.nav.dashboard')}
                 >
                   <LayoutDashboard className="h-5 w-5" />
-                  <span>Dashboard</span>
+                  <span>{t('landing.nav.dashboard')}</span>
                 </Button>
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Dashboard</p>
+              <p>{t('dashboard.title')}</p>
             </TooltipContent>
           </Tooltip>
           <LogoutButton variant="outline" className="gap-2 hover:bg-brand-primary hover:text-white transition-colors" />
@@ -170,15 +172,15 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
                   <Button 
                     variant="brand" 
                     className="gap-2"
-                    aria-label="Neuer Auftrag"
+                    aria-label={t('dashboard.newOrder')}
                   >
                     <PlusCircle className="h-5 w-5" />
-                    <span>Neuer Auftrag</span>
+                    <span>{t('dashboard.newOrder')}</span>
                   </Button>
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Transportauftrag erstellen</p>
+                <p>{t('dashboard.newOrder')}</p>
               </TooltipContent>
             </Tooltip>
           )}
@@ -190,15 +192,15 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
               <Button 
                 variant="brand" 
                 className="gap-2"
-                aria-label="Login"
+                aria-label={t('auth.login')}
               >
                 <LogIn className="h-5 w-5" />
-                <span>Anmelden</span>
+                <span>{t('auth.login')}</span>
               </Button>
             </Link>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Anmelden oder Registrieren</p>
+            <p>{t('auth.login')} {t('auth.register')}</p>
           </TooltipContent>
         </Tooltip>
       )}

@@ -23,6 +23,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { useTranslation } from "react-i18next";
 
 interface MobileMenuProps {
   user: any;
@@ -33,18 +34,19 @@ interface MobileMenuProps {
 const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
   const isSender = userRole?.startsWith('sender_');
 
   const navLinks = [{
-    name: "Transport finden",
+    name: t('landing.nav.find_transport'),
     path: "/find-transport",
     icon: <Package className="h-5 w-5 mr-2" />
   }, {
-    name: "Transport anbieten",
+    name: t('landing.nav.offer_transport'),
     path: "/offer-transport",
     icon: <Car className="h-5 w-5 mr-2" />
   }, {
-    name: "Nachrichten",
+    name: t('landing.nav.messages'),
     path: "/inbox",
     icon: <MessageCircle className="h-5 w-5 mr-2" />
   }];
@@ -52,14 +54,14 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
   // Add create order link for senders
   if (isSender) {
     navLinks.push({
-      name: "Neuer Auftrag",
+      name: t('dashboard.newOrder'),
       path: "/create-order",
       icon: <FileText className="h-5 w-5 mr-2" />
     });
   }
 
   const adminLinks = [{
-    name: "Admin Panel",
+    name: t('landing.nav.admin'),
     path: "/admin",
     icon: <Shield className="h-5 w-5 mr-2" />
   }];
@@ -99,7 +101,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
           {!user ? (
             <Link to="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
               <LogIn className="h-5 w-5 mr-2" />
-              <span>Anmelden</span>
+              <span>{t('auth.login')}</span>
             </Link>
           ) : (
             <>
@@ -111,7 +113,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                   className="flex items-center py-2 px-3 rounded-md bg-brand-primary text-white hover:bg-brand-primary/90"
                 >
                   <PlusCircle className="h-5 w-5 mr-2" />
-                  <span className="font-medium">Neuer Auftrag</span>
+                  <span className="font-medium">{t('dashboard.newOrder')}</span>
                 </Link>
               )}
 
@@ -151,11 +153,11 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               <div className="border-t my-2"></div>
               <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <User className="h-5 w-5 mr-2" />
-                <span>Profil</span>
+                <span>{t('landing.nav.profile')}</span>
               </Link>
               <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <LayoutDashboard className="h-5 w-5 mr-2" />
-                <span>Dashboard</span>
+                <span>{t('landing.nav.dashboard')}</span>
               </Link>
               
               <button onClick={() => {
@@ -163,7 +165,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
             signOut();
           }} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
                 <LogOut className="h-5 w-5 mr-2" />
-                <span>Abmelden</span>
+                <span>{t('auth.logout')}</span>
               </button>
             </>
           )}

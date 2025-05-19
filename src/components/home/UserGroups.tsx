@@ -3,45 +3,48 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Package, Truck, Building, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const UserGroups = () => {
+  const { t } = useTranslation();
+  
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold">Für wen ist Whatsgonow?</h2>
+          <h2 className="text-3xl font-bold">{t('landing.user_groups.title')}</h2>
           <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-            Whatsgonow ist für alle, die Güter transportieren oder Transportkapazitäten anbieten möchten
+            {t('landing.user_groups.description')}
           </p>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <UserGroupCard 
             icon={<Package className="h-10 w-10 text-brand-orange" />}
-            title="Privatkunden" 
-            description="Du möchtest etwas transportieren lassen und suchst eine günstige und zuverlässige Lösung?"
-            buttonText="Als Privatkunde starten"
+            title={t('landing.user_groups.private.title')}
+            description={t('landing.user_groups.private.description')}
+            buttonText={t('landing.user_groups.private.button')}
           />
           
           <UserGroupCard 
             icon={<Building className="h-10 w-10 text-brand-orange" />}
-            title="Geschäftskunden" 
-            description="Du brauchst regelmäßige Transporte für dein Unternehmen und willst Kosten optimieren?"
-            buttonText="Als Geschäftskunde starten"
+            title={t('landing.user_groups.business.title')}
+            description={t('landing.user_groups.business.description')}
+            buttonText={t('landing.user_groups.business.button')}
           />
           
           <UserGroupCard 
             icon={<Truck className="h-10 w-10 text-brand-orange" />}
-            title="Fahrer" 
-            description="Du bist unterwegs und möchtest deine Fahrt nutzen, um zusätzliches Geld zu verdienen?"
-            buttonText="Als Fahrer starten"
+            title={t('landing.user_groups.driver.title')}
+            description={t('landing.user_groups.driver.description')}
+            buttonText={t('landing.user_groups.driver.button')}
           />
 
           <UserGroupCard 
             icon={<Users className="h-10 w-10 text-brand-orange" />}
-            title="Community Manager" 
-            description="Du möchtest als Community Manager Whatsgonow in deiner Region voranbringen?"
-            buttonText="Als Community Manager starten"
+            title={t('landing.user_groups.cm.title')}
+            description={t('landing.user_groups.cm.description')}
+            buttonText={t('landing.user_groups.cm.button')}
           />
         </div>
       </div>

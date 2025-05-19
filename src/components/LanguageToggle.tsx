@@ -38,24 +38,32 @@ export const LanguageToggle = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="ghost" 
-          size="icon"
+          variant="outline" 
+          size="sm"
           disabled={loading}
-          className="relative hover:bg-accent hover:text-accent-foreground h-9 w-9"
+          className="flex items-center gap-2 h-9 px-3 border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
           aria-label="Change language"
         >
-          <GlobeIcon className="h-[1.2rem] w-[1.2rem]" />
+          {currentLanguage === 'de' ? (
+            <>
+              <span className="mr-1">🇩🇪</span>
+              <span className="hidden sm:inline">Deutsch</span>
+            </>
+          ) : (
+            <>
+              <span className="mr-1">🇬🇧</span>
+              <span className="hidden sm:inline">English</span>
+            </>
+          )}
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-              <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            </div>
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent ml-1" />
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[150px]">
+      <DropdownMenuContent align="end" className="w-[150px] bg-background">
         <DropdownMenuItem 
           onClick={() => handleLanguageChange('de')}
-          className="cursor-pointer"
+          className={`cursor-pointer ${currentLanguage === 'de' ? 'bg-accent' : ''}`}
         >
           <span className="mr-2">🇩🇪</span>
           Deutsch 
@@ -63,7 +71,7 @@ export const LanguageToggle = () => {
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => handleLanguageChange('en')}
-          className="cursor-pointer"
+          className={`cursor-pointer ${currentLanguage === 'en' ? 'bg-accent' : ''}`}
         >
           <span className="mr-2">🇬🇧</span>
           English
