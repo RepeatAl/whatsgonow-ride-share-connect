@@ -6,6 +6,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppBootstrap } from '@/components/AppBootstrap';
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { UserSessionProvider } from "@/contexts/UserSessionContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import LaunchProvider from "@/components/launch/LaunchProvider";
 
 import './App.css';
 import RTLDebugPanel from "@/components/RTLDebugPanel";
@@ -19,15 +22,21 @@ function App() {
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <LanguageProvider>
-            <AppBootstrap>
-              <AppRoutes />
-              <Toaster />
-              {isDev && <RTLDebugPanel />}
-            </AppBootstrap>
-          </LanguageProvider>
-        </ThemeProvider>
+        <UserSessionProvider>
+          <AuthProvider>
+            <LaunchProvider>
+              <ThemeProvider>
+                <LanguageProvider>
+                  <AppBootstrap>
+                    <AppRoutes />
+                    <Toaster />
+                    {isDev && <RTLDebugPanel />}
+                  </AppBootstrap>
+                </LanguageProvider>
+              </ThemeProvider>
+            </LaunchProvider>
+          </AuthProvider>
+        </UserSessionProvider>
       </QueryClientProvider>
     </BrowserRouter>
   );
