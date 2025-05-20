@@ -37,12 +37,13 @@ export const LanguageToggle = () => {
         
         // Add a flag in sessionStorage to indicate we're coming from a language change
         sessionStorage.setItem('langSwitchTimestamp', Date.now().toString());
+        sessionStorage.setItem('targetLanguage', currentLanguage);
       
         // Increased delay to ensure language and direction are saved properly
         setTimeout(() => {
           console.log('[LANG-DEBUG] Executing reload now');
           window.location.reload();
-        }, 600);
+        }, 800); // Increased from 600ms to 800ms for more reliable loading
       });
     }
   }, [shouldReload, currentLanguage, i18n]);

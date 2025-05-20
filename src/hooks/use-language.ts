@@ -25,9 +25,12 @@ export const useLanguage = () => {
   useEffect(() => {
     const initLanguage = async () => {
       try {
+        setLoading(true);
         // Get the language from localStorage first as a fallback
         const savedLang = localStorage.getItem('i18nextLng');
         console.log('[LANG-INIT] Initial saved language from localStorage:', savedLang);
+        
+        let finalLanguage = savedLang || 'de';
         
         if (user?.id) {
           const { data } = await supabase
@@ -38,42 +41,28 @@ export const useLanguage = () => {
 
           if (data?.language) {
             console.log('[LANG-INIT] Found language in user profile:', data.language);
-            
-            // Ensure landing namespace is loaded for the user's language
-            await i18n.loadNamespaces(['landing', 'common']);
-            
-            // Then change language
-            await i18n.changeLanguage(data.language);
-            
-            // Set the HTML dir attribute based on language
-            document.documentElement.dir = data.language === 'ar' ? 'rtl' : 'ltr';
-            document.body.dir = data.language === 'ar' ? 'rtl' : 'ltr';
-            localStorage.setItem('i18nextLng', data.language);
-            
-            console.log('[LANG-INIT] Set language from user profile:', data.language);
-            console.log('[LANG-INIT] Set document direction:', document.documentElement.dir);
-          } else if (savedLang) {
-            // If user has no language preference but localStorage has one
-            console.log('[LANG-INIT] Using localStorage language for user:', savedLang);
-            document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-            document.body.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-            
-            // Ensure landing namespace is loaded
-            await i18n.loadNamespaces(['landing', 'common']);
+            finalLanguage = data.language;
           }
-        } else if (savedLang) {
-          // If no user, ensure we still have the correct direction from localStorage
-          console.log('[LANG-INIT] No user, using localStorage language:', savedLang);
-          document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-          document.body.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-          
-          if (savedLang === 'ar') {
-            console.log('[LANG-INIT] Set RTL from localStorage for non-logged-in user');
-          }
-          
-          // Ensure landing namespace is loaded
-          await i18n.loadNamespaces(['landing', 'common']);
         }
+        
+        // Ensure landing namespace is loaded for the language
+        await i18n.loadNamespaces(['landing', 'common', 'faq', 'pre_register']);
+        
+        // Then change language if needed
+        if (i18n.language !== finalLanguage) {
+          await i18n.changeLanguage(finalLanguage);
+        }
+        
+        // Set the HTML dir attribute based on language
+        document.documentElement.dir = finalLanguage === 'ar' ? 'rtl' : 'ltr';
+        document.body.dir = finalLanguage === 'ar' ? 'rtl' : 'ltr';
+        
+        // Update localStorage
+        localStorage.setItem('i18nextLng', finalLanguage);
+        
+        console.log('[LANG-INIT] Language initialized to:', finalLanguage);
+        console.log('[LANG-INIT] Document direction set to:', document.documentElement.dir);
+        console.log('[LANG-INIT] Landing namespace loaded:', i18n.hasResourceBundle(finalLanguage, 'landing'));
       } catch (error) {
         console.error('[LANG-ERROR] Failed to initialize language:', error);
       } finally {
@@ -98,8 +87,8 @@ export const useLanguage = () => {
       document.documentElement.dir = newDir;
       document.body.dir = newDir;
       
-      // Preload namespaces needed for landing page
-      await i18n.loadNamespaces(['landing', 'common']);
+      // Preload namespaces needed for landing page and other critical pages
+      await i18n.loadNamespaces(['landing', 'common', 'faq', 'pre_register']);
       
       // Then change the language in i18n
       await i18n.changeLanguage(lang);

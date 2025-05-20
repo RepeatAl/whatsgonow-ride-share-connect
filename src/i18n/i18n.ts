@@ -82,8 +82,6 @@ i18n
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
-      // Prevent caching issues that could cause stale translations
-      cacheAge: 300, // 5 minutes
     },
     ns: ['common', 'auth', 'dashboard', 'analytics', 'feedback', 'pre_register', 'errors', 'landing', 'faq'],
     defaultNS: 'common',
