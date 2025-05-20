@@ -2,14 +2,19 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LucideIcon } from 'lucide-react';
 
-interface NavLinkProps {
+export interface NavLinkProps {
   to: string;
   children: React.ReactNode;
   className?: string;
   activeClassName?: string;
   exact?: boolean;
   onClick?: () => void;
+  icon?: React.ReactNode;
+  name?: string;
+  tooltip?: string;
+  badge?: number;
 }
 
 const NavLink: React.FC<NavLinkProps> = ({
@@ -19,6 +24,12 @@ const NavLink: React.FC<NavLinkProps> = ({
   activeClassName = 'font-bold text-brand-orange',
   exact = false,
   onClick,
+  // Die neuen Props werden hier nicht direkt verwendet,
+  // sie sind für die übergeordneten Komponenten verfügbar
+  icon: _icon,
+  name: _name,
+  tooltip: _tooltip,
+  badge: _badge,
 }) => {
   const location = useLocation();
   const { getLocalizedUrl } = useLanguage();
