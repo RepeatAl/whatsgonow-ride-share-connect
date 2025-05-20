@@ -11,27 +11,48 @@ export const useLanguage = () => {
 
   const updateUserLanguage = async (lang: string) => {
     if (user?.id) {
-      await supabase
-        .from('users')
-        .update({ language: lang })
-        .eq('user_id', user.id);
+      try {
+        await supabase
+          .from('users')
+          .update({ language: lang })
+          .eq('user_id', user.id);
+      } catch (error) {
+        console.error('[LANG-ERROR] Failed to update user language in database:', error);
+      }
     }
   };
 
   useEffect(() => {
     const initLanguage = async () => {
-      if (user?.id) {
-        const { data } = await supabase
-          .from('users')
-          .select('language')
-          .eq('user_id', user.id)
-          .single();
+      try {
+        if (user?.id) {
+          const { data } = await supabase
+            .from('users')
+            .select('language')
+            .eq('user_id', user.id)
+            .single();
 
-        if (data?.language) {
-          await i18n.changeLanguage(data.language);
+          if (data?.language) {
+            await i18n.changeLanguage(data.language);
+            
+            // Set the HTML dir attribute based on language
+            document.documentElement.dir = data.language === 'ar' ? 'rtl' : 'ltr';
+            console.log('[LANG-INIT] Set language from user profile:', data.language);
+            console.log('[LANG-INIT] Set document direction:', document.documentElement.dir);
+          }
+        } else {
+          // If no user, ensure we still have the correct direction from localStorage
+          const savedLang = localStorage.getItem('i18nextLng');
+          if (savedLang === 'ar') {
+            document.documentElement.dir = 'rtl';
+            console.log('[LANG-INIT] Set RTL from localStorage for non-logged-in user');
+          }
         }
+      } catch (error) {
+        console.error('[LANG-ERROR] Failed to initialize language:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initLanguage();
@@ -41,19 +62,25 @@ export const useLanguage = () => {
     setLoading(true);
     
     try {
+      console.log('[LANG-CHANGE] Changing language to:', lang);
       await i18n.changeLanguage(lang);
       await updateUserLanguage(lang);
       
       // Set the HTML dir attribute based on language
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      const newDir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.dir = newDir;
       
-      // Debug logging for Arabic language in development mode
-      if (process.env.NODE_ENV === 'development' && lang === 'ar') {
-        console.log('[DEBUG] Sprache auf Arabisch gesetzt');
-        console.log('[DEBUG] document.dir:', document.documentElement.dir);
-        console.log('[DEBUG] i18n.language:', i18n.language);
-        console.log('[DEBUG] Components should re-render with RTL support');
-      }
+      // Force update localStorage to ensure it's set correctly
+      localStorage.setItem('i18nextLng', lang);
+      
+      console.log('[LANG-CHANGE] Language changed successfully');
+      console.log('[LANG-CHANGE] Document direction:', document.documentElement.dir);
+      console.log('[LANG-CHANGE] i18n.language:', i18n.language);
+      
+      return true;
+    } catch (error) {
+      console.error('[LANG-ERROR] Error changing language:', error);
+      throw error;
     } finally {
       setLoading(false);
     }

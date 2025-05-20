@@ -21,21 +21,28 @@ export const LanguageToggle = () => {
     // If we determined a reload is needed (especially for RTL changes)
     if (shouldReload) {
       setShouldReload(false);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[DEBUG] Reloading page to ensure proper RTL rendering');
-      }
-      // Small delay to ensure language is saved in localStorage
-      setTimeout(() => window.location.reload(), 100);
+      
+      // Debug information before reload
+      console.log('[LANG-DEBUG] Initiating page reload for language change');
+      console.log('[LANG-DEBUG] Current language:', currentLanguage);
+      console.log('[LANG-DEBUG] Current document dir:', document.documentElement.dir);
+      
+      // Increased delay to ensure language and direction are saved properly
+      setTimeout(() => {
+        console.log('[LANG-DEBUG] Executing reload now');
+        window.location.reload();
+      }, 300);
     }
-  }, [shouldReload]);
+  }, [shouldReload, currentLanguage]);
 
   const handleLanguageChange = async (lang: string) => {
     if (currentLanguage === lang) return;
     
     try {
+      console.log('[LANG-DEBUG] Language change requested:', lang);
       await changeLanguage(lang);
       
-      // If switching to/from Arabic, we may need a full reload for proper RTL
+      // If switching to/from Arabic, we need a full reload for proper RTL
       const needsReload = (currentLanguage === 'ar' || lang === 'ar');
       
       toast({
@@ -46,9 +53,11 @@ export const LanguageToggle = () => {
       });
       
       if (needsReload) {
+        console.log('[LANG-DEBUG] Setting reload flag for RTL change');
         setShouldReload(true);
       }
     } catch (error) {
+      console.error('[LANG-DEBUG] Language change error:', error);
       toast({
         variant: "destructive",
         description: 

@@ -2,6 +2,7 @@
 import * as z from "zod";
 import i18next from "i18next";
 import { zodMessage } from "../utils/zodMessage";
+import { VehicleType } from "@/components/pre-registration/VehicleTypeSelector";
 
 export const createPreRegistrationSchema = () => {
   // Use the standard i18next.t function directly which has the correct type
@@ -16,7 +17,7 @@ export const createPreRegistrationSchema = () => {
     wants_cm: z.boolean().default(false),
     wants_sender: z.boolean().default(false),
     vehicle_types: z.array(
-      z.enum(["S", "M", "L", "XL", "XXL", "MOPED", "BIKE", "BOAT", "PLANE"])
+      z.enum(["S", "M", "L", "XL", "XXL", "MOPED", "BIKE", "BOAT", "PLANE"] as [VehicleType, ...VehicleType[]])
     ).optional(),
     gdpr_consent: z.boolean().refine(val => val === true, {
       message: zodMessage(t, "gdpr_required", { ns: 'errors' })

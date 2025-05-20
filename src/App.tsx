@@ -1,4 +1,3 @@
-
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AppRoutes } from './components/routing/AppRoutes';
 import { Toaster } from './components/ui/toaster';
@@ -12,6 +11,7 @@ import LaunchProvider from './components/launch/LaunchProvider';
 import { TooltipProvider } from './components/ui/tooltip';
 import { ErrorBoundary } from './components/ui/error-boundary';
 import { RTLDebugBanner } from './components/RTLDebugBanner';
+import { RTLDebugIndicator } from './components/RTLDebugIndicator';
 
 import './App.css';
 
@@ -20,28 +20,31 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
-      <ThemeProvider>
-        <UserSessionProvider>
-          <AppBootstrap>
-            <LaunchProvider>
-              <AuthProvider>
-                <NotificationProvider>
-                  <TooltipProvider>
-                    <ErrorBoundary>
-                      <RTLDebugBanner />
-                      <AppRoutes />
-                    </ErrorBoundary>
-                    <Toaster />
-                    <CookieConsent />
-                  </TooltipProvider>
-                </NotificationProvider>
-              </AuthProvider>
-            </LaunchProvider>
-          </AppBootstrap>
-        </UserSessionProvider>
-      </ThemeProvider>
-    </Router>
+    <>
+      <RTLDebugIndicator />
+      <Router>
+        <ThemeProvider>
+          <UserSessionProvider>
+            <AppBootstrap>
+              <LaunchProvider>
+                <AuthProvider>
+                  <NotificationProvider>
+                    <TooltipProvider>
+                      <ErrorBoundary>
+                        <RTLDebugBanner />
+                        <AppRoutes />
+                      </ErrorBoundary>
+                      <Toaster />
+                      <CookieConsent />
+                    </TooltipProvider>
+                  </NotificationProvider>
+                </AuthProvider>
+              </LaunchProvider>
+            </AppBootstrap>
+          </UserSessionProvider>
+        </ThemeProvider>
+      </Router>
+    </>
   );
 }
 

@@ -8,25 +8,26 @@ import i18n from './i18n/i18n';
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
 
+// Get the initial language from localStorage to ensure it's set correctly before rendering
+const initialLanguage = localStorage.getItem('i18nextLng') || i18n.language || 'de';
+const isRTL = initialLanguage === 'ar';
+
 // Set the initial document direction
-document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
 
 // Log initial language state in development mode
-if (process.env.NODE_ENV === 'development') {
-  console.log('[DEBUG-INIT] Initial language:', i18n.language);
-  console.log('[DEBUG-INIT] Initial document.dir:', document.documentElement.dir);
-}
+console.log('[INIT] Initial language:', initialLanguage);
+console.log('[INIT] Is RTL language:', isRTL);
+console.log('[INIT] Initial document.dir:', document.documentElement.dir);
 
 // Listen for language changes to update the document direction
 i18n.on('languageChanged', (lng) => {
   const isRTL = lng === 'ar';
   document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[DEBUG-CHANGE] Language changed to:', lng);
-    console.log('[DEBUG-CHANGE] Document direction set to:', document.documentElement.dir);
-    console.log('[DEBUG-CHANGE] Is RTL:', isRTL);
-  }
+  console.log('[LANG-CHANGE-EVENT] Language changed to:', lng);
+  console.log('[LANG-CHANGE-EVENT] Document direction set to:', document.documentElement.dir);
+  console.log('[LANG-CHANGE-EVENT] Is RTL:', isRTL);
 });
 
 // Starte mit einer einfachen Ladeanimation, bis die App initialisiert ist

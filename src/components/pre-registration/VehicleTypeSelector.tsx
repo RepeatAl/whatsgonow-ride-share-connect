@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { PreRegistrationFormData } from "@/lib/validators/pre-registration";
 
 // Define the allowed vehicle types as a type
-type VehicleType = "S" | "M" | "L" | "XL" | "XXL" | "MOPED" | "BIKE" | "BOAT" | "PLANE";
+export type VehicleType = "S" | "M" | "L" | "XL" | "XXL" | "MOPED" | "BIKE" | "BOAT" | "PLANE";
 
 interface VehicleSelectorProps {
   control: Control<PreRegistrationFormData>;
