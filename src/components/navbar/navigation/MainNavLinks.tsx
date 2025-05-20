@@ -54,7 +54,13 @@ const MainNavLinks = ({ isSender, unreadMessagesCount }: MainNavLinksProps) => {
           name={link.name}
           tooltip={link.tooltip}
           badge={link.badge}
-        />
+        >
+          <div className="flex items-center">
+            {link.icon}
+            <span>{link.name}</span>
+            {link.badge ? <span className="ml-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">{link.badge}</span> : null}
+          </div>
+        </NavLink>
       ))}
     </>
   );

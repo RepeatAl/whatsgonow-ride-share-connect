@@ -21,7 +21,12 @@ const AdminLinks = ({ isAdmin }: AdminLinksProps) => {
         icon={<Shield className="h-5 w-5 mr-2" />}
         name={t('nav.admin')}
         tooltip={t('nav.admin')}
-      />
+      >
+        <div className="flex items-center">
+          <Shield className="h-5 w-5 mr-2" />
+          <span>{t('nav.admin')}</span>
+        </div>
+      </NavLink>
     </>
   );
 };
