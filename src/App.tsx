@@ -1,3 +1,4 @@
+
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AppRoutes } from './components/routing/AppRoutes';
 import { Toaster } from './components/ui/toaster';
@@ -12,6 +13,7 @@ import { TooltipProvider } from './components/ui/tooltip';
 import { ErrorBoundary } from './components/ui/error-boundary';
 import { RTLDebugBanner } from './components/RTLDebugBanner';
 import { RTLDebugIndicator } from './components/RTLDebugIndicator';
+import RTLDebugPanel from './components/RTLDebugPanel';
 
 import './App.css';
 
@@ -19,6 +21,8 @@ import './App.css';
 // <Router> → <ThemeProvider> → <UserSessionProvider> → <AppBootstrap> → <LaunchProvider> → <AuthProvider> → <NotificationProvider> → <AppRoutes>
 
 function App() {
+  const isDev = process.env.NODE_ENV === 'development';
+
   return (
     <>
       <RTLDebugIndicator />
@@ -36,6 +40,7 @@ function App() {
                       </ErrorBoundary>
                       <Toaster />
                       <CookieConsent />
+                      {isDev && <RTLDebugPanel />}
                     </TooltipProvider>
                   </NotificationProvider>
                 </AuthProvider>

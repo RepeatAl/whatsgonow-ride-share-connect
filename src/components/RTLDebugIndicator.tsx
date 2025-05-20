@@ -6,12 +6,14 @@ export const RTLDebugIndicator = () => {
   const { i18n } = useTranslation();
   const [isRTL, setIsRTL] = useState(i18n.language === 'ar');
   const [direction, setDirection] = useState(document.documentElement.dir);
+  const [storedLang, setStoredLang] = useState(localStorage.getItem('i18nextLng') || 'unknown');
   const isDev = process.env.NODE_ENV === 'development';
   
   useEffect(() => {
     const checkRTL = () => {
       setIsRTL(i18n.language === 'ar');
       setDirection(document.documentElement.dir);
+      setStoredLang(localStorage.getItem('i18nextLng') || 'unknown');
     };
     
     // Check on mount
@@ -24,8 +26,12 @@ export const RTLDebugIndicator = () => {
     
     i18n.on('languageChanged', handleLanguageChange);
     
+    // Check periodically to catch any external changes to dir or localStorage
+    const intervalId = setInterval(checkRTL, 1000);
+    
     return () => {
       i18n.off('languageChanged', handleLanguageChange);
+      clearInterval(intervalId);
     };
   }, [i18n]);
 
@@ -42,12 +48,12 @@ export const RTLDebugIndicator = () => {
       }`}
     >
       {isRTL && direction === 'rtl' 
-        ? '✅ RTL aktiviert (Arabisch) - HTML dir: rtl' 
+        ? `✅ RTL aktiv (${i18n.language}) - dir: ${direction} - localStorage: ${storedLang}` 
         : isRTL && direction !== 'rtl'
-          ? '⚠️ FEHLER: Arabische Sprache aktiv, aber HTML dir: ' + direction
+          ? `⚠️ FEHLER: ${i18n.language} aktiv, aber dir: ${direction} - localStorage: ${storedLang}`
           : direction === 'rtl' && !isRTL
-            ? '⚠️ FEHLER: HTML dir=rtl, aber Sprache: ' + i18n.language
-            : '🔄 LTR Modus - ' + i18n.language
+            ? `⚠️ FEHLER: dir=rtl, aber Sprache: ${i18n.language} - localStorage: ${storedLang}`
+            : `🔄 LTR: ${i18n.language} - dir: ${direction} - localStorage: ${storedLang}`
       }
     </div>
   );

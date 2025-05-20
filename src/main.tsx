@@ -12,7 +12,7 @@ if (!rootElement) throw new Error("Root element not found");
 const initialLanguage = localStorage.getItem('i18nextLng') || i18n.language || 'de';
 const isRTL = initialLanguage === 'ar';
 
-// Set the initial document direction
+// Force set the initial document direction
 document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
 
 // Log initial language state in development mode
@@ -24,10 +24,12 @@ console.log('[INIT] Initial document.dir:', document.documentElement.dir);
 i18n.on('languageChanged', (lng) => {
   const isRTL = lng === 'ar';
   document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  localStorage.setItem('i18nextLng', lng);
   
   console.log('[LANG-CHANGE-EVENT] Language changed to:', lng);
   console.log('[LANG-CHANGE-EVENT] Document direction set to:', document.documentElement.dir);
   console.log('[LANG-CHANGE-EVENT] Is RTL:', isRTL);
+  console.log('[LANG-CHANGE-EVENT] localStorage i18nextLng:', localStorage.getItem('i18nextLng'));
 });
 
 // Starte mit einer einfachen Ladeanimation, bis die App initialisiert ist
@@ -48,6 +50,9 @@ rootElement.innerHTML = `
 window.addEventListener('DOMContentLoaded', () => {
   try {
     console.log("🚀 App initialization started");
+    console.log("[INIT-CHECK] Document dir before mount:", document.documentElement.dir);
+    console.log("[INIT-CHECK] i18n language before mount:", i18n.language);
+    console.log("[INIT-CHECK] localStorage i18nextLng before mount:", localStorage.getItem('i18nextLng'));
     
     createRoot(rootElement).render(
       <App />

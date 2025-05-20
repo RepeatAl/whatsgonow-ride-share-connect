@@ -18,7 +18,7 @@ export const createPreRegistrationSchema = () => {
     wants_sender: z.boolean().default(false),
     vehicle_types: z.array(
       z.enum(["S", "M", "L", "XL", "XXL", "MOPED", "BIKE", "BOAT", "PLANE"] as [VehicleType, ...VehicleType[]])
-    ).optional(),
+    ).optional().default([]),
     gdpr_consent: z.boolean().refine(val => val === true, {
       message: zodMessage(t, "gdpr_required", { ns: 'errors' })
     })

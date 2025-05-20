@@ -25,6 +25,10 @@ export const useLanguage = () => {
   useEffect(() => {
     const initLanguage = async () => {
       try {
+        // Get the language from localStorage first as a fallback
+        const savedLang = localStorage.getItem('i18nextLng');
+        console.log('[LANG-INIT] Initial saved language from localStorage:', savedLang);
+        
         if (user?.id) {
           const { data } = await supabase
             .from('users')
@@ -33,18 +37,26 @@ export const useLanguage = () => {
             .single();
 
           if (data?.language) {
+            console.log('[LANG-INIT] Found language in user profile:', data.language);
             await i18n.changeLanguage(data.language);
             
             // Set the HTML dir attribute based on language
             document.documentElement.dir = data.language === 'ar' ? 'rtl' : 'ltr';
+            localStorage.setItem('i18nextLng', data.language);
+            
             console.log('[LANG-INIT] Set language from user profile:', data.language);
             console.log('[LANG-INIT] Set document direction:', document.documentElement.dir);
+          } else if (savedLang) {
+            // If user has no language preference but localStorage has one
+            console.log('[LANG-INIT] Using localStorage language for user:', savedLang);
+            document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
           }
-        } else {
+        } else if (savedLang) {
           // If no user, ensure we still have the correct direction from localStorage
-          const savedLang = localStorage.getItem('i18nextLng');
+          console.log('[LANG-INIT] No user, using localStorage language:', savedLang);
+          document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
+          
           if (savedLang === 'ar') {
-            document.documentElement.dir = 'rtl';
             console.log('[LANG-INIT] Set RTL from localStorage for non-logged-in user');
           }
         }
@@ -63,19 +75,24 @@ export const useLanguage = () => {
     
     try {
       console.log('[LANG-CHANGE] Changing language to:', lang);
-      await i18n.changeLanguage(lang);
-      await updateUserLanguage(lang);
+      
+      // Force update localStorage first
+      localStorage.setItem('i18nextLng', lang);
       
       // Set the HTML dir attribute based on language
       const newDir = lang === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.dir = newDir;
       
-      // Force update localStorage to ensure it's set correctly
-      localStorage.setItem('i18nextLng', lang);
+      // Then change the language in i18n
+      await i18n.changeLanguage(lang);
       
-      console.log('[LANG-CHANGE] Language changed successfully');
+      // Update user profile if logged in
+      await updateUserLanguage(lang);
+      
+      console.log('[LANG-CHANGE] Language changed successfully to:', lang);
       console.log('[LANG-CHANGE] Document direction:', document.documentElement.dir);
       console.log('[LANG-CHANGE] i18n.language:', i18n.language);
+      console.log('[LANG-CHANGE] localStorage i18nextLng:', localStorage.getItem('i18nextLng'));
       
       return true;
     } catch (error) {

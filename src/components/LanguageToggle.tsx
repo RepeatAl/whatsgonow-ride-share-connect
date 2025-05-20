@@ -26,12 +26,16 @@ export const LanguageToggle = () => {
       console.log('[LANG-DEBUG] Initiating page reload for language change');
       console.log('[LANG-DEBUG] Current language:', currentLanguage);
       console.log('[LANG-DEBUG] Current document dir:', document.documentElement.dir);
+      console.log('[LANG-DEBUG] LocalStorage i18nextLng:', localStorage.getItem('i18nextLng'));
+      
+      // Ensure localStorage is updated before reloading
+      localStorage.setItem('i18nextLng', currentLanguage);
       
       // Increased delay to ensure language and direction are saved properly
       setTimeout(() => {
         console.log('[LANG-DEBUG] Executing reload now');
         window.location.reload();
-      }, 300);
+      }, 500);
     }
   }, [shouldReload, currentLanguage]);
 
@@ -40,7 +44,13 @@ export const LanguageToggle = () => {
     
     try {
       console.log('[LANG-DEBUG] Language change requested:', lang);
+      console.log('[LANG-DEBUG] Current language before change:', currentLanguage);
+      
       await changeLanguage(lang);
+      
+      console.log('[LANG-DEBUG] Language changed to:', lang);
+      console.log('[LANG-DEBUG] Document direction after change:', document.documentElement.dir);
+      console.log('[LANG-DEBUG] LocalStorage after change:', localStorage.getItem('i18nextLng'));
       
       // If switching to/from Arabic, we need a full reload for proper RTL
       const needsReload = (currentLanguage === 'ar' || lang === 'ar');

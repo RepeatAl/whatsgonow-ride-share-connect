@@ -61,7 +61,12 @@ const resources = {
     faq: arFaq,
     landing: arLanding,
     pre_register: arPreRegister,
-    errors: arErrors
+    errors: arErrors,
+    // Add fallbacks for missing namespaces
+    auth: enAuth,
+    dashboard: enDashboard,
+    analytics: enAnalytics,
+    feedback: enFeedback
   }
 };
 
@@ -87,7 +92,10 @@ i18n
       bindI18n: 'languageChanged loaded', // Make sure components refresh when language changes
       bindI18nStore: 'added removed', // React to resource changes
       transEmptyNodeValue: '' // Value for empty translations
-    }
+    },
+    // Force reloading the page on language change for RTL
+    keySeparator: false,
+    nsSeparator: false
   });
 
 // Debug logging for i18n in development mode
@@ -96,11 +104,19 @@ if (process.env.NODE_ENV === 'development') {
     console.log('[i18n] Initialization complete');
     console.log('[i18n] Current language:', i18n.language);
     console.log('[i18n] RTL mode:', i18n.language === 'ar');
+    console.log('[i18n] Available languages:', Object.keys(resources));
+    console.log('[i18n] Available namespaces:', i18n.options.ns);
   });
 
   i18n.on('languageChanged', (lng) => {
     console.log('[i18n] Language changed to:', lng);
     console.log('[i18n] RTL mode:', lng === 'ar');
+    console.log('[i18n] Document direction:', document.documentElement.dir);
+    console.log('[i18n] localStorage value:', localStorage.getItem('i18nextLng'));
+  });
+  
+  i18n.on('loaded', (loaded) => {
+    console.log('[i18n] Resources loaded:', loaded);
   });
 }
 

@@ -44,19 +44,23 @@ export function VehicleTypeSelector({ control }: VehicleSelectorProps) {
             control={control}
             name="vehicle_types"
             render={({ field }) => {
+              const fieldValue = field.value || [];
               return (
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                   <FormControl>
                     <Checkbox
-                      checked={field.value?.includes(option.value)}
+                      checked={fieldValue.includes(option.value)}
                       onCheckedChange={(checked) => {
-                        return checked
-                          ? field.onChange([...field.value || [], option.value])
-                          : field.onChange(
-                              field.value?.filter(
-                                (value) => value !== option.value
-                              )
-                            );
+                        if (checked) {
+                          // Ensure we're working with an array
+                          const newValue = [...(fieldValue || []), option.value];
+                          field.onChange(newValue);
+                        } else {
+                          const newValue = fieldValue.filter(
+                            (value) => value !== option.value
+                          );
+                          field.onChange(newValue);
+                        }
                       }}
                     />
                   </FormControl>
