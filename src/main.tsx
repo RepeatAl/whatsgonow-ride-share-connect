@@ -14,22 +14,33 @@ const isRTL = initialLanguage === 'ar';
 
 // Force set the initial document direction
 document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+document.body.dir = isRTL ? 'rtl' : 'ltr';
 
 // Log initial language state in development mode
 console.log('[INIT] Initial language:', initialLanguage);
 console.log('[INIT] Is RTL language:', isRTL);
 console.log('[INIT] Initial document.dir:', document.documentElement.dir);
 
+// Make sure all required namespaces are loaded before rendering
+const requiredNamespaces = ['common', 'landing'];
+i18n.loadNamespaces(requiredNamespaces).then(() => {
+  console.log('[INIT] Required namespaces loaded');
+  console.log('[INIT] Landing namespace loaded:', i18n.hasResourceBundle(initialLanguage, 'landing'));
+  console.log('[INIT] Common namespace loaded:', i18n.hasResourceBundle(initialLanguage, 'common'));
+});
+
 // Listen for language changes to update the document direction
 i18n.on('languageChanged', (lng) => {
   const isRTL = lng === 'ar';
   document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  document.body.dir = isRTL ? 'rtl' : 'ltr';
   localStorage.setItem('i18nextLng', lng);
   
   console.log('[LANG-CHANGE-EVENT] Language changed to:', lng);
   console.log('[LANG-CHANGE-EVENT] Document direction set to:', document.documentElement.dir);
   console.log('[LANG-CHANGE-EVENT] Is RTL:', isRTL);
   console.log('[LANG-CHANGE-EVENT] localStorage i18nextLng:', localStorage.getItem('i18nextLng'));
+  console.log('[LANG-CHANGE-EVENT] Landing namespace loaded:', i18n.hasResourceBundle(lng, 'landing'));
 });
 
 // Starte mit einer einfachen Ladeanimation, bis die App initialisiert ist
@@ -45,6 +56,24 @@ rootElement.innerHTML = `
     </style>
   </div>
 `;
+
+// Check if we're coming from a language switch
+const langSwitchTimestamp = sessionStorage.getItem('langSwitchTimestamp');
+if (langSwitchTimestamp) {
+  const timestamp = parseInt(langSwitchTimestamp);
+  const now = Date.now();
+  const timeDiff = now - timestamp;
+  
+  // If this is a recent language switch, ensure namespaces are loaded
+  if (timeDiff < 5000) { // Within last 5 seconds
+    console.log('[INIT] Detected recent language switch, ensuring namespaces are loaded');
+    i18n.loadNamespaces(['landing', 'common']).then(() => {
+      console.log('[INIT-SWITCH] Namespaces loaded after language switch');
+    });
+    // Clear the timestamp
+    sessionStorage.removeItem('langSwitchTimestamp');
+  }
+}
 
 // Initialisiere die App erst, wenn das DOM vollständig geladen ist
 window.addEventListener('DOMContentLoaded', () => {

@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 export const LanguageToggle = () => {
   const { changeLanguage, currentLanguage, loading } = useLanguage();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [shouldReload, setShouldReload] = useState(false);
 
   useEffect(() => {
@@ -31,13 +31,21 @@ export const LanguageToggle = () => {
       // Ensure localStorage is updated before reloading
       localStorage.setItem('i18nextLng', currentLanguage);
       
-      // Increased delay to ensure language and direction are saved properly
-      setTimeout(() => {
-        console.log('[LANG-DEBUG] Executing reload now');
-        window.location.reload();
-      }, 500);
+      // Force i18n to load resources before reloading
+      i18n.loadNamespaces(['landing', 'common'], () => {
+        console.log('[LANG-DEBUG] Required namespaces preloaded before reload');
+        
+        // Add a flag in sessionStorage to indicate we're coming from a language change
+        sessionStorage.setItem('langSwitchTimestamp', Date.now().toString());
+      
+        // Increased delay to ensure language and direction are saved properly
+        setTimeout(() => {
+          console.log('[LANG-DEBUG] Executing reload now');
+          window.location.reload();
+        }, 600);
+      });
     }
-  }, [shouldReload, currentLanguage]);
+  }, [shouldReload, currentLanguage, i18n]);
 
   const handleLanguageChange = async (lang: string) => {
     if (currentLanguage === lang) return;
@@ -51,9 +59,11 @@ export const LanguageToggle = () => {
       console.log('[LANG-DEBUG] Language changed to:', lang);
       console.log('[LANG-DEBUG] Document direction after change:', document.documentElement.dir);
       console.log('[LANG-DEBUG] LocalStorage after change:', localStorage.getItem('i18nextLng'));
+      console.log('[LANG-DEBUG] Landing namespace loaded:', i18n.hasResourceBundle(lang, 'landing'));
       
-      // If switching to/from Arabic, we need a full reload for proper RTL
-      const needsReload = (currentLanguage === 'ar' || lang === 'ar');
+      // Always reload for language changes to ensure all components re-render properly
+      // This is especially important for RTL language changes
+      setShouldReload(true);
       
       toast({
         description: 
@@ -61,11 +71,6 @@ export const LanguageToggle = () => {
           lang === 'en' ? "Language changed to English" :
           "تم تغيير اللغة إلى العربية",
       });
-      
-      if (needsReload) {
-        console.log('[LANG-DEBUG] Setting reload flag for RTL change');
-        setShouldReload(true);
-      }
     } catch (error) {
       console.error('[LANG-DEBUG] Language change error:', error);
       toast({

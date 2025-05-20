@@ -4,8 +4,12 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const CTA = () => {
-  const { t, i18n } = useTranslation('landing');
+  const { t, i18n, ready } = useTranslation('landing');
   const isRTL = i18n.language === 'ar';
+  
+  if (!ready) {
+    return null;
+  }
   
   return (
     <section className="py-16 bg-brand-orange text-white" dir={isRTL ? 'rtl' : 'ltr'}>

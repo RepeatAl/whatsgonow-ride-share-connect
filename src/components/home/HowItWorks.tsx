@@ -4,8 +4,12 @@ import { Package, Truck, Search, FileCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const HowItWorks = () => {
-  const { t, i18n } = useTranslation('landing');
+  const { t, i18n, ready } = useTranslation('landing');
   const isRTL = i18n.language === 'ar';
+
+  if (!ready) {
+    return null;
+  }
 
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-900" id="how-it-works" dir={isRTL ? 'rtl' : 'ltr'}>

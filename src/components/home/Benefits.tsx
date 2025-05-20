@@ -11,8 +11,12 @@ import {
 import { useTranslation } from "react-i18next";
 
 const Benefits = () => {
-  const { t, i18n } = useTranslation('landing');
+  const { t, i18n, ready } = useTranslation('landing');
   const isRTL = i18n.language === 'ar';
+  
+  if (!ready) {
+    return null;
+  }
   
   return (
     <section className="py-16 container mx-auto px-4" dir={isRTL ? 'rtl' : 'ltr'}>

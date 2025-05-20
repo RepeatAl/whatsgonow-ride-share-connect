@@ -70,6 +70,7 @@ const resources = {
   }
 };
 
+// Initialize i18n directly - don't wait for async operations
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -80,7 +81,9 @@ i18n
     detection: {
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'i18nextLng',
-      caches: ['localStorage']
+      caches: ['localStorage'],
+      // Prevent caching issues that could cause stale translations
+      cacheAge: 300, // 5 minutes
     },
     ns: ['common', 'auth', 'dashboard', 'analytics', 'feedback', 'pre_register', 'errors', 'landing', 'faq'],
     defaultNS: 'common',
@@ -91,11 +94,12 @@ i18n
       useSuspense: true,
       bindI18n: 'languageChanged loaded', // Make sure components refresh when language changes
       bindI18nStore: 'added removed', // React to resource changes
-      transEmptyNodeValue: '' // Value for empty translations
+      transEmptyNodeValue: '', // Value for empty translations
+      transSupportBasicHtmlNodes: true, // Support for basic HTML in translations
+      transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'em', 'b'], // Keep these HTML nodes
     },
-    // Force reloading the page on language change for RTL
-    keySeparator: false,
-    nsSeparator: false
+    // Make sure to initialize with all resources
+    initImmediate: false, // This ensures all resources are loaded before rendering
   });
 
 // Debug logging for i18n in development mode
@@ -106,6 +110,7 @@ if (process.env.NODE_ENV === 'development') {
     console.log('[i18n] RTL mode:', i18n.language === 'ar');
     console.log('[i18n] Available languages:', Object.keys(resources));
     console.log('[i18n] Available namespaces:', i18n.options.ns);
+    console.log('[i18n] Landing namespace loaded:', i18n.hasResourceBundle(i18n.language, 'landing'));
   });
 
   i18n.on('languageChanged', (lng) => {
@@ -113,6 +118,7 @@ if (process.env.NODE_ENV === 'development') {
     console.log('[i18n] RTL mode:', lng === 'ar');
     console.log('[i18n] Document direction:', document.documentElement.dir);
     console.log('[i18n] localStorage value:', localStorage.getItem('i18nextLng'));
+    console.log('[i18n] Landing namespace loaded:', i18n.hasResourceBundle(lng, 'landing'));
   });
   
   i18n.on('loaded', (loaded) => {

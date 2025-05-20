@@ -4,8 +4,12 @@ import { StarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const Testimonials = () => {
-  const { t, i18n } = useTranslation('landing');
+  const { t, i18n, ready } = useTranslation('landing');
   const isRTL = i18n.language === 'ar';
+
+  if (!ready) {
+    return null;
+  }
 
   const testimonials = [
     {

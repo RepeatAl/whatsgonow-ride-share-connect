@@ -1,20 +1,39 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const Hero = () => {
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const { t, i18n } = useTranslation('landing');
+  const { t, i18n, ready } = useTranslation('landing');
+  
+  // Debug translations in development mode
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[HERO-DEBUG] Landing namespace loaded:', i18n.hasResourceBundle(i18n.language, 'landing'));
+      console.log('[HERO-DEBUG] Current language:', i18n.language);
+      console.log('[HERO-DEBUG] Translation ready:', ready);
+      console.log('[HERO-DEBUG] Hero title translation:', t('hero.title'));
+    }
+  }, [i18n.language, ready, t]);
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
   };
 
   const isRTL = i18n.language === 'ar';
+  
+  // Show loading indicator if translations aren't ready yet
+  if (!ready) {
+    return (
+      <div className="h-96 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-t-brand-orange border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return <div className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
     <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/20 to-brand-blue/10 z-0"></div>
@@ -49,7 +68,7 @@ const Hero = () => {
               <button
                 onClick={toggleMute}
                 className="absolute top-4 right-4 z-30 p-2.5 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors shadow-lg hover:scale-105 transform duration-200"
-                aria-label={isMuted ? t('common.unmute', 'Unmute') : t('common.mute', 'Mute')}
+                aria-label={isMuted ? t('common:unmute', 'Unmute') : t('common:mute', 'Mute')}
               >
                 {isMuted ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
               </button>
