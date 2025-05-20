@@ -17,9 +17,11 @@ document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
 document.body.dir = isRTL ? 'rtl' : 'ltr';
 
 // Log initial language state in development mode
-console.log('[INIT] Initial language:', initialLanguage);
-console.log('[INIT] Is RTL language:', isRTL);
-console.log('[INIT] Initial document.dir:', document.documentElement.dir);
+if (import.meta.env.DEV) {
+  console.log('[INIT] Initial language:', initialLanguage);
+  console.log('[INIT] Is RTL language:', isRTL);
+  console.log('[INIT] Initial document.dir:', document.documentElement.dir);
+}
 
 // Show loading indicator while loading required namespaces
 rootElement.innerHTML = `
@@ -35,32 +37,32 @@ rootElement.innerHTML = `
   </div>
 `;
 
-// Check if we're coming from a language switch
-const langSwitchTimestamp = sessionStorage.getItem('langSwitchTimestamp');
-const targetLanguage = sessionStorage.getItem('targetLanguage');
-
-// Make sure all required namespaces are loaded before rendering
+// Required namespaces that must be loaded before rendering
 const requiredNamespaces = ['common', 'landing', 'pre_register', 'faq'];
 
 // Function to render the app once resources are loaded
 const renderApp = () => {
   try {
-    console.log("🚀 App initialization started");
-    console.log("[INIT-CHECK] Document dir before mount:", document.documentElement.dir);
-    console.log("[INIT-CHECK] i18n language before mount:", i18n.language);
-    console.log("[INIT-CHECK] localStorage i18nextLng before mount:", localStorage.getItem('i18nextLng'));
-    
-    // Log loaded namespaces for debugging
-    requiredNamespaces.forEach(ns => {
-      console.log(`[INIT-CHECK] Namespace '${ns}' loaded for '${i18n.language}':`, 
-        i18n.hasResourceBundle(i18n.language, ns));
-    });
+    if (import.meta.env.DEV) {
+      console.log("🚀 App initialization started");
+      console.log("[INIT-CHECK] Document dir before mount:", document.documentElement.dir);
+      console.log("[INIT-CHECK] i18n language before mount:", i18n.language);
+      console.log("[INIT-CHECK] localStorage i18nextLng before mount:", localStorage.getItem('i18nextLng'));
+      
+      // Log loaded namespaces for debugging
+      requiredNamespaces.forEach(ns => {
+        console.log(`[INIT-CHECK] Namespace '${ns}' loaded for '${i18n.language}':`, 
+          i18n.hasResourceBundle(i18n.language, ns));
+      });
+    }
     
     createRoot(rootElement).render(
       <App />
     );
     
-    console.log("✅ App successfully mounted");
+    if (import.meta.env.DEV) {
+      console.log("✅ App successfully mounted");
+    }
   } catch (error) {
     console.error("❌ Failed to initialize app:", error);
     
@@ -85,48 +87,18 @@ const renderApp = () => {
   }
 };
 
-// If this is a language switch, ensure we use the target language
-if (langSwitchTimestamp && targetLanguage) {
-  const timestamp = parseInt(langSwitchTimestamp);
-  const now = Date.now();
-  const timeDiff = now - timestamp;
-  
-  // If this is a recent language switch (within last 10 seconds)
-  if (timeDiff < 10000) {
-    console.log('[INIT] Detected recent language switch to:', targetLanguage);
-    // Force set the language
-    i18n.changeLanguage(targetLanguage).then(() => {
-      // Load all required namespaces for the target language
-      i18n.loadNamespaces(requiredNamespaces).then(() => {
-        console.log('[INIT-SWITCH] Namespaces loaded after language switch');
-        // Clear the timestamp and render
-        sessionStorage.removeItem('langSwitchTimestamp');
-        sessionStorage.removeItem('targetLanguage');
-        renderApp();
-      });
-    });
-  } else {
-    // Clear old timestamps
-    sessionStorage.removeItem('langSwitchTimestamp');
-    sessionStorage.removeItem('targetLanguage');
-    // Load namespaces and render
-    i18n.loadNamespaces(requiredNamespaces).then(renderApp);
-  }
-} else {
-  // Normal startup - just load namespaces and render
-  i18n.loadNamespaces(requiredNamespaces).then(renderApp);
-}
+// Load all required namespaces and render
+i18n.loadNamespaces(requiredNamespaces).then(renderApp);
 
 // Listen for language changes to update the document direction
 i18n.on('languageChanged', (lng) => {
   const isRTL = lng === 'ar';
   document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
   document.body.dir = isRTL ? 'rtl' : 'ltr';
-  localStorage.setItem('i18nextLng', lng);
   
-  console.log('[LANG-CHANGE-EVENT] Language changed to:', lng);
-  console.log('[LANG-CHANGE-EVENT] Document direction set to:', document.documentElement.dir);
-  console.log('[LANG-CHANGE-EVENT] Is RTL:', isRTL);
-  console.log('[LANG-CHANGE-EVENT] localStorage i18nextLng:', localStorage.getItem('i18nextLng'));
-  console.log('[LANG-CHANGE-EVENT] Landing namespace loaded:', i18n.hasResourceBundle(lng, 'landing'));
+  if (import.meta.env.DEV) {
+    console.log('[LANG-CHANGE-EVENT] Language changed to:', lng);
+    console.log('[LANG-CHANGE-EVENT] Document direction set to:', document.documentElement.dir);
+    console.log('[LANG-CHANGE-EVENT] Is RTL:', isRTL);
+  }
 });

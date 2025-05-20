@@ -4,5 +4,11 @@
   "loading": "جاري التحميل...",
   "error": "خطأ",
   "retry": "إعادة المحاولة",
-  "back": "رجوع"
+  "back": "رجوع",
+  
+  "language_changed": "تم تغيير اللغة إلى {{language}}",
+  "language_change_error": "خطأ في تغيير اللغة",
+  "select_language": "اختر اللغة",
+  "change_language": "تغيير اللغة",
+  "coming_soon": "قريبًا"
 }

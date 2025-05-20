@@ -1,13 +1,12 @@
 
-import React from "react";
-import { ThemeToggle } from "./ThemeToggle";
-import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/navbar/ThemeToggle";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const ThemeLanguageControls = () => {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
       <ThemeToggle />
-      <LanguageToggle />
+      <LanguageSwitcher variant="outline" />
     </div>
   );
 };

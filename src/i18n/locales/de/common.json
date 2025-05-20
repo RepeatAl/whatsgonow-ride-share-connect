@@ -4,5 +4,11 @@
   "loading": "Lädt...",
   "error": "Fehler",
   "retry": "Erneut versuchen",
-  "back": "Zurück"
+  "back": "Zurück",
+  
+  "language_changed": "Sprache wurde zu {{language}} gewechselt",
+  "language_change_error": "Fehler beim Ändern der Sprache",
+  "select_language": "Sprache auswählen",
+  "change_language": "Sprache ändern",
+  "coming_soon": "Demnächst verfügbar"
 }

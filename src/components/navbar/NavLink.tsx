@@ -1,43 +1,43 @@
 
-import { ReactNode } from "react";
-import { Link } from "react-router-dom";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NavLinkProps {
   to: string;
-  icon: ReactNode;
-  name: string;
-  tooltip: string;
+  children: React.ReactNode;
+  className?: string;
+  activeClassName?: string;
+  exact?: boolean;
   onClick?: () => void;
-  badge?: number;
 }
 
-const NavLink = ({ to, icon, name, tooltip, onClick, badge }: NavLinkProps) => {
+const NavLink: React.FC<NavLinkProps> = ({
+  to,
+  children,
+  className = '',
+  activeClassName = 'font-bold text-brand-orange',
+  exact = false,
+  onClick,
+}) => {
+  const location = useLocation();
+  const { getLocalizedUrl } = useLanguage();
+
+  // Get the localized URL with language prefix
+  const localizedTo = getLocalizedUrl(to);
+  
+  // Check if this link is active
+  const isActive = exact
+    ? location.pathname === localizedTo
+    : location.pathname.startsWith(localizedTo);
+  
+  // Combine classes
+  const linkClassName = `${className} ${isActive ? activeClassName : ''}`;
+
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Link
-          to={to}
-          className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 relative"
-          onClick={onClick}
-        >
-          {icon}
-          <span>{name}</span>
-          {badge !== undefined && badge > 0 && (
-            <div className="ml-1 h-5 w-5 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs">
-              {badge > 9 ? '9+' : badge}
-            </div>
-          )}
-        </Link>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{tooltip}</p>
-      </TooltipContent>
-    </Tooltip>
+    <Link to={localizedTo} className={linkClassName} onClick={onClick}>
+      {children}
+    </Link>
   );
 };
 
