@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar as CalendarIcon, Archive, Activity, Info } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -42,34 +43,30 @@ const ShadcnDemo = () => {
         <TabsContent value="active" className="bg-soft-purple p-6 rounded-md">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Terminauswahl</h3>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Info className="h-5 w-5 text-muted-foreground" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Wählen Sie einen Termin für Ihren Transport</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Info className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Wählen Sie einen Termin für Ihren Transport</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           
           <div className="flex flex-col items-center space-y-4">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center space-x-2 text-brand-primary">
-                    <CalendarIcon className="h-5 w-5" />
-                    <span>Kalender</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Verfügbare Termine anzeigen</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center space-x-2 text-brand-primary">
+                  <CalendarIcon className="h-5 w-5" />
+                  <span>Kalender</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Verfügbare Termine anzeigen</p>
+              </TooltipContent>
+            </Tooltip>
             
             <Calendar
               mode="single"

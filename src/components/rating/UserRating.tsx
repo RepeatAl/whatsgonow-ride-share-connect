@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Star, Award, Shield, ShieldCheck, Info } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ratingService } from "@/services/ratingService";
@@ -80,51 +80,45 @@ const UserRating = ({
     
     if (averageRating >= 4.8) {
       return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 gap-1">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span>Vertrauenswürdig</span>
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Hervorragende Bewertungen von vielen Nutzern</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 gap-1">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>Vertrauenswürdig</span>
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Hervorragende Bewertungen von vielen Nutzern</p>
+          </TooltipContent>
+        </Tooltip>
       );
     } else if (averageRating >= 4.5) {
       return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
-                <Shield className="h-3.5 w-3.5" />
-                <span>Empfohlen</span>
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Sehr gute Bewertungen von mehreren Nutzern</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
+              <Shield className="h-3.5 w-3.5" />
+              <span>Empfohlen</span>
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Sehr gute Bewertungen von mehreren Nutzern</p>
+          </TooltipContent>
+        </Tooltip>
       );
     } else if (averageRating >= 4.0) {
       return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1">
-                <Award className="h-3.5 w-3.5" />
-                <span>Zuverlässig</span>
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Gute Bewertungen von mehreren Nutzern</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1">
+              <Award className="h-3.5 w-3.5" />
+              <span>Zuverlässig</span>
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Gute Bewertungen von mehreren Nutzern</p>
+          </TooltipContent>
+        </Tooltip>
       );
     }
     

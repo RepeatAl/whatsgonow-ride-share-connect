@@ -9,6 +9,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { UserSessionProvider } from './contexts/UserSessionContext';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { Toaster } from './components/ui/toaster';
+import { TooltipProvider } from './components/ui/tooltip';
 
 import './App.css';
 
@@ -30,10 +31,12 @@ function App() {
           <AuthProvider>
             <UserSessionProvider>
               <LanguageProvider>
-                <EnhancedLanguageRouter>
-                  <AppRoutes />
-                </EnhancedLanguageRouter>
-                <Toaster />
+                <TooltipProvider>
+                  <EnhancedLanguageRouter>
+                    <AppRoutes />
+                  </EnhancedLanguageRouter>
+                  <Toaster />
+                </TooltipProvider>
               </LanguageProvider>
             </UserSessionProvider>
           </AuthProvider>

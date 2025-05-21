@@ -9,7 +9,7 @@ import { User } from "@/hooks/use-fetch-users";
 import UserDetailsExpander from "./UserDetailsExpander";
 import TrustBadge from "../trust/TrustBadge";
 import { useTrustScore } from "@/hooks/use-trust-score";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTrustScoreHistory } from "@/hooks/use-trust-score-history";
 
 interface UserRowProps {
@@ -64,34 +64,30 @@ const UserRow: React.FC<UserRowProps> = ({ user, expandedUser, toggleExpand }) =
           <div className="flex items-center gap-2">
             {user.name}
             {isFlagged && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Flag className="h-4 w-4 text-red-500" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="w-64">
-                      Markierter Nutzer: {user.flag_reason || 'Keine Begründung angegeben'}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Flag className="h-4 w-4 text-red-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="w-64">
+                    Markierter Nutzer: {user.flag_reason || 'Keine Begründung angegeben'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             )}
             {needsAttention && !isFlagged && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="w-64">
-                      {score !== null && score < 60 ? "Kritischer Vertrauenswert" : ""}
-                      {(score !== null && score < 60) && hasRecentDrop ? " und " : ""}
-                      {hasRecentDrop ? "Drastischer Vertrauensverlust in letzter Zeit" : ""}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="w-64">
+                    {score !== null && score < 60 ? "Kritischer Vertrauenswert" : ""}
+                    {(score !== null && score < 60) && hasRecentDrop ? " und " : ""}
+                    {hasRecentDrop ? "Drastischer Vertrauensverlust in letzter Zeit" : ""}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
         </TableCell>
