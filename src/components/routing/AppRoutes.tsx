@@ -64,8 +64,10 @@ export const AppRoutes = () => {
   
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Root route - explicitly matches the base path */}
       <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
+      
+      {/* Public routes */}
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path={registerSuccessPath} element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
@@ -116,7 +118,7 @@ export const AppRoutes = () => {
         <Route path="/rls-test" element={<RlsTest />} />
       </Route>
 
-      {/* 404 route */}
+      {/* 404 route - must be last */}
       <Route path="*" element={<PublicRoute><NotFound /></PublicRoute>} />
     </Routes>
   );

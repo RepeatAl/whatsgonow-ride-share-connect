@@ -38,9 +38,14 @@ const NavLink: React.FC<NavLinkProps> = ({
   const localizedTo = getLocalizedUrl(to);
   
   // Check if this link is active
+  // We need to compare against the localized URL and also against the non-localized URL
+  // This ensures active state works correctly regardless of language prefix
+  const localizedPath = location.pathname;
+  const plainPath = '/' + location.pathname.split('/').slice(2).join('/');
+  
   const isActive = exact
-    ? location.pathname === localizedTo
-    : location.pathname.startsWith(localizedTo);
+    ? (localizedPath === localizedTo || (plainPath === to && to !== '/'))
+    : (localizedPath.startsWith(localizedTo) || (to !== '/' && plainPath.startsWith(to)));
   
   // Combine classes
   const linkClassName = `${className} ${isActive ? activeClassName : ''}`;
