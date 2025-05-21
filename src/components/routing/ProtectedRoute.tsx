@@ -1,14 +1,11 @@
 
-import { Navigate, useLocation } from "react-router-dom";
+import React from "react";
+import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { isPublicRoute } from "@/routes/publicRoutes";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+export const ProtectedRoute = () => {
   const { user, loading, sessionExpired } = useAuth();
   const location = useLocation();
   
@@ -19,7 +16,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   
   // If current path is public, don't protect it
   if (isPublicRoute(location.pathname)) {
-    return <>{children}</>;
+    return <Outlet />;
   }
   
   // For all other routes, require authentication
@@ -29,5 +26,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
   
   // If authenticated and not public, render the protected content
-  return <>{children}</>;
+  return <Outlet />;
 };
+
+export default ProtectedRoute;

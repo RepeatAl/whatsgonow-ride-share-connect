@@ -13,3 +13,5 @@ export const PublicRoute = ({ children }: PublicRouteProps) => {
   // Keine Weiterleitung erforderlich, da Public Routes für alle zugänglich sind
   return <>{!loading && children}</>;
 };
+
+export default PublicRoute;
