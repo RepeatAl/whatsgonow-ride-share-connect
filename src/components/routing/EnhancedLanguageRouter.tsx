@@ -11,46 +11,37 @@ interface EnhancedLanguageRouterProps {
 export const EnhancedLanguageRouter: React.FC<EnhancedLanguageRouterProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { setLanguageByCode, currentLanguage } = useLanguage();
-  
-  // Extract language code from URL path
-  const extractLanguageFromUrl = (path: string): string | null => {
-    const segments = path.split('/').filter(Boolean);
-    if (segments.length > 0) {
-      const potentialLang = segments[0];
-      if (supportedLanguages.some(l => l.code === potentialLang)) {
-        return potentialLang;
-      }
-    }
-    return null;
-  };
+  const { setLanguageByUrl, getLanguageFromUrl } = useLanguage();
+
+  const langFromUrl = getLanguageFromUrl(location.pathname);
+  const langCodes = supportedLanguages.map(l => l.code);
+  const pathParts = location.pathname.split('/').filter(Boolean);
+  const firstPart = pathParts[0];
 
   useEffect(() => {
-    // Extract language from current URL
-    const langFromUrl = extractLanguageFromUrl(location.pathname);
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    
-    if (langFromUrl) {
-      // If we have a language in the URL, set it as current language
-      if (langFromUrl !== currentLanguage) {
-        setLanguageByCode(langFromUrl, false);
-      }
-      
-      // Special case: If URL is just the language prefix (like /de)
-      if (pathSegments.length === 1) {
-        // Redirect to root within that language
-        navigate(`/${langFromUrl}/`, { replace: true });
-      }
-    } else {
-      // If no language in URL, redirect to URL with default language
+    // Wenn kein gültiger Sprachpräfix: Redirect zur Standardsprache
+    if (!langCodes.includes(firstPart)) {
       const defaultLang = localStorage.getItem('i18nextLng') || 'de';
-      const newPath = `/${defaultLang}${location.pathname === '/' ? '' : location.pathname}`;
-      navigate(newPath, { replace: true });
+      const redirectPath = `/${defaultLang}${location.pathname}`;
+      if (location.pathname !== `/${defaultLang}`) {
+        navigate(redirectPath.replace(/\/+$/, ''), { replace: true });
+      }
+      return;
     }
-  }, [location.pathname, currentLanguage, setLanguageByCode, navigate]);
 
-  // Render children without modifying them
-  // AppRoutes will handle the routes without language prefix
+    // Wenn gültiger Sprachpräfix erkannt → Sprache setzen
+    setLanguageByUrl(location.pathname);
+  }, [location.pathname, navigate, firstPart, langCodes, setLanguageByUrl]);
+
+  // Wenn gültiger Sprachpräfix → entferne ihn für Routing
+  if (langCodes.includes(firstPart)) {
+    const restOfPath = pathParts.slice(1).join('/');
+    const virtualPath = '/' + restOfPath;
+
+    return <div key={langFromUrl}>{React.cloneElement(children as React.ReactElement, { location: { ...location, pathname: virtualPath } })}</div>;
+  }
+
+  // Kein Sprachpräfix erkannt → render normal
   return <>{children}</>;
 };
 
