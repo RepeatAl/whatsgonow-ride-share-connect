@@ -1,6 +1,7 @@
 
 import i18next from 'i18next';
 import { loadNamespace } from '@/i18n/i18n';
+import { isImplementedLanguage, getLanguageByCode } from '@/utils/languageUtils';
 import { supportedLanguages } from '@/config/supportedLanguages';
 
 /**
@@ -15,9 +16,7 @@ export const isLanguageImplemented = (
 ): boolean => {
   // If no specific namespaces requested, check if language is in supported list
   if (!namespaces) {
-    return supportedLanguages.some(
-      (lang) => lang.code === languageCode && lang.implemented !== false
-    );
+    return isImplementedLanguage(languageCode);
   }
 
   // Check if all requested namespaces are available for this language
@@ -46,7 +45,7 @@ export const getFallbackLanguage = (languageCode: string): string => {
   
   // Return the first implemented fallback
   for (const fallback of fallbacks) {
-    if (isLanguageImplemented(fallback)) {
+    if (isImplementedLanguage(fallback)) {
       return fallback;
     }
   }

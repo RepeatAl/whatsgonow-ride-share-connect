@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Check, Globe, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { isLanguageImplemented } from "@/utils/i18n-utils";
+import { getImplementedLanguages, getPlannedLanguages, isImplementedLanguage } from "@/utils/languageUtils";
 
 interface LanguageSwitcherProps {
   variant?: "default" | "outline" | "compact";
@@ -32,7 +32,7 @@ export const LanguageSwitcher = ({
 
   // Get current language metadata
   const currentLangMeta = supportedLanguages.find(l => l.code === currentLanguage) || 
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪', rtl: false };
+    { code: 'de', name: 'Deutsch', localName: 'Deutsch', flag: '🇩🇪', rtl: false, implemented: true };
 
   // Handle language change
   const handleLanguageChange = async (langCode: string) => {
@@ -57,14 +57,9 @@ export const LanguageSwitcher = ({
     }
   };
 
-  // First separate implemented from not yet implemented languages
-  const implementedLanguages = ['de', 'en', 'ar'];
-  const availableLanguages = supportedLanguages.filter(lang => 
-    implementedLanguages.includes(lang.code)
-  );
-  const futureLanguages = supportedLanguages.filter(lang => 
-    !implementedLanguages.includes(lang.code)
-  );
+  // Get available and future languages
+  const availableLanguages = getImplementedLanguages();
+  const futureLanguages = getPlannedLanguages();
 
   // If translations aren't ready yet, show a loading state
   if (!ready) {
@@ -121,7 +116,7 @@ export const LanguageSwitcher = ({
               <div className="flex items-center gap-2">
                 <span className="mr-1">{lang.flag}</span>
                 <span className={lang.rtl ? "font-rtl" : ""}>{lang.name}</span>
-                {lang.code !== 'de' && lang.code !== 'en' && !isLanguageImplemented(lang.code, ['landing']) && (
+                {lang.code !== 'de' && lang.code !== 'en' && !isImplementedLanguage(lang.code) && (
                   <span className="text-xs text-muted-foreground ml-1">{t("partial")}</span>
                 )}
               </div>
