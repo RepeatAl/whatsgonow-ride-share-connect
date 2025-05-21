@@ -4,15 +4,9 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import DataDeletionForm, { FormValues } from "@/components/data-deletion/DataDeletionForm";
-import SuccessConfirmation from "@/components/data-deletion/SuccessConfirmation";
 
 const DataDeletion = () => {
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const handleSubmitSuccess = (data: FormValues) => {
-    setIsSuccess(true);
-  };
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   return (
     <Layout>
@@ -21,19 +15,34 @@ const DataDeletion = () => {
           <Link to="/">
             <Button variant="outline" size="sm" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
+              Zurück zur Startseite
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold mb-2">Data Deletion Request</h1>
+          <h1 className="text-3xl font-bold mb-2">Antrag auf Datenlöschung</h1>
           <p className="text-gray-600 mb-4">
-            In accordance with GDPR, you have the right to request deletion of your personal data.
+            Gemäß DSGVO haben Sie das Recht, die Löschung Ihrer persönlichen Daten zu beantragen.
           </p>
         </div>
 
-        {isSuccess ? (
-          <SuccessConfirmation />
+        {isSubmitted ? (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+            <h2 className="text-xl font-semibold text-green-800 mb-2">Vielen Dank!</h2>
+            <p className="mb-4">
+              Ihr Antrag auf Datenlöschung wurde erfolgreich eingereicht. Wir werden ihn so schnell wie möglich bearbeiten.
+            </p>
+            <Button asChild>
+              <Link to="/">Zurück zur Startseite</Link>
+            </Button>
+          </div>
         ) : (
-          <DataDeletionForm onSubmitSuccess={handleSubmitSuccess} />
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <p className="mb-4">
+              Um die Löschung Ihrer Daten zu beantragen, füllen Sie bitte das folgende Formular aus oder kontaktieren Sie unseren Support.
+            </p>
+            <Button onClick={() => setIsSubmitted(true)}>
+              Löschantrag stellen
+            </Button>
+          </div>
         )}
       </div>
     </Layout>

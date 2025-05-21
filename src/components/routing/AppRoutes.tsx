@@ -5,57 +5,57 @@ import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 // Lazy-loaded pages
-const Landing = lazy(() => import("@/pages/Landing"));
-const Login = lazy(() => import("@/pages/Login"));
-const Register = lazy(() => import("@/pages/Register"));
-const RegisterSuccess = lazy(() => import("@/pages/RegisterSuccess"));
-const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
-const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
-const Faq = lazy(() => import("@/pages/Faq"));
-const Support = lazy(() => import("@/pages/Support"));
-const MobileUpload = lazy(() => import("@/pages/MobileUpload"));
-const UploadComplete = lazy(() => import("@/pages/UploadComplete"));
-const DeliveryConfirmation = lazy(() => import("@/pages/DeliveryConfirmationPage"));
-const InvoiceDownload = lazy(() => import("@/pages/InvoiceDownload"));
-const PreRegister = lazy(() => import("@/pages/PreRegister"));
-const PreRegisterSuccess = lazy(() => import("@/pages/PreRegisterSuccess"));
+const Landing = lazy(() => import("../../pages/Landing"));
+const Login = lazy(() => import("../../pages/Login"));
+const Register = lazy(() => import("../../pages/Register"));
+const RegisterSuccess = lazy(() => import("../../pages/RegisterSuccess"));
+const ForgotPassword = lazy(() => import("../../pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("../../pages/ResetPassword"));
+const Faq = lazy(() => import("../../pages/Faq"));
+const Support = lazy(() => import("../../pages/Support"));
+const MobileUpload = lazy(() => import("../../pages/MobileUpload"));
+const UploadComplete = lazy(() => import("../../pages/UploadComplete"));
+const DeliveryConfirmation = lazy(() => import("../../pages/DeliveryConfirmationPage"));
+const InvoiceDownload = lazy(() => import("../../pages/InvoiceDownload"));
+const PreRegister = lazy(() => import("../../pages/PreRegister"));
+const PreRegisterSuccess = lazy(() => import("../../pages/PreRegisterSuccess"));
 
 // Dashboard and profile pages
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const SenderDashboard = lazy(() => import("@/pages/dashboard/DashboardSender"));
-const DriverDashboard = lazy(() => import("@/pages/dashboard/DashboardDriver"));
-const CommunityManagerDashboard = lazy(() => import("@/pages/dashboard/DashboardCM"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const CompleteProfile = lazy(() => import("@/pages/CompleteProfile"));
+const Dashboard = lazy(() => import("../../pages/Dashboard"));
+const SenderDashboard = lazy(() => import("../../pages/dashboard/DashboardSender"));
+const DriverDashboard = lazy(() => import("../../pages/dashboard/DashboardDriver"));
+const CommunityManagerDashboard = lazy(() => import("../../pages/dashboard/DashboardCM"));
+const Profile = lazy(() => import("../../pages/Profile"));
+const CompleteProfile = lazy(() => import("../../pages/CompleteProfile"));
 
 // Order and transport pages
-const Orders = lazy(() => import("@/pages/Orders"));
-const OrderDrafts = lazy(() => import("@/pages/orders/DraftList"));
-const OrderDraftEdit = lazy(() => import("@/pages/orders/DraftEdit"));
-const MyOrders = lazy(() => import("@/pages/orders/MyOrders"));
-const CreateOrder = lazy(() => import("@/pages/CreateOrder"));
-const Deal = lazy(() => import("@/pages/Deal"));
-const OfferTransport = lazy(() => import("@/pages/OfferTransport"));
+const Orders = lazy(() => import("../../pages/Orders"));
+const OrderDrafts = lazy(() => import("../../pages/orders/DraftList"));
+const OrderDraftEdit = lazy(() => import("../../pages/orders/DraftEdit"));
+const MyOrders = lazy(() => import("../../pages/orders/MyOrders"));
+const CreateOrder = lazy(() => import("../../pages/CreateOrder"));
+const Deal = lazy(() => import("../../pages/Deal"));
+const OfferTransport = lazy(() => import("../../pages/OfferTransport"));
 
 // Feedback page
-const FeedbackPage = lazy(() => import("@/pages/Feedback"));
+const FeedbackPage = lazy(() => import("../../pages/Feedback"));
 
 // Admin and management pages
-import Admin from "@/pages/Admin";
-import AdminDashboard from "@/pages/AdminDashboard";
-import ValidationAdmin from "@/pages/ValidationAdmin";
-import FeedbackAdmin from "@/pages/FeedbackAdmin";
-import PreRegistrationsPage from "@/pages/admin/PreRegistrationsPage";
-import AdminUserManagement from "@/pages/admin/users";
-import TrustManagement from "@/pages/TrustManagement";
+import Admin from "../../pages/Admin";
+import AdminDashboard from "../../pages/AdminDashboard";
+import ValidationAdmin from "../../pages/ValidationAdmin";
+import FeedbackAdmin from "../../pages/FeedbackAdmin";
+import PreRegistrationsPage from "../../pages/admin/PreRegistrationsPage";
+import AdminUserManagement from "../../pages/admin/users";
+import TrustManagement from "../../pages/TrustManagement";
 
 // Dev/Test Pages
-const InvoiceTest = lazy(() => import("@/pages/AdminInvoiceTest"));
-const EmailTest = lazy(() => import("@/pages/EmailTest"));
-const RlsTest = lazy(() => import("@/pages/RLSTest"));
+const InvoiceTest = lazy(() => import("../../pages/AdminInvoiceTest"));
+const EmailTest = lazy(() => import("../../pages/EmailTest"));
+const RlsTest = lazy(() => import("../../pages/RLSTest"));
 
 // Error page
-const NotFound = lazy(() => import("@/pages/NotFound"));
+const NotFound = lazy(() => import("../../pages/NotFound"));
 
 export const AppRoutes = () => {
   const defaultLocale = localStorage.getItem('i18nextLng') || 'de';
