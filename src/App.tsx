@@ -10,6 +10,7 @@ import { UserSessionProvider } from "@/contexts/UserSessionContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import LaunchProvider from "@/components/launch/LaunchProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { EnhancedLanguageRouter } from "@/components/routing/EnhancedLanguageRouter";
 
 import './App.css';
 import RTLDebugPanel from "@/components/RTLDebugPanel";
@@ -29,11 +30,13 @@ function App() {
               <LaunchProvider>
                 <ThemeProvider>
                   <LanguageProvider>
-                    <AppBootstrap>
-                      <AppRoutes />
-                      <Toaster />
-                      {isDev && <RTLDebugPanel />}
-                    </AppBootstrap>
+                    <EnhancedLanguageRouter>
+                      <AppBootstrap>
+                        <AppRoutes />
+                        <Toaster />
+                        {isDev && <RTLDebugPanel />}
+                      </AppBootstrap>
+                    </EnhancedLanguageRouter>
                   </LanguageProvider>
                 </ThemeProvider>
               </LaunchProvider>

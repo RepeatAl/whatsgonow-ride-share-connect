@@ -19,6 +19,7 @@ const DeliveryConfirmation = lazy(() => import("../../pages/DeliveryConfirmation
 const InvoiceDownload = lazy(() => import("../../pages/InvoiceDownload"));
 const PreRegister = lazy(() => import("../../pages/PreRegister"));
 const PreRegisterSuccess = lazy(() => import("../../pages/PreRegisterSuccess"));
+const DataDeletion = lazy(() => import("../../pages/DataDeletion"));
 
 // Dashboard and profile pages
 const Dashboard = lazy(() => import("../../pages/Dashboard"));
@@ -58,7 +59,6 @@ const RlsTest = lazy(() => import("../../pages/RLSTest"));
 const NotFound = lazy(() => import("../../pages/NotFound"));
 
 export const AppRoutes = () => {
-  const defaultLocale = localStorage.getItem('i18nextLng') || 'de';
   const registerSuccessPath = `/register/success`;
   const preRegisterSuccessPath = `/pre-register/success`;
   
@@ -79,6 +79,7 @@ export const AppRoutes = () => {
       <Route path="/invoice-download/:token" element={<PublicRoute><InvoiceDownload /></PublicRoute>} />
       <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
       <Route path={preRegisterSuccessPath} element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
+      <Route path="/data-deletion" element={<PublicRoute><DataDeletion /></PublicRoute>} />
 
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
