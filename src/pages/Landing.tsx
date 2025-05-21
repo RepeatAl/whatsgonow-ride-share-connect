@@ -1,29 +1,33 @@
 
 import React from "react";
 import Layout from "@/components/Layout";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import Hero from "@/components/home/Hero";
+import HowItWorks from "@/components/home/HowItWorks";
+import Benefits from "@/components/home/Benefits";
+import UserGroups from "@/components/home/UserGroups";
+import Testimonials from "@/components/home/Testimonials";
+import CTA from "@/components/home/CTA";
 
 const Landing = () => {
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex flex-col items-center text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Willkommen bei Whatsgonow</h1>
-          <p className="text-xl mb-8 max-w-2xl">
-            Die Plattform für spontane und planbare Transporte zwischen privaten oder 
-            kleingewerblichen Auftraggebern und mobilen Fahrern.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="px-8 py-6 text-lg" variant="brand">
-              <Link to="/register">Jetzt registrieren</Link>
-            </Button>
-            <Button asChild className="px-8 py-6 text-lg" variant="outline">
-              <Link to="/login">Anmelden</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Hero Section */}
+      <Hero />
+      
+      {/* How It Works Section */}
+      <HowItWorks />
+      
+      {/* Benefits Section */}
+      <Benefits />
+      
+      {/* User Groups Section */}
+      <UserGroups />
+      
+      {/* Testimonials Section */}
+      <Testimonials />
+      
+      {/* Call to Action Section */}
+      <CTA />
     </Layout>
   );
 };
