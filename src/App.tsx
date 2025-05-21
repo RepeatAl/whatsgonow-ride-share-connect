@@ -1,50 +1,45 @@
 
-import { BrowserRouter } from "react-router-dom";
-import { AppRoutes } from "@/components/routing/AppRoutes";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AppBootstrap } from '@/components/AppBootstrap';
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { UserSessionProvider } from "@/contexts/UserSessionContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import LaunchProvider from "@/components/launch/LaunchProvider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { EnhancedLanguageRouter } from "@/components/routing/EnhancedLanguageRouter";
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { AppRoutes } from './components/routing/AppRoutes';
+import { EnhancedLanguageRouter } from './components/routing/EnhancedLanguageRouter';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { UserSessionProvider } from './contexts/UserSessionContext';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { Toaster } from './components/ui/toaster';
 
 import './App.css';
-import RTLDebugPanel from "@/components/RTLDebugPanel";
-
-// Create a client
-const queryClient = new QueryClient();
 
 function App() {
-  const isDev = import.meta.env.DEV;
-  
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      },
+    },
+  });
+
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <UserSessionProvider>
-            <AuthProvider>
-              <LaunchProvider>
-                <ThemeProvider>
-                  <LanguageProvider>
-                    <EnhancedLanguageRouter>
-                      <AppBootstrap>
-                        <AppRoutes />
-                        <Toaster />
-                        {isDev && <RTLDebugPanel />}
-                      </AppBootstrap>
-                    </EnhancedLanguageRouter>
-                  </LanguageProvider>
-                </ThemeProvider>
-              </LaunchProvider>
-            </AuthProvider>
-          </UserSessionProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <ThemeProvider>
+          <AuthProvider>
+            <UserSessionProvider>
+              <LanguageProvider>
+                <EnhancedLanguageRouter>
+                  <AppRoutes />
+                </EnhancedLanguageRouter>
+                <Toaster />
+              </LanguageProvider>
+            </UserSessionProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </Router>
+    </QueryClientProvider>
   );
 }
 

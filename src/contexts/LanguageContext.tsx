@@ -5,6 +5,7 @@ import { changeAppLanguage } from '@/services/LanguageService';
 import { supportedLanguages } from '@/config/supportedLanguages';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import i18next from 'i18next';
 
 interface LanguageContextType {
   currentLanguage: string;
@@ -15,6 +16,7 @@ interface LanguageContextType {
   languageLoading: boolean;
   supportedLanguages: typeof supportedLanguages;
   isRtl: boolean;
+  ensureNamespaceLoaded: (namespace: string | string[]) => Promise<void>;
 }
 
 const defaultLanguage = 'de';
@@ -61,6 +63,16 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [languageLoading, setLanguageLoading] = useState<boolean>(true);
   const [isRtl, setIsRtl] = useState<boolean>(false);
   const { user } = useAuth();
+
+  // Method to ensure namespaces are loaded
+  const ensureNamespaceLoaded = async (namespace: string | string[]) => {
+    const namespaces = Array.isArray(namespace) ? namespace : [namespace];
+    try {
+      await i18next.loadNamespaces(namespaces);
+    } catch (error) {
+      console.error(`[i18n] Error loading namespaces ${namespaces.join(', ')}:`, error);
+    }
+  };
 
   // Method to set language and update URL
   const setLanguageByCode = async (lang: string, storeInProfile: boolean = true) => {
@@ -189,6 +201,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     languageLoading,
     supportedLanguages,
     isRtl,
+    ensureNamespaceLoaded,
   };
 
   return (

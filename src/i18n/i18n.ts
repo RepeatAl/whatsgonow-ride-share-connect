@@ -70,21 +70,38 @@ const resources = {
   }
 };
 
+// Define namespaces that are preloaded vs lazy-loaded
+const PRELOADED_NAMESPACES = ['common', 'errors'];
+const LAZY_NAMESPACES = ['landing', 'auth', 'dashboard', 'analytics', 'feedback', 'pre_register', 'faq'];
+const ALL_NAMESPACES = [...PRELOADED_NAMESPACES, ...LAZY_NAMESPACES];
+
+// Track loaded namespaces
+const loadedNamespaces: Record<string, boolean> = {};
+PRELOADED_NAMESPACES.forEach(ns => loadedNamespaces[ns] = true);
+
 // Initialize i18n directly - don't wait for async operations
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'de',
+    fallbackLng: {
+      'default': ['de'],
+      'ar': ['en', 'de'],
+      'pl': ['en', 'de'],
+      'fr': ['en', 'de'],
+      'it': ['en', 'de'],
+      'es': ['en', 'de'],
+    },
     lng: 'de', // Explicitly set German as default language
     detection: {
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
     },
-    ns: ['common', 'auth', 'dashboard', 'analytics', 'feedback', 'pre_register', 'errors', 'landing', 'faq'],
+    ns: ALL_NAMESPACES,
     defaultNS: 'common',
+    fallbackNS: 'common',
     interpolation: {
       escapeValue: false
     },
@@ -96,9 +113,30 @@ i18n
       transSupportBasicHtmlNodes: true, // Support for basic HTML in translations
       transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'em', 'b'], // Keep these HTML nodes
     },
-    // Make sure to initialize with all resources
-    initImmediate: false, // This ensures all resources are loaded before rendering
+    // Initialize with only preloaded namespaces
+    initImmediate: true, // This ensures all resources are loaded before rendering
+    partialBundledLanguages: true,
   });
+
+// Function to load a namespace on demand
+export const loadNamespace = async (namespace: string | string[], language?: string) => {
+  const namespaces = Array.isArray(namespace) ? namespace : [namespace];
+  const currentLang = language || i18n.language;
+  
+  try {
+    await Promise.all(namespaces.map(async ns => {
+      if (!loadedNamespaces[ns]) {
+        await i18n.loadNamespaces(ns);
+        loadedNamespaces[ns] = true;
+      }
+    }));
+    
+    return true;
+  } catch (error) {
+    console.error(`[i18n] Failed to load namespaces: ${namespaces.join(', ')}`, error);
+    return false;
+  }
+};
 
 // Debug logging for i18n in development mode
 if (process.env.NODE_ENV === 'development') {
@@ -107,8 +145,8 @@ if (process.env.NODE_ENV === 'development') {
     console.log('[i18n] Current language:', i18n.language);
     console.log('[i18n] RTL mode:', i18n.language === 'ar');
     console.log('[i18n] Available languages:', Object.keys(resources));
-    console.log('[i18n] Available namespaces:', i18n.options.ns);
-    console.log('[i18n] Landing namespace loaded:', i18n.hasResourceBundle(i18n.language, 'landing'));
+    console.log('[i18n] Preloaded namespaces:', PRELOADED_NAMESPACES);
+    console.log('[i18n] Lazy namespaces:', LAZY_NAMESPACES);
   });
 
   i18n.on('languageChanged', (lng) => {
@@ -116,12 +154,22 @@ if (process.env.NODE_ENV === 'development') {
     console.log('[i18n] RTL mode:', lng === 'ar');
     console.log('[i18n] Document direction:', document.documentElement.dir);
     console.log('[i18n] localStorage value:', localStorage.getItem('i18nextLng'));
-    console.log('[i18n] Landing namespace loaded:', i18n.hasResourceBundle(lng, 'landing'));
+    
+    // Log loaded namespaces for debugging
+    ALL_NAMESPACES.forEach(ns => {
+      console.log(`[i18n] Namespace '${ns}' loaded:`, i18n.hasResourceBundle(lng, ns));
+    });
   });
   
   i18n.on('loaded', (loaded) => {
     console.log('[i18n] Resources loaded:', loaded);
   });
+
+  i18n.on('failedLoading', (lng, ns, msg) => {
+    console.error(`[i18n] Failed loading ${lng}/${ns}: ${msg}`);
+  });
 }
 
+// Export both the i18n instance and the loadNamespace function
+export { loadNamespace };
 export default i18n;

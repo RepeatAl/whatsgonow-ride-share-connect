@@ -41,17 +41,25 @@ const NavLink: React.FC<NavLinkProps> = ({
   // We need to compare against the localized URL and also against the non-localized URL
   // This ensures active state works correctly regardless of language prefix
   const localizedPath = location.pathname;
-  const plainPath = '/' + location.pathname.split('/').slice(2).join('/');
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const plainPath = pathSegments.length > 1 ? '/' + pathSegments.slice(1).join('/') : '/';
   
   const isActive = exact
-    ? (localizedPath === localizedTo || (plainPath === to && to !== '/'))
+    ? (localizedPath === localizedTo || plainPath === to)
     : (localizedPath.startsWith(localizedTo) || (to !== '/' && plainPath.startsWith(to)));
   
   // Combine classes
   const linkClassName = `${className} ${isActive ? activeClassName : ''}`;
 
+  // Handle click including any passed onClick
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <Link to={localizedTo} className={linkClassName} onClick={onClick}>
+    <Link to={localizedTo} className={linkClassName} onClick={handleClick}>
       {children}
     </Link>
   );

@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
-import { Check, Globe } from "lucide-react";
+import { Check, Globe, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { isLanguageImplemented } from "@/utils/i18n-utils";
 
 interface LanguageSwitcherProps {
   variant?: "default" | "outline" | "compact";
@@ -26,7 +27,7 @@ export const LanguageSwitcher = ({
 }: LanguageSwitcherProps) => {
   const { currentLanguage, setLanguageByCode, languageLoading, supportedLanguages } = useLanguage();
   const { toast } = useToast();
-  const { t } = useTranslation("common");
+  const { t, ready } = useTranslation("common");
   const [isChanging, setIsChanging] = useState(false);
 
   // Get current language metadata
@@ -64,6 +65,21 @@ export const LanguageSwitcher = ({
   const futureLanguages = supportedLanguages.filter(lang => 
     !implementedLanguages.includes(lang.code)
   );
+
+  // If translations aren't ready yet, show a loading state
+  if (!ready) {
+    return (
+      <Button 
+        variant="ghost" 
+        size="sm"
+        disabled
+        className="h-9 opacity-70"
+      >
+        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+        <span className="hidden sm:inline">Loading...</span>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -105,6 +121,9 @@ export const LanguageSwitcher = ({
               <div className="flex items-center gap-2">
                 <span className="mr-1">{lang.flag}</span>
                 <span className={lang.rtl ? "font-rtl" : ""}>{lang.name}</span>
+                {lang.code !== 'de' && lang.code !== 'en' && !isLanguageImplemented(lang.code, ['landing']) && (
+                  <span className="text-xs text-muted-foreground ml-1">{t("partial")}</span>
+                )}
               </div>
               {currentLanguage === lang.code && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
