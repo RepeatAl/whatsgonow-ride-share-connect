@@ -1,5 +1,5 @@
 
-import { useLanguage as useLanguageContext } from '@/contexts/LanguageContext';
+import { useLanguage as useLanguageContext } from '@/contexts/language';
 import { safeLoadNamespaces } from '@/utils/i18n-utils';
 
 export const useLanguage = () => {
