@@ -1,8 +1,13 @@
 
 import i18next from 'i18next';
 import { loadNamespace } from '@/i18n/i18n';
-import { isImplementedLanguage, getLanguageByCode } from '@/utils/languageUtils';
-import { supportedLanguages } from '@/config/supportedLanguages';
+import { 
+  isImplementedLanguage, 
+  getLanguageByCode, 
+  isSupportedLanguage,
+  determineBestLanguage 
+} from '@/utils/languageUtils';
+import { supportedLanguages, defaultLanguage } from '@/config/supportedLanguages';
 
 /**
  * Check if a language is fully implemented with translations
@@ -33,7 +38,7 @@ export const isLanguageImplemented = (
 export const getFallbackLanguage = (languageCode: string): string => {
   // Default fallback chain
   const fallbackChain: Record<string, string[]> = {
-    default: ['de'],
+    default: [defaultLanguage, 'en'],
     ar: ['en', 'de'],
     pl: ['en', 'de'],
     fr: ['en', 'de'],
@@ -51,7 +56,7 @@ export const getFallbackLanguage = (languageCode: string): string => {
   }
   
   // Final fallback if none found
-  return 'en';
+  return defaultLanguage;
 };
 
 /**
@@ -87,9 +92,45 @@ export const getMissingTranslations = (
   return 0;
 };
 
+/**
+ * Detect best language based on user preferences and browser settings
+ * @param userProfileLang Language from user profile
+ * @returns The best matching supported language code
+ */
+export const detectBestLanguage = (userProfileLang?: string): string => {
+  const browserLang = navigator.language?.split('-')[0];
+  const storedLang = localStorage.getItem('i18nextLng');
+  
+  return determineBestLanguage(browserLang, storedLang, userProfileLang);
+};
+
+/**
+ * Validate a language code against supported languages
+ * @param code Language code to validate
+ * @returns Object with validation results
+ */
+export const validateLanguageCode = (code: string): {
+  valid: boolean;
+  implemented: boolean;
+  planned: boolean;
+  fallback: string;
+} => {
+  const isValid = isSupportedLanguage(code);
+  const isImplemented = isImplementedLanguage(code);
+  
+  return {
+    valid: isValid,
+    implemented: isImplemented,
+    planned: isValid && !isImplemented,
+    fallback: isValid ? (isImplemented ? code : getFallbackLanguage(code)) : defaultLanguage
+  };
+};
+
 export default {
   isLanguageImplemented,
   getFallbackLanguage,
   safeLoadNamespaces,
   getMissingTranslations,
+  detectBestLanguage,
+  validateLanguageCode,
 };

@@ -51,6 +51,9 @@ export const ROUTES = {
   adminInvoiceTest: '/admin/invoice-test',
   emailTest: '/email-test',
   rlsTest: '/rls-test',
+  
+  // Error pages
+  notFound: '/404',
 };
 
 // Public routes that don't require authentication
@@ -69,17 +72,24 @@ export const publicRoutes = [
   '/invoice-download',
   ROUTES.preRegister,
   ROUTES.preRegisterSuccess,
+  ROUTES.notFound,
 ];
 
 // Function to check if a route is public
 export const isPublicRoute = (path: string): boolean => {
+  // Extract path without language prefix for matching
+  const pathParts = path.split('/').filter(Boolean);
+  const pathWithoutLang = pathParts.length > 1 ? `/${pathParts.slice(1).join('/')}` : '/';
+  
   // Check exact matches first
-  if (publicRoutes.includes(path)) return true;
+  if (publicRoutes.includes(pathWithoutLang)) return true;
   
   // Check path patterns (like /delivery/:token)
-  if (path.startsWith('/delivery/')) return true;
-  if (path.startsWith('/invoice-download/')) return true;
-  if (path.startsWith('/mobile-upload/')) return true;
+  if (pathWithoutLang.startsWith('/delivery/')) return true;
+  if (pathWithoutLang.startsWith('/invoice-download/')) return true;
+  if (pathWithoutLang.startsWith('/mobile-upload/')) return true;
   
   return false;
 };
+
+export default ROUTES;

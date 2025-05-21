@@ -3,6 +3,8 @@ import React, { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
+import ROUTES from "@/routes/routes";
+import { useLanguage } from "@/contexts/language";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("../../pages/Landing"));
@@ -59,18 +61,15 @@ const RlsTest = lazy(() => import("../../pages/RLSTest"));
 const NotFound = lazy(() => import("../../pages/NotFound"));
 
 export const AppRoutes = () => {
-  const registerSuccessPath = `/register/success`;
-  const preRegisterSuccessPath = `/pre-register/success`;
+  const { currentLanguage } = useLanguage();
   
   return (
     <Routes>
-      {/* Root route - explicitly matches the base path */}
-      <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
-      
       {/* Public routes */}
+      <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-      <Route path={registerSuccessPath} element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
+      <Route path="/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
       <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
       <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
       <Route path="/faq" element={<PublicRoute><Faq /></PublicRoute>} />
@@ -80,8 +79,9 @@ export const AppRoutes = () => {
       <Route path="/delivery/:token" element={<PublicRoute><DeliveryConfirmation /></PublicRoute>} />
       <Route path="/invoice-download/:token" element={<PublicRoute><InvoiceDownload /></PublicRoute>} />
       <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
-      <Route path={preRegisterSuccessPath} element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
+      <Route path="/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
       <Route path="/data-deletion" element={<PublicRoute><DataDeletion /></PublicRoute>} />
+      <Route path="/404" element={<PublicRoute><NotFound /></PublicRoute>} />
 
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
@@ -118,8 +118,10 @@ export const AppRoutes = () => {
         <Route path="/rls-test" element={<RlsTest />} />
       </Route>
 
-      {/* 404 route - must be last */}
-      <Route path="*" element={<PublicRoute><NotFound /></PublicRoute>} />
+      {/* Catch-all to NotFound page */}
+      <Route path="*" element={<Navigate to={`/${currentLanguage}/404`} replace />} />
     </Routes>
   );
 };
+
+export default AppRoutes;
