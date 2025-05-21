@@ -1,4 +1,5 @@
 
+import { describe, it, expect } from 'vitest';
 import { determineBestLanguage, validateLanguagePath } from '@/utils/languageUtils';
 import { extractLanguageFromUrl, addLanguageToUrl } from '@/contexts/language/utils';
 
