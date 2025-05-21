@@ -9,6 +9,7 @@ import i18next from 'i18next';
 import { LanguageContextType } from './types';
 import { defaultLanguage } from './constants';
 import { extractLanguageFromUrl, addLanguageToUrl } from './utils';
+import { toast } from '@/hooks/use-toast';
 
 // Create the context
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -45,7 +46,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       // Update state
       setCurrentLanguage(lang);
-      setIsRtl(langMeta.rtl);
+      setIsRtl(langMeta.rtl ?? false);
       
       // Update URL without triggering page reload
       const newPath = addLanguageToUrl(location.pathname, lang);
@@ -55,9 +56,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (user?.id && storeInProfile) {
         try {
           await supabase
-            .from('users')
+            .from('profiles')
             .update({ language: lang })
             .eq('user_id', user.id);
+            
+          console.log('[LANG] Updated user profile language preference:', lang);
         } catch (error) {
           console.error('[LANG] Failed to update user language preference:', error);
         }
@@ -65,6 +68,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     } catch (error) {
       console.error('[LANG] Error changing language:', error);
+      toast({
+        variant: "destructive",
+        title: "Language change failed",
+        description: "There was an error changing the language. Please try again."
+      });
     } finally {
       setLanguageLoading(false);
     }
@@ -97,27 +105,37 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         let finalLanguage = extractLanguageFromUrl(location.pathname);
         
         // If no language in URL, try from user profile or localStorage
-        if (!finalLanguage) {
+        if (!finalLanguage || finalLanguage === defaultLanguage) {
           if (user?.id) {
             const { data } = await supabase
-              .from('users')
+              .from('profiles')
               .select('language')
               .eq('user_id', user.id)
               .single();
             
             if (data?.language) {
               finalLanguage = data.language;
+              console.log('[LANG] Loaded language from user profile:', finalLanguage);
             }
           } else {
             const savedLang = localStorage.getItem('i18nextLng');
             if (savedLang && supportedLanguages.some(l => l.code === savedLang)) {
               finalLanguage = savedLang;
+              console.log('[LANG] Loaded language from localStorage:', finalLanguage);
             }
           }
           
           // If still no language, use browser preference or default
           if (!finalLanguage) {
-            finalLanguage = defaultLanguage;
+            const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
+            
+            if (browserLang && supportedLanguages.some(l => l.code === browserLang)) {
+              finalLanguage = browserLang;
+              console.log('[LANG] Using browser language:', finalLanguage);
+            } else {
+              finalLanguage = defaultLanguage;
+              console.log('[LANG] Using default language:', finalLanguage);
+            }
           }
           
           // Update URL with language prefix if needed
@@ -132,7 +150,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (langMeta) {
           await changeAppLanguage(finalLanguage);
           setCurrentLanguage(finalLanguage);
-          setIsRtl(langMeta.rtl);
+          setIsRtl(langMeta.rtl ?? false);
         }
       } catch (error) {
         console.error('[LANG] Error initializing language:', error);
@@ -147,6 +165,37 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     initLanguage();
   }, [location.pathname, user, navigate]);
+
+  // Update language when user logs in or out
+  useEffect(() => {
+    if (user) {
+      // When user logs in, check if they have a language preference
+      const syncUserLanguage = async () => {
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('language')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (data?.language && data.language !== currentLanguage) {
+            console.log('[LANG] Syncing language from user profile:', data.language);
+            setLanguageByCode(data.language, false);
+          } else if (currentLanguage) {
+            // If user doesn't have a language preference, update their profile with current language
+            await supabase
+              .from('profiles')
+              .update({ language: currentLanguage })
+              .eq('user_id', user.id);
+          }
+        } catch (error) {
+          console.error('[LANG] Error syncing user language:', error);
+        }
+      };
+      
+      syncUserLanguage();
+    }
+  }, [user?.id]); // Only run when user ID changes (login/logout)
 
   // Context value
   const value = {

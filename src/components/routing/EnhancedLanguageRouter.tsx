@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/language';
 import { supportedLanguages, defaultLanguage } from '@/config/supportedLanguages';
@@ -7,7 +6,10 @@ import TranslationLoader from '@/components/i18n/TranslationLoader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { languageCodes } from '@/config/supportedLanguages';
 import { extractLanguageFromUrl, removeLanguageFromUrl, addLanguageToUrl } from '@/contexts/language/utils';
-import { isImplementedLanguage, getLanguageByCode } from '@/utils/languageUtils';
+import { isImplementedLanguage, getLanguageByCode, determineBestLanguage } from '@/utils/languageUtils';
+import { toast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { XCircle } from 'lucide-react';
 import NotFound from '@/pages/NotFound';
 
 interface EnhancedLanguageRouterProps {
@@ -19,6 +21,8 @@ export const EnhancedLanguageRouter: React.FC<EnhancedLanguageRouterProps> = ({ 
   const navigate = useNavigate();
   const { currentLanguage, setLanguageByCode } = useLanguage();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showUnsupportedLanguageAlert, setShowUnsupportedLanguageAlert] = useState(false);
+  const [unsupportedCode, setUnsupportedCode] = useState<string | null>(null);
   
   // Extract the first part of the path to check if it's a language code
   const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -26,59 +30,112 @@ export const EnhancedLanguageRouter: React.FC<EnhancedLanguageRouterProps> = ({ 
   const isLanguagePrefix = languageCodes.includes(firstSegment);
   const isValidRoute = location.pathname !== "/404";
   
+  // Determine best language based on user preferences
+  const getBestLanguage = useCallback(() => {
+    const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
+    const storedLang = localStorage.getItem('i18nextLng');
+    
+    // Try to find the best language based on browser and stored preferences
+    return determineBestLanguage(browserLang, storedLang);
+  }, []);
+  
+  // Handle showing alert for unsupported language
+  useEffect(() => {
+    if (unsupportedCode) {
+      setShowUnsupportedLanguageAlert(true);
+      
+      // Auto-hide the alert after 5 seconds
+      const timer = setTimeout(() => {
+        setShowUnsupportedLanguageAlert(false);
+        setUnsupportedCode(null);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [unsupportedCode]);
+  
   useEffect(() => {
     // Handle routing logic based on URL
     const handleRouteChange = async () => {
       // Avoid recursive redirects
       if (isRedirecting) return;
 
+      // Check if path includes language code
       if (isLanguagePrefix) {
-        // Check if the language in URL is different from current language
-        if (firstSegment !== currentLanguage) {
-          // Valid language prefix exists in URL, update language
-          console.log(`[LANG-ROUTER] Updating language from URL: ${firstSegment}`);
-          setLanguageByCode(firstSegment, false); // Don't update user profile for URL-based changes
+        const langMetadata = getLanguageByCode(firstSegment);
+        
+        // Check if language exists but is not implemented
+        if (langMetadata && !langMetadata.implemented) {
+          console.warn(`[LANG-ROUTER] Language ${firstSegment} exists but is not implemented yet.`);
+          // We allow the route but show a warning
+          if (firstSegment !== currentLanguage) {
+            // Still set it as current language to maintain URL integrity
+            await setLanguageByCode(firstSegment, false);
+          }
+        } 
+        // Check if language exists and is implemented
+        else if (langMetadata && langMetadata.implemented) {
+          // Valid language prefix exists in URL, update language if different
+          if (firstSegment !== currentLanguage) {
+            console.log(`[LANG-ROUTER] Updating language from URL: ${firstSegment}`);
+            await setLanguageByCode(firstSegment, false); // Don't update user profile for URL-based changes
+          }
         }
-      } else if (isValidRoute) {
-        // No valid language prefix, redirect to add language prefix
+        // If invalid language code, redirect to default or best language
+        else if (!langMetadata) {
+          setIsRedirecting(true);
+          setUnsupportedCode(firstSegment);
+          
+          try {
+            // Keep path but change language code
+            const bestLang = getBestLanguage();
+            const pathWithoutLang = '/' + pathSegments.slice(1).join('/');
+            const redirectPath = `/${bestLang}${pathWithoutLang}`;
+            
+            console.warn(`[LANG-ROUTER] Invalid language code: ${firstSegment}, redirecting to ${redirectPath}`);
+            navigate(redirectPath, { replace: true });
+          } catch (error) {
+            console.error('[LANG-ROUTER] Error handling invalid language:', error);
+          } finally {
+            setTimeout(() => setIsRedirecting(false), 100);
+          }
+        }
+      } 
+      // No language prefix in URL
+      else if (isValidRoute && !pathSegments.includes('404')) {
         setIsRedirecting(true);
         
         try {
-          // Try to determine best language from user preferences
-          const browserLang = navigator.language?.split('-')[0];
-          const storedLang = localStorage.getItem('i18nextLng');
-          
-          // Prioritize: localStorage > browser language > default language
-          let bestLang = defaultLanguage;
-          
-          if (storedLang && languageCodes.includes(storedLang)) {
-            bestLang = storedLang;
-          } else if (browserLang && languageCodes.includes(browserLang)) {
-            bestLang = browserLang;
-          }
-          
-          // Create the redirect path with language prefix
+          // Determine best language and redirect
+          const bestLang = getBestLanguage();
           const redirectPath = location.pathname === '/' 
             ? `/${bestLang}` 
             : `/${bestLang}${location.pathname}`;
           
-          console.log(`[LANG-ROUTER] Redirecting to: ${redirectPath} (from ${location.pathname})`);
+          console.log(`[LANG-ROUTER] Adding language prefix: ${redirectPath} (from ${location.pathname})`);
           navigate(redirectPath + location.search, { replace: true });
         } catch (error) {
           console.error('[LANG-ROUTER] Error during language redirect:', error);
-          // Fallback to default language in case of error
+          // Fallback to default language
           navigate(`/${defaultLanguage}${location.pathname}`, { replace: true });
         } finally {
-          // Reset redirecting flag after a short delay to prevent race conditions
-          setTimeout(() => {
-            setIsRedirecting(false);
-          }, 100);
+          setTimeout(() => setIsRedirecting(false), 100);
         }
       }
     };
 
     handleRouteChange();
-  }, [location.pathname, firstSegment, isLanguagePrefix, currentLanguage, setLanguageByCode, navigate, isRedirecting, isValidRoute]);
+  }, [
+    location.pathname, 
+    firstSegment, 
+    isLanguagePrefix, 
+    currentLanguage, 
+    setLanguageByCode, 
+    navigate, 
+    isRedirecting, 
+    isValidRoute,
+    getBestLanguage
+  ]);
   
   // Determine which namespaces to load based on the current route
   const getRequiredNamespaces = () => {
@@ -108,38 +165,51 @@ export const EnhancedLanguageRouter: React.FC<EnhancedLanguageRouterProps> = ({ 
   }
 
   return (
-    <TranslationLoader namespaces={getRequiredNamespaces()} fallback={
-      <div className="p-4">
-        <Skeleton className="h-16 w-full mb-4" />
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-64 w-full" />
+    <>
+      {/* Unsupported language alert */}
+      {showUnsupportedLanguageAlert && (
+        <Alert variant="destructive" className="fixed top-4 right-4 z-50 max-w-md animate-in slide-in-from-top-5 duration-300">
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>Language not supported</AlertTitle>
+          <AlertDescription>
+            The language code "{unsupportedCode}" is not supported. You have been redirected to {currentLanguage}.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <TranslationLoader namespaces={getRequiredNamespaces()} fallback={
+        <div className="p-4">
+          <Skeleton className="h-16 w-full mb-4" />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-64 w-full" />
+          </div>
         </div>
-      </div>
-    }>
-      <Routes>
-        {/* Language-prefixed routes */}
-        {languageCodes.map(lang => (
-          <Route key={lang} path={`/${lang}/*`} element={children} />
-        ))}
-        
-        {/* Root path redirects to default language */}
-        <Route path="/" element={<Navigate to={`/${currentLanguage}`} replace />} />
-        
-        {/* Invalid language code redirects to default language with same path */}
-        <Route path="/:invalidLang/*" element={
-          <LanguageRedirect />
-        } />
-        
-        {/* Catch-all route for true 404s */}
-        <Route path="*" element={<Navigate to={`/${currentLanguage}/404`} replace />} />
-      </Routes>
-    </TranslationLoader>
+      }>
+        <Routes>
+          {/* Language-prefixed routes */}
+          {languageCodes.map(lang => (
+            <Route key={lang} path={`/${lang}/*`} element={children} />
+          ))}
+          
+          {/* Root path redirects to best language */}
+          <Route path="/" element={<Navigate to={`/${currentLanguage}`} replace />} />
+          
+          {/* Invalid language code redirects to default language with same path */}
+          <Route path="/:invalidLang/*" element={
+            <LanguageRedirect getBestLanguage={getBestLanguage} />
+          } />
+          
+          {/* Catch-all route for true 404s */}
+          <Route path="*" element={<Navigate to={`/${currentLanguage}/404`} replace />} />
+        </Routes>
+      </TranslationLoader>
+    </>
   );
 };
 
 // Component to handle invalid language redirects
-const LanguageRedirect: React.FC = () => {
+const LanguageRedirect: React.FC<{getBestLanguage: () => string}> = ({ getBestLanguage }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -147,14 +217,15 @@ const LanguageRedirect: React.FC = () => {
   
   useEffect(() => {
     if (!languageCodes.includes(invalidLang)) {
-      // Remove the invalid language code and prepend default language
+      // Remove the invalid language code and prepend best language
       const cleanPath = '/' + pathSegments.slice(1).join('/');
-      const redirectPath = `/${defaultLanguage}${cleanPath}`;
+      const bestLang = getBestLanguage();
+      const redirectPath = `/${bestLang}${cleanPath}`;
       
       console.warn(`[LANG-ROUTER] Invalid language code: "${invalidLang}" - Redirecting to ${redirectPath}`);
       navigate(redirectPath, { replace: true });
     }
-  }, [invalidLang, navigate, pathSegments]);
+  }, [invalidLang, navigate, pathSegments, getBestLanguage]);
   
   return (
     <div className="flex justify-center items-center h-screen">
