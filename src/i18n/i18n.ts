@@ -170,6 +170,5 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// Export both the i18n instance and the loadNamespace function
-export { loadNamespace };
+// Export i18n instance and the loadNamespace function
 export default i18n;
