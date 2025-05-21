@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "preview": "vite preview"
+    "preview": "vite preview",
     "add-language": "ts-node src/scripts/addLanguage.ts"
   },
   "dependencies": {
