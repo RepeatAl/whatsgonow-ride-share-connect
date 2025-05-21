@@ -1,7 +1,7 @@
 
 import React from "react";
 import NavLink from "../NavLink";
-import { Shield } from "lucide-react";
+import { Shield, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface AdminLinksProps {
@@ -25,6 +25,17 @@ const AdminLinks = ({ isAdmin }: AdminLinksProps) => {
         <div className="flex items-center">
           <Shield className="h-5 w-5 mr-2" />
           <span>{t('nav.admin')}</span>
+        </div>
+      </NavLink>
+      <NavLink 
+        to="/trust-management"
+        icon={<TrendingUp className="h-5 w-5 mr-2" />}
+        name={t('nav.trust_management')}
+        tooltip={t('nav.trust_management')}
+      >
+        <div className="flex items-center">
+          <TrendingUp className="h-5 w-5 mr-2" />
+          <span>{t('nav.trust_management')}</span>
         </div>
       </NavLink>
     </>
