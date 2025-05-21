@@ -28,11 +28,18 @@ export const EnhancedLanguageRouter: React.FC<EnhancedLanguageRouterProps> = ({ 
   useEffect(() => {
     // Extract language from current URL
     const langFromUrl = extractLanguageFromUrl(location.pathname);
+    const pathSegments = location.pathname.split('/').filter(Boolean);
     
     if (langFromUrl) {
       // If we have a language in the URL, set it as current language
       if (langFromUrl !== currentLanguage) {
         setLanguageByCode(langFromUrl, false);
+      }
+      
+      // Special case: If URL is just the language prefix (like /de)
+      if (pathSegments.length === 1) {
+        // Redirect to root within that language
+        navigate(`/${langFromUrl}/`, { replace: true });
       }
     } else {
       // If no language in URL, redirect to URL with default language
