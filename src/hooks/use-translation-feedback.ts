@@ -40,7 +40,7 @@ export function useTranslationFeedback() {
         toast({
           title: t('feedback.success.title'),
           description: t('feedback.success.description'),
-          variant: 'success'
+          variant: 'default'
         });
         return true;
       } else {

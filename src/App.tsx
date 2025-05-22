@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { AppRoutes } from './components/routing/AppRoutes';
+import AppRoutes from './components/routing/AppRoutes';
 import { EnhancedLanguageRouter } from './components/routing/EnhancedLanguageRouter';
 import { LanguageProvider } from './contexts/language';
 import { ThemeProvider } from './contexts/ThemeContext';

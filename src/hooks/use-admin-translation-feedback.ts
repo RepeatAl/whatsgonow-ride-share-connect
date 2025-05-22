@@ -58,7 +58,7 @@ export function useAdminTranslationFeedback() {
         toast({
           title: t('admin.feedback.review_success'),
           description: t('admin.feedback.status_updated'),
-          variant: 'success'
+          variant: 'default'
         });
         return true;
       } else {

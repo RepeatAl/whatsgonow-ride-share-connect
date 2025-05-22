@@ -33,13 +33,13 @@ const TranslationFeedbackTable: React.FC<TranslationFeedbackTableProps> = ({
   const getStatusBadgeVariant = (status: string | undefined) => {
     switch (status) {
       case 'approved':
-        return 'success';
+        return 'default' as const;
       case 'rejected':
-        return 'destructive';
+        return 'destructive' as const;
       case 'in_review':
-        return 'warning';
+        return 'secondary' as const;
       default:
-        return 'secondary';
+        return 'outline' as const;
     }
   };
 

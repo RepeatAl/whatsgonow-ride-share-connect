@@ -46,42 +46,42 @@ const Admin: React.FC = () => {
           <AdminToolCard 
             title={t("admin.tools.user_management")}
             description={t("admin.tools.user_management_desc")}
-            icon={<Users />}
+            icon={<Users size={24} />}
             href="/admin/users"
           />
           
           <AdminToolCard 
             title={t("admin.tools.validation")}
             description={t("admin.tools.validation_desc")}
-            icon={<ShieldCheck />}
+            icon={<ShieldCheck size={24} />}
             href="/admin/validation"
           />
           
           <AdminToolCard 
             title={t("admin.tools.feedback")}
             description={t("admin.tools.feedback_desc")}
-            icon={<MessageSquare />}
+            icon={<MessageSquare size={24} />}
             href="/admin/feedback"
           />
           
           <AdminToolCard 
             title={t("admin.tools.pre_registrations")}
             description={t("admin.tools.pre_registrations_desc")}
-            icon={<UserCheck />}
+            icon={<UserCheck size={24} />}
             href="/admin/pre-registrations"
           />
           
           <AdminToolCard 
             title={t("admin.tools.system_activity")}
             description={t("admin.tools.system_activity_desc")}
-            icon={<History />}
+            icon={<History size={24} />}
             href="/admin/dashboard"
           />
           
           <AdminToolCard 
             title={t("admin.tools.invoice_testing")}
             description={t("admin.tools.invoice_testing_desc")}
-            icon={<FileCheck />}
+            icon={<FileCheck size={24} />}
             href="/admin/invoice-test"
           />
           
@@ -89,7 +89,7 @@ const Admin: React.FC = () => {
           <AdminToolCard 
             title={t("admin.tools.translation_feedback")}
             description={t("admin.tools.translation_feedback_desc")}
-            icon={<Globe />}
+            icon={<Globe size={24} />}
             href="/admin/translation-feedback"
             badge="New"
           />

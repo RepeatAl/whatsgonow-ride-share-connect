@@ -1,14 +1,14 @@
 
-import React from "react";
+import React, { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, Navigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/language";
 
 interface PublicRouteProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const PublicRoute = ({ children }: PublicRouteProps) => {
+const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { loading, user } = useAuth();
   const location = useLocation();
   const { getLocalizedUrl, currentLanguage } = useLanguage();
