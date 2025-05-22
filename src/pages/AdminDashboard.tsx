@@ -4,6 +4,12 @@ import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/components/Layout';
 import AdminToolsGrid from '@/components/admin/dashboard/AdminToolsGrid';
+import KYCValidationTool from '@/components/admin/dashboard/tools/KYCValidationTool';
+import PreRegistrationsTool from '@/components/admin/dashboard/tools/PreRegistrationsTool';
+import FeedbackManagementTool from '@/components/admin/dashboard/tools/FeedbackManagementTool';
+import FeedbackAnalyticsTool from '@/components/admin/dashboard/tools/FeedbackAnalyticsTool';
+import UserManagementTool from '@/components/admin/dashboard/tools/UserManagementTool';
+import InvoiceManagementTool from '@/components/admin/dashboard/tools/InvoiceManagementTool';
 import { DashboardStats } from '@/components/admin/dashboard/KPICards';
 import UserActivityTable from '@/components/admin/dashboard/UserActivityTable';
 import TransactionsTable from '@/components/admin/dashboard/TransactionsTable';
@@ -60,7 +66,14 @@ const AdminDashboard = () => {
         
         <DashboardStats stats={stats} timeRange={parseInt(timeRange)} />
         
-        <AdminToolsGrid />
+        <AdminToolsGrid>
+          <KYCValidationTool />
+          <PreRegistrationsTool />
+          <FeedbackManagementTool />
+          <FeedbackAnalyticsTool />
+          <UserManagementTool />
+          <InvoiceManagementTool />
+        </AdminToolsGrid>
         
         <div className="mt-8">
           <FilterOptions 
