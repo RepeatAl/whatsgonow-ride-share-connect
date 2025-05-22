@@ -4,13 +4,15 @@ import { Link } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ChevronRight } from 'lucide-react';
 
 interface AdminToolCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
-  linkTo?: string;
+  href?: string;
+  badge?: string;
   disabled?: boolean;
 }
 
@@ -18,7 +20,8 @@ const AdminToolCard = ({
   title, 
   description, 
   icon: Icon, 
-  linkTo, 
+  href, 
+  badge,
   disabled 
 }: AdminToolCardProps) => {
   return (
@@ -27,6 +30,11 @@ const AdminToolCard = ({
         <CardTitle className="text-lg flex items-center">
           <Icon className="mr-2 h-5 w-5 text-primary" />
           {title}
+          {badge && (
+            <Badge className="ml-2" variant="success">
+              {badge}
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -37,10 +45,10 @@ const AdminToolCard = ({
           variant="outline" 
           className="w-full justify-between" 
           disabled={disabled}
-          asChild={!disabled}
+          asChild={!disabled && !!href}
         >
-          {!disabled ? (
-            <Link to={linkTo!}>
+          {!disabled && href ? (
+            <Link to={href}>
               {disabled ? 'In Entwicklung' : 'Öffnen'}
               <ChevronRight className="h-4 w-4" />
             </Link>
