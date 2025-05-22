@@ -1,0 +1,84 @@
+{
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "loading": "Loading user information...",
+    "statistics": "Statistics Overview",
+    "total_users": "Total Users",
+    "active_users": "Active Users",
+    "new_orders": "New Orders",
+    "total_revenue": "Total Revenue",
+    "recent_activity": "Recent System Activity",
+    "no_activity": "No recent activity to display."
+  },
+  "tools": {
+    "user_management": "User Management",
+    "user_management_desc": "Manage user accounts and roles",
+    "validation": "KYC Validation",
+    "validation_desc": "Validate user identities and documents",
+    "feedback": "Feedback Management",
+    "feedback_desc": "Review and respond to user feedback",
+    "pre_registrations": "Pre-Registrations",
+    "pre_registrations_desc": "Manage pre-registered users",
+    "system_activity": "System Activity",
+    "system_activity_desc": "Monitor system logs and events",
+    "invoice_testing": "Invoice Testing",
+    "invoice_testing_desc": "Test invoice generation and sending",
+    "translation_feedback": "Translation Feedback",
+    "translation_feedback_desc": "Manage user suggestions and corrections for translations"
+  },
+  "validation": {
+    "title": "KYC Validation",
+    "tab": "Validation",
+    "xrechnung": "XRechnung",
+    "status": "Status",
+    "type": "Type",
+    "all": "All",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "id_document": "ID Document",
+    "proof_of_address": "Proof of Address",
+    "selfie": "Selfie",
+    "submit": "Submit",
+    "reset": "Reset",
+    "search": "Search",
+    "no_results": "No results found.",
+    "loading": "Loading...",
+    "error": "An error occurred.",
+    "back_to_admin": "Back to Admin"
+  },
+  "feedback": {
+    "title": "Feedback Management",
+    "review_success": "Review Successful",
+    "status_updated": "Feedback status has been updated",
+    "review_failed": "Review Failed"
+  },
+  "pre_registrations": {
+    "title": "Pre-Registrations Management",
+    "email": "Email",
+    "date": "Date",
+    "actions": "Actions",
+    "no_registrations": "No pre-registrations found.",
+    "loading": "Loading pre-registrations...",
+    "error": "An error occurred while loading pre-registrations."
+  },
+  "users": {
+    "title": "User Management",
+    "search": "Search Users",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "no_users": "No users found.",
+    "loading": "Loading users...",
+    "error": "An error occurred while loading users."
+  },
+  "error": {
+    "unauthorized": "Unauthorized",
+    "admin_required": "Only administrators can access this feature",
+    "unknown": "An unknown error occurred"
+  }
+}

@@ -1,125 +1,101 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/lib/supabaseClient";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import Layout from '@/components/Layout';
+import AdminToolsGrid from '@/components/admin/dashboard/AdminToolsGrid';
+import AdminToolCard from '@/components/admin/dashboard/tools/AdminToolCard';
+import { useTranslation } from "react-i18next";
 import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog";
-import { useAdminUsers } from "@/hooks/use-admin-users";
-import { UsersTable } from "@/components/admin/users/UsersTable";
-import { RoleChangeLogViewer } from "@/components/admin/RoleChangeLogViewer";
-import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Trash2, 
-  User as UserIcon,
-  ClipboardCheck,
-  RefreshCw
-} from "lucide-react";
-import { Link } from "react-router-dom";
+  Users, 
+  ShieldCheck, 
+  FileCheck, 
+  MessageSquare, 
+  UserCheck, 
+  History,
+  Globe
+} from 'lucide-react';
 
-// This component follows the conventions from /docs/conventions/roles_and_ids.md
-const Admin = () => {
-  const navigate = useNavigate();
-  const { profile } = useAuth();
-  const { 
-    users, 
-    loading,
-    fetchUsers,
-    updateUserRole, 
-    toggleUserActive, 
-    deleteUser 
-  } = useAdminUsers();
-  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
-  const isSuperAdmin = profile?.role === 'super_admin';
+const Admin: React.FC = () => {
+  const { user, loading } = useAuth();
+  const { t } = useTranslation();
 
-  const handleDeleteConfirm = () => {
-    if (deletingUserId) {
-      deleteUser(deletingUserId);
-      setDeletingUserId(null);
-    }
-  };
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8 flex justify-center items-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg">{t("admin.loading")}</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <UserIcon className="h-8 w-8" />
-          {isSuperAdmin ? 'Super-Admin Dashboard' : 'Admin Dashboard'}
-        </h1>
+    <Layout>
+      <div className="container mx-auto py-6 px-4">
+        <h1 className="text-3xl font-bold mb-6">{t("admin.dashboard.title")}</h1>
         
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={fetchUsers}
-          >
-            <RefreshCw className="h-4 w-4" />
-            Aktualisieren
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2"
-            asChild
-          >
-            <Link to="/admin/validation">
-              <ClipboardCheck className="h-4 w-4" />
-              Validierungs-Dashboard
-            </Link>
-          </Button>
-        </div>
+        <AdminToolsGrid>
+          <AdminToolCard 
+            title={t("admin.tools.user_management")}
+            description={t("admin.tools.user_management_desc")}
+            icon={<Users />}
+            href="/admin/users"
+          />
+          
+          <AdminToolCard 
+            title={t("admin.tools.validation")}
+            description={t("admin.tools.validation_desc")}
+            icon={<ShieldCheck />}
+            href="/admin/validation"
+          />
+          
+          <AdminToolCard 
+            title={t("admin.tools.feedback")}
+            description={t("admin.tools.feedback_desc")}
+            icon={<MessageSquare />}
+            href="/admin/feedback"
+          />
+          
+          <AdminToolCard 
+            title={t("admin.tools.pre_registrations")}
+            description={t("admin.tools.pre_registrations_desc")}
+            icon={<UserCheck />}
+            href="/admin/pre-registrations"
+          />
+          
+          <AdminToolCard 
+            title={t("admin.tools.system_activity")}
+            description={t("admin.tools.system_activity_desc")}
+            icon={<History />}
+            href="/admin/dashboard"
+          />
+          
+          <AdminToolCard 
+            title={t("admin.tools.invoice_testing")}
+            description={t("admin.tools.invoice_testing_desc")}
+            icon={<FileCheck />}
+            href="/admin/invoice-test"
+          />
+          
+          {/* Neuer Tool-Card für Translation Feedback */}
+          <AdminToolCard 
+            title={t("admin.tools.translation_feedback")}
+            description={t("admin.tools.translation_feedback_desc")}
+            icon={<Globe />}
+            href="/admin/translation-feedback"
+            badge="New"
+          />
+        </AdminToolsGrid>
       </div>
-
-      <div className="mb-8">
-        <UsersTable
-          users={users}
-          isLoading={loading}
-          onToggleActive={toggleUserActive}
-          onDeleteUser={setDeletingUserId}
-          onUserUpdated={fetchUsers}
-        />
-      </div>
-
-      {/* Show role change logs only to super admins */}
-      {isSuperAdmin && (
-        <div className="mt-12">
-          <RoleChangeLogViewer />
-        </div>
-      )}
-
-      {deletingUserId && (
-        <AlertDialog 
-          open={!!deletingUserId} 
-          onOpenChange={() => setDeletingUserId(null)}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Nutzer wirklich löschen?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Diese Aktion kann nicht rückgängig gemacht werden.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>
-                Abbrechen
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>
-                Löschen
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-    </div>
+    </Layout>
   );
 };
 

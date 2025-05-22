@@ -1,0 +1,89 @@
+{
+  "dashboard": {
+    "title": "Admin-Dashboard",
+    "welcome": "Willkommen im Admin-Bereich!",
+    "loading": "Lade Admin-Dashboard..."
+  },
+  "validation": {
+    "title": "Validierung",
+    "tab": "Validierung",
+    "xrechnung": {
+      "tab": "XRechnung"
+    }
+  },
+  "tools": {
+    "user_management": "Benutzerverwaltung",
+    "user_management_desc": "Verwalten und bearbeiten Sie Benutzerkonten",
+    "validation": "Validierung",
+    "validation_desc": "Überprüfen und validieren Sie Benutzerinformationen",
+    "feedback": "Feedback",
+    "feedback_desc": "Überprüfen und bearbeiten Sie Benutzer-Feedback",
+    "pre_registrations": "Vorregistrierungen",
+    "pre_registrations_desc": "Verwalten Sie Vorregistrierungen",
+    "system_activity": "Systemaktivität",
+    "system_activity_desc": "Überwachen Sie die Systemaktivität und -protokolle",
+    "invoice_testing": "Rechnungsprüfung",
+    "invoice_testing_desc": "Testen Sie die Rechnungsstellung und den Versand",
+    "translation_feedback": "Übersetzungs-Feedback",
+    "translation_feedback_desc": "Verwalten Sie Übersetzungsvorschläge und -korrekturen der Nutzer"
+  },
+  "feedback": {
+    "title": "Feedback-Verwaltung",
+    "description": "Überprüfen und verwalten Sie Benutzer-Feedback",
+    "status": {
+      "all": "Alle",
+      "pending": "Ausstehend",
+      "in_progress": "In Bearbeitung",
+      "resolved": "Gelöst"
+    },
+    "type": {
+      "all": "Alle",
+      "bug": "Fehler",
+      "suggestion": "Vorschlag",
+      "compliment": "Lob",
+      "question": "Frage"
+    },
+    "review_success": "Überprüfung erfolgreich",
+    "status_updated": "Der Status des Feedbacks wurde aktualisiert",
+    "review_failed": "Überprüfung fehlgeschlagen"
+  },
+  "pre_registrations": {
+    "title": "Vorregistrierungen verwalten",
+    "description": "Überprüfen und verwalten Sie Benutzer-Vorregistrierungen"
+  },
+  "users": {
+    "title": "Benutzer verwalten",
+    "description": "Benutzerkonten anzeigen, bearbeiten und verwalten"
+  },
+  "error": {
+    "unauthorized": "Nicht autorisiert",
+    "admin_required": "Nur Administratoren können auf diese Funktion zugreifen",
+    "unknown": "Ein unbekannter Fehler ist aufgetreten"
+  },
+  "tools": {
+    "user_management": "Benutzerverwaltung",
+    "user_management_desc": "Verwalten und bearbeiten Sie Benutzerkonten",
+    "validation": "Validierung",
+    "validation_desc": "Überprüfen und validieren Sie Benutzerinformationen",
+    "feedback": "Feedback",
+    "feedback_desc": "Überprüfen und bearbeiten Sie Benutzer-Feedback",
+    "pre_registrations": "Vorregistrierungen",
+    "pre_registrations_desc": "Verwalten Sie Vorregistrierungen",
+    "system_activity": "Systemaktivität",
+    "system_activity_desc": "Überwachen Sie die Systemaktivität und -protokolle",
+    "invoice_testing": "Rechnungsprüfung",
+    "invoice_testing_desc": "Testen Sie die Rechnungsstellung und den Versand",
+    "translation_feedback": "Übersetzungs-Feedback",
+    "translation_feedback_desc": "Verwalten Sie Übersetzungsvorschläge und -korrekturen der Nutzer"
+  },
+  "feedback": {
+    "review_success": "Überprüfung erfolgreich",
+    "status_updated": "Der Status des Feedbacks wurde aktualisiert",
+    "review_failed": "Überprüfung fehlgeschlagen"
+  },
+  "error": {
+    "unauthorized": "Nicht autorisiert",
+    "admin_required": "Nur Administratoren können auf diese Funktion zugreifen",
+    "unknown": "Ein unbekannter Fehler ist aufgetreten"
+  }
+}

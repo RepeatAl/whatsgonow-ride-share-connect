@@ -1,4 +1,3 @@
-
 {
   "welcome": "Willkommen",
   "loading": "Lädt...",
@@ -10,5 +9,89 @@
   "language_change_error": "Fehler beim Ändern der Sprache",
   "select_language": "Sprache auswählen",
   "change_language": "Sprache ändern",
-  "coming_soon": "Demnächst verfügbar"
+  "coming_soon": "Demnächst verfügbar",
+  
+  "translation": {
+    "feedback": {
+      "title": "Übersetzungs-Feedback",
+      "description": "Helfen Sie uns, die Übersetzungen zu verbessern",
+      "dialog_title": "Übersetzungsfehler melden",
+      "dialog_description": "Sie können uns helfen, die Übersetzungen für die Sprache '{language}' zu verbessern.",
+      "report_button": "Übersetzung melden",
+      "email_label": "Ihre E-Mail-Adresse",
+      "email_placeholder": "name@beispiel.de",
+      "namespace_label": "Namespace",
+      "key_label": "Übersetzungsschlüssel",
+      "current_text_label": "Aktueller Text",
+      "current_text_placeholder": "Text, der derzeit angezeigt wird",
+      "suggestion_label": "Ihr Vorschlag",
+      "suggestion_placeholder": "Ihre vorgeschlagene Übersetzung",
+      "comment_label": "Ihr Kommentar",
+      "comment_placeholder": "Beschreiben Sie das Übersetzungsproblem",
+      "submit": "Feedback absenden",
+      "submitting": "Wird gesendet",
+      "no_items": "Keine Feedback-Einträge gefunden",
+      "table_caption": "Liste der Übersetzungs-Feedback-Einträge",
+      "language_column": "Sprache",
+      "namespace_column": "Namespace",
+      "key_column": "Schlüssel",
+      "status_column": "Status",
+      "actions_column": "Aktionen",
+      "view_details": "Details anzeigen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen"
+    },
+    "admin": {
+      "title": "Übersetzungs-Feedback verwalten",
+      "description": "Überprüfen und verwalten Sie Feedback zu Übersetzungen"
+    },
+    "detail": {
+      "title": "Feedback-Details",
+      "not_found": "Feedback nicht gefunden",
+      "feedback_info": "Feedback-Informationen",
+      "submitted_at": "Eingereicht am: {date}",
+      "language": "Sprache",
+      "namespace": "Namespace",
+      "key": "Schlüssel",
+      "current_text": "Aktueller Text",
+      "suggested_text": "Vorgeschlagener Text",
+      "comment": "Kommentar",
+      "page_url": "Seiten-URL",
+      "review_title": "Überprüfung",
+      "reviewed_at": "Überprüft am: {date}",
+      "not_reviewed_yet": "Noch nicht überprüft",
+      "admin_notes": "Admin-Notizen",
+      "notes_placeholder": "Interne Notizen zur Überprüfung",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "mark_in_review": "Als 'in Überprüfung' markieren"
+    },
+    "filters": {
+      "language": "Sprache filtern",
+      "namespace": "Namespace filtern",
+      "status": "Status filtern",
+      "all_languages": "Alle Sprachen",
+      "all_namespaces": "Alle Namespaces",
+      "all_statuses": "Alle Status",
+      "reset": "Filter zurücksetzen",
+      "refresh": "Aktualisieren"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "in_review": "In Überprüfung",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt"
+    }
+  },
+  "error": {
+    "submission_failed": "Feedback konnte nicht gesendet werden",
+    "missing_email": "E-Mail-Adresse fehlt",
+    "provide_email_or_login": "Bitte geben Sie eine E-Mail-Adresse an oder melden Sie sich an"
+  },
+  "success": {
+    "translation_feedback": {
+      "title": "Feedback erhalten",
+      "description": "Vielen Dank für Ihr Feedback zur Übersetzung"
+    }
+  }
 }
