@@ -8,7 +8,7 @@ const FeedbackAnalyticsTool = () => {
       title="Feedback-Analytics"
       description="Detaillierte Auswertungen und Visualisierungen aller Nutzer-Feedbacks."
       icon={FileBarChart}
-      linkTo="/admin/feedback-analytics"
+      href="/admin/feedback-analytics"
     />
   );
 };

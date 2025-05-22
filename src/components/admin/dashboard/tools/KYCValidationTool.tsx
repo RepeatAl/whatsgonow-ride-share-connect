@@ -8,7 +8,7 @@ const KYCValidationTool = () => {
       title="KYC-Validierung"
       description="Überprüfung von Nutzeridentitäten und Dokumenten für die Plattform."
       icon={ClipboardCheck}
-      linkTo="/admin/validation"
+      href="/admin/validation"
     />
   );
 };

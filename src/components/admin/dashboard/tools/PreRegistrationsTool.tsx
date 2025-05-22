@@ -8,7 +8,7 @@ const PreRegistrationsTool = () => {
       title="Vorregistrierungen"
       description="Zugriff auf Vorregistrierungsdaten und Export der Informationen."
       icon={FileText}
-      linkTo="/admin/pre-registrations"
+      href="/admin/pre-registrations"
     />
   );
 };
