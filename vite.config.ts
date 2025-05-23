@@ -18,10 +18,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Optional: Konfiguration für Vitest, falls Tests über Vite laufen
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: "./src/setupTests.ts", // Entferne die Zeile, falls nicht genutzt
+    setupFiles: "./src/setupTests.ts",
   },
 }));
