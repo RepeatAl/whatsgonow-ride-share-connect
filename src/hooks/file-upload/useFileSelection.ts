@@ -1,13 +1,19 @@
-
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { validateFile } from "./fileValidation";
 import { MAX_FILES } from "./constants";
 
-export const useFileSelection = (updatePreviews?: (urls: string[]) => void) => {
+/**
+ * useFileSelection – Hook for selecting and managing files for upload
+ * @param updatePreviews Optional callback to update preview URLs after selection
+ */
+export const useFileSelection = (
+  updatePreviews?: (urls: string[]) => void
+) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Trigger file input dialog
   const handleFileSelect = () => {
     if (selectedFiles.length >= MAX_FILES) {
       toast.error(`Maximal ${MAX_FILES} Bilder erlaubt`);
@@ -16,6 +22,7 @@ export const useFileSelection = (updatePreviews?: (urls: string[]) => void) => {
     fileInputRef.current?.click();
   };
 
+  // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files?.length) return;
@@ -28,17 +35,18 @@ export const useFileSelection = (updatePreviews?: (urls: string[]) => void) => {
     }
 
     addFiles(newFiles);
-    
-    // Create object URLs and update previews if the function is provided
+
+    // Object URLs for previews
     if (updatePreviews) {
       const urls = newFiles.map(file => URL.createObjectURL(file));
       updatePreviews(urls);
     }
-    
-    // Reset the input
+
+    // Reset the input so same file can be selected again if needed
     e.target.value = '';
   };
 
+  // For direct capture (camera etc.)
   const handleCapture = (file: File, url: string) => {
     addFiles([file]);
     if (updatePreviews) {
@@ -46,6 +54,7 @@ export const useFileSelection = (updatePreviews?: (urls: string[]) => void) => {
     }
   };
 
+  // Add new files, up to MAX_FILES
   const addFiles = (newFiles: File[]) => {
     setSelectedFiles(prevFiles => {
       const combinedFiles = [...prevFiles];
@@ -60,6 +69,7 @@ export const useFileSelection = (updatePreviews?: (urls: string[]) => void) => {
     });
   };
 
+  // Remove file at index
   const removeFile = (index: number) => {
     setSelectedFiles(prevFiles => {
       const newFiles = [...prevFiles];
