@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
@@ -17,15 +16,14 @@ export const useAdminUsers = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchUsers = async () => {
+  // Lade alle Nutzer aus der Tabelle "profiles"
+  const fetchUsers = async (): Promise<void> => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, name, email, role, region, active, banned_until');
-
       if (error) throw error;
-
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -39,21 +37,22 @@ export const useAdminUsers = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  // Nutzerrolle ändern
+  const updateUserRole = async (userId: string, newRole: string): Promise<void> => {
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ role: newRole })
         .eq('user_id', userId);
-
       if (error) throw error;
 
-      setUsers(users.map(user => 
-        user.user_id === userId 
-          ? { ...user, role: newRole } 
-          : user
-      ));
-
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.user_id === userId
+            ? { ...user, role: newRole }
+            : user
+        )
+      );
       toast({
         title: "Erfolg",
         description: "Nutzerrolle wurde aktualisiert.",
@@ -68,25 +67,26 @@ export const useAdminUsers = () => {
     }
   };
 
-  const toggleUserActive = async (userId: string, activeStatus: boolean) => {
+  // Nutzerkonto aktivieren/deaktivieren
+  const toggleUserActive = async (userId: string, activeStatus: boolean): Promise<void> => {
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ active: activeStatus })
         .eq('user_id', userId);
-
       if (error) throw error;
 
-      setUsers(users.map(user => 
-        user.user_id === userId 
-          ? { ...user, active: activeStatus } 
-          : user
-      ));
-
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.user_id === userId
+            ? { ...user, active: activeStatus }
+            : user
+        )
+      );
       toast({
         title: "Erfolg",
-        description: activeStatus 
-          ? "Nutzerkonto aktiviert." 
+        description: activeStatus
+          ? "Nutzerkonto aktiviert."
           : "Nutzerkonto deaktiviert.",
       });
     } catch (error) {
@@ -99,17 +99,16 @@ export const useAdminUsers = () => {
     }
   };
 
-  const deleteUser = async (userId: string) => {
+  // Nutzer löschen
+  const deleteUser = async (userId: string): Promise<void> => {
     try {
       const { error } = await supabase
         .from('profiles')
         .delete()
         .eq('user_id', userId);
-
       if (error) throw error;
 
-      setUsers(users.filter(user => user.user_id !== userId));
-
+      setUsers(prevUsers => prevUsers.filter(user => user.user_id !== userId));
       toast({
         title: "Erfolg",
         description: "Nutzer wurde gelöscht.",
@@ -128,12 +127,12 @@ export const useAdminUsers = () => {
     fetchUsers();
   }, []);
 
-  return { 
-    users, 
-    loading, 
-    fetchUsers, 
-    updateUserRole, 
-    toggleUserActive, 
-    deleteUser 
+  return {
+    users,
+    loading,
+    fetchUsers,
+    updateUserRole,
+    toggleUserActive,
+    deleteUser
   };
 };
