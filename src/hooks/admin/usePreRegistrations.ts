@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 import type { PreRegistration } from "@/types/pre-registration";
 import { toast } from "@/components/ui/use-toast";
 
 export function usePreRegistrations() {
+  const supabase = getSupabaseClient();
   const [allRegs, setAllRegs] = useState<PreRegistration[]>([]);
   const [filtered, setFiltered] = useState<PreRegistration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +31,8 @@ export function usePreRegistrations() {
 
       const formattedData = data.map(item => ({
         ...item,
-        vehicle_types: typeof item.vehicle_types === 'string' 
-          ? JSON.parse(item.vehicle_types) 
+        vehicle_types: typeof item.vehicle_types === 'string'
+          ? JSON.parse(item.vehicle_types)
           : item.vehicle_types
       }));
 
@@ -48,7 +48,7 @@ export function usePreRegistrations() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     fetchRegs();
@@ -57,31 +57,31 @@ export function usePreRegistrations() {
   // Filter logic
   useEffect(() => {
     let result = [...allRegs];
-    
+
     // Apply date filters
     if (startDate) {
-      result = result.filter(reg => 
+      result = result.filter(reg =>
         new Date(reg.created_at) >= startDate
       );
     }
-    
+
     if (endDate) {
       const endOfDay = new Date(endDate);
       endOfDay.setHours(23, 59, 59, 999);
-      result = result.filter(reg => 
+      result = result.filter(reg =>
         new Date(reg.created_at) <= endOfDay
       );
     }
-    
+
     // Apply role filters
     if (filterDrivers || filterCM || filterSender) {
-      result = result.filter(reg => 
-        (filterDrivers && reg.wants_driver) || 
-        (filterCM && reg.wants_cm) || 
+      result = result.filter(reg =>
+        (filterDrivers && reg.wants_driver) ||
+        (filterCM && reg.wants_cm) ||
         (filterSender && reg.wants_sender)
       );
     }
-    
+
     // Apply search term
     if (searchTerm.trim() !== "") {
       const term = searchTerm.toLowerCase();
@@ -93,7 +93,7 @@ export function usePreRegistrations() {
           reg.postal_code.toLowerCase().includes(term)
       );
     }
-    
+
     setFiltered(result);
   }, [allRegs, searchTerm, filterDrivers, filterCM, filterSender, startDate, endDate]);
 
