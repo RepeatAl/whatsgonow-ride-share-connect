@@ -1,20 +1,25 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-export const useAdminMonitoring = (user: { id: string; role: string } | null) => {
+interface AdminUser {
+  id: string;
+  role: string;
+}
+
+export const useAdminMonitoring = (user: AdminUser | null) => {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    // Only initialize for admin users
+    // Nur für Admins aktivieren
     if (!user || user.role !== 'admin') {
+      setIsActive(false);
       return;
     }
 
     setIsActive(true);
-    
-    // Set up transaction monitoring channel
+
+    // Channel für neue Transaktionen
     const transactionsChannel = supabase
       .channel('admin_transactions_monitor')
       .on(
@@ -26,8 +31,8 @@ export const useAdminMonitoring = (user: { id: string; role: string } | null) =>
         },
         (payload) => {
           const transaction = payload.new;
-          console.log('New transaction:', transaction);
-          
+          console.log('Neue Transaktion:', transaction);
+
           toast({
             title: 'Neue Transaktion',
             description: `Transaktion über €${transaction.amount} wurde durchgeführt.`,
@@ -36,8 +41,8 @@ export const useAdminMonitoring = (user: { id: string; role: string } | null) =>
         }
       )
       .subscribe();
-      
-    // Set up delivery logs monitoring channel
+
+    // Channel für neue Logeinträge
     const logsChannel = supabase
       .channel('admin_logs_monitor')
       .on(
@@ -49,8 +54,8 @@ export const useAdminMonitoring = (user: { id: string; role: string } | null) =>
         },
         (payload) => {
           const log = payload.new;
-          console.log('New delivery log:', log);
-          
+          console.log('Neuer Logeintrag:', log);
+
           toast({
             title: 'Neuer Logeintrag',
             description: `Aktion "${log.action}" wurde protokolliert.`,
@@ -59,16 +64,17 @@ export const useAdminMonitoring = (user: { id: string; role: string } | null) =>
         }
       )
       .subscribe();
-      
-    console.log('Admin monitoring activated');
-    
-    // Cleanup function
+
+    console.log('✅ Admin monitoring aktiviert');
+
+    // Cleanup – Channels bei Unmount entfernen
     return () => {
       if (transactionsChannel) supabase.removeChannel(transactionsChannel);
       if (logsChannel) supabase.removeChannel(logsChannel);
-      console.log('Admin monitoring deactivated');
+      setIsActive(false);
+      console.log('🛑 Admin monitoring deaktiviert');
     };
   }, [user]);
-  
+
   return { isActive };
 };
