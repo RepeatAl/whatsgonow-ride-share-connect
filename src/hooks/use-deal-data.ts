@@ -1,12 +1,10 @@
-
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast"; // <--- Falls useToast kein echter Hook ist, nur toast importieren
 import { supabase } from "@/integrations/supabase/client";
 import { TransportRequest } from "@/data/mockData";
 import { TrackingStatus } from "@/pages/Tracking";
 
 export function useDealData(orderId: string, navigateToOfferTransport: () => void) {
-  const { toast } = useToast();
   const [order, setOrder] = useState<TransportRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<TrackingStatus>("pickup");
@@ -21,7 +19,6 @@ export function useDealData(orderId: string, navigateToOfferTransport: () => voi
         setCurrentUser({ id: data.session.user.id });
       }
     };
-
     checkAuth();
   }, []);
 
@@ -41,18 +38,17 @@ export function useDealData(orderId: string, navigateToOfferTransport: () => voi
       }
       setIsLoading(false);
     });
-  }, [orderId, navigateToOfferTransport, toast]);
+  }, [orderId, navigateToOfferTransport]);
 
   const handleStatusUpdate = (newStatus: TrackingStatus) => {
     setStatus(newStatus);
     setStatusUpdateTime(new Date());
-    
     const statusText = {
       pickup: "Abholung",
       transit: "Unterwegs",
       delivered: "Zugestellt"
     }[newStatus];
-    
+
     toast({
       title: "Status aktualisiert",
       description: `Der Status wurde auf "${statusText}" geändert.`,
