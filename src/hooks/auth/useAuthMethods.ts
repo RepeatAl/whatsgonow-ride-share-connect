@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +7,7 @@ import { useNavigate } from "react-router-dom";
  * Hook that provides authentication methods (sign in, sign up, sign out)
  */
 export function useAuthMethods() {
+  const supabase = getSupabaseClient();
   const [authError, setAuthError] = useState<Error | null>(null);
   const navigate = useNavigate();
 
@@ -16,7 +16,6 @@ export function useAuthMethods() {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
       return data;
     } catch (err: any) {
       setAuthError(err);
@@ -40,9 +39,8 @@ export function useAuthMethods() {
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
-      
       if (error) throw error;
-      
+
       toast({
         title: "Registrierung erfolgreich",
         description: "Bestätige deine E‑Mail-Adresse, um fortzufahren."
@@ -65,7 +63,6 @@ export function useAuthMethods() {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
       navigate("/", { replace: true });
     } catch (error: any) {
       setAuthError(error);
