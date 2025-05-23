@@ -14,11 +14,10 @@ export const useSenderData = () => {
         .from("orders")
         .select("*, transactions(*)")
         .eq("sender_id", userId);
-      
+
       if (error) throw error;
-      
       setOrders(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fehler beim Laden der Aufträge:", error);
       toast({
         title: "Fehler",
@@ -33,6 +32,6 @@ export const useSenderData = () => {
   return {
     orders,
     loading,
-    fetchOrders
+    fetchOrders,
   };
 };
