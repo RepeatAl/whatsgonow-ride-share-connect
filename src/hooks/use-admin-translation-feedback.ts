@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -15,10 +14,13 @@ export function useAdminTranslationFeedback() {
   const [loading, setLoading] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const { t } = useTranslation();
-  
-  // Alle Feedbacks für Admins laden
-  const loadAllFeedback = async (filters: TranslationFeedbackFilter = {}) => {
-    if (!user || !['admin', 'super_admin'].includes(user.role)) {
+
+  // Helper zur Rollenprüfung
+  const isAdmin = user && (user.role === 'admin' || user.role === 'super_admin');
+
+  // Feedback-Liste für Admins laden
+  const loadAllFeedback = async (filters: TranslationFeedbackFilter = {}): Promise<TranslationFeedback[]> => {
+    if (!isAdmin) {
       toast({
         title: t('admin.error.unauthorized'),
         description: t('admin.error.admin_required'),
@@ -26,11 +28,9 @@ export function useAdminTranslationFeedback() {
       });
       return [];
     }
-    
     setLoading(true);
     try {
-      const feedbackList = await translationFeedbackService.getAllFeedback(filters);
-      return feedbackList;
+      return await translationFeedbackService.getAllFeedback(filters);
     } catch (error) {
       console.error('Error loading feedback for admin:', error);
       return [];
@@ -39,9 +39,9 @@ export function useAdminTranslationFeedback() {
     }
   };
 
-  // Feedback überprüfen und Status ändern
+  // Feedback reviewen und Status aktualisieren
   const reviewFeedback = async (params: ReviewFeedbackParams): Promise<boolean> => {
-    if (!user || !['admin', 'super_admin'].includes(user.role)) {
+    if (!isAdmin) {
       toast({
         title: t('admin.error.unauthorized'),
         description: t('admin.error.admin_required'),
@@ -49,11 +49,9 @@ export function useAdminTranslationFeedback() {
       });
       return false;
     }
-
     setReviewing(true);
     try {
       const { success, error } = await translationFeedbackService.reviewFeedback(params);
-      
       if (success) {
         toast({
           title: t('admin.feedback.review_success'),
@@ -76,12 +74,16 @@ export function useAdminTranslationFeedback() {
     }
   };
 
-  // Einzelnes Feedback laden
+  // Einzelnes Feedback nach ID laden
   const loadFeedbackById = async (id: string): Promise<TranslationFeedback | null> => {
-    if (!user || !['admin', 'super_admin'].includes(user.role)) {
+    if (!isAdmin) {
+      toast({
+        title: t('admin.error.unauthorized'),
+        description: t('admin.error.admin_required'),
+        variant: 'destructive'
+      });
       return null;
     }
-    
     try {
       return await translationFeedbackService.getFeedbackById(id);
     } catch (error) {
