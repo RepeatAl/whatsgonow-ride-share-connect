@@ -10,10 +10,12 @@ export function useAuthState() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     console.log("🔄 useAuthState initialized");
 
     // Initial Session Fetch
     supabase.auth.getSession().then(({ data, error }) => {
+      if (!isMounted) return;
       if (error) {
         console.error("❌ Fehler beim Laden der Sitzung:", error);
       } else {
@@ -26,6 +28,7 @@ export function useAuthState() {
     // Auth state listener
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!isMounted) return;
         console.log("📡 Auth event:", event);
         setSession(session);
         setUser(session?.user ?? null);
@@ -34,6 +37,7 @@ export function useAuthState() {
     );
 
     return () => {
+      isMounted = false;
       listener?.subscription.unsubscribe();
     };
   }, []);
