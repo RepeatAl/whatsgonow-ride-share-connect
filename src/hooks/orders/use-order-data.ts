@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
 import { Order } from "@/types/order";
 
@@ -15,9 +14,9 @@ export const useOrderData = () => {
         .from("orders")
         .select("*")
         .eq("status", "offen");
-      
+
       if (error) throw error;
-      
+
       setOrders(data || []);
     } catch (error) {
       console.error("Fehler beim Laden der Aufträge:", error);
