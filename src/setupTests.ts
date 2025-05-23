@@ -4,11 +4,11 @@
 
 Object.defineProperty(global, 'localStorage', {
   value: {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(() => null),
-    removeItem: jest.fn(() => null),
-    clear: jest.fn(() => null),
-    key: jest.fn(() => null),
+    getItem: () => null,
+    setItem: () => null,
+    removeItem: () => null,
+    clear: () => null,
+    key: () => null,
     length: 0
   },
   writable: true
@@ -16,11 +16,11 @@ Object.defineProperty(global, 'localStorage', {
 
 Object.defineProperty(global, 'sessionStorage', {
   value: {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(() => null),
-    removeItem: jest.fn(() => null),
-    clear: jest.fn(() => null),
-    key: jest.fn(() => null),
+    getItem: () => null,
+    setItem: () => null,
+    removeItem: () => null,
+    clear: () => null,
+    key: () => null,
     length: 0
   },
   writable: true
@@ -29,8 +29,8 @@ Object.defineProperty(global, 'sessionStorage', {
 // Mocking window.URL.createObjectURL für File-Tests
 Object.defineProperty(global, 'URL', {
   value: {
-    createObjectURL: jest.fn(() => 'mock-url'),
-    revokeObjectURL: jest.fn()
+    createObjectURL: () => 'mock-url',
+    revokeObjectURL: () => undefined
   },
   writable: true
 });

@@ -3,7 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
   user_id: string;
-  name?: string;
+  name?: string; // Dieses Feld ist jetzt optional
   email: string;
   role?: string;
   region?: string;

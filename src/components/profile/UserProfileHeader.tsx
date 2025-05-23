@@ -9,22 +9,22 @@ import {
 } from "lucide-react";
 import UserRating from "@/components/rating/UserRating";
 import { Link } from "react-router-dom";
-import { UserRole } from "@/types/auth";
+import { UserRole, UserProfile } from "@/types/auth";
 
 interface UserProfileHeaderProps {
-  profile: {
-    name: string;
-    email: string;
-    role?: string;
-    verified?: boolean;
-    avatar_url?: string;
-  };
+  profile: UserProfile;
   userId: string;
   onUploadClick?: () => void;
   showActions?: boolean;
 }
 
 const UserProfileHeader = ({ profile, userId, onUploadClick, showActions = true }: UserProfileHeaderProps) => {
+  // Stelle sicher, dass wir einen Namen haben - entweder aus dem vorhandenen name-Feld
+  // oder generiert aus first_name und last_name
+  const displayName = profile.name || 
+    `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 
+    'Benutzer';
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -156,11 +156,11 @@ const UserProfileHeader = ({ profile, userId, onUploadClick, showActions = true 
         <div className="relative group">
           <Avatar className="h-24 w-24">
             <AvatarImage 
-              src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}`} 
-              alt={`${profile.name}'s profile picture`}
+              src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`} 
+              alt={`${displayName}'s profile picture`}
               className="object-cover"
             />
-            <AvatarFallback className="text-lg">{getInitials(profile.name)}</AvatarFallback>
+            <AvatarFallback className="text-lg">{getInitials(displayName)}</AvatarFallback>
           </Avatar>
           {onUploadClick && (
             <Button
@@ -176,7 +176,7 @@ const UserProfileHeader = ({ profile, userId, onUploadClick, showActions = true 
 
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h2 className="text-2xl font-bold">{profile.name}</h2>
+            <h2 className="text-2xl font-bold">{displayName}</h2>
             
             {getRoleBadge(profile.role)}
             
