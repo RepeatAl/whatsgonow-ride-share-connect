@@ -1,35 +1,39 @@
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-import { createClient } from "@supabase/supabase-js";
-
+// Supabase-Konstanten (am besten mit import.meta.env.*, aber für Testzwecke hier fest codiert)
 const supabaseUrl = "https://orgcruwmxqiwnjnkxpjb.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ2NydXdteHFpd25qbmt4cGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzQ1ODYsImV4cCI6MjA2MDExMDU4Nn0.M90DOOmOg2E58oSWnX49wbRqnO6Od9RrfcUvgJpzGMI";
 
-// Überprüfen, ob wir in einer Browser-Umgebung sind
-const isBrowser = typeof window !== "undefined";
+// Funktion, die den Supabase-Client "lazy" erstellt – kein Storage-Fehler mehr!
+export function getSupabaseClient(): SupabaseClient {
+  const isBrowser = typeof window !== "undefined";
 
-// Initialize Supabase client with your project details
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      // Nur localStorage verwenden, wenn wir in einer Browser-Umgebung sind
-      storage: isBrowser ? localStorage : undefined,
-      debug: true,
+  return createClient(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        storage: isBrowser ? localStorage : undefined,
+        debug: true,
+      },
     }
-  }
-);
+  );
+}
 
-// 🔍 Initialisierungs-Check
+// Convenience: Exportiere (optional) einen sofortigen Client (wird im Browser verwendet)
+export const supabase = getSupabaseClient();
+
+// Initialisierungs-Check: Nutzt jetzt immer den Lazy-Client!
 export const initSupabase = async () => {
   try {
+    const supabase = getSupabaseClient();
     console.log("🔄 Prüfe Supabase-Verbindung...");
     const { data, error } = await supabase.auth.getSession();
-    
-    console.log("📋 Supabase init check – Session:", 
-      data?.session ? "Aktiv ✅" : "Keine ❌", 
+
+    console.log("📋 Supabase init check – Session:",
+      data?.session ? "Aktiv ✅" : "Keine ❌",
       error ? `(Fehler: ${error.message})` : ""
     );
 
@@ -40,14 +44,14 @@ export const initSupabase = async () => {
   }
 };
 
-// Export a check function that can be used to test connection
+// Verbindung prüfen: Nutzt jetzt immer den Lazy-Client!
 export const checkConnection = async () => {
   try {
-    // Try a simple query to test the connection
+    const supabase = getSupabaseClient();
     const { count, error } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true });
-    
+
     if (error) throw error;
     return { connected: true, details: { count } };
   } catch (err) {
