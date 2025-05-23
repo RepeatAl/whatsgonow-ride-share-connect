@@ -32,12 +32,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     error,
     isInitialLoad,
     isProfileComplete,
-    signIn,
-    signUp,
-    signOut,
+    sessionExpired,
+    signIn, // Diese Methode kommt jetzt korrekt aus UserSessionContext
+    signUp, // Diese Methode kommt jetzt korrekt aus UserSessionContext
+    signOut, // Diese Methode kommt jetzt korrekt aus UserSessionContext
     retryProfileLoad: refreshProfile,
     refreshProfile,
-    sessionExpired
   };
 
   return (

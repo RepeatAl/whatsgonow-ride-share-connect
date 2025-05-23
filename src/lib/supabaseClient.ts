@@ -1,12 +1,23 @@
+
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-// Supabase-Konstanten (am besten mit import.meta.env.*, aber für Testzwecke hier fest codiert)
+// Supabase-Konstanten
 const supabaseUrl = "https://orgcruwmxqiwnjnkxpjb.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ2NydXdteHFpd25qbmt4cGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzQ1ODYsImV4cCI6MjA2MDExMDU4Nn0.M90DOOmOg2E58oSWnX49wbRqnO6Od9RrfcUvgJpzGMI";
 
-// Funktion, die den Supabase-Client "lazy" erstellt – kein Storage-Fehler mehr!
+// Funktion, die den Supabase-Client "lazy" erstellt
 export function getSupabaseClient(): SupabaseClient {
   const isBrowser = typeof window !== "undefined";
+  
+  // Storage-Objekt für Node.js-Umgebungen (für Tests)
+  const nodeStorage = {
+    getItem: (key: string) => null,
+    setItem: (key: string, value: string) => {},
+    removeItem: (key: string) => {},
+    clear: () => {},
+    length: 0,
+    key: (index: number) => null
+  };
 
   return createClient(
     supabaseUrl,
@@ -15,14 +26,14 @@ export function getSupabaseClient(): SupabaseClient {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        storage: isBrowser ? localStorage : undefined,
+        storage: isBrowser ? localStorage : nodeStorage,
         debug: true,
       },
     }
   );
 }
 
-// Convenience: Exportiere (optional) einen sofortigen Client (wird im Browser verwendet)
+// Convenience: Exportiere einen sofortigen Client (wird im Browser verwendet)
 export const supabase = getSupabaseClient();
 
 // Initialisierungs-Check: Nutzt jetzt immer den Lazy-Client!

@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { LogOut, Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 interface LogoutButtonProps {
@@ -19,19 +18,23 @@ const LogoutButton = ({
   className = ""
 }: LogoutButtonProps) => {
   const { signOut } = useAuth();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
   const handleLogout = async () => {
     try {
       setLoading(true);
+      
+      // Verwende signOut von AuthContext
       await signOut();
+      
       toast({
         description: "Erfolgreich abgemeldet",
       });
-      // Immer zur Startseite nach Abmelden
-      navigate("/", { replace: true });
+      
+      // Forciert zur Startseite nach Abmelden mit vollständiger Seitenneuladen
+      // Dies stellt sicher, dass alle Statusdaten zurückgesetzt werden
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
       toast({
@@ -39,6 +42,9 @@ const LogoutButton = ({
         title: "Fehler beim Abmelden",
         description: "Bitte versuche es erneut",
       });
+      
+      // Im Fehlerfall trotzdem versuchen zur Startseite zu navigieren
+      navigate("/", { replace: true });
     } finally {
       setLoading(false);
     }

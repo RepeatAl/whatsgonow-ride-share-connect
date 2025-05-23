@@ -1,10 +1,13 @@
 
 // src/services/auth-service.ts
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 import { handleAuthError } from "@/utils/auth-utils";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { getMissingProfileFields } from "@/utils/profile-check";
 import type { UserProfile } from "@/types/auth";
+
+// Zugriff auf den Supabase-Client über die getSupabaseClient-Methode
+const supabase = getSupabaseClient();
 
 export const authService = {
   async fetchUserProfile(userId: string): Promise<UserProfile | null> {
@@ -30,7 +33,14 @@ export const authService = {
           profile_complete,
           onboarding_complete,
           created_at,
-          updated_at
+          updated_at,
+          avatar_url,
+          verified,
+          can_become_driver,
+          dashboard_access_enabled,
+          wants_to_upload_items,
+          id_photo_url,
+          id_photo_verified
         `)
         .eq("user_id", userId)
         .maybeSingle();
@@ -43,7 +53,7 @@ export const authService = {
 
       const profile = {
         ...data,
-        name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+        name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'New User'
       };
 
       console.log("✅ Profile loaded:", profile);
@@ -113,6 +123,7 @@ export const authService = {
 
   async signIn(email: string, password: string) {
     try {
+      // Verwende die korrigierte Methode der neuesten Supabase-SDK
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       console.log("✅ Sign in successful");
@@ -143,6 +154,7 @@ export const authService = {
   ) {
     try {
       console.log("🔐 Attempting sign up for:", email, "with metadata:", metadata);
+      // Verwende die korrigierte Methode der neuesten Supabase-SDK
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -202,12 +214,46 @@ export const authService = {
 
   async signOut() {
     try {
-      const { error } = await supabase.auth.signOut();
+      // Bereinigung des lokalen Speicherzustands
+      this.cleanupAuthState();
+
+      // Global signOut für alle Geräte/Sitzungen
+      const { error } = await supabase.auth.signOut({
+        scope: 'global' 
+      });
+      
       if (error) throw error;
       console.log("✅ Sign out successful");
     } catch (error) {
       handleAuthError(error as Error, "Abmeldung");
       throw error;
+    }
+  },
+
+  // Hilfsfunktion zum Bereinigen aller Auth-related Items aus localStorage/sessionStorage
+  cleanupAuthState() {
+    if (typeof window === 'undefined') return; // Skip in non-browser environment
+
+    try {
+      // Entferne standard auth tokens
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Entferne alle Supabase auth keys aus localStorage
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Entferne aus sessionStorage falls verwendet
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.error("Error cleaning up auth state:", e);
+      // Non-critical error, continue execution
     }
   }
 };

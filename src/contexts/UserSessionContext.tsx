@@ -61,6 +61,7 @@ export const UserSessionProvider = ({ children }: { children: React.ReactNode })
     isInitialLoad,
     sessionExpired,
     setSessionExpired,
+    // Direkte Weiterleitung der Authentifizierungsmethoden
     signIn,
     signUp,
     signOut,

@@ -1,10 +1,11 @@
+
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
   user_id: string;
-  name: string;
+  name?: string;
   email: string;
-  role: string;
+  role?: string;
   region?: string;
   active?: boolean;
   company_name?: string;
@@ -26,8 +27,8 @@ export interface UserProfile {
   can_become_driver?: boolean;
   dashboard_access_enabled?: boolean;
   wants_to_upload_items?: boolean;
-  id_photo_url?: string;           // Added missing property
-  id_photo_verified?: boolean;     // Added missing property
+  id_photo_url?: string;
+  id_photo_verified?: boolean;
 }
 
 export interface AuthContextProps {
@@ -39,8 +40,8 @@ export interface AuthContextProps {
   isInitialLoad: boolean;
   isProfileComplete?: boolean;
   sessionExpired?: boolean;
-  // Aktualisieren der signIn-Signatur, um mit UserSessionContext konsistent zu sein
-  signIn: (email: string, password: string) => Promise<any>; // Geändert zu Promise<any>
+  // Aktualisierte Signatur mit korrekten Promise-Typen
+  signIn: (email: string, password: string) => Promise<any>;
   signUp: (
     email: string,
     password: string,
