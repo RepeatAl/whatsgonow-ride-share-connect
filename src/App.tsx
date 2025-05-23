@@ -28,8 +28,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <ThemeProvider>
-          <AuthProvider>
-            <UserSessionProvider>
+          <UserSessionProvider>
+            <AuthProvider>
               <LanguageProvider>
                 <TooltipProvider>
                   <EnhancedLanguageRouter>
@@ -38,8 +38,8 @@ function App() {
                   <Toaster />
                 </TooltipProvider>
               </LanguageProvider>
-            </UserSessionProvider>
-          </AuthProvider>
+            </AuthProvider>
+          </UserSessionProvider>
         </ThemeProvider>
       </Router>
     </QueryClientProvider>
