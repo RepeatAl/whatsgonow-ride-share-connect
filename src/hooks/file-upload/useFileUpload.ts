@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from "react";
 import { useUploadHandler } from "../useUploadHandler";
 import { useFileUploader } from "./useFileUploader";
@@ -18,15 +17,11 @@ export interface FileUploadResult {
 export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
   // Get a session ID for upload tracking
   const sessionId = uuidv4();
-  
-  // Basic file input handling
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Neuer Status für analysierte Bilder (Phase 4.5)
   const [analyzedFiles, setAnalyzedFiles] = useState<FileUploadResult[]>([]);
 
-  // Initialize the file uploader hook
+  // Hooks for upload logic, previews, and error tracking
   const { 
     uploadFile, 
     uploadFiles: uploadFilesToStorage, 
@@ -34,8 +29,7 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
     isUploading, 
     uploadProgress 
   } = useFileUploader();
-  
-  // Initialize the file previews hook
+
   const { 
     previews, 
     updatePreviews, 
@@ -44,14 +38,13 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
     canTakeMore,
     nextPhotoIndex
   } = useFilePreviews(initialUrls);
-  
-  // From uploadHandler - keep this for compatibility
+
   const { error } = useUploadHandler({
     sessionId,
     onProgress: (progress) => console.log("Upload progress:", progress),
   });
 
-  // Handle file select button click
+  // Select files from input
   const handleFileSelect = useCallback(() => {
     if (!canTakeMore) {
       toast.error(`Maximal ${MAX_FILES} Bilder erlaubt`);
@@ -75,49 +68,45 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
         newUrls.push(url);
       }
     }
-    
     updatePreviews(newUrls);
-    
-    // Reset the file input
+
+    // Reset input value so that same file can be selected again
     e.target.value = '';
   }, [updatePreviews]);
 
-  // Handle capture from camera
+  // Handle direct camera/photo upload
   const handleCapture = useCallback((file: File, previewUrl: string) => {
     if (validateFile(file)) {
       updatePreviews([previewUrl]);
     }
   }, [updatePreviews]);
 
-  // Handle mobile photos upload completion
+  // For mobile uploads
   const handleMobilePhotosComplete = useCallback((urls: string[]) => {
     updatePreviews(urls);
   }, [updatePreviews]);
 
-  // Upload all files
+  // Upload all files (standard, not analysis)
   const uploadFiles = async (userId?: string): Promise<string[]> => {
     try {
       setIsLoading(true);
-      
+
       if (!fileInputRef.current?.files?.length && previews.length === 0) {
         return [];
       }
-      
-      // Get files from file input
+
       const files = fileInputRef.current?.files 
         ? Array.from(fileInputRef.current.files) 
         : [];
-      
-      // Make sure we have a valid order ID
+
       const effectiveOrderId = orderId || uuidv4();
-      
-      // Upload the files to storage
+
       const uploadedUrls = await uploadFilesToStorage(
         effectiveOrderId, 
         userId, 
         files
       );
-      
+
       return uploadedUrls;
     } catch (error) {
       console.error("Error uploading files:", error);
@@ -128,25 +117,22 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
     }
   };
 
-  // Neue Funktion für Phase 4.5: Upload und Analyse mehrerer Bilder
+  // Upload and analyze images (Phase 4.5)
   const uploadAndAnalyzeMultipleImages = useCallback(async (userId?: string): Promise<FileUploadResult[]> => {
     try {
       setIsLoading(true);
-      
-      // Holen Sie die Dateien aus dem Datei-Eingabefeld
+
       if (!fileInputRef.current?.files?.length) {
         toast.error("Keine Dateien zum Hochladen ausgewählt");
         return [];
       }
-      
+
       const files = Array.from(fileInputRef.current.files);
-      
-      // Analysiere jedes Bild einzeln
+
       const results = await uploadAndAnalyzeImages(files, userId);
-      
-      // Speichere die Ergebnisse im lokalen Zustand
+
       setAnalyzedFiles(results);
-      
+
       return results;
     } catch (error) {
       console.error("Error uploading and analyzing files:", error);
@@ -173,7 +159,6 @@ export function useFileUpload(orderId?: string, initialUrls: string[] = []) {
     canTakeMore,
     nextPhotoIndex,
     error,
-    // Neue Funktionen für Phase 4.5
     uploadAndAnalyzeMultipleImages,
     analyzedFiles
   };
