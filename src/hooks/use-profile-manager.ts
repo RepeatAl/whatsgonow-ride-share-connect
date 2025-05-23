@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/auth";
 
 export function useProfileManager() {
+  const supabase = getSupabaseClient(); // Wichtig: Jetzt Factory-Pattern
   const { user, profile, refreshProfile } = useAuth();
   const [loadingSave, setLoadingSave] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
@@ -12,14 +13,14 @@ export function useProfileManager() {
 
   const handleSave = async (formData: Partial<UserProfile>) => {
     if (!user) {
-      toast({ 
-        title: "Fehler", 
-        description: "Du musst angemeldet sein, um dein Profil zu bearbeiten.", 
-        variant: "destructive" 
+      toast({
+        title: "Fehler",
+        description: "Du musst angemeldet sein, um dein Profil zu bearbeiten.",
+        variant: "destructive"
       });
       return;
     }
-    
+
     setLoadingSave(true);
     try {
       const { error: upErr } = await supabase
@@ -35,20 +36,20 @@ export function useProfileManager() {
         throw upErr;
       }
 
-      toast({ 
-        title: "Gespeichert", 
-        description: "Dein Profil wurde aktualisiert." 
+      toast({
+        title: "Gespeichert",
+        description: "Dein Profil wurde aktualisiert."
       });
-      
+
       if (refreshProfile) {
         await refreshProfile();
       }
     } catch (error) {
       console.error("Error saving profile:", error);
-      toast({ 
-        title: "Fehler", 
-        description: "Profil konnte nicht gespeichert werden. Bitte versuche es später erneut.", 
-        variant: "destructive" 
+      toast({
+        title: "Fehler",
+        description: "Profil konnte nicht gespeichert werden. Bitte versuche es später erneut.",
+        variant: "destructive"
       });
       throw error;
     } finally {
@@ -58,13 +59,13 @@ export function useProfileManager() {
 
   const handleOnboarding = async () => {
     if (!user) return;
-    
+
     try {
       const { error: onErr } = await supabase
         .from("profiles")
         .update({ onboarding_complete: true })
         .eq("user_id", user.id);
-        
+
       if (!onErr) {
         setOnboardingComplete(true);
         if (refreshProfile) {
