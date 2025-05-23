@@ -4,6 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = "https://orgcruwmxqiwnjnkxpjb.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ2NydXdteHFpd25qbmt4cGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzQ1ODYsImV4cCI6MjA2MDExMDU4Nn0.M90DOOmOg2E58oSWnX49wbRqnO6Od9RrfcUvgJpzGMI";
 
+// Überprüfen, ob wir in einer Browser-Umgebung sind
+const isBrowser = typeof window !== "undefined";
+
 // Initialize Supabase client with your project details
 export const supabase = createClient(
   supabaseUrl,
@@ -12,7 +15,8 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      storage: localStorage,
+      // Nur localStorage verwenden, wenn wir in einer Browser-Umgebung sind
+      storage: isBrowser ? localStorage : undefined,
       debug: true,
     }
   }
