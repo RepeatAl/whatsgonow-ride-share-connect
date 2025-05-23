@@ -31,12 +31,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { signIn, user, loading: authLoading, profile, sessionExpired } = useAuth(); // Added sessionExpired from useAuth
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      const redirectPath = profile ? getRoleBasedRedirectPath(profile.role) : "/dashboard";
-      navigate(redirectPath, { replace: true });
-    }
-  }, [user, profile, authLoading, navigate]);
+  // Entferne die Weiterleitung hier, da diese jetzt vom useAuthRedirect Hook in AuthContext übernommen wird
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +40,7 @@ const Login = () => {
 
     try {
       await signIn(email, password);
+      // Keine manuelle Weiterleitung hier - dies übernimmt der zentrale Auth-Redirect Mechanismus
     } catch (err: any) {
       if (err && typeof err.message === "string") {
         setError(err.message);

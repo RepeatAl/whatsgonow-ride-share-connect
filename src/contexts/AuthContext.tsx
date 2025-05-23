@@ -1,8 +1,9 @@
 
-import React, { createContext, useContext, ReactNode } from "react";
+import React, { createContext, useContext, ReactNode, useEffect } from "react";
 import { isProfileIncomplete } from "@/utils/profile-check";
 import type { AuthContextProps } from "@/types/auth";
 import { useUserSession } from "./UserSessionContext";
+import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect"; // Neu importiert
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
@@ -21,6 +22,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshProfile
   } = useUserSession();
 
+  // Zentraler Redirect-Mechanismus für die Authentifizierung
+  useAuthRedirect(user, profile, loading);
+
   const error = null; // Error handling is now in UserSessionContext
   const isProfileComplete = profile ? !isProfileIncomplete(profile) : false;
 
@@ -33,9 +37,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isInitialLoad,
     isProfileComplete,
     sessionExpired,
-    signIn, // Diese Methode kommt jetzt korrekt aus UserSessionContext
-    signUp, // Diese Methode kommt jetzt korrekt aus UserSessionContext
-    signOut, // Diese Methode kommt jetzt korrekt aus UserSessionContext
+    signIn,
+    signUp,
+    signOut,
     retryProfileLoad: refreshProfile,
     refreshProfile,
   };
