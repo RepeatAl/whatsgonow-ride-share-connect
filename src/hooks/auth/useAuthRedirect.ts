@@ -5,10 +5,12 @@ import { User } from "@supabase/supabase-js";
 import { isPublicRoute } from "@/routes/publicRoutes";
 import type { UserProfile } from "@/types/auth";
 import { getRoleBasedRedirectPath } from "@/utils/auth-utils";
+import { extractLanguageFromUrl, addLanguageToUrl } from "@/contexts/language/utils";
+import { defaultLanguage } from "@/contexts/language/constants";
 
 /**
  * Hook zur zentralen Verwaltung aller Authentifizierungs-Weiterleitungen
- * Dies verhindert redundante Redirects und reduziert Flackern nach dem Login
+ * Mit verbesserter Sprachrouting-Unterstützung
  */
 export function useAuthRedirect(
   user: User | null,
@@ -20,36 +22,40 @@ export function useAuthRedirect(
 
   useEffect(() => {
     if (loading) {
-      console.log("⏳ Auth loading – skip redirect");
       return;
     }
 
     const currentPath = location.pathname;
-    const isAuthPage = ["/login", "/register", "/pre-register", "/pre-register/success", "/forgot-password", "/reset-password"].includes(currentPath);
+    const currentLanguage = extractLanguageFromUrl(currentPath);
+    const pathWithoutLang = currentPath.replace(`/${currentLanguage}`, '') || '/';
+    
+    const isAuthPage = ["/login", "/register", "/pre-register", "/pre-register/success", "/forgot-password", "/reset-password"].includes(pathWithoutLang);
     
     try {
       // Falls der Nutzer eingeloggt ist und sich auf einer Auth-Seite befindet
       if (user && isAuthPage) {
-        // Redirect zur rollenbasierten Seite mit einer einzigen Weiterleitung
         console.log("✅ Authentifizierter Nutzer auf Auth-Seite → Rollenbasiertes Dashboard");
-        const redirectPath = profile ? getRoleBasedRedirectPath(profile.role) : "/dashboard";
         
         // Prüfe ob das Profil unvollständig ist
         if (profile && !profile.profile_complete) {
           console.log("⚠️ Profil unvollständig → /complete-profile");
-          navigate("/complete-profile", { replace: true });
+          const redirectPath = addLanguageToUrl("/complete-profile", currentLanguage);
+          navigate(redirectPath, { replace: true });
           return;
         }
         
-        // Direkte Weiterleitung zum richtigen Dashboard ohne Umwege
+        // Direkte Weiterleitung zum richtigen Dashboard mit Sprachpräfix
+        const basePath = profile ? getRoleBasedRedirectPath(profile.role) : "/dashboard";
+        const redirectPath = addLanguageToUrl(basePath, currentLanguage);
         navigate(redirectPath, { replace: true });
         return;
       }
 
       // Wenn nicht authentifiziert und auf geschützter Route
-      if (!user && !isPublicRoute(currentPath) && !isAuthPage) {
+      if (!user && !isPublicRoute(pathWithoutLang) && !isAuthPage) {
         console.log("🔒 Nicht authentifiziert → /login");
-        navigate("/login", {
+        const loginPath = addLanguageToUrl("/login", currentLanguage);
+        navigate(loginPath, {
           state: { from: currentPath },
           replace: true
         });
@@ -58,8 +64,9 @@ export function useAuthRedirect(
     } catch (error) {
       console.error("Navigation error in auth redirect:", error);
       // Bei Navigation-Fehlern sicher zur Startseite weiterleiten
-      if (currentPath !== "/") {
-        navigate("/", { replace: true });
+      const homePath = addLanguageToUrl("/", currentLanguage);
+      if (currentPath !== homePath) {
+        navigate(homePath, { replace: true });
       }
     }
   }, [user, profile, loading, location.pathname, navigate]);

@@ -15,17 +15,30 @@ const PUBLIC_ROUTES = [
   '/invoice-download',
   '/pre-register',
   '/pre-register/success',
+  '/legal',
+  '/privacy-policy',
+  '/payment/status',
 ];
 
-// Function to check if a route is public
+// Function to check if a route is public with improved language support
 export const isPublicRoute = (path: string): boolean => {
+  // Remove language prefix for matching
+  const pathSegments = path.split('/').filter(Boolean);
+  let cleanPath = path;
+  
+  // If first segment looks like a language code, remove it
+  if (pathSegments.length > 0 && pathSegments[0].length === 2) {
+    cleanPath = '/' + pathSegments.slice(1).join('/');
+    if (cleanPath === '/') cleanPath = '/';
+  }
+  
   // Check exact matches first
-  if (PUBLIC_ROUTES.includes(path)) return true;
+  if (PUBLIC_ROUTES.includes(cleanPath)) return true;
   
   // Check path patterns (like /delivery/:token)
-  if (path.startsWith('/delivery/')) return true;
-  if (path.startsWith('/invoice-download/')) return true;
-  if (path.startsWith('/mobile-upload/')) return true;
+  if (cleanPath.startsWith('/delivery/')) return true;
+  if (cleanPath.startsWith('/invoice-download/')) return true;
+  if (cleanPath.startsWith('/mobile-upload/')) return true;
   
   return false;
 };

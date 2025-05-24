@@ -19,8 +19,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { isPublicRoute } from "@/routes/publicRoutes";
-import { getRoleBasedRedirectPath } from "@/utils/auth-utils"; // Added missing import
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -29,9 +28,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, user, loading: authLoading, profile, sessionExpired } = useAuth(); // Added sessionExpired from useAuth
-
-  // Entferne die Weiterleitung hier, da diese jetzt vom useAuthRedirect Hook in AuthContext übernommen wird
+  const { signIn, user, loading: authLoading, profile, sessionExpired } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +37,7 @@ const Login = () => {
 
     try {
       await signIn(email, password);
-      // Keine manuelle Weiterleitung hier - dies übernimmt der zentrale Auth-Redirect Mechanismus
+      // Die Weiterleitung erfolgt automatisch über useAuthRedirect Hook
     } catch (err: any) {
       if (err && typeof err.message === "string") {
         setError(err.message);
@@ -58,16 +55,7 @@ const Login = () => {
   };
 
   if (authLoading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen bg-background p-4">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p>Authentifizierung wird überprüft...</p>
-          </div>
-        </div>
-      </Layout>
-    );
+    return <LoadingScreen message="Authentifizierung wird überprüft..." />;
   }
 
   return (

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import ThemeLanguageControls from "./ThemeLanguageControls";
 import MainNavLinks from "./navigation/MainNavLinks";
 import AdminLinks from "./navigation/AdminLinks";
@@ -14,9 +14,12 @@ interface DesktopMenuProps {
   unreadMessagesCount: number;
 }
 
-const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) => {
-  const isSender = userRole?.startsWith('sender_');
-  const isAdmin = userRole === 'admin' || userRole === 'admin_limited';
+const DesktopMenu = React.memo(({ user, userRole, unreadMessagesCount }: DesktopMenuProps) => {
+  // Memoize role checks to prevent unnecessary re-renders
+  const roleChecks = useMemo(() => ({
+    isSender: userRole?.startsWith('sender_') || false,
+    isAdmin: userRole === 'admin' || userRole === 'admin_limited' || userRole === 'super_admin'
+  }), [userRole]);
 
   return (
     <div className="flex items-center gap-4">
@@ -24,21 +27,23 @@ const DesktopMenu = ({ user, userRole, unreadMessagesCount }: DesktopMenuProps) 
       
       {user ? (
         <>
-          <MainNavLinks isSender={isSender} unreadMessagesCount={unreadMessagesCount} />
-          <AdminLinks isAdmin={isAdmin} />
+          <MainNavLinks isSender={roleChecks.isSender} unreadMessagesCount={unreadMessagesCount} />
+          <AdminLinks isAdmin={roleChecks.isAdmin} />
           
           <div className="h-6 border-l mx-1"></div>
           <InboxButton unreadMessagesCount={unreadMessagesCount} />
           <LoggedInButtons />
 
           {/* Highlight new order button for senders */}
-          <CreateOrderButton isSender={isSender} />
+          <CreateOrderButton isSender={roleChecks.isSender} />
         </>
       ) : (
         <LoggedOutButton />
       )}
     </div>
   );
-};
+});
+
+DesktopMenu.displayName = "DesktopMenu";
 
 export default DesktopMenu;

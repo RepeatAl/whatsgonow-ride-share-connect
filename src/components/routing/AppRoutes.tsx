@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
@@ -73,7 +72,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
       <Route path="/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
       <Route path="/faq" element={<PublicRoute><Faq /></PublicRoute>} />
-      <Route path="/support" element={<PublicRoute><Support /></PublicRoute>} />
+      <Route path="/support" element={<PublicRoute><Support /></SupportRoute>} />
       <Route path="/mobile-upload/:sessionId" element={<PublicRoute><MobileUpload /></PublicRoute>} />
       <Route path="/upload-complete" element={<PublicRoute><UploadComplete /></PublicRoute>} />
       <Route path="/delivery/:token" element={<PublicRoute><DeliveryConfirmationPage /></PublicRoute>} />
@@ -115,7 +114,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><UsersPage /></ProtectedRoute>} />
       <Route path="/admin/invoice-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><AdminInvoiceTest /></ProtectedRoute>} />
       
-      {/* Neue Translation Feedback Admin Routes */}
+      {/* Translation Feedback Admin Routes */}
       <Route path="/admin/translation-feedback" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><TranslationFeedbackAdmin /></ProtectedRoute>} />
       <Route path="/admin/translation-feedback/:id" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><TranslationFeedbackDetail /></ProtectedRoute>} />
 
