@@ -12,6 +12,7 @@ import { toast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { XCircle } from 'lucide-react';
 import NotFound from '@/pages/NotFound';
+import { isPublicRoute } from '@/routes/publicRoutes';
 
 interface EnhancedLanguageRouterProps {
   children: React.ReactNode;
@@ -104,23 +105,28 @@ export const EnhancedLanguageRouter: React.FC<EnhancedLanguageRouterProps> = ({ 
       } 
       // No language prefix in URL
       else if (isValidRoute && !pathSegments.includes('404')) {
-        setIsRedirecting(true);
+        // Check if this is a public route before redirecting
+        const cleanPath = location.pathname;
         
-        try {
-          // Determine best language and redirect
-          const bestLang = getBestLanguage();
-          const redirectPath = location.pathname === '/' 
-            ? `/${bestLang}` 
-            : `/${bestLang}${location.pathname}`;
+        if (isPublicRoute(cleanPath) || cleanPath === '/') {
+          setIsRedirecting(true);
           
-          console.log(`[LANG-ROUTER] Adding language prefix: ${redirectPath} (from ${location.pathname})`);
-          navigate(redirectPath + location.search, { replace: true });
-        } catch (error) {
-          console.error('[LANG-ROUTER] Error during language redirect:', error);
-          // Fallback to default language
-          navigate(`/${defaultLanguage}${location.pathname}`, { replace: true });
-        } finally {
-          setTimeout(() => setIsRedirecting(false), 100);
+          try {
+            // Determine best language and redirect
+            const bestLang = getBestLanguage();
+            const redirectPath = location.pathname === '/' 
+              ? `/${bestLang}` 
+              : `/${bestLang}${location.pathname}`;
+            
+            console.log(`[LANG-ROUTER] Adding language prefix to public route: ${redirectPath} (from ${location.pathname})`);
+            navigate(redirectPath + location.search, { replace: true });
+          } catch (error) {
+            console.error('[LANG-ROUTER] Error during language redirect:', error);
+            // Fallback to default language
+            navigate(`/${defaultLanguage}${location.pathname}`, { replace: true });
+          } finally {
+            setTimeout(() => setIsRedirecting(false), 100);
+          }
         }
       }
     };

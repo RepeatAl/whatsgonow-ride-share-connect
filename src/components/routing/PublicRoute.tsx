@@ -18,12 +18,19 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   
   // If user is authenticated and tries to access login/register pages, redirect them
   const isAuthPage = location.pathname.includes('/login') || 
-                     location.pathname.includes('/register');
+                     location.pathname.includes('/register') ||
+                     location.pathname.includes('/pre-register');
                      
   if (!loading && user && isAuthPage) {
-    // Preserve language when redirecting authenticated users away from auth pages
-    const redirectUrl = getLocalizedUrl(from !== '/' ? from : '/dashboard', currentLanguage);
-    return <Navigate to={redirectUrl} replace />;
+    // Only redirect if it's a strict auth page (login/register), not pre-register
+    const isStrictAuthPage = location.pathname.includes('/login') || 
+                             location.pathname.includes('/register');
+    
+    if (isStrictAuthPage) {
+      // Preserve language when redirecting authenticated users away from auth pages
+      const redirectUrl = getLocalizedUrl(from !== '/' ? from : '/dashboard', currentLanguage);
+      return <Navigate to={redirectUrl} replace />;
+    }
   }
   
   // For all other public routes, simply render the children when not loading

@@ -2,9 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
 
 const CTA = () => {
   const { t, i18n, ready } = useTranslation('landing');
+  const { getLocalizedUrl } = useOptimizedLanguage();
   const isRTL = i18n.language === 'ar';
   
   if (!ready) {
@@ -24,11 +26,11 @@ const CTA = () => {
         
         <div className="flex flex-wrap justify-center gap-4">
           <Button asChild size="lg" variant="default" className="bg-white text-brand-orange hover:bg-gray-100">
-            <Link to="/register">{t('cta.button_primary')}</Link>
+            <Link to={getLocalizedUrl("/register")}>{t('cta.button_primary')}</Link>
           </Button>
           
           <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-            <Link to="/faq">{t('cta.button_secondary')}</Link>
+            <Link to={getLocalizedUrl("/faq")}>{t('cta.button_secondary')}</Link>
           </Button>
         </div>
       </div>

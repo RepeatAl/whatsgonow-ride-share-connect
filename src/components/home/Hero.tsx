@@ -4,11 +4,13 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
 
 const Hero = () => {
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const { t, i18n, ready } = useTranslation('landing');
+  const { getLocalizedUrl } = useOptimizedLanguage();
   
   // Debug translations in development mode
   useEffect(() => {
@@ -52,11 +54,11 @@ const Hero = () => {
           <div className="flex flex-col items-center gap-4 pt-4">
             <div className="flex flex-wrap justify-center gap-4 w-full">
               <Button asChild size="lg" variant="brand" className="w-full max-w-md">
-                <Link to="/pre-register" className="px-0">{t('hero.cta_primary')}</Link>
+                <Link to={getLocalizedUrl("/pre-register")} className="px-0">{t('hero.cta_primary')}</Link>
               </Button>
               
               <Button asChild size="lg" variant="outline" className="w-full max-w-md">
-                <Link to="/faq">{t('hero.cta_secondary')}</Link>
+                <Link to={getLocalizedUrl("/faq")}>{t('hero.cta_secondary')}</Link>
               </Button>
             </div>
           </div>

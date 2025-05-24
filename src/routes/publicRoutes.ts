@@ -39,6 +39,7 @@ export const isPublicRoute = (path: string): boolean => {
   if (cleanPath.startsWith('/delivery/')) return true;
   if (cleanPath.startsWith('/invoice-download/')) return true;
   if (cleanPath.startsWith('/mobile-upload/')) return true;
+  if (cleanPath.startsWith('/pre-register')) return true;
   
   return false;
 };
