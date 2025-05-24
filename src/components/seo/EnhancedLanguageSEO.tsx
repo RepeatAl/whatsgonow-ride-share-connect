@@ -16,7 +16,7 @@ interface SEOMetadata {
 }
 
 interface EnhancedLanguageSEOProps extends SEOMetadata {
-  pageType?: 'landing' | 'login' | 'register' | 'support' | 'faq' | 'profile' | 'orders';
+  pageType?: 'landing' | 'login' | 'register' | 'pre-register' | 'support' | 'faq' | 'profile' | 'orders';
 }
 
 export const EnhancedLanguageSEO: React.FC<EnhancedLanguageSEOProps> = ({
