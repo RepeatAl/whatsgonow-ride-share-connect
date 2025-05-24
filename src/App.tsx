@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Suspense } from 'react';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { MCPRouter } from '@/components/routing/MCPRouter';
@@ -20,7 +21,7 @@ const queryClient = new QueryClient({
 
 /**
  * Main App Component - Simplified for MCP debugging
- * Provider hierarchy: QueryClient -> Router -> Auth -> MCP -> Routes
+ * Provider hierarchy: QueryClient -> Router -> Auth -> Theme -> MCP -> Routes
  */
 const App: React.FC = () => {
   console.log('[APP] Mounting application...');
@@ -30,10 +31,12 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <Suspense fallback={<LoadingScreen message="App wird geladen..." />}>
-            <MCPRouter />
-            <Toaster />
-          </Suspense>
+          <ThemeProvider>
+            <Suspense fallback={<LoadingScreen message="App wird geladen..." />}>
+              <MCPRouter />
+              <Toaster />
+            </Suspense>
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
