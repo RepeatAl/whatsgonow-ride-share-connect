@@ -66,12 +66,39 @@ import NotFound from '@/pages/NotFound';
 /**
  * Unified MCP Router - Single Source of Truth
  * Handles language detection AND all routing with proper guards
+ * Automatically redirects paths without language prefix to localized versions
  */
 export const MCPRouter: React.FC = () => {
   const location = useLocation();
 
   console.log('[MCP-ROUTER] === UNIFIED ROUTER START ===');
   console.log('[MCP-ROUTER] Current path:', location.pathname);
+
+  // Special routes that should NOT be redirected (API endpoints, webhooks, etc.)
+  const specialRoutes = [
+    '/mobile-upload',
+    '/upload-complete', 
+    '/delivery',
+    '/invoice-download',
+    '/payment/status',
+    '/debug'
+  ];
+
+  // Function to check if a path should be redirected
+  const shouldRedirectToLocalized = (path: string): boolean => {
+    // Don't redirect root path (handled separately)
+    if (path === '/' || path === '') return false;
+    
+    // Don't redirect paths that already have language prefix
+    const pathSegments = path.split('/').filter(Boolean);
+    const firstSegment = pathSegments[0];
+    if (languageCodes.includes(firstSegment)) return false;
+    
+    // Don't redirect special routes
+    if (specialRoutes.some(route => path.startsWith(route))) return false;
+    
+    return true;
+  };
 
   // Language extraction and redirect logic
   const { language, shouldRedirect, redirectPath } = useMemo(() => {
@@ -90,7 +117,23 @@ export const MCPRouter: React.FC = () => {
       };
     }
     
-    // Only redirect from exact root path
+    // Check if this path should be redirected to localized version
+    if (shouldRedirectToLocalized(location.pathname)) {
+      const bestLanguage = determineBestLanguage(
+        navigator.language?.split('-')[0],
+        localStorage.getItem('i18nextLng')
+      );
+      
+      const localizedPath = `/${bestLanguage}${location.pathname}`;
+      console.log('[MCP-ROUTER] Redirecting to localized path:', localizedPath);
+      return {
+        language: bestLanguage,
+        shouldRedirect: true,
+        redirectPath: localizedPath
+      };
+    }
+    
+    // Handle root redirect
     if (location.pathname === '/' || location.pathname === '') {
       const bestLanguage = determineBestLanguage(
         navigator.language?.split('-')[0],
@@ -105,9 +148,9 @@ export const MCPRouter: React.FC = () => {
       };
     }
 
-    // For any other path, use default language without redirect
+    // For special routes, use default language without redirect
     const defaultLang = 'de';
-    console.log('[MCP-ROUTER] Using default language for path:', location.pathname);
+    console.log('[MCP-ROUTER] Using default language for special route:', location.pathname);
     return {
       language: defaultLang,
       shouldRedirect: false,
@@ -117,7 +160,7 @@ export const MCPRouter: React.FC = () => {
 
   console.log('[MCP-ROUTER] Final language:', language);
 
-  // Handle redirect only from root
+  // Handle redirect
   if (shouldRedirect && redirectPath) {
     console.log('[MCP-ROUTER] Performing redirect to:', redirectPath);
     return <Navigate to={redirectPath} replace />;
@@ -189,7 +232,7 @@ export const MCPRouter: React.FC = () => {
         <Route path="/en/privacy-policy" element={<PublicRoute><PrivacyPolicy /></PublicRoute>} />
         <Route path="/ar/privacy-policy" element={<PublicRoute><PrivacyPolicy /></PublicRoute>} />
 
-        {/* Public utility routes */}
+        {/* Public utility routes (without language prefix) */}
         <Route path="/mobile-upload/:sessionId" element={<PublicRoute><MobileUpload /></PublicRoute>} />
         <Route path="/upload-complete" element={<PublicRoute><UploadComplete /></PublicRoute>} />
         <Route path="/delivery/:token" element={<PublicRoute><DeliveryConfirmationPage /></PublicRoute>} />
@@ -360,6 +403,8 @@ export const MCPRouter: React.FC = () => {
             <p>Available routes:</p>
             <ul>
               <li>/de, /en, /ar (Landing pages)</li>
+              <li>/de/login, /en/login, /ar/login</li>
+              <li>/de/register, /en/register, /ar/register</li>
               <li>/de/pre-register, /en/pre-register, /ar/pre-register</li>
               <li>/debug (Debug info)</li>
             </ul>
