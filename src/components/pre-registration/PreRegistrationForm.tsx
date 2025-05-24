@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -15,8 +15,10 @@ import { usePreRegistrationSubmit } from "./hooks/usePreRegistrationSubmit";
 import { PersonalInfoFields } from "./PersonalInfoFields";
 import { RoleSelectionFields } from "./RoleSelectionFields";
 import { GdprConsentField } from "./GdprConsentField";
+import { StableLoading } from "@/components/ui/stable-loading";
+import { useAppInitialization } from "@/hooks/useAppInitialization";
 
-export function PreRegistrationForm() {
+const PreRegistrationFormContent = () => {
   const { t } = useTranslation('pre_register');
   const { isSubmitting, handleSubmit: submitRegistration } = usePreRegistrationSubmit();
   const [submitSuccess, setSubmitSuccess] = React.useState(false);
@@ -109,5 +111,19 @@ export function PreRegistrationForm() {
         </Button>
       </form>
     </Form>
+  );
+};
+
+export function PreRegistrationForm() {
+  const appState = useAppInitialization(['pre_register', 'errors']);
+  
+  if (!appState.isReady) {
+    return <StableLoading variant="form" message="Formular wird vorbereitet..." />;
+  }
+
+  return (
+    <Suspense fallback={<StableLoading variant="form" />}>
+      <PreRegistrationFormContent />
+    </Suspense>
   );
 }

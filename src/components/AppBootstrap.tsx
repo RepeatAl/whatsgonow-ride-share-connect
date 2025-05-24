@@ -4,6 +4,7 @@ import { Loader2, Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserSession } from "@/contexts/UserSessionContext";
 import { useNavigate } from "react-router-dom";
+import { StableLoading } from "@/components/ui/stable-loading";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -50,15 +51,6 @@ const ErrorFallback = ({ error, resetError }: ErrorFallbackProps) => {
   );
 };
 
-const LoadingFallback = () => {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-      <Loader2 className="w-10 h-10 animate-spin text-primary" />
-      <p className="mt-4 text-muted-foreground">Anwendung wird geladen...</p>
-    </div>
-  );
-};
-
 class ErrorBoundary extends React.Component<{ children: ReactNode, fallback: React.ComponentType<ErrorFallbackProps> }, ErrorBoundaryState> {
   constructor(props: { children: ReactNode, fallback: React.ComponentType<ErrorFallbackProps> }) {
     super(props);
@@ -92,24 +84,26 @@ class ErrorBoundary extends React.Component<{ children: ReactNode, fallback: Rea
 
 export const AppBootstrap = ({ children }: { children: ReactNode }) => {
   const { loading, isInitialLoad } = useUserSession();
-  const [isAppReady, setIsAppReady] = useState(false);
+  const [showContent, setShowContent] = useState(false);
   
   useEffect(() => {
-    console.log("AppBootstrap: Loading state:", { loading, isInitialLoad });
+    // Stabilisiere den Loading-State um Flimmern zu vermeiden
+    const isStillLoading = loading || isInitialLoad;
     
-    // Check if the app is ready to render
-    if (!loading && !isInitialLoad) {
-      // Small delay to ensure smooth transition
+    if (!isStillLoading && !showContent) {
+      // Kleine Verzögerung für smooth transition
       const timer = setTimeout(() => {
-        setIsAppReady(true);
-      }, 100);
+        setShowContent(true);
+      }, 50);
       
       return () => clearTimeout(timer);
+    } else if (isStillLoading && showContent) {
+      setShowContent(false);
     }
-  }, [loading, isInitialLoad]);
+  }, [loading, isInitialLoad, showContent]);
   
-  if (!isAppReady) {
-    return <LoadingFallback />;
+  if (!showContent) {
+    return <StableLoading variant="page" message="Anwendung wird geladen..." />;
   }
   
   return (
