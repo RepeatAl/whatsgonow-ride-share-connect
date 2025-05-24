@@ -2,12 +2,12 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
-import { supportedLanguages, defaultLanguage } from '@/config/supportedLanguages';
+import { defaultLanguage } from '@/config/supportedLanguages';
 import TranslationLoader from '@/components/i18n/TranslationLoader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { languageCodes } from '@/config/supportedLanguages';
-import { extractLanguageFromUrl, removeLanguageFromUrl, addLanguageToUrl } from '@/contexts/language/utils';
-import { isImplementedLanguage, getLanguageByCode, determineBestLanguage } from '@/utils/languageUtils';
+import { getLanguageByCode, determineBestLanguage } from '@/utils/languageUtils';
+import { isPublicRoute } from '@/routes/publicRoutes';
 
 interface StabilizedLanguageRouterProps {
   children: React.ReactNode;
@@ -23,7 +23,6 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
   const pathSegments = useMemo(() => location.pathname.split('/').filter(Boolean), [location.pathname]);
   const firstSegment = pathSegments[0];
   const isLanguagePrefix = languageCodes.includes(firstSegment);
-  const isValidRoute = location.pathname !== "/404";
   
   // Determine best language based on user preferences - memoized
   const getBestLanguage = useCallback(() => {
@@ -65,21 +64,28 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
           setIsProcessingRoute(false);
         }
       } 
-      // No language prefix in URL - only redirect if really necessary
-      else if (isValidRoute && !pathSegments.includes('404') && location.pathname !== '/') {
-        setIsProcessingRoute(true);
+      // No language prefix in URL - add it for public routes
+      else if (location.pathname !== '/') {
+        // Check if this is a public route
+        const cleanPath = location.pathname;
         
-        try {
-          const bestLang = getBestLanguage();
-          const redirectPath = `/${bestLang}${location.pathname}`;
+        if (isPublicRoute(cleanPath) || cleanPath === '/') {
+          setIsProcessingRoute(true);
           
-          console.log(`[StabilizedRouter] Adding language prefix: ${redirectPath}`);
-          navigate(redirectPath + location.search, { replace: true });
-        } catch (error) {
-          console.error('[StabilizedRouter] Error during language redirect:', error);
-          navigate(`/${defaultLanguage}${location.pathname}`, { replace: true });
-        } finally {
-          setIsProcessingRoute(false);
+          try {
+            const bestLang = getBestLanguage();
+            const redirectPath = location.pathname === '/' 
+              ? `/${bestLang}` 
+              : `/${bestLang}${location.pathname}`;
+            
+            console.log(`[StabilizedRouter] Adding language prefix: ${redirectPath}`);
+            navigate(redirectPath + location.search, { replace: true });
+          } catch (error) {
+            console.error('[StabilizedRouter] Error during language redirect:', error);
+            navigate(`/${defaultLanguage}${location.pathname}`, { replace: true });
+          } finally {
+            setIsProcessingRoute(false);
+          }
         }
       }
     };
@@ -95,9 +101,7 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
     setLanguageByCode, 
     navigate, 
     isProcessingRoute,
-    isValidRoute,
-    getBestLanguage,
-    pathSegments
+    getBestLanguage
   ]);
   
   // If we're processing a route change, show minimal loading
