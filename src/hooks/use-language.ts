@@ -1,9 +1,9 @@
 
-import { useLanguage as useLanguageContext } from '@/contexts/language';
+import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
 import { safeLoadNamespaces } from '@/utils/i18n-utils';
 
 export const useLanguage = () => {
-  const context = useLanguageContext();
+  const context = useOptimizedLanguage();
   
   // For backward compatibility, map the context to the old interface
   return {

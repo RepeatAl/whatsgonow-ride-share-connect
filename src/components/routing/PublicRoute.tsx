@@ -2,7 +2,7 @@
 import React, { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, Navigate } from "react-router-dom";
-import { useLanguage } from "@/contexts/language";
+import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
 
 interface PublicRouteProps {
   children: ReactNode;
@@ -11,7 +11,7 @@ interface PublicRouteProps {
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { loading, user } = useAuth();
   const location = useLocation();
-  const { getLocalizedUrl, currentLanguage } = useLanguage();
+  const { getLocalizedUrl, currentLanguage } = useOptimizedLanguage();
   
   // Check if we're coming from another page (redirect)
   const from = location.state?.from || '/';

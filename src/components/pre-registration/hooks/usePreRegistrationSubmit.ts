@@ -4,14 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/hooks/use-toast";
 import { PreRegistrationFormData } from "@/lib/validators/pre-registration";
-import { useLanguage } from "@/contexts/language";
+import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
 import i18next from "i18next";
 
 export function usePreRegistrationSubmit() {
   const { t } = useTranslation('pre_register');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { getLocalizedUrl } = useLanguage();
+  const { getLocalizedUrl } = useOptimizedLanguage();
   
   const handleSubmit = async (data: PreRegistrationFormData) => {
     console.log("Form data on submit:", data);
