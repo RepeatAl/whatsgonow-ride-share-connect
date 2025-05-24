@@ -1,45 +1,46 @@
 
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import MCPRouter from './components/routing/MCPRouter';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider } from './contexts/AuthContext';
-import { UserSessionProvider } from './contexts/UserSessionContext';
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { Toaster } from './components/ui/toaster';
-import { TooltipProvider } from './components/ui/tooltip';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from '@/components/theme/theme-provider';
+import { Suspense } from 'react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
+import { MCPRouter } from '@/components/routing/MCPRouter';
 
-import './App.css';
-
-function App() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        refetchOnWindowFocus: false,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      },
+// Create query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
     },
-  });
+  },
+});
 
+/**
+ * Main App Component - Simplified for MCP debugging
+ * Provider hierarchy: QueryClient -> Router -> Auth -> Theme -> MCP -> Routes
+ */
+const App: React.FC = () => {
+  console.log('[APP] Mounting application...');
+  console.log('[APP] Current URL:', window.location.pathname);
+  
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen flex flex-col w-full">
-          <ThemeProvider>
-            <UserSessionProvider>
-              <AuthProvider>
-                <TooltipProvider>
-                  <MCPRouter />
-                  <Toaster />
-                </TooltipProvider>
-              </AuthProvider>
-            </UserSessionProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider defaultTheme="light" storageKey="whatsgonow-ui-theme">
+            <Suspense fallback={<LoadingScreen message="App wird geladen..." />}>
+              <MCPRouter />
+              <Toaster />
+            </Suspense>
           </ThemeProvider>
-        </div>
-      </Router>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;
