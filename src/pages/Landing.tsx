@@ -9,15 +9,13 @@ import UserGroups from "@/components/home/UserGroups";
 import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 import TranslationLoader from "@/components/i18n/TranslationLoader";
-import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
+import { safeLoadNamespaces } from "@/utils/i18n-utils";
 
 const Landing = () => {
-  const { ensureNamespaceLoaded } = useLanguageMCP();
-  
   // Ensure the landing namespace is loaded
   useEffect(() => {
-    ensureNamespaceLoaded(['landing', 'common']);
-  }, [ensureNamespaceLoaded]);
+    safeLoadNamespaces(['landing', 'common']);
+  }, []);
   
   return (
     <TranslationLoader namespaces={['landing', 'common']}>
