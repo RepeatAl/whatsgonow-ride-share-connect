@@ -32,48 +32,48 @@ describe('MCP Integration Tests', () => {
 
   describe('MCPOrchestrator', () => {
     it('should render with default enabled MCPs', () => {
-      const TestChild = () => <div data-testid="test-child">Test Child</div>;
+      const TestChild = () => React.createElement('div', { 'data-testid': 'test-child' }, 'Test Child');
       
       render(
-        <BrowserRouter>
-          <MCPOrchestrator initialLanguage="de">
-            <TestChild />
-          </MCPOrchestrator>
-        </BrowserRouter>
+        React.createElement(BrowserRouter, null,
+          React.createElement(MCPOrchestrator, { initialLanguage: 'de' },
+            React.createElement(TestChild)
+          )
+        )
       );
 
       expect(screen.getByTestId('test-child')).toBeInTheDocument();
     });
 
     it('should wrap only enabled MCPs', () => {
-      const TestChild = () => <div data-testid="test-child">Test Child</div>;
+      const TestChild = () => React.createElement('div', { 'data-testid': 'test-child' }, 'Test Child');
       
       render(
-        <BrowserRouter>
-          <MCPOrchestrator 
-            initialLanguage="en" 
-            enabledMCPs={['language']}
-          >
-            <TestChild />
-          </MCPOrchestrator>
-        </BrowserRouter>
+        React.createElement(BrowserRouter, null,
+          React.createElement(MCPOrchestrator, { 
+            initialLanguage: 'en', 
+            enabledMCPs: ['language']
+          },
+            React.createElement(TestChild)
+          )
+        )
       );
 
       expect(screen.getByTestId('test-child')).toBeInTheDocument();
     });
 
     it('should handle empty enabled MCPs array', () => {
-      const TestChild = () => <div data-testid="test-child">Test Child</div>;
+      const TestChild = () => React.createElement('div', { 'data-testid': 'test-child' }, 'Test Child');
       
       render(
-        <BrowserRouter>
-          <MCPOrchestrator 
-            initialLanguage="de" 
-            enabledMCPs={[]}
-          >
-            <TestChild />
-          </MCPOrchestrator>
-        </BrowserRouter>
+        React.createElement(BrowserRouter, null,
+          React.createElement(MCPOrchestrator, { 
+            initialLanguage: 'de', 
+            enabledMCPs: []
+          },
+            React.createElement(TestChild)
+          )
+        )
       );
 
       expect(screen.getByTestId('test-child')).toBeInTheDocument();
@@ -89,11 +89,11 @@ describe('MCP Integration Tests', () => {
       };
       
       render(
-        <BrowserRouter>
-          <MCPOrchestrator initialLanguage="de">
-            <ErrorChild />
-          </MCPOrchestrator>
-        </BrowserRouter>
+        React.createElement(BrowserRouter, null,
+          React.createElement(MCPOrchestrator, { initialLanguage: 'de' },
+            React.createElement(ErrorChild)
+          )
+        )
       );
 
       // Should show error boundary UI
@@ -107,14 +107,14 @@ describe('MCP Integration Tests', () => {
     it('should log MCP orchestrator activity', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       
-      const TestChild = () => <div>Test</div>;
+      const TestChild = () => React.createElement('div', null, 'Test');
       
       render(
-        <BrowserRouter>
-          <MCPOrchestrator initialLanguage="de">
-            <TestChild />
-          </MCPOrchestrator>
-        </BrowserRouter>
+        React.createElement(BrowserRouter, null,
+          React.createElement(MCPOrchestrator, { initialLanguage: 'de' },
+            React.createElement(TestChild)
+          )
+        )
       );
 
       expect(consoleSpy).toHaveBeenCalledWith(

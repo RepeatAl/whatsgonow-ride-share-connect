@@ -30,35 +30,27 @@ vi.mock('@/lib/supabaseClient', () => ({
 }));
 
 // Test component that uses the MCP hook
-const TestComponent: React.FC = () => {
+const TestComponent = () => {
   const { currentLanguage, setLanguageByCode, languageLoading, isRtl } = useLanguageMCP();
   
-  return (
-    <div>
-      <div data-testid="current-language">{currentLanguage}</div>
-      <div data-testid="loading-state">{languageLoading ? 'loading' : 'ready'}</div>
-      <div data-testid="rtl-state">{isRtl ? 'rtl' : 'ltr'}</div>
-      <button 
-        data-testid="change-language" 
-        onClick={() => setLanguageByCode('ar')}
-      >
-        Change to Arabic
-      </button>
-    </div>
+  return React.createElement('div', null,
+    React.createElement('div', { 'data-testid': 'current-language' }, currentLanguage),
+    React.createElement('div', { 'data-testid': 'loading-state' }, languageLoading ? 'loading' : 'ready'),
+    React.createElement('div', { 'data-testid': 'rtl-state' }, isRtl ? 'rtl' : 'ltr'),
+    React.createElement('button', { 
+      'data-testid': 'change-language',
+      onClick: () => setLanguageByCode('ar')
+    }, 'Change to Arabic')
   );
 };
 
 // Wrapper component for testing
-const TestWrapper: React.FC<{ initialLanguage?: string; children: React.ReactNode }> = ({ 
-  initialLanguage = 'de', 
-  children 
-}) => (
-  <BrowserRouter>
-    <LanguageMCP initialLanguage={initialLanguage}>
-      {children}
-    </LanguageMCP>
-  </BrowserRouter>
-);
+const TestWrapper = ({ initialLanguage = 'de', children }) => 
+  React.createElement(BrowserRouter, null,
+    React.createElement(LanguageMCP, { initialLanguage },
+      children
+    )
+  );
 
 describe('MCP Language System - Component Tests', () => {
   beforeEach(() => {
@@ -73,9 +65,9 @@ describe('MCP Language System - Component Tests', () => {
   describe('LanguageMCP Provider', () => {
     it('should provide default language context', async () => {
       render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
+        React.createElement(TestWrapper, null,
+          React.createElement(TestComponent)
+        )
       );
 
       await waitFor(() => {
@@ -87,9 +79,9 @@ describe('MCP Language System - Component Tests', () => {
 
     it('should initialize with provided language', async () => {
       render(
-        <TestWrapper initialLanguage="en">
-          <TestComponent />
-        </TestWrapper>
+        React.createElement(TestWrapper, { initialLanguage: 'en' },
+          React.createElement(TestComponent)
+        )
       );
 
       await waitFor(() => {
@@ -99,9 +91,9 @@ describe('MCP Language System - Component Tests', () => {
 
     it('should handle RTL languages correctly', async () => {
       render(
-        <TestWrapper initialLanguage="ar">
-          <TestComponent />
-        </TestWrapper>
+        React.createElement(TestWrapper, { initialLanguage: 'ar' },
+          React.createElement(TestComponent)
+        )
       );
 
       await waitFor(() => {
@@ -117,7 +109,7 @@ describe('MCP Language System - Component Tests', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       
       expect(() => {
-        render(<TestComponent />);
+        render(React.createElement(TestComponent));
       }).toThrow('useLanguageMCP must be used within a LanguageMCP');
       
       consoleSpy.mockRestore();
@@ -125,9 +117,9 @@ describe('MCP Language System - Component Tests', () => {
 
     it('should provide all required context properties', async () => {
       render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
+        React.createElement(TestWrapper, null,
+          React.createElement(TestComponent)
+        )
       );
 
       await waitFor(() => {
@@ -144,9 +136,9 @@ describe('MCP Language System - Component Tests', () => {
       const { changeAppLanguage } = await import('@/services/LanguageService');
       
       render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
+        React.createElement(TestWrapper, null,
+          React.createElement(TestComponent)
+        )
       );
 
       const changeButton = screen.getByTestId('change-language');
@@ -161,7 +153,7 @@ describe('MCP Language System - Component Tests', () => {
 
 describe('MCP Error Boundary Tests', () => {
   // Component that throws an error
-  const ErrorComponent: React.FC = () => {
+  const ErrorComponent = () => {
     throw new Error('Test error for MCP');
   };
 
@@ -170,9 +162,9 @@ describe('MCP Error Boundary Tests', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     render(
-      <MCPErrorBoundary>
-        <ErrorComponent />
-      </MCPErrorBoundary>
+      React.createElement(MCPErrorBoundary, null,
+        React.createElement(ErrorComponent)
+      )
     );
 
     expect(screen.getByText('Language System Error')).toBeInTheDocument();
@@ -185,9 +177,9 @@ describe('MCP Error Boundary Tests', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     render(
-      <MCPErrorBoundary>
-        <ErrorComponent />
-      </MCPErrorBoundary>
+      React.createElement(MCPErrorBoundary, null,
+        React.createElement(ErrorComponent)
+      )
     );
 
     const retryButton = screen.getByText('Try Again');
@@ -197,12 +189,12 @@ describe('MCP Error Boundary Tests', () => {
   });
 
   it('should render children when no error occurs', () => {
-    const GoodComponent: React.FC = () => <div>Working component</div>;
+    const GoodComponent = () => React.createElement('div', null, 'Working component');
     
     render(
-      <MCPErrorBoundary>
-        <GoodComponent />
-      </MCPErrorBoundary>
+      React.createElement(MCPErrorBoundary, null,
+        React.createElement(GoodComponent)
+      )
     );
 
     expect(screen.getByText('Working component')).toBeInTheDocument();
@@ -214,16 +206,16 @@ describe('MCP Performance Tests', () => {
   it('should not re-render unnecessarily', async () => {
     let renderCount = 0;
     
-    const CountingComponent: React.FC = () => {
+    const CountingComponent = () => {
       renderCount++;
       const { currentLanguage } = useLanguageMCP();
-      return <div>{currentLanguage}</div>;
+      return React.createElement('div', null, currentLanguage);
     };
 
     render(
-      <TestWrapper>
-        <CountingComponent />
-      </TestWrapper>
+      React.createElement(TestWrapper, null,
+        React.createElement(CountingComponent)
+      )
     );
 
     await waitFor(() => {
@@ -232,18 +224,18 @@ describe('MCP Performance Tests', () => {
   });
 
   it('should memoize context value properly', async () => {
-    const contextValues: any[] = [];
+    const contextValues = [];
     
-    const ContextTracker: React.FC = () => {
+    const ContextTracker = () => {
       const context = useLanguageMCP();
       contextValues.push(context);
-      return <div>{context.currentLanguage}</div>;
+      return React.createElement('div', null, context.currentLanguage);
     };
 
     render(
-      <TestWrapper>
-        <ContextTracker />
-      </TestWrapper>
+      React.createElement(TestWrapper, null,
+        React.createElement(ContextTracker)
+      )
     );
 
     await waitFor(() => {
