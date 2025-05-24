@@ -12,7 +12,7 @@ import {
 import { MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import TranslationFeedbackForm from './TranslationFeedbackForm';
-import { useLanguage } from '@/contexts/language';
+import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
 
 interface TranslationFeedbackButtonProps {
   translationKey?: string;
@@ -31,7 +31,7 @@ const TranslationFeedbackButton: React.FC<TranslationFeedbackButtonProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
-  const { currentLanguage } = useLanguage();
+  const { currentLanguage } = useOptimizedLanguage();
   
   const handleSubmitSuccess = () => {
     setOpen(false);

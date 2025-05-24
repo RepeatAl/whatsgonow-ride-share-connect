@@ -1,10 +1,19 @@
 
 // This file is maintained for backward compatibility
-// New code should import from src/contexts/language/index.ts
+// New code should import from src/contexts/language/OptimizedLanguageProvider.tsx
 
-import { LanguageProvider, useLanguage, LanguageContextType } from './language';
+import { useOptimizedLanguage } from './language/OptimizedLanguageProvider';
 
-export { LanguageProvider, useLanguage };
-export type { LanguageContextType };
+// Re-export the optimized hook for backward compatibility
+export const useLanguage = useOptimizedLanguage;
 
-export default { LanguageProvider, useLanguage };
+// For any remaining legacy imports, use the optimized provider
+export { OptimizedLanguageProvider as LanguageProvider } from './language/OptimizedLanguageProvider';
+
+// Re-export the context type for backward compatibility
+export type { LanguageContextType } from './language/types';
+
+export default { LanguageProvider: OptimizedLanguageProvider, useLanguage };
+
+// Import statement fix to avoid circular dependency
+import { OptimizedLanguageProvider } from './language/OptimizedLanguageProvider';

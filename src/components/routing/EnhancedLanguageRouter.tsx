@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { useLanguage } from '@/contexts/language';
+import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
 import { supportedLanguages, defaultLanguage } from '@/config/supportedLanguages';
 import TranslationLoader from '@/components/i18n/TranslationLoader';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,7 +20,7 @@ interface EnhancedLanguageRouterProps {
 export const EnhancedLanguageRouter: React.FC<EnhancedLanguageRouterProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentLanguage, setLanguageByCode } = useLanguage();
+  const { currentLanguage, setLanguageByCode } = useOptimizedLanguage();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showUnsupportedLanguageAlert, setShowUnsupportedLanguageAlert] = useState(false);
   const [unsupportedCode, setUnsupportedCode] = useState<string | null>(null);

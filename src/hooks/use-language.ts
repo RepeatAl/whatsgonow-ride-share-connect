@@ -13,7 +13,9 @@ export const useLanguage = () => {
     isRtl: context.isRtl,
     // Add new functionality
     ensureNamespaces: safeLoadNamespaces,
-    getLocalizedUrl: context.getLocalizedUrl
+    getLocalizedUrl: context.getLocalizedUrl,
+    // Map all other properties directly
+    ...context
   };
 };
 

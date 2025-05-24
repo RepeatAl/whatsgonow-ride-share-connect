@@ -3,7 +3,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 import { supportedLanguages } from '@/config/supportedLanguages';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
 
 interface LanguageSEOProps {
   title?: string;
@@ -17,7 +17,7 @@ export const LanguageSEO: React.FC<LanguageSEOProps> = ({
   canonicalPath,
 }) => {
   const location = useLocation();
-  const { currentLanguage, getLocalizedUrl } = useLanguage();
+  const { currentLanguage, getLocalizedUrl } = useOptimizedLanguage();
   
   // Build the base URL
   const baseUrl = window.location.origin;

@@ -4,13 +4,13 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/contexts/language";
+import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
 import Layout from "@/components/Layout";
 
 const NotFound = () => {
   const location = useLocation();
   const { t } = useTranslation("common");
-  const { getLocalizedUrl, currentLanguage } = useLanguage();
+  const { getLocalizedUrl, currentLanguage } = useOptimizedLanguage();
 
   useEffect(() => {
     console.error(
