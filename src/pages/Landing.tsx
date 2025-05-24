@@ -9,10 +9,10 @@ import UserGroups from "@/components/home/UserGroups";
 import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 import TranslationLoader from "@/components/i18n/TranslationLoader";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
 
 const Landing = () => {
-  const { ensureNamespaceLoaded } = useLanguage();
+  const { ensureNamespaceLoaded } = useOptimizedLanguage();
   
   // Ensure the landing namespace is loaded
   useEffect(() => {
