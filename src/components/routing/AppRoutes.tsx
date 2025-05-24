@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
@@ -72,7 +73,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
       <Route path="/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
       <Route path="/faq" element={<PublicRoute><Faq /></PublicRoute>} />
-      <Route path="/support" element={<PublicRoute><Support /></SupportRoute>} />
+      <Route path="/support" element={<PublicRoute><Support /></PublicRoute>} />
       <Route path="/mobile-upload/:sessionId" element={<PublicRoute><MobileUpload /></PublicRoute>} />
       <Route path="/upload-complete" element={<PublicRoute><UploadComplete /></PublicRoute>} />
       <Route path="/delivery/:token" element={<PublicRoute><DeliveryConfirmationPage /></PublicRoute>} />
