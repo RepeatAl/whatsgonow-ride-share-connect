@@ -7,11 +7,17 @@ import { supportedLanguages, defaultLanguage } from '@/config/supportedLanguages
  */
 export const determineBestLanguage = (
   browserLang?: string,
-  storedLang?: string | null
+  storedLang?: string | null,
+  userProfileLang?: string
 ): string => {
-  // Priority order: stored preference -> browser language -> default
+  // Priority order: user profile -> stored preference -> browser language -> default
   
-  // Check stored language preference first
+  // Check user profile language first (highest priority)
+  if (userProfileLang && supportedLanguages.some(l => l.code === userProfileLang)) {
+    return userProfileLang;
+  }
+  
+  // Check stored language preference
   if (storedLang && supportedLanguages.some(l => l.code === storedLang)) {
     return storedLang;
   }
@@ -27,4 +33,54 @@ export const determineBestLanguage = (
 
 export const isValidLanguageCode = (code: string): boolean => {
   return supportedLanguages.some(l => l.code === code);
+};
+
+export const isSupportedLanguage = (code: string): boolean => {
+  return supportedLanguages.some(l => l.code === code);
+};
+
+export const isImplementedLanguage = (code: string): boolean => {
+  return supportedLanguages.some(l => l.code === code && l.implemented);
+};
+
+export const getImplementedLanguages = () => {
+  return supportedLanguages.filter(l => l.implemented);
+};
+
+export const getPlannedLanguages = () => {
+  return supportedLanguages.filter(l => !l.implemented);
+};
+
+export const getLanguageByCode = (code: string) => {
+  return supportedLanguages.find(l => l.code === code);
+};
+
+export const validateLanguagePath = (path: string): {
+  isValid: boolean;
+  languageCode: string | null;
+  hasLanguagePrefix: boolean;
+  redirectPath?: string;
+} => {
+  const pathSegments = path.split('/').filter(Boolean);
+  const firstSegment = pathSegments[0];
+  
+  // Check if first segment is a valid language code
+  const isValidLanguage = supportedLanguages.some(l => l.code === firstSegment);
+  
+  if (isValidLanguage) {
+    return {
+      isValid: true,
+      languageCode: firstSegment,
+      hasLanguagePrefix: true
+    };
+  }
+  
+  // No valid language prefix found
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return {
+    isValid: false,
+    languageCode: null,
+    hasLanguagePrefix: false,
+    redirectPath: `/${defaultLanguage}${cleanPath}`
+  };
 };
