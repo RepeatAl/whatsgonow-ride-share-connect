@@ -1,9 +1,6 @@
 
 import React from 'react';
 import { LanguageMCP } from '../language/LanguageMCP';
-import { ChatLanguageMCP } from '../chat/ChatLanguageMCP';
-import { VehicleSelectionMCP } from '../vehicle/VehicleSelectionMCP';
-import { ItemGroupingMCP } from '../items/ItemGroupingMCP';
 
 interface MCPOrchestratorProps {
   children: React.ReactNode;
@@ -12,35 +9,30 @@ interface MCPOrchestratorProps {
 }
 
 /**
- * MCP Orchestrator - Phase 1 Implementation
- * Provides clean composition of domain-specific MCPs
- * Focus: Stability and Single Source of Truth for each domain
+ * Simplified MCP Orchestrator - Phase 1 Implementation
+ * Only LanguageMCP enabled to prevent provider conflicts
+ * Other MCPs temporarily disabled until stabilization complete
  */
 export const MCPOrchestrator: React.FC<MCPOrchestratorProps> = ({ 
   children, 
   initialLanguage,
-  enabledMCPs = ['language', 'chat', 'vehicle', 'items']
+  enabledMCPs = ['language'] // Only language MCP for now
 }) => {
+  console.log('[MCP-ORCHESTRATOR] Enabled MCPs:', enabledMCPs);
+  console.log('[MCP-ORCHESTRATOR] Initial language:', initialLanguage);
+
   let content = children;
 
-  // Wrap with enabled MCPs in reverse order for proper nesting
-  // Each MCP is responsible for its own domain only
-  if (enabledMCPs.includes('items')) {
-    content = <ItemGroupingMCP>{content}</ItemGroupingMCP>;
-  }
-  
-  if (enabledMCPs.includes('vehicle')) {
-    content = <VehicleSelectionMCP>{content}</VehicleSelectionMCP>;
-  }
-  
-  if (enabledMCPs.includes('chat')) {
-    content = <ChatLanguageMCP>{content}</ChatLanguageMCP>;
-  }
-  
-  // Language MCP is the foundation - always at the top level
+  // Only wrap with LanguageMCP for now - other MCPs commented out
   if (enabledMCPs.includes('language')) {
+    console.log('[MCP-ORCHESTRATOR] Wrapping with LanguageMCP');
     content = <LanguageMCP initialLanguage={initialLanguage}>{content}</LanguageMCP>;
   }
+
+  // Temporarily disabled MCPs to prevent conflicts:
+  // - ChatLanguageMCP: Not yet implemented
+  // - VehicleSelectionMCP: Not yet implemented  
+  // - ItemGroupingMCP: Not yet implemented
 
   return <>{content}</>;
 };

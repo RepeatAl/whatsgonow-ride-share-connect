@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import React, { createContext, useContext } from 'react';
 
 interface ChatLanguageMCPContextType {
   chatLanguage: string;
@@ -16,37 +16,19 @@ interface ChatLanguageMCPProps {
 }
 
 /**
- * Chat Language MCP - Master Control Point for chat-specific language operations
- * Handles: Real-time message translation, chat-specific language preferences
- * Scope: Chat module only, independent from global UI language
+ * Chat Language MCP - Stub Implementation for Phase 1
+ * Minimal implementation to prevent import errors
  */
 export const ChatLanguageMCP: React.FC<ChatLanguageMCPProps> = ({ children }) => {
-  const [chatLanguage, setChatLanguage] = useState<string>('de');
-  const [autoTranslateEnabled, setAutoTranslateEnabled] = useState<boolean>(false);
+  console.log('[CHAT-LANGUAGE-MCP] Stub implementation - not yet active');
 
-  const toggleAutoTranslate = useCallback(() => {
-    setAutoTranslateEnabled(prev => !prev);
-  }, []);
-
-  const translateMessage = useCallback(async (message: string, targetLang: string): Promise<string> => {
-    // Placeholder for actual translation service integration
-    // This would integrate with Google Translate, DeepL, or similar
-    return `[${targetLang.toUpperCase()}] ${message}`;
-  }, []);
-
-  const contextValue = useMemo(() => ({
-    chatLanguage,
-    autoTranslateEnabled,
-    setChatLanguage,
-    toggleAutoTranslate,
-    translateMessage,
-  }), [
-    chatLanguage,
-    autoTranslateEnabled,
-    setChatLanguage,
-    toggleAutoTranslate,
-    translateMessage,
-  ]);
+  const contextValue: ChatLanguageMCPContextType = {
+    chatLanguage: 'de',
+    autoTranslateEnabled: false,
+    setChatLanguage: () => console.log('[CHAT-LANGUAGE-MCP] setChatLanguage - stub'),
+    toggleAutoTranslate: () => console.log('[CHAT-LANGUAGE-MCP] toggleAutoTranslate - stub'),
+    translateMessage: async () => 'Stub translation',
+  };
 
   return (
     <ChatLanguageMCPContext.Provider value={contextValue}>

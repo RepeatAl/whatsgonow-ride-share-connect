@@ -1,19 +1,10 @@
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
-
-interface Vehicle {
-  id: string;
-  type: 'car' | 'van' | 'truck' | 'motorcycle';
-  capacity: number;
-  available: boolean;
-}
+import React, { createContext, useContext } from 'react';
 
 interface VehicleSelectionMCPContextType {
-  selectedVehicle: Vehicle | null;
-  availableVehicles: Vehicle[];
-  setSelectedVehicle: (vehicle: Vehicle | null) => void;
-  validateVehicleForOrder: (orderId: string) => boolean;
-  getVehicleRecommendations: (orderRequirements: any) => Vehicle[];
+  selectedVehicle: string | null;
+  availableVehicles: string[];
+  setSelectedVehicle: (vehicle: string) => void;
 }
 
 const VehicleSelectionMCPContext = createContext<VehicleSelectionMCPContextType | undefined>(undefined);
@@ -23,41 +14,17 @@ interface VehicleSelectionMCPProps {
 }
 
 /**
- * Vehicle Selection MCP - Master Control Point for vehicle-related operations
- * Handles: Vehicle selection, validation, recommendations, availability
- * Scope: All vehicle-related UI and business logic
+ * Vehicle Selection MCP - Stub Implementation for Phase 1
+ * Minimal implementation to prevent import errors
  */
 export const VehicleSelectionMCP: React.FC<VehicleSelectionMCPProps> = ({ children }) => {
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const [availableVehicles] = useState<Vehicle[]>([
-    { id: '1', type: 'car', capacity: 500, available: true },
-    { id: '2', type: 'van', capacity: 1000, available: true },
-    { id: '3', type: 'truck', capacity: 5000, available: false },
-  ]);
+  console.log('[VEHICLE-SELECTION-MCP] Stub implementation - not yet active');
 
-  const validateVehicleForOrder = useCallback((orderId: string): boolean => {
-    // Placeholder for vehicle validation logic
-    return selectedVehicle?.available ?? false;
-  }, [selectedVehicle]);
-
-  const getVehicleRecommendations = useCallback((orderRequirements: any): Vehicle[] => {
-    // Placeholder for AI-based vehicle recommendation logic
-    return availableVehicles.filter(v => v.available && v.capacity >= (orderRequirements?.weight || 0));
-  }, [availableVehicles]);
-
-  const contextValue = useMemo(() => ({
-    selectedVehicle,
-    availableVehicles,
-    setSelectedVehicle,
-    validateVehicleForOrder,
-    getVehicleRecommendations,
-  }), [
-    selectedVehicle,
-    availableVehicles,
-    setSelectedVehicle,
-    validateVehicleForOrder,
-    getVehicleRecommendations,
-  ]);
+  const contextValue: VehicleSelectionMCPContextType = {
+    selectedVehicle: null,
+    availableVehicles: [],
+    setSelectedVehicle: () => console.log('[VEHICLE-SELECTION-MCP] setSelectedVehicle - stub'),
+  };
 
   return (
     <VehicleSelectionMCPContext.Provider value={contextValue}>

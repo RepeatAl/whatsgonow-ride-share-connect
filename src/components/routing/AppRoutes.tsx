@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
@@ -13,58 +12,15 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import NotFound from '@/pages/NotFound';
-import DashboardAdmin from '@/pages/DashboardAdmin';
-import DashboardCM from '@/pages/DashboardCM';
-import DashboardDriver from '@/pages/DashboardDriver';
-import DashboardSender from '@/pages/DashboardSender';
-import CreateOrder from '@/pages/CreateOrder';
-import FindTransport from '@/pages/FindTransport';
-import OfferTransport from '@/pages/OfferTransport';
-import Admin from '@/pages/Admin';
-import ValidationAdmin from '@/pages/ValidationAdmin';
-import PreRegister from '@/pages/PreRegister';
-import PreRegisterSuccess from '@/pages/PreRegisterSuccess';
-import CompleteProfile from '@/pages/CompleteProfile';
-import RegisterSuccess from '@/pages/RegisterSuccess';
-import Deal from '@/pages/Deal';
-import Faq from '@/pages/Faq';
-import FeedbackAdmin from '@/pages/FeedbackAdmin';
-import Feedback from '@/pages/Feedback';
-import Orders from '@/pages/Orders';
-import DraftEdit from '@/pages/orders/DraftEdit';
-import DraftList from '@/pages/orders/DraftList';
-import MyOrders from '@/pages/orders/MyOrders';
-import Legal from '@/pages/Legal';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import PaymentStatus from '@/pages/PaymentStatus';
-import DeliveryConfirmationPage from '@/pages/DeliveryConfirmationPage';
-import InvoiceDownload from '@/pages/InvoiceDownload';
-import MobileUpload from '@/pages/MobileUpload';
-import UploadComplete from '@/pages/UploadComplete';
-import AdminAnalytics from '@/pages/AdminAnalytics';
-import CommunityManager from '@/pages/CommunityManager';
-import DataDeletion from '@/pages/DataDeletion';
-import EmailTest from '@/pages/EmailTest';
-import AdminInvoiceTest from '@/pages/AdminInvoiceTest';
-import Tracking from '@/pages/Tracking';
-import RLSTest from '@/pages/RLSTest';
-import ItemUploadDemoPage from '@/pages/ItemUploadDemoPage';
-import Inbox from '@/pages/Inbox';
-import Messages from '@/pages/Messages';
-import CreateOrderWithItemsTest from '@/pages/CreateOrderWithItemsTest';
-import TrustManagement from '@/pages/TrustManagement';
-import ShadcnDemo from '@/pages/ShadcnDemo';
-import UsersPage from '@/pages/admin/users';
-import PreRegistrationsPage from '@/pages/admin/PreRegistrationsPage';
-import Support from '@/pages/Support';
-import TranslationFeedbackAdmin from '@/pages/admin/TranslationFeedbackAdmin';
-import TranslationFeedbackDetail from '@/pages/admin/TranslationFeedbackDetail';
 
 /**
- * Simple route matcher - no logic, just route definitions
- * All language and auth logic is handled by MCPRouter and route guards
+ * Simplified App Routes - Phase 1 Stabilization
+ * Clear route definitions with proper 404 handling
+ * No complex language logic - handled by MCPRouter
  */
 const AppRoutes: React.FC = () => {
+  console.log('[APP-ROUTES] Rendering routes');
+
   return (
     <Routes>
       {/* Root route */}
@@ -142,9 +98,11 @@ const AppRoutes: React.FC = () => {
       <Route path="create-order-with-items-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><CreateOrderWithItemsTest /></ProtectedRoute>} />
       <Route path="shadcn-demo" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ShadcnDemo /></ProtectedRoute>} />
 
-      {/* Error routes */}
+      {/* Error handling - Fixed 404 route */}
       <Route path="404" element={<NotFound />} />
-      <Route path="*" element={<Navigate to="404" replace />} />
+      
+      {/* Catch all unknown routes - redirect to 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
