@@ -1,14 +1,93 @@
+
+# Robots.txt for Whatsgonow - Crowdlogistik Platform
+
+# Allow all crawlers to access public content
+User-agent: *
+Allow: /
+
+# Block admin and private areas
+Disallow: /admin/
+Disallow: /debug/
+Disallow: /api/
+Disallow: /_/
+
+# Block test and development routes
+Disallow: /test/
+Disallow: /dev/
+Disallow: /*test*
+Disallow: /*debug*
+
+# Block user-specific and sensitive routes
+Disallow: /profile/
+Disallow: /dashboard/
+Disallow: /messages/
+Disallow: /orders/drafts/
+Disallow: /payment/
+Disallow: /tracking/
+
+# Block file upload and temporary routes
+Disallow: /mobile-upload/
+Disallow: /upload-complete
+Disallow: /delivery/
+Disallow: /invoice-download/
+
+# Allow important public pages explicitly
+Allow: /de/
+Allow: /en/
+Allow: /ar/
+Allow: /de/login
+Allow: /en/login
+Allow: /ar/login
+Allow: /de/register
+Allow: /en/register
+Allow: /ar/register
+Allow: /de/pre-register
+Allow: /en/pre-register
+Allow: /ar/pre-register
+Allow: /de/faq
+Allow: /en/faq
+Allow: /ar/faq
+Allow: /de/support
+Allow: /en/support
+Allow: /ar/support
+Allow: /de/legal
+Allow: /en/legal
+Allow: /ar/legal
+Allow: /de/privacy-policy
+Allow: /en/privacy-policy
+Allow: /ar/privacy-policy
+
+# Sitemap location
+Sitemap: https://whatsgonow.com/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Specific rules for major search engines
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 0
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
-User-agent: Twitterbot
+User-agent: Slurp
 Allow: /
+Crawl-delay: 1
 
-User-agent: facebookexternalhit
-Allow: /
+# Block AI training crawlers (optional)
+User-agent: GPTBot
+Disallow: /
 
-User-agent: *
-Allow: /
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /

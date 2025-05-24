@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { useLocation, Navigate, Routes, Route } from 'react-router-dom';
 import { languageCodes } from '@/config/supportedLanguages';
@@ -62,6 +61,8 @@ import ItemUploadDemoPage from '@/pages/ItemUploadDemoPage';
 import CreateOrderWithItemsTest from '@/pages/CreateOrderWithItemsTest';
 import ShadcnDemo from '@/pages/ShadcnDemo';
 import NotFound from '@/pages/NotFound';
+
+import EnhancedLanguageSEO from '@/components/seo/EnhancedLanguageSEO';
 
 /**
  * Unified MCP Router - Single Source of Truth
@@ -184,25 +185,100 @@ export const MCPRouter: React.FC = () => {
         <Route path="/" element={<Navigate to={`/${language}`} replace />} />
         
         {/* Public routes with language prefix */}
-        <Route path="/de" element={<PublicRoute><Landing /></PublicRoute>} />
-        <Route path="/en" element={<PublicRoute><Landing /></PublicRoute>} />
-        <Route path="/ar" element={<PublicRoute><Landing /></PublicRoute>} />
+        <Route path="/de" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="landing" />
+            <Landing />
+          </PublicRoute>
+        } />
+        <Route path="/en" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="landing" />
+            <Landing />
+          </PublicRoute>
+        } />
+        <Route path="/ar" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="landing" />
+            <Landing />
+          </PublicRoute>
+        } />
         
-        <Route path="/de/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
-        <Route path="/en/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
-        <Route path="/ar/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
+        <Route path="/de/pre-register" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="pre-register" />
+            <PreRegister />
+          </PublicRoute>
+        } />
+        <Route path="/en/pre-register" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="pre-register" />
+            <PreRegister />
+          </PublicRoute>
+        } />
+        <Route path="/ar/pre-register" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="pre-register" />
+            <PreRegister />
+          </PublicRoute>
+        } />
         
-        <Route path="/de/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
-        <Route path="/en/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
-        <Route path="/ar/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
+        <Route path="/de/pre-register/success" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="pre-register" />
+            <PreRegisterSuccess />
+          </PublicRoute>
+        } />
+        <Route path="/en/pre-register/success" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="pre-register" />
+            <PreRegisterSuccess />
+          </PublicRoute>
+        } />
+        <Route path="/ar/pre-register/success" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="pre-register" />
+            <PreRegisterSuccess />
+          </PublicRoute>
+        } />
         
-        <Route path="/de/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/en/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/ar/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/de/login" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="login" />
+            <Login />
+          </PublicRoute>
+        } />
+        <Route path="/en/login" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="login" />
+            <Login />
+          </PublicRoute>
+        } />
+        <Route path="/ar/login" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="login" />
+            <Login />
+          </PublicRoute>
+        } />
         
-        <Route path="/de/register" element={<PublicRoute><Register /></PublicRoute>} />
-        <Route path="/en/register" element={<PublicRoute><Register /></PublicRoute>} />
-        <Route path="/ar/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/de/register" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="register" />
+            <Register />
+          </PublicRoute>
+        } />
+        <Route path="/en/register" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="register" />
+            <Register />
+          </PublicRoute>
+        } />
+        <Route path="/ar/register" element={
+          <PublicRoute>
+            <EnhancedLanguageSEO pageType="register" />
+            <Register />
+          </PublicRoute>
+        } />
         
         <Route path="/de/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
         <Route path="/en/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
