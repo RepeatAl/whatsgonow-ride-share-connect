@@ -31,8 +31,8 @@ export const useAppInitialization = (requiredNamespaces: string[] = ['common']) 
       // Wait for auth to be ready
       const authReady = !authLoading && !isInitialLoad;
       
-      // Wait for language to be ready
-      const languageReady = !languageLoading && currentLanguage;
+      // Wait for language to be ready - check if currentLanguage exists and is not empty
+      const languageReady = !languageLoading && !!currentLanguage;
       
       // Load required translations
       let translationsReady = false;
