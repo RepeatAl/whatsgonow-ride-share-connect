@@ -12,7 +12,7 @@ export interface AppInitializationState {
   translationsReady: boolean;
 }
 
-export const useAppInitialization = (requiredNamespaces: string[] = ['common']) => {
+export const useAppInitialization = (requiredNamespaces: string[] = ['common'], requireAuth: boolean = true) => {
   const [state, setState] = useState<AppInitializationState>({
     isReady: false,
     isLoading: true,
@@ -28,8 +28,8 @@ export const useAppInitialization = (requiredNamespaces: string[] = ['common']) 
     const initializeApp = async () => {
       console.log('[App Init] Starting initialization...');
       
-      // Wait for auth to be ready
-      const authReady = !authLoading && !isInitialLoad;
+      // Wait for auth to be ready (only if required)
+      const authReady = requireAuth ? (!authLoading && !isInitialLoad) : true;
       
       // Wait for language to be ready - check if currentLanguage exists and is not empty
       const languageReady = !languageLoading && !!currentLanguage;
@@ -62,12 +62,13 @@ export const useAppInitialization = (requiredNamespaces: string[] = ['common']) 
         authReady,
         languageReady,
         translationsReady,
-        isReady
+        isReady,
+        requireAuth
       });
     };
 
     initializeApp();
-  }, [authLoading, isInitialLoad, languageLoading, currentLanguage, requiredNamespaces.join(',')]);
+  }, [authLoading, isInitialLoad, languageLoading, currentLanguage, requiredNamespaces.join(','), requireAuth]);
 
   return state;
 };

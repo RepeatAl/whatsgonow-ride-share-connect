@@ -37,6 +37,7 @@ const preRegisterSchema = z.object({
   }
 });
 
+// Use service role key for database operations (no auth required)
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -46,11 +47,10 @@ async function sendConfirmationEmail(email: string, firstName: string, language:
   try {
     console.log(`Attempting to send confirmation email to: ${email} in language: ${language}`);
     
-    // Check if RESEND_API_KEY is available
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (!resendKey) {
       console.error("RESEND_API_KEY environment variable is not set");
-      throw new Error("Email service not configured");
+      return { success: false, error: "Email service not configured" };
     }
     
     const response = await fetch(
@@ -59,7 +59,7 @@ async function sendConfirmationEmail(email: string, firstName: string, language:
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
           "Accept-Language": language,
         },
         body: JSON.stringify({ 
@@ -73,7 +73,6 @@ async function sendConfirmationEmail(email: string, firstName: string, language:
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Failed to send confirmation email. Status: ${response.status}, Error: ${errorText}`);
-      // Don't throw error for email failures - log but continue
       return { success: false, error: errorText };
     }
     
@@ -82,7 +81,6 @@ async function sendConfirmationEmail(email: string, firstName: string, language:
     return { success: true, result };
   } catch (error) {
     console.error("Error calling send-confirmation function:", error);
-    // Don't throw error for email failures - log but continue
     return { success: false, error: error.message };
   }
 }
@@ -94,12 +92,13 @@ serve(async (req: Request) => {
   }
 
   try {
+    console.log(`[Pre-Register] Processing ${req.method} request`);
+    
     const json = await req.json();
     console.log("Received pre-registration data:", JSON.stringify(json, null, 2));
     
     const data = preRegisterSchema.parse(json);
 
-    // Log email before any potential normalization
     console.log(`Processing registration for email: ${data.email}, language: ${data.language}`);
     
     // Extract original email domain for tracking
@@ -123,7 +122,7 @@ serve(async (req: Request) => {
     
     console.log(`Using language for registration: ${language}`);
 
-    // Insert into database
+    // Insert into database (no auth required - public function)
     console.log(`Inserting data into pre_registrations table...`);
     const { data: insertedData, error: dbError } = await supabase
       .from("pre_registrations")

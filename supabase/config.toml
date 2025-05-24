@@ -4,5 +4,8 @@
 
 project_id = "orgcruwmxqiwnjnkxpjb"
 
+[functions.pre-register]
+verify_jwt = false
+
 [functions.unsuspend-expired-users]
 verify_jwt = true

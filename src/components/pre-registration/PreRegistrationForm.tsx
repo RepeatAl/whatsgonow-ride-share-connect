@@ -115,9 +115,10 @@ const PreRegistrationFormContent = () => {
 };
 
 export function PreRegistrationForm() {
+  // Only wait for translations, not auth (since this is a public form)
   const appState = useAppInitialization(['pre_register', 'errors']);
   
-  if (!appState.isReady) {
+  if (!appState.translationsReady) {
     return <StableLoading variant="form" message="Formular wird vorbereitet..." />;
   }
 

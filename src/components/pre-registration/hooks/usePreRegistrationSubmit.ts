@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/hooks/use-toast";
 import { PreRegistrationFormData } from "@/lib/validators/pre-registration";
-import { supabase } from "@/lib/supabaseClient";
 import { useLanguage } from "@/contexts/language";
 import i18next from "i18next";
 
@@ -19,24 +18,20 @@ export function usePreRegistrationSubmit() {
     setIsSubmitting(true);
     
     try {
-      // Get session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-      
       // Add the current language to the form data
       const submissionData = {
         ...data,
-        language: i18next.language // Include the current language
+        language: i18next.language
       };
       
-      console.log("Sending data to pre-register endpoint with language:", submissionData.language);
+      console.log("Sending data to pre-register endpoint (public/anonymous):", submissionData.language);
       
       const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken || ""}`,
-          "Accept-Language": i18next.language
+          "Accept-Language": i18next.language,
+          // No Authorization header - this is a public endpoint
         },
         body: JSON.stringify(submissionData)
       });
@@ -53,7 +48,7 @@ export function usePreRegistrationSubmit() {
             Object.entries(errorData.errors).forEach(([field, message]) => {
               toast({
                 variant: "destructive",
-                title: t("errors.field_error", { field }),
+                title: t("errors.field_error", { field, ns: 'errors' }),
                 description: message as string
               });
             });

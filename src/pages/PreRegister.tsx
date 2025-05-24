@@ -28,7 +28,8 @@ const PreRegisterContent = () => {
 };
 
 export default function PreRegister() {
-  const appState = useAppInitialization(['pre_register', 'errors', 'common']);
+  // Don't require auth for pre-registration (public form)
+  const appState = useAppInitialization(['pre_register', 'errors', 'common'], false);
   
   if (!appState.isReady) {
     return (
