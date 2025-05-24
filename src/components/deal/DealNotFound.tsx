@@ -2,11 +2,11 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 export const DealNotFound = () => {
   const { t } = useTranslation("common");
-  const { getLocalizedUrl, currentLanguage } = useOptimizedLanguage();
+  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
   
   return (
     <div className="flex-grow flex flex-col justify-center items-center p-6">
