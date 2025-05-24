@@ -24,6 +24,13 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
   const firstSegment = pathSegments[0];
   const isLanguagePrefix = languageCodes.includes(firstSegment);
   
+  // Debug logging
+  console.log('[StabilizedRouter] Current path:', location.pathname);
+  console.log('[StabilizedRouter] Path segments:', pathSegments);
+  console.log('[StabilizedRouter] First segment:', firstSegment);
+  console.log('[StabilizedRouter] Is language prefix:', isLanguagePrefix);
+  console.log('[StabilizedRouter] Current language:', currentLanguage);
+  
   // Determine best language based on user preferences - memoized
   const getBestLanguage = useCallback(() => {
     const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
@@ -52,6 +59,8 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
     if (isProcessingRoute) return;
 
     const handleRouteChange = async () => {
+      console.log('[StabilizedRouter] Handling route change for:', location.pathname);
+      
       // Check if path includes language code
       if (isLanguagePrefix) {
         const langMetadata = getLanguageByCode(firstSegment);
@@ -63,6 +72,13 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
           await setLanguageByCode(firstSegment, false);
           setIsProcessingRoute(false);
         }
+        
+        // Check if the route after language prefix is valid
+        const pathWithoutLang = '/' + pathSegments.slice(1).join('/');
+        const cleanPath = pathWithoutLang === '/' ? '/' : pathWithoutLang;
+        console.log('[StabilizedRouter] Path without language:', cleanPath);
+        console.log('[StabilizedRouter] Is public route:', isPublicRoute(cleanPath));
+        
       } 
       // No language prefix in URL - add it for public routes
       else if (location.pathname !== '/') {
@@ -101,7 +117,8 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
     setLanguageByCode, 
     navigate, 
     isProcessingRoute,
-    getBestLanguage
+    getBestLanguage,
+    pathSegments
   ]);
   
   // If we're processing a route change, show minimal loading
@@ -127,9 +144,12 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
     }>
       <Routes>
         {/* Language-prefixed routes */}
-        {languageCodes.map(lang => (
-          <Route key={lang} path={`/${lang}/*`} element={children} />
-        ))}
+        {languageCodes.map(lang => {
+          console.log(`[StabilizedRouter] Setting up route for language: ${lang}`);
+          return (
+            <Route key={lang} path={`/${lang}/*`} element={children} />
+          );
+        })}
         
         {/* Root path redirects to best language */}
         <Route path="/" element={<Navigate to={`/${currentLanguage}`} replace />} />

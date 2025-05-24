@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
@@ -61,26 +60,96 @@ import TranslationFeedbackAdmin from '@/pages/admin/TranslationFeedbackAdmin';
 import TranslationFeedbackDetail from '@/pages/admin/TranslationFeedbackDetail';
 
 const AppRoutes: React.FC = () => {
+  console.log('[AppRoutes] Rendering AppRoutes component');
+  
   return (
     <Routes>
       {/* Public routes - now relative paths */}
-      <Route path="" element={<PublicRoute><Landing /></PublicRoute>} />
-      <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="register" element={<PublicRoute><Register /></PublicRoute>} />
-      <Route path="register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
-      <Route path="forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-      <Route path="reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-      <Route path="pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
-      <Route path="pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
-      <Route path="faq" element={<PublicRoute><Faq /></PublicRoute>} />
-      <Route path="support" element={<PublicRoute><Support /></PublicRoute>} />
-      <Route path="mobile-upload/:sessionId" element={<PublicRoute><MobileUpload /></PublicRoute>} />
-      <Route path="upload-complete" element={<PublicRoute><UploadComplete /></PublicRoute>} />
-      <Route path="delivery/:token" element={<PublicRoute><DeliveryConfirmationPage /></PublicRoute>} />
-      <Route path="invoice-download/:token" element={<PublicRoute><InvoiceDownload /></PublicRoute>} />
-      <Route path="legal" element={<PublicRoute><Legal /></PublicRoute>} />
-      <Route path="privacy-policy" element={<PublicRoute><PrivacyPolicy /></PublicRoute>} />
-      <Route path="payment/status" element={<PublicRoute><PaymentStatus /></PublicRoute>} />
+      <Route path="" element={
+        <PublicRoute>
+          <Landing />
+        </PublicRoute>
+      } />
+      <Route path="login" element={
+        <PublicRoute>
+          <Login />
+        </PublicRoute>
+      } />
+      <Route path="register" element={
+        <PublicRoute>
+          <Register />
+        </PublicRoute>
+      } />
+      <Route path="register/success" element={
+        <PublicRoute>
+          <RegisterSuccess />
+        </PublicRoute>
+      } />
+      <Route path="forgot-password" element={
+        <PublicRoute>
+          <ForgotPassword />
+        </PublicRoute>
+      } />
+      <Route path="reset-password" element={
+        <PublicRoute>
+          <ResetPassword />
+        </PublicRoute>
+      } />
+      <Route path="pre-register" element={
+        <PublicRoute>
+          <PreRegister />
+        </PublicRoute>
+      } />
+      <Route path="pre-register/success" element={
+        <PublicRoute>
+          <PreRegisterSuccess />
+        </PublicRoute>
+      } />
+      <Route path="faq" element={
+        <PublicRoute>
+          <Faq />
+        </PublicRoute>
+      } />
+      <Route path="support" element={
+        <PublicRoute>
+          <Support />
+        </PublicRoute>
+      } />
+      <Route path="mobile-upload/:sessionId" element={
+        <PublicRoute>
+          <MobileUpload />
+        </PublicRoute>
+      } />
+      <Route path="upload-complete" element={
+        <PublicRoute>
+          <UploadComplete />
+        </PublicRoute>
+      } />
+      <Route path="delivery/:token" element={
+        <PublicRoute>
+          <DeliveryConfirmationPage />
+        </PublicRoute>
+      } />
+      <Route path="invoice-download/:token" element={
+        <PublicRoute>
+          <InvoiceDownload />
+        </PublicRoute>
+      } />
+      <Route path="legal" element={
+        <PublicRoute>
+          <Legal />
+        </PublicRoute>
+      } />
+      <Route path="privacy-policy" element={
+        <PublicRoute>
+          <PrivacyPolicy />
+        </PublicRoute>
+      } />
+      <Route path="payment/status" element={
+        <PublicRoute>
+          <PaymentStatus />
+        </PublicRoute>
+      } />
 
       {/* Protected routes - now relative paths */}
       <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -129,7 +198,7 @@ const AppRoutes: React.FC = () => {
       {/* 404 route - now relative path */}
       <Route path="404" element={<NotFound />} />
       
-      {/* Catch-all route */}
+      {/* Catch-all route - should stay in current language context */}
       <Route path="*" element={<Navigate to="404" replace />} />
     </Routes>
   );
