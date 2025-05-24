@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { LucideIcon } from 'lucide-react';
 
 export interface NavLinkProps {
@@ -32,7 +32,7 @@ const NavLink: React.FC<NavLinkProps> = ({
   badge: _badge,
 }) => {
   const location = useLocation();
-  const { getLocalizedUrl } = useOptimizedLanguage();
+  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
 
   // Get the localized URL with language prefix
   const localizedTo = getLocalizedUrl(to);

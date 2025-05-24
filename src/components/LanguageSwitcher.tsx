@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Check, Globe, Loader2 } from "lucide-react";
@@ -25,7 +25,7 @@ export const LanguageSwitcher = ({
   variant = "default",
   showLabel = true,
 }: LanguageSwitcherProps) => {
-  const { currentLanguage, setLanguageByCode, languageLoading, supportedLanguages } = useOptimizedLanguage();
+  const { currentLanguage, setLanguageByCode, languageLoading, supportedLanguages } = useLanguageMCP();
   const { toast } = useToast();
   const { t, ready } = useTranslation("common");
   const [isChanging, setIsChanging] = useState(false);
