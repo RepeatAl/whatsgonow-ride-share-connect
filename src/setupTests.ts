@@ -1,4 +1,6 @@
 
+import '@testing-library/jest-dom';
+
 // Mock für localStorage und sessionStorage in der Testumgebung
 // Dies ermöglicht es uns, die Supabase-Authentifizierung in Tests zu verwenden
 

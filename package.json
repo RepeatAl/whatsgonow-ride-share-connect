@@ -46,6 +46,7 @@
     "@react-pdf/renderer": "^3.3.8",
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.56.2",
+    "@testing-library/jest-dom": "^6.6.3",
     "@types/i18next-browser-languagedetector": "^3.0.0",
     "@types/react-helmet": "^6.1.11",
     "@types/uuid": "^9.0.8",
@@ -98,8 +99,8 @@
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
-    "vite": "^5.4.1",
-    "ts-node": "^10.9.2"
+    "vite": "^5.4.1"
   }
 }

@@ -45,11 +45,12 @@ const TestComponent = () => {
 };
 
 // Wrapper component for testing
-const TestWrapper = ({ initialLanguage = 'de', children }) => 
+const TestWrapper = ({ initialLanguage = 'de', children }: { initialLanguage?: string; children: React.ReactNode }) => 
   React.createElement(BrowserRouter, null,
-    React.createElement(LanguageMCP, { initialLanguage },
+    React.createElement(LanguageMCP, { 
+      initialLanguage,
       children
-    )
+    })
   );
 
 describe('MCP Language System - Component Tests', () => {
@@ -65,7 +66,7 @@ describe('MCP Language System - Component Tests', () => {
   describe('LanguageMCP Provider', () => {
     it('should provide default language context', async () => {
       render(
-        React.createElement(TestWrapper, null,
+        React.createElement(TestWrapper, { initialLanguage: 'de' },
           React.createElement(TestComponent)
         )
       );
@@ -117,7 +118,7 @@ describe('MCP Language System - Component Tests', () => {
 
     it('should provide all required context properties', async () => {
       render(
-        React.createElement(TestWrapper, null,
+        React.createElement(TestWrapper, { initialLanguage: 'de' },
           React.createElement(TestComponent)
         )
       );
@@ -136,7 +137,7 @@ describe('MCP Language System - Component Tests', () => {
       const { changeAppLanguage } = await import('@/services/LanguageService');
       
       render(
-        React.createElement(TestWrapper, null,
+        React.createElement(TestWrapper, { initialLanguage: 'de' },
           React.createElement(TestComponent)
         )
       );
@@ -162,9 +163,7 @@ describe('MCP Error Boundary Tests', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     render(
-      React.createElement(MCPErrorBoundary, null,
-        React.createElement(ErrorComponent)
-      )
+      React.createElement(MCPErrorBoundary, { children: React.createElement(ErrorComponent) })
     );
 
     expect(screen.getByText('Language System Error')).toBeInTheDocument();
@@ -177,9 +176,7 @@ describe('MCP Error Boundary Tests', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     render(
-      React.createElement(MCPErrorBoundary, null,
-        React.createElement(ErrorComponent)
-      )
+      React.createElement(MCPErrorBoundary, { children: React.createElement(ErrorComponent) })
     );
 
     const retryButton = screen.getByText('Try Again');
@@ -192,9 +189,7 @@ describe('MCP Error Boundary Tests', () => {
     const GoodComponent = () => React.createElement('div', null, 'Working component');
     
     render(
-      React.createElement(MCPErrorBoundary, null,
-        React.createElement(GoodComponent)
-      )
+      React.createElement(MCPErrorBoundary, { children: React.createElement(GoodComponent) })
     );
 
     expect(screen.getByText('Working component')).toBeInTheDocument();
@@ -213,7 +208,7 @@ describe('MCP Performance Tests', () => {
     };
 
     render(
-      React.createElement(TestWrapper, null,
+      React.createElement(TestWrapper, { initialLanguage: 'de' },
         React.createElement(CountingComponent)
       )
     );
@@ -224,7 +219,7 @@ describe('MCP Performance Tests', () => {
   });
 
   it('should memoize context value properly', async () => {
-    const contextValues = [];
+    const contextValues: any[] = [];
     
     const ContextTracker = () => {
       const context = useLanguageMCP();
@@ -233,7 +228,7 @@ describe('MCP Performance Tests', () => {
     };
 
     render(
-      React.createElement(TestWrapper, null,
+      React.createElement(TestWrapper, { initialLanguage: 'de' },
         React.createElement(ContextTracker)
       )
     );

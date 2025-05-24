@@ -36,9 +36,10 @@ describe('MCP Integration Tests', () => {
       
       render(
         React.createElement(BrowserRouter, null,
-          React.createElement(MCPOrchestrator, { initialLanguage: 'de' },
-            React.createElement(TestChild)
-          )
+          React.createElement(MCPOrchestrator, { 
+            initialLanguage: 'de',
+            children: React.createElement(TestChild)
+          })
         )
       );
 
@@ -52,10 +53,9 @@ describe('MCP Integration Tests', () => {
         React.createElement(BrowserRouter, null,
           React.createElement(MCPOrchestrator, { 
             initialLanguage: 'en', 
-            enabledMCPs: ['language']
-          },
-            React.createElement(TestChild)
-          )
+            enabledMCPs: ['language'],
+            children: React.createElement(TestChild)
+          })
         )
       );
 
@@ -69,10 +69,9 @@ describe('MCP Integration Tests', () => {
         React.createElement(BrowserRouter, null,
           React.createElement(MCPOrchestrator, { 
             initialLanguage: 'de', 
-            enabledMCPs: []
-          },
-            React.createElement(TestChild)
-          )
+            enabledMCPs: [],
+            children: React.createElement(TestChild)
+          })
         )
       );
 
@@ -90,9 +89,10 @@ describe('MCP Integration Tests', () => {
       
       render(
         React.createElement(BrowserRouter, null,
-          React.createElement(MCPOrchestrator, { initialLanguage: 'de' },
-            React.createElement(ErrorChild)
-          )
+          React.createElement(MCPOrchestrator, { 
+            initialLanguage: 'de',
+            children: React.createElement(ErrorChild)
+          })
         )
       );
 
@@ -111,9 +111,10 @@ describe('MCP Integration Tests', () => {
       
       render(
         React.createElement(BrowserRouter, null,
-          React.createElement(MCPOrchestrator, { initialLanguage: 'de' },
-            React.createElement(TestChild)
-          )
+          React.createElement(MCPOrchestrator, { 
+            initialLanguage: 'de',
+            children: React.createElement(TestChild)
+          })
         )
       );
 
