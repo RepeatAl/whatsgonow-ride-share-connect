@@ -9,14 +9,16 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const LoggedOutButton = () => {
   const { t } = useTranslation('auth');
+  const { getLocalizedUrl } = useLanguageMCP();
   
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Link to="/login">
+        <Link to={getLocalizedUrl("/login")}>
           <Button 
             variant="brand" 
             className="gap-2"

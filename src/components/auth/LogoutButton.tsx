@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 interface LogoutButtonProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "accent";
@@ -20,6 +21,7 @@ const LogoutButton = ({
   const { signOut } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { getLocalizedUrl } = useLanguageMCP();
   
   const handleLogout = async () => {
     try {
@@ -32,9 +34,9 @@ const LogoutButton = ({
         description: "Erfolgreich abgemeldet",
       });
       
-      // Forciert zur Startseite nach Abmelden mit vollständiger Seitenneuladen
-      // Dies stellt sicher, dass alle Statusdaten zurückgesetzt werden
-      window.location.href = "/";
+      // Navigiere zur lokalisierten Startseite
+      const homeUrl = getLocalizedUrl("/");
+      navigate(homeUrl, { replace: true });
     } catch (error) {
       console.error("Logout error:", error);
       toast({
@@ -44,7 +46,8 @@ const LogoutButton = ({
       });
       
       // Im Fehlerfall trotzdem versuchen zur Startseite zu navigieren
-      navigate("/", { replace: true });
+      const homeUrl = getLocalizedUrl("/");
+      navigate(homeUrl, { replace: true });
     } finally {
       setLoading(false);
     }

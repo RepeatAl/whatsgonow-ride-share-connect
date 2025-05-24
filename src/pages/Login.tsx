@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -20,6 +19,7 @@ import { AlertCircle, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -29,6 +29,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signIn, user, loading: authLoading, profile, sessionExpired } = useAuth();
+  const { getLocalizedUrl } = useLanguageMCP();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +123,7 @@ const Login = () => {
                   )}
                   <div className="flex justify-end">
                     <Button variant="link" asChild className="px-0">
-                      <Link to="/forgot-password">Passwort vergessen?</Link>
+                      <Link to={getLocalizedUrl("/forgot-password")}>Passwort vergessen?</Link>
                     </Button>
                   </div>
                   <Button
