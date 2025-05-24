@@ -2,16 +2,20 @@
 import React, { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, Navigate } from "react-router-dom";
-import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 interface PublicRouteProps {
   children: ReactNode;
 }
 
+/**
+ * PublicRoute - Phase 1 MCP Integration
+ * Uses unified LanguageMCP instead of multiple language providers
+ */
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { loading, user } = useAuth();
   const location = useLocation();
-  const { getLocalizedUrl, currentLanguage } = useOptimizedLanguage();
+  const { getLocalizedUrl } = useLanguageMCP();
   
   // Special handling for pre-register route - always allow
   if (location.pathname.includes('pre-register')) {
@@ -26,7 +30,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
                           (location.pathname.includes('/register') && !location.pathname.includes('/pre-register'));
                      
   if (!loading && user && isStrictAuthPage) {
-    const redirectUrl = getLocalizedUrl(from !== '/' ? from : '/dashboard', currentLanguage);
+    const redirectUrl = getLocalizedUrl(from !== '/' ? from : '/dashboard');
     return <Navigate to={redirectUrl} replace />;
   }
   

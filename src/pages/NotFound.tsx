@@ -4,13 +4,17 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import Layout from "@/components/Layout";
 
+/**
+ * NotFound - Phase 1 MCP Integration
+ * Uses unified LanguageMCP for consistent language handling
+ */
 const NotFound = () => {
   const location = useLocation();
   const { t } = useTranslation("common");
-  const { getLocalizedUrl, currentLanguage } = useOptimizedLanguage();
+  const { getLocalizedUrl } = useLanguageMCP();
 
   useEffect(() => {
     console.error(
@@ -20,8 +24,9 @@ const NotFound = () => {
   }, [location.pathname]);
 
   const path = location.pathname;
-  const pathWithoutLanguage = path.split('/').slice(2).join('/');
-  const homeUrl = getLocalizedUrl("/", currentLanguage);
+  const pathSegments = path.split('/').filter(Boolean);
+  const pathWithoutLanguage = pathSegments.length > 1 ? pathSegments.slice(1).join('/') : '';
+  const homeUrl = getLocalizedUrl("/");
 
   return (
     <Layout>

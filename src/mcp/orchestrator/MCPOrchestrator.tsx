@@ -12,8 +12,9 @@ interface MCPOrchestratorProps {
 }
 
 /**
- * MCP Orchestrator - Combines multiple domain-specific MCPs
- * Provides a clean way to compose different MCPs based on application needs
+ * MCP Orchestrator - Phase 1 Implementation
+ * Provides clean composition of domain-specific MCPs
+ * Focus: Stability and Single Source of Truth for each domain
  */
 export const MCPOrchestrator: React.FC<MCPOrchestratorProps> = ({ 
   children, 
@@ -23,6 +24,7 @@ export const MCPOrchestrator: React.FC<MCPOrchestratorProps> = ({
   let content = children;
 
   // Wrap with enabled MCPs in reverse order for proper nesting
+  // Each MCP is responsible for its own domain only
   if (enabledMCPs.includes('items')) {
     content = <ItemGroupingMCP>{content}</ItemGroupingMCP>;
   }
@@ -35,6 +37,7 @@ export const MCPOrchestrator: React.FC<MCPOrchestratorProps> = ({
     content = <ChatLanguageMCP>{content}</ChatLanguageMCP>;
   }
   
+  // Language MCP is the foundation - always at the top level
   if (enabledMCPs.includes('language')) {
     content = <LanguageMCP initialLanguage={initialLanguage}>{content}</LanguageMCP>;
   }
