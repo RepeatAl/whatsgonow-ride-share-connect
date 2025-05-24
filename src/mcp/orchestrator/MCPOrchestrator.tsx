@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { LanguageMCP } from '../language/LanguageMCP';
+import MCPErrorBoundary from '../components/MCPErrorBoundary';
 
 interface MCPOrchestratorProps {
   children: React.ReactNode;
@@ -9,7 +10,7 @@ interface MCPOrchestratorProps {
 }
 
 /**
- * Simplified MCP Orchestrator - Phase 1 Implementation
+ * Enhanced MCP Orchestrator - Phase 1 Implementation with Error Handling
  * Only LanguageMCP enabled to prevent provider conflicts
  * Other MCPs temporarily disabled until stabilization complete
  */
@@ -26,7 +27,13 @@ export const MCPOrchestrator: React.FC<MCPOrchestratorProps> = ({
   // Only wrap with LanguageMCP for now - other MCPs commented out
   if (enabledMCPs.includes('language')) {
     console.log('[MCP-ORCHESTRATOR] Wrapping with LanguageMCP');
-    content = <LanguageMCP initialLanguage={initialLanguage}>{content}</LanguageMCP>;
+    content = (
+      <MCPErrorBoundary onError={(error) => {
+        console.error('[MCP-ORCHESTRATOR] LanguageMCP Error:', error);
+      }}>
+        <LanguageMCP initialLanguage={initialLanguage}>{content}</LanguageMCP>
+      </MCPErrorBoundary>
+    );
   }
 
   // Temporarily disabled MCPs to prevent conflicts:

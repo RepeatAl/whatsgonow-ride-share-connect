@@ -1,9 +1,9 @@
 
-import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { safeLoadNamespaces } from '@/utils/i18n-utils';
 
 export const useLanguage = () => {
-  const context = useOptimizedLanguage();
+  const context = useLanguageMCP();
   
   // For backward compatibility, map the context to the old interface
   return {

@@ -1,19 +1,28 @@
 
-// This file is maintained for backward compatibility
-// New code should import from src/contexts/language/OptimizedLanguageProvider.tsx
+// DEPRECATED: This file is maintained for backward compatibility only
+// New code should use @/mcp/language/LanguageMCP directly
 
-import { useOptimizedLanguage } from './language/OptimizedLanguageProvider';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
-// Re-export the optimized hook for backward compatibility
-export const useLanguage = useOptimizedLanguage;
+// Re-export the MCP hook for backward compatibility
+export const useLanguage = useLanguageMCP;
 
-// For any remaining legacy imports, use the optimized provider
-export { OptimizedLanguageProvider as LanguageProvider } from './language/OptimizedLanguageProvider';
+// For any remaining legacy imports, redirect to MCP
+export { LanguageMCP as LanguageProvider } from '@/mcp/language/LanguageMCP';
 
-// Re-export the context type for backward compatibility
-export type { LanguageContextType } from './language/types';
+// Re-export the context type for backward compatibility - mapped from MCP
+export interface LanguageContextType {
+  currentLanguage: string;
+  setLanguageByCode: (lang: string, storeInProfile?: boolean) => Promise<void>;
+  getLocalizedUrl: (path: string, lang?: string) => string;
+  languageLoading: boolean;
+  supportedLanguages: any[];
+  isRtl: boolean;
+}
 
-export default { LanguageProvider: OptimizedLanguageProvider, useLanguage };
+console.warn('[DEPRECATED] LanguageContext is deprecated. Use @/mcp/language/LanguageMCP instead.');
 
-// Import statement fix to avoid circular dependency
-import { OptimizedLanguageProvider } from './language/OptimizedLanguageProvider';
+export default { LanguageProvider: LanguageMCP, useLanguage: useLanguageMCP };
+
+// Import fix to avoid circular dependency
+import { LanguageMCP } from '@/mcp/language/LanguageMCP';

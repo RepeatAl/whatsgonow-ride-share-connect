@@ -1,4 +1,7 @@
 
+// DEPRECATED: This provider is deprecated in favor of MCP architecture
+// Use @/mcp/language/LanguageMCP instead
+
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { changeAppLanguage } from '@/services/LanguageService';
@@ -8,6 +11,9 @@ import { supabase } from '@/lib/supabaseClient';
 import { LanguageContextType } from './types';
 import { defaultLanguage } from './constants';
 
+// Show deprecation warning
+console.warn('[DEPRECATED] OptimizedLanguageProvider is deprecated. Use @/mcp/language/LanguageMCP instead.');
+
 const OptimizedLanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 interface OptimizedLanguageProviderProps {
@@ -15,6 +21,10 @@ interface OptimizedLanguageProviderProps {
   initialLanguage: string;
 }
 
+/**
+ * @deprecated Use @/mcp/language/LanguageMCP instead
+ * This provider is maintained for backward compatibility only
+ */
 export const OptimizedLanguageProvider: React.FC<OptimizedLanguageProviderProps> = ({ 
   children, 
   initialLanguage 
@@ -146,6 +156,9 @@ export const OptimizedLanguageProvider: React.FC<OptimizedLanguageProviderProps>
   );
 };
 
+/**
+ * @deprecated Use useLanguageMCP from @/mcp/language/LanguageMCP instead
+ */
 export const useOptimizedLanguage = () => {
   const context = useContext(OptimizedLanguageContext);
   if (context === undefined) {
