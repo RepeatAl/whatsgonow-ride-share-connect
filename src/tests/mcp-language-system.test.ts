@@ -66,9 +66,10 @@ describe('MCP Language System - Component Tests', () => {
   describe('LanguageMCP Provider', () => {
     it('should provide default language context', async () => {
       render(
-        React.createElement(TestWrapper, { initialLanguage: 'de' },
-          React.createElement(TestComponent)
-        )
+        React.createElement(TestWrapper, { 
+          initialLanguage: 'de',
+          children: React.createElement(TestComponent)
+        })
       );
 
       await waitFor(() => {
@@ -80,9 +81,10 @@ describe('MCP Language System - Component Tests', () => {
 
     it('should initialize with provided language', async () => {
       render(
-        React.createElement(TestWrapper, { initialLanguage: 'en' },
-          React.createElement(TestComponent)
-        )
+        React.createElement(TestWrapper, { 
+          initialLanguage: 'en',
+          children: React.createElement(TestComponent)
+        })
       );
 
       await waitFor(() => {
@@ -92,9 +94,10 @@ describe('MCP Language System - Component Tests', () => {
 
     it('should handle RTL languages correctly', async () => {
       render(
-        React.createElement(TestWrapper, { initialLanguage: 'ar' },
-          React.createElement(TestComponent)
-        )
+        React.createElement(TestWrapper, { 
+          initialLanguage: 'ar',
+          children: React.createElement(TestComponent)
+        })
       );
 
       await waitFor(() => {
@@ -118,9 +121,10 @@ describe('MCP Language System - Component Tests', () => {
 
     it('should provide all required context properties', async () => {
       render(
-        React.createElement(TestWrapper, { initialLanguage: 'de' },
-          React.createElement(TestComponent)
-        )
+        React.createElement(TestWrapper, { 
+          initialLanguage: 'de',
+          children: React.createElement(TestComponent)
+        })
       );
 
       await waitFor(() => {
@@ -137,9 +141,10 @@ describe('MCP Language System - Component Tests', () => {
       const { changeAppLanguage } = await import('@/services/LanguageService');
       
       render(
-        React.createElement(TestWrapper, { initialLanguage: 'de' },
-          React.createElement(TestComponent)
-        )
+        React.createElement(TestWrapper, { 
+          initialLanguage: 'de',
+          children: React.createElement(TestComponent)
+        })
       );
 
       const changeButton = screen.getByTestId('change-language');
@@ -163,7 +168,9 @@ describe('MCP Error Boundary Tests', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     render(
-      React.createElement(MCPErrorBoundary, { children: React.createElement(ErrorComponent) })
+      React.createElement(MCPErrorBoundary, { 
+        children: React.createElement(ErrorComponent) 
+      })
     );
 
     expect(screen.getByText('Language System Error')).toBeInTheDocument();
@@ -176,7 +183,9 @@ describe('MCP Error Boundary Tests', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     render(
-      React.createElement(MCPErrorBoundary, { children: React.createElement(ErrorComponent) })
+      React.createElement(MCPErrorBoundary, { 
+        children: React.createElement(ErrorComponent) 
+      })
     );
 
     const retryButton = screen.getByText('Try Again');
@@ -189,7 +198,9 @@ describe('MCP Error Boundary Tests', () => {
     const GoodComponent = () => React.createElement('div', null, 'Working component');
     
     render(
-      React.createElement(MCPErrorBoundary, { children: React.createElement(GoodComponent) })
+      React.createElement(MCPErrorBoundary, { 
+        children: React.createElement(GoodComponent) 
+      })
     );
 
     expect(screen.getByText('Working component')).toBeInTheDocument();
@@ -208,9 +219,10 @@ describe('MCP Performance Tests', () => {
     };
 
     render(
-      React.createElement(TestWrapper, { initialLanguage: 'de' },
-        React.createElement(CountingComponent)
-      )
+      React.createElement(TestWrapper, { 
+        initialLanguage: 'de',
+        children: React.createElement(CountingComponent)
+      })
     );
 
     await waitFor(() => {
@@ -228,9 +240,10 @@ describe('MCP Performance Tests', () => {
     };
 
     render(
-      React.createElement(TestWrapper, { initialLanguage: 'de' },
-        React.createElement(ContextTracker)
-      )
+      React.createElement(TestWrapper, { 
+        initialLanguage: 'de',
+        children: React.createElement(ContextTracker)
+      })
     );
 
     await waitFor(() => {
