@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { preRegistrationSchema, type PreRegistrationFormData } from "@/lib/validators/pre-registration";
 import { VehicleTypeSelector } from "./VehicleTypeSelector";
 import { usePreRegistrationSubmit } from "./hooks/usePreRegistrationSubmit";
@@ -17,6 +19,8 @@ import { GdprConsentField } from "./GdprConsentField";
 export function PreRegistrationForm() {
   const { t } = useTranslation('pre_register');
   const { isSubmitting, handleSubmit: submitRegistration } = usePreRegistrationSubmit();
+  const [submitSuccess, setSubmitSuccess] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string>("");
   
   const form = useForm<PreRegistrationFormData>({
     resolver: zodResolver(preRegistrationSchema),
@@ -36,6 +40,9 @@ export function PreRegistrationForm() {
   const wantsDriver = form.watch("wants_driver");
 
   const onSubmit = async (data: PreRegistrationFormData) => {
+    setSubmitError("");
+    setSubmitSuccess(false);
+    
     const result = await submitRegistration(data);
     
     if (!result.success && result.fieldErrors) {
@@ -44,12 +51,33 @@ export function PreRegistrationForm() {
           message: message as string
         });
       });
+      setSubmitError(t("errors.form_validation", { ns: 'errors' }));
+    } else if (!result.success) {
+      setSubmitError(t("errors.registration_failed", { ns: 'errors' }));
+    } else {
+      setSubmitSuccess(true);
     }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-xl mx-auto">
+        {submitError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
+        
+        {submitSuccess && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-700">
+              {t("success.title")}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <PersonalInfoFields control={form.control} />
         
         <RoleSelectionFields control={form.control} />
@@ -70,7 +98,14 @@ export function PreRegistrationForm() {
           className="w-full" 
           disabled={!form.formState.isValid || isSubmitting}
         >
-          {isSubmitting ? t("processing") : t("submit")}
+          {isSubmitting ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+              {t("processing")}
+            </>
+          ) : (
+            t("submit")
+          )}
         </Button>
       </form>
     </Form>

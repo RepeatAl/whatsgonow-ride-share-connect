@@ -2,22 +2,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { PreRegistrationFormData } from "@/lib/validators/pre-registration";
 import { supabase } from "@/lib/supabaseClient";
+import { useLanguage } from "@/contexts/language";
 import i18next from "i18next";
 
 export function usePreRegistrationSubmit() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pre_register');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { getLocalizedUrl } = useLanguage();
   
   const handleSubmit = async (data: PreRegistrationFormData) => {
     console.log("Form data on submit:", data);
     setIsSubmitting(true);
     
     try {
-      // Get session token instead of using hardcoded anon key
+      // Get session token
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
       
@@ -27,35 +29,41 @@ export function usePreRegistrationSubmit() {
         language: i18next.language // Include the current language
       };
       
-      console.log("Sending data to pre-register endpoint with auth token");
+      console.log("Sending data to pre-register endpoint with language:", submissionData.language);
       
       const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken || ""}`,
-          "Accept-Language": i18next.language // Also send as header for fallback
+          "Accept-Language": i18next.language
         },
         body: JSON.stringify(submissionData)
       });
       
       // Improved error handling
       if (!response.ok) {
-        // Try to parse error response
         let errorMessage;
         try {
           const errorData = await response.json();
           console.error("Pre-registration error response:", errorData);
           
           if (errorData.errors) {
+            // Show form field errors as toast
+            Object.entries(errorData.errors).forEach(([field, message]) => {
+              toast({
+                variant: "destructive",
+                title: t("errors.field_error", { field }),
+                description: message as string
+              });
+            });
             return { success: false, fieldErrors: errorData.errors };
           }
-          errorMessage = errorData.error || t("errors.registration_failed");
+          errorMessage = errorData.error || t("errors.registration_failed", { ns: 'errors' });
         } catch (parseError) {
-          // If we can't parse JSON, use the text
           const errorText = await response.text();
           console.error("Pre-registration error text:", errorText);
-          errorMessage = t("errors.registration_failed");
+          errorMessage = t("errors.registration_failed", { ns: 'errors' });
         }
         
         throw new Error(errorMessage);
@@ -64,19 +72,24 @@ export function usePreRegistrationSubmit() {
       const result = await response.json();
       console.log("Pre-registration success:", result);
       
-      // Use the correct translation namespace for success messages
-      toast.success(t("success.title", { ns: 'pre_register' }), {
-        description: t("success.description", { ns: 'pre_register' })
+      // Show success toast
+      toast({
+        title: t("success.title"),
+        description: t("success.description"),
+        variant: "default"
       });
 
-      // Use React Router's navigate instead of window.location.href for client-side navigation
-      navigate("/pre-register/success", { replace: true });
+      // Navigate to localized success page
+      const successUrl = getLocalizedUrl("/pre-register/success");
+      navigate(successUrl, { replace: true });
       return { success: true };
     } catch (error) {
       console.error("Pre-registration error:", error);
-      setIsSubmitting(false);
       
-      toast.error(t("errors.registration_failed"), {
+      // Show error toast with proper translation
+      toast({
+        variant: "destructive",
+        title: t("errors.registration_failed", { ns: 'errors' }),
         description: error instanceof Error ? error.message : t("common.retry")
       });
       

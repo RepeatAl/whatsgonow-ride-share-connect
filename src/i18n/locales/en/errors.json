@@ -1,11 +1,14 @@
 
 {
-  "required": "This field is required",
-  "min_length": "At least {{count}} characters required",
+  "min_length": "Must be at least {{count}} characters long",
   "invalid_email": "Invalid email address",
   "invalid_postal": "Invalid postal code",
-  "gdpr_required": "Please agree to the privacy policy",
-  "vehicle_required": "Please select at least one vehicle size",
-  "vehicle_types.error": "Please select at least one vehicle size",
-  "registration_failed": "Registration failed. Please try again later."
+  "gdpr_required": "You must agree to the privacy policy",
+  "vehicle_required": "Please select at least one vehicle type",
+  "registration_failed": "Registration failed. Please try again.",
+  "form_validation": "Please check your inputs",
+  "field_error": "Error with {{field}}",
+  "vehicle_types": {
+    "error": "Please select at least one vehicle type"
+  }
 }

@@ -1,11 +1,14 @@
 
 {
-  "required": "Dieses Feld ist erforderlich",
-  "min_length": "Mindestens {{count}} Zeichen erforderlich",
+  "min_length": "Muss mindestens {{count}} Zeichen lang sein",
   "invalid_email": "Ungültige E-Mail-Adresse",
   "invalid_postal": "Ungültige Postleitzahl",
-  "gdpr_required": "Bitte stimmen Sie den Datenschutzbestimmungen zu",
-  "vehicle_required": "Bitte mindestens eine Fahrzeuggröße auswählen",
-  "vehicle_types.error": "Bitte mindestens eine Fahrzeuggröße auswählen",
-  "registration_failed": "Registrierung fehlgeschlagen. Bitte versuche es später erneut."
+  "gdpr_required": "Sie müssen den Datenschutzbestimmungen zustimmen",
+  "vehicle_required": "Bitte wählen Sie mindestens einen Fahrzeugtyp aus",
+  "registration_failed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "form_validation": "Bitte überprüfen Sie Ihre Eingaben",
+  "field_error": "Fehler bei {{field}}",
+  "vehicle_types": {
+    "error": "Bitte wählen Sie mindestens einen Fahrzeugtyp aus"
+  }
 }
