@@ -2,11 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const CTA = () => {
   const { t, i18n, ready } = useTranslation('landing');
-  const { getLocalizedUrl } = useOptimizedLanguage();
+  const { getLocalizedUrl } = useLanguageMCP();
   const isRTL = i18n.language === 'ar';
   
   if (!ready) {
