@@ -4,13 +4,13 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useOptimizedLanguage } from "@/contexts/language/OptimizedLanguageProvider";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const Hero = () => {
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const { t, i18n, ready } = useTranslation('landing');
-  const { getLocalizedUrl } = useOptimizedLanguage();
+  const { getLocalizedUrl } = useLanguageMCP();
   
   // Debug translations in development mode
   useEffect(() => {
