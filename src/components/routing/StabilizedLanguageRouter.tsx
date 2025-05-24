@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
 import { defaultLanguage } from '@/config/supportedLanguages';
@@ -7,7 +7,6 @@ import TranslationLoader from '@/components/i18n/TranslationLoader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { languageCodes } from '@/config/supportedLanguages';
 import { getLanguageByCode, determineBestLanguage } from '@/utils/languageUtils';
-import { isPublicRoute } from '@/routes/publicRoutes';
 
 interface StabilizedLanguageRouterProps {
   children: React.ReactNode;
@@ -16,132 +15,40 @@ interface StabilizedLanguageRouterProps {
 export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentLanguage, setLanguageByCode } = useOptimizedLanguage();
-  const [isProcessingRoute, setIsProcessingRoute] = useState(false);
+  const { currentLanguage } = useOptimizedLanguage();
   
   // Extract the first part of the path to check if it's a language code
   const pathSegments = useMemo(() => location.pathname.split('/').filter(Boolean), [location.pathname]);
   const firstSegment = pathSegments[0];
   const isLanguagePrefix = languageCodes.includes(firstSegment);
   
-  // Debug logging for pre-register route
-  console.log('[StabilizedRouter] === DEBUG INFO ===');
+  console.log('[StabilizedRouter] === SIMPLIFIED DEBUG ===');
   console.log('[StabilizedRouter] Current path:', location.pathname);
-  console.log('[StabilizedRouter] Path segments:', pathSegments);
   console.log('[StabilizedRouter] First segment:', firstSegment);
   console.log('[StabilizedRouter] Is language prefix:', isLanguagePrefix);
   console.log('[StabilizedRouter] Current language:', currentLanguage);
   
-  if (location.pathname.includes('pre-register')) {
-    console.log('[StabilizedRouter] PRE-REGISTER ROUTE DETECTED');
-    console.log('[StabilizedRouter] Will pass to AppRoutes for handling');
-  }
-  
   // Determine best language based on user preferences - memoized
-  const getBestLanguage = useCallback(() => {
+  const getBestLanguage = () => {
     const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
     const storedLang = localStorage.getItem('i18nextLng');
-    
     return determineBestLanguage(browserLang, storedLang);
-  }, []);
-  
+  };
+
   // Memoize required namespaces based on route
-  const getRequiredNamespaces = useCallback(() => {
+  const getRequiredNamespaces = () => {
     const path = location.pathname.toLowerCase();
     const baseNamespaces = ['common'];
     
     if (path.includes('/dashboard')) return [...baseNamespaces, 'dashboard'];
     if (path.includes('/profile')) return [...baseNamespaces, 'auth'];
     if (path.includes('/faq')) return [...baseNamespaces, 'faq'];
-    if (path.includes('/pre-register')) return [...baseNamespaces, 'pre_register'];
+    if (path.includes('/pre-register')) return [...baseNamespaces, 'pre_register', 'errors'];
     if (path.includes('/login') || path.includes('/register')) return [...baseNamespaces, 'auth'];
     if (path.includes('/feedback')) return [...baseNamespaces, 'feedback'];
     
     return [...baseNamespaces, 'landing'];
-  }, [location.pathname]);
-
-  // Handle routing logic with reduced redirects
-  useEffect(() => {
-    if (isProcessingRoute) return;
-
-    const handleRouteChange = async () => {
-      console.log('[StabilizedRouter] Handling route change for:', location.pathname);
-      
-      // Check if path includes language code
-      if (isLanguagePrefix) {
-        const langMetadata = getLanguageByCode(firstSegment);
-        
-        // Valid language prefix exists in URL, update language if different
-        if (langMetadata && firstSegment !== currentLanguage) {
-          console.log(`[StabilizedRouter] Updating language from URL: ${firstSegment}`);
-          setIsProcessingRoute(true);
-          await setLanguageByCode(firstSegment, false);
-          setIsProcessingRoute(false);
-        }
-        
-        // Check if the route after language prefix is valid
-        const pathWithoutLang = '/' + pathSegments.slice(1).join('/');
-        const cleanPath = pathWithoutLang === '/' ? '/' : pathWithoutLang;
-        console.log('[StabilizedRouter] Path without language:', cleanPath);
-        console.log('[StabilizedRouter] Is public route:', isPublicRoute(cleanPath));
-        
-        // For pre-register specifically
-        if (cleanPath === '/pre-register') {
-          console.log('[StabilizedRouter] Pre-register route - will be handled by AppRoutes');
-        }
-        
-      } 
-      // No language prefix in URL - add it for public routes
-      else if (location.pathname !== '/') {
-        // Check if this is a public route
-        const cleanPath = location.pathname;
-        
-        if (isPublicRoute(cleanPath) || cleanPath === '/') {
-          setIsProcessingRoute(true);
-          
-          try {
-            const bestLang = getBestLanguage();
-            const redirectPath = location.pathname === '/' 
-              ? `/${bestLang}` 
-              : `/${bestLang}${location.pathname}`;
-            
-            console.log(`[StabilizedRouter] Adding language prefix: ${redirectPath}`);
-            navigate(redirectPath + location.search, { replace: true });
-          } catch (error) {
-            console.error('[StabilizedRouter] Error during language redirect:', error);
-            navigate(`/${defaultLanguage}${location.pathname}`, { replace: true });
-          } finally {
-            setIsProcessingRoute(false);
-          }
-        }
-      }
-    };
-
-    // Debounce route changes to prevent rapid redirects
-    const timeoutId = setTimeout(handleRouteChange, 50);
-    return () => clearTimeout(timeoutId);
-  }, [
-    location.pathname, 
-    firstSegment, 
-    isLanguagePrefix, 
-    currentLanguage, 
-    setLanguageByCode, 
-    navigate, 
-    isProcessingRoute,
-    getBestLanguage,
-    pathSegments
-  ]);
-  
-  // If we're processing a route change, show minimal loading
-  if (isProcessingRoute) {
-    return (
-      <div className="flex justify-center items-center" style={{ minHeight: '50vh' }}>
-        <div className="text-center">
-          <div className="w-8 h-8 border-t-4 border-brand-primary border-solid rounded-full animate-spin mx-auto mb-2"></div>
-        </div>
-      </div>
-    );
-  }
+  };
 
   return (
     <TranslationLoader namespaces={getRequiredNamespaces()} fallback={
@@ -169,6 +76,21 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
             console.log('[StabilizedRouter] Root redirect to:', `/${bestLang}`);
             navigate(`/${bestLang}`, { replace: true });
             return null;
+          })()
+        } />
+        
+        {/* Catch unmatched paths and redirect with language prefix */}
+        <Route path="*" element={
+          (() => {
+            if (!isLanguagePrefix && location.pathname !== '/') {
+              const bestLang = getBestLanguage();
+              const redirectPath = `/${bestLang}${location.pathname}`;
+              console.log('[StabilizedRouter] Adding language prefix:', redirectPath);
+              navigate(redirectPath, { replace: true });
+              return null;
+            }
+            // If we have a language prefix but still hit this route, let AppRoutes handle it
+            return children;
           })()
         } />
       </Routes>

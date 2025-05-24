@@ -13,7 +13,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const location = useLocation();
   const { getLocalizedUrl, currentLanguage } = useOptimizedLanguage();
   
-  console.log('[PublicRoute] === DEBUG INFO ===');
+  console.log('[PublicRoute] === SIMPLIFIED DEBUG ===');
   console.log('[PublicRoute] Current path:', location.pathname);
   console.log('[PublicRoute] User:', user ? 'authenticated' : 'not authenticated');
   console.log('[PublicRoute] Loading:', loading);
@@ -21,36 +21,27 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   // Special handling for pre-register route
   if (location.pathname.includes('pre-register')) {
     console.log('[PublicRoute] *** PRE-REGISTER ROUTE DETECTED ***');
-    console.log('[PublicRoute] Will render pre-register component');
+    console.log('[PublicRoute] Will render pre-register component immediately');
     console.log('[PublicRoute] Loading state:', loading);
-    console.log('[PublicRoute] User state:', user ? 'logged in' : 'not logged in');
   }
   
   // Check if we're coming from another page (redirect)
   const from = location.state?.from || '/';
   
-  // If user is authenticated and tries to access login/register pages, redirect them
-  const isAuthPage = location.pathname.includes('/login') || 
-                     location.pathname.includes('/register');
+  // If user is authenticated and tries to access strict auth pages, redirect them
+  const isStrictAuthPage = location.pathname.includes('/login') || 
+                          (location.pathname.includes('/register') && !location.pathname.includes('/pre-register'));
   
-  // Pre-register is NOT an auth page - it's accessible to everyone
-  const isPreRegisterPage = location.pathname.includes('/pre-register');
-  
-  console.log('[PublicRoute] Is auth page:', isAuthPage);
-  console.log('[PublicRoute] Is pre-register page:', isPreRegisterPage);
+  console.log('[PublicRoute] Is strict auth page:', isStrictAuthPage);
                      
-  if (!loading && user && isAuthPage && !isPreRegisterPage) {
-    // Only redirect if it's a strict auth page (login/register), not pre-register
+  if (!loading && user && isStrictAuthPage) {
     console.log('[PublicRoute] Redirecting authenticated user away from auth page');
     const redirectUrl = getLocalizedUrl(from !== '/' ? from : '/dashboard', currentLanguage);
     return <Navigate to={redirectUrl} replace />;
   }
   
-  // For all other public routes (including pre-register), simply render the children when not loading
+  // For all other public routes (including pre-register), render immediately when not loading
   console.log('[PublicRoute] Rendering children for public route');
-  if (isPreRegisterPage) {
-    console.log('[PublicRoute] *** RENDERING PRE-REGISTER CHILDREN ***');
-  }
   
   return <>{!loading && children}</>;
 };

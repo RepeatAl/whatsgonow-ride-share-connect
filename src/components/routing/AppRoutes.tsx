@@ -54,19 +54,15 @@ import ShadcnDemo from '@/pages/ShadcnDemo';
 import UsersPage from '@/pages/admin/users';
 import PreRegistrationsPage from '@/pages/admin/PreRegistrationsPage';
 import Support from '@/pages/Support';
-
-// Neu importierte Seiten
 import TranslationFeedbackAdmin from '@/pages/admin/TranslationFeedbackAdmin';
 import TranslationFeedbackDetail from '@/pages/admin/TranslationFeedbackDetail';
 
 const AppRoutes: React.FC = () => {
-  console.log('[AppRoutes] === MOUNTING AppRoutes COMPONENT ===');
+  console.log('[AppRoutes] === SIMPLIFIED MOUNTING ===');
   console.log('[AppRoutes] Current location:', window.location.pathname);
   
   return (
     <Routes>
-      {/* PUBLIC ROUTES - PRIORITIZED ORDER */}
-      
       {/* PRE-REGISTER ROUTES - HIGHEST PRIORITY */}
       <Route path="pre-register" element={
         (() => {
@@ -79,16 +75,26 @@ const AppRoutes: React.FC = () => {
         })()
       } />
       <Route path="pre-register/success" element={
-        <PublicRoute>
-          <PreRegisterSuccess />
-        </PublicRoute>
+        (() => {
+          console.log('[AppRoutes] *** PRE-REGISTER SUCCESS ROUTE MATCHED ***');
+          return (
+            <PublicRoute>
+              <PreRegisterSuccess />
+            </PublicRoute>
+          );
+        })()
       } />
       
       {/* ROOT AND AUTH ROUTES */}
       <Route path="" element={
-        <PublicRoute>
-          <Landing />
-        </PublicRoute>
+        (() => {
+          console.log('[AppRoutes] *** ROOT ROUTE MATCHED ***');
+          return (
+            <PublicRoute>
+              <Landing />
+            </PublicRoute>
+          );
+        })()
       } />
       <Route path="login" element={
         <PublicRoute>
@@ -208,9 +214,14 @@ const AppRoutes: React.FC = () => {
       <Route path="shadcn-demo" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ShadcnDemo /></ProtectedRoute>} />
 
       {/* 404 route */}
-      <Route path="404" element={<NotFound />} />
+      <Route path="404" element={
+        (() => {
+          console.log('[AppRoutes] *** 404 ROUTE MATCHED ***');
+          return <NotFound />;
+        })()
+      } />
       
-      {/* Catch-all route within AppRoutes - redirect to 404 */}
+      {/* Catch-all route - redirect to 404 */}
       <Route path="*" element={
         (() => {
           console.log('[AppRoutes] *** CATCH-ALL ROUTE - REDIRECTING TO 404 ***');

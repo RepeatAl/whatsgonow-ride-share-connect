@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { changeAppLanguage } from '@/services/LanguageService';
 import { supportedLanguages } from '@/config/supportedLanguages';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,12 +14,15 @@ import { extractLanguageFromUrl, addLanguageToUrl } from './utils';
 const OptimizedLanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const OptimizedLanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const [currentLanguage, setCurrentLanguage] = useState<string>(defaultLanguage);
-  const [languageLoading, setLanguageLoading] = useState<boolean>(false); // Start with false to prevent flashing
+  const [languageLoading, setLanguageLoading] = useState<boolean>(false);
   const [isRtl, setIsRtl] = useState<boolean>(false);
   const { user } = useAuth();
+
+  console.log('[OptimizedLanguageProvider] === SIMPLIFIED DEBUG ===');
+  console.log('[OptimizedLanguageProvider] Current path:', location.pathname);
+  console.log('[OptimizedLanguageProvider] Current language:', currentLanguage);
 
   // Memoize language metadata
   const currentLanguageMeta = useMemo(() => {
@@ -36,9 +39,11 @@ export const OptimizedLanguageProvider: React.FC<{ children: React.ReactNode }> 
     }
   }, []);
 
-  // Memoized method to set language and update URL
+  // Simplified language setter - NO URL manipulation
   const setLanguageByCode = useCallback(async (lang: string, storeInProfile: boolean = true) => {
-    if (lang === currentLanguage) return; // Prevent unnecessary updates
+    if (lang === currentLanguage) return;
+    
+    console.log('[OptimizedLanguageProvider] Setting language to:', lang);
     
     try {
       setLanguageLoading(true);
@@ -54,12 +59,6 @@ export const OptimizedLanguageProvider: React.FC<{ children: React.ReactNode }> 
       setCurrentLanguage(lang);
       setIsRtl(langMeta.rtl ?? false);
       
-      // Update URL silently without navigation
-      const newPath = addLanguageToUrl(location.pathname, lang);
-      if (newPath !== location.pathname) {
-        window.history.replaceState(null, '', newPath + location.search);
-      }
-      
       // Store preference in user profile if logged in
       if (user?.id && storeInProfile) {
         try {
@@ -68,20 +67,20 @@ export const OptimizedLanguageProvider: React.FC<{ children: React.ReactNode }> 
             .update({ language: lang })
             .eq('user_id', user.id);
             
-          console.log('[LANG] Updated user profile language preference:', lang);
+          console.log('[OptimizedLanguageProvider] Updated user profile language preference:', lang);
         } catch (error) {
-          console.error('[LANG] Failed to update user language preference:', error);
+          console.error('[OptimizedLanguageProvider] Failed to update user language preference:', error);
         }
       }
 
     } catch (error) {
-      console.error('[LANG] Error changing language:', error);
+      console.error('[OptimizedLanguageProvider] Error changing language:', error);
     } finally {
       setLanguageLoading(false);
     }
-  }, [currentLanguage, location.pathname, location.search, user?.id]);
+  }, [currentLanguage, user?.id]);
 
-  // Memoized URL helpers
+  // Memoized URL helpers - NO navigation, just URL construction
   const getLocalizedUrl = useCallback((path: string, lang?: string) => {
     const targetLang = lang || currentLanguage;
     return addLanguageToUrl(path, targetLang);
@@ -98,24 +97,22 @@ export const OptimizedLanguageProvider: React.FC<{ children: React.ReactNode }> 
     }
   }, [currentLanguage, setLanguageByCode]);
 
-  // Initialize language from URL on first load - simplified
+  // Initialize language from URL on first load - SIMPLIFIED
   useEffect(() => {
-    const initLanguage = async () => {
-      const urlLang = extractLanguageFromUrl(location.pathname);
-      
-      // Only update if different from current
-      if (urlLang && urlLang !== currentLanguage) {
-        const langMeta = supportedLanguages.find(l => l.code === urlLang);
-        if (langMeta) {
-          setCurrentLanguage(urlLang);
-          setIsRtl(langMeta.rtl ?? false);
-          await changeAppLanguage(urlLang);
-        }
-      }
-    };
+    const urlLang = extractLanguageFromUrl(location.pathname);
+    console.log('[OptimizedLanguageProvider] URL language detected:', urlLang);
     
-    initLanguage();
-  }, []); // Only run once on mount
+    // Only update if different from current and is a valid language
+    if (urlLang && urlLang !== currentLanguage) {
+      const langMeta = supportedLanguages.find(l => l.code === urlLang);
+      if (langMeta) {
+        console.log('[OptimizedLanguageProvider] Initializing language from URL:', urlLang);
+        setCurrentLanguage(urlLang);
+        setIsRtl(langMeta.rtl ?? false);
+        changeAppLanguage(urlLang);
+      }
+    }
+  }, []); // Only run once on mount - NO dependency on location.pathname
 
   // Memoized context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({

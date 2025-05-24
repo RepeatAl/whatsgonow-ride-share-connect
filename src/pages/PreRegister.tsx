@@ -13,6 +13,7 @@ const PreRegisterContent = () => {
     console.log('[PreRegister] *** COMPONENT MOUNTED SUCCESSFULLY ***');
     console.log('[PreRegister] Current location:', window.location.pathname);
     console.log('[PreRegister] Translation ready:', !!t);
+    console.log('[PreRegister] Title translation:', t('title'));
   }, [t]);
   
   return (
