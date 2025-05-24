@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import AppRoutes from './components/routing/AppRoutes';
-import { StabilizedLanguageRouter } from './components/routing/StabilizedLanguageRouter';
-import { OptimizedLanguageProvider } from './contexts/language/OptimizedLanguageProvider';
+import MCPRouter from './components/routing/MCPRouter';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { UserSessionProvider } from './contexts/UserSessionContext';
@@ -31,14 +29,10 @@ function App() {
           <ThemeProvider>
             <UserSessionProvider>
               <AuthProvider>
-                <OptimizedLanguageProvider>
-                  <TooltipProvider>
-                    <StabilizedLanguageRouter>
-                      <AppRoutes />
-                    </StabilizedLanguageRouter>
-                    <Toaster />
-                  </TooltipProvider>
-                </OptimizedLanguageProvider>
+                <TooltipProvider>
+                  <MCPRouter />
+                  <Toaster />
+                </TooltipProvider>
               </AuthProvider>
             </UserSessionProvider>
           </ThemeProvider>

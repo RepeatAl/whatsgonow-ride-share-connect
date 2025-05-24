@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
+
+// Import all page components
 import Landing from '@/pages/Landing';
 import Dashboard from '@/pages/Dashboard';
 import Profile from '@/pages/Profile';
@@ -57,119 +60,41 @@ import Support from '@/pages/Support';
 import TranslationFeedbackAdmin from '@/pages/admin/TranslationFeedbackAdmin';
 import TranslationFeedbackDetail from '@/pages/admin/TranslationFeedbackDetail';
 
+/**
+ * Simple route matcher - no logic, just route definitions
+ * All language and auth logic is handled by MCPRouter and route guards
+ */
 const AppRoutes: React.FC = () => {
-  console.log('[AppRoutes] === SIMPLIFIED MOUNTING ===');
-  console.log('[AppRoutes] Current location:', window.location.pathname);
-  
   return (
     <Routes>
-      {/* PRE-REGISTER ROUTES - HIGHEST PRIORITY */}
-      <Route path="pre-register" element={
-        (() => {
-          console.log('[AppRoutes] *** PRE-REGISTER ROUTE MATCHED ***');
-          return (
-            <PublicRoute>
-              <PreRegister />
-            </PublicRoute>
-          );
-        })()
-      } />
-      <Route path="pre-register/success" element={
-        (() => {
-          console.log('[AppRoutes] *** PRE-REGISTER SUCCESS ROUTE MATCHED ***');
-          return (
-            <PublicRoute>
-              <PreRegisterSuccess />
-            </PublicRoute>
-          );
-        })()
-      } />
+      {/* Root route */}
+      <Route path="" element={<PublicRoute><Landing /></PublicRoute>} />
       
-      {/* ROOT AND AUTH ROUTES */}
-      <Route path="" element={
-        (() => {
-          console.log('[AppRoutes] *** ROOT ROUTE MATCHED ***');
-          return (
-            <PublicRoute>
-              <Landing />
-            </PublicRoute>
-          );
-        })()
-      } />
-      <Route path="login" element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      } />
-      <Route path="register" element={
-        <PublicRoute>
-          <Register />
-        </PublicRoute>
-      } />
-      <Route path="register/success" element={
-        <PublicRoute>
-          <RegisterSuccess />
-        </PublicRoute>
-      } />
-      <Route path="forgot-password" element={
-        <PublicRoute>
-          <ForgotPassword />
-        </PublicRoute>
-      } />
-      <Route path="reset-password" element={
-        <PublicRoute>
-          <ResetPassword />
-        </PublicRoute>
-      } />
+      {/* Pre-register routes */}
+      <Route path="pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
+      <Route path="pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
       
-      {/* OTHER PUBLIC ROUTES */}
-      <Route path="faq" element={
-        <PublicRoute>
-          <Faq />
-        </PublicRoute>
-      } />
-      <Route path="support" element={
-        <PublicRoute>
-          <Support />
-        </PublicRoute>
-      } />
-      <Route path="mobile-upload/:sessionId" element={
-        <PublicRoute>
-          <MobileUpload />
-        </PublicRoute>
-      } />
-      <Route path="upload-complete" element={
-        <PublicRoute>
-          <UploadComplete />
-        </PublicRoute>
-      } />
-      <Route path="delivery/:token" element={
-        <PublicRoute>
-          <DeliveryConfirmationPage />
-        </PublicRoute>
-      } />
-      <Route path="invoice-download/:token" element={
-        <PublicRoute>
-          <InvoiceDownload />
-        </PublicRoute>
-      } />
-      <Route path="legal" element={
-        <PublicRoute>
-          <Legal />
-        </PublicRoute>
-      } />
-      <Route path="privacy-policy" element={
-        <PublicRoute>
-          <PrivacyPolicy />
-        </PublicRoute>
-      } />
-      <Route path="payment/status" element={
-        <PublicRoute>
-          <PaymentStatus />
-        </PublicRoute>
-      } />
+      {/* Auth routes */}
+      <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
+      <Route path="forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+      <Route path="reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+      
+      {/* Public pages */}
+      <Route path="faq" element={<PublicRoute><Faq /></PublicRoute>} />
+      <Route path="support" element={<PublicRoute><Support /></PublicRoute>} />
+      <Route path="legal" element={<PublicRoute><Legal /></PublicRoute>} />
+      <Route path="privacy-policy" element={<PublicRoute><PrivacyPolicy /></PublicRoute>} />
+      
+      {/* Public utility routes */}
+      <Route path="mobile-upload/:sessionId" element={<PublicRoute><MobileUpload /></PublicRoute>} />
+      <Route path="upload-complete" element={<PublicRoute><UploadComplete /></PublicRoute>} />
+      <Route path="delivery/:token" element={<PublicRoute><DeliveryConfirmationPage /></PublicRoute>} />
+      <Route path="invoice-download/:token" element={<PublicRoute><InvoiceDownload /></PublicRoute>} />
+      <Route path="payment/status" element={<PublicRoute><PaymentStatus /></PublicRoute>} />
 
-      {/* PROTECTED ROUTES */}
+      {/* Protected routes */}
       <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="dashboard/admin" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><DashboardAdmin /></ProtectedRoute>} />
       <Route path="dashboard/cm" element={<ProtectedRoute allowedRoles={['cm']}><DashboardCM /></ProtectedRoute>} />
@@ -177,14 +102,20 @@ const AppRoutes: React.FC = () => {
       <Route path="dashboard/sender" element={<ProtectedRoute allowedRoles={['sender_private', 'sender_business']}><DashboardSender /></ProtectedRoute>} />
       <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="complete-profile" element={<ProtectedRoute><CompleteProfile /></ProtectedRoute>} />
+
+      {/* Order routes */}
       <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
       <Route path="orders/drafts" element={<ProtectedRoute allowedRoles={['sender_private', 'sender_business']}><DraftList /></ProtectedRoute>} />
       <Route path="orders/drafts/:draftId/edit" element={<ProtectedRoute allowedRoles={['sender_private', 'sender_business']}><DraftEdit /></ProtectedRoute>} />
       <Route path="orders/mine" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
       <Route path="create-order" element={<ProtectedRoute allowedRoles={['sender_private', 'sender_business']}><CreateOrder /></ProtectedRoute>} />
       <Route path="deal/:orderId" element={<ProtectedRoute><Deal /></ProtectedRoute>} />
+
+      {/* Transport routes */}
       <Route path="find-transport" element={<ProtectedRoute><FindTransport /></ProtectedRoute>} />
       <Route path="offer-transport" element={<ProtectedRoute allowedRoles={['driver']}><OfferTransport /></ProtectedRoute>} />
+
+      {/* User features */}
       <Route path="feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
       <Route path="community-manager" element={<ProtectedRoute allowedRoles={['cm']}><CommunityManager /></ProtectedRoute>} />
       <Route path="data-deletion" element={<ProtectedRoute><DataDeletion /></ProtectedRoute>} />
@@ -201,8 +132,6 @@ const AppRoutes: React.FC = () => {
       <Route path="admin/pre-registrations" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><PreRegistrationsPage /></ProtectedRoute>} />
       <Route path="admin/users" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><UsersPage /></ProtectedRoute>} />
       <Route path="admin/invoice-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><AdminInvoiceTest /></ProtectedRoute>} />
-      
-      {/* Translation Feedback Admin Routes */}
       <Route path="admin/translation-feedback" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><TranslationFeedbackAdmin /></ProtectedRoute>} />
       <Route path="admin/translation-feedback/:id" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><TranslationFeedbackDetail /></ProtectedRoute>} />
 
@@ -213,22 +142,9 @@ const AppRoutes: React.FC = () => {
       <Route path="create-order-with-items-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><CreateOrderWithItemsTest /></ProtectedRoute>} />
       <Route path="shadcn-demo" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ShadcnDemo /></ProtectedRoute>} />
 
-      {/* 404 route */}
-      <Route path="404" element={
-        (() => {
-          console.log('[AppRoutes] *** 404 ROUTE MATCHED ***');
-          return <NotFound />;
-        })()
-      } />
-      
-      {/* Catch-all route - redirect to 404 */}
-      <Route path="*" element={
-        (() => {
-          console.log('[AppRoutes] *** CATCH-ALL ROUTE - REDIRECTING TO 404 ***');
-          console.log('[AppRoutes] Unmatched path:', window.location.pathname);
-          return <Navigate to="404" replace />;
-        })()
-      } />
+      {/* Error routes */}
+      <Route path="404" element={<NotFound />} />
+      <Route path="*" element={<Navigate to="404" replace />} />
     </Routes>
   );
 };
