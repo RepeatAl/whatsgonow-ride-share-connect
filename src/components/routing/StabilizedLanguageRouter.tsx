@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useOptimizedLanguage } from '@/contexts/language/OptimizedLanguageProvider';
 import { defaultLanguage } from '@/config/supportedLanguages';
 import TranslationLoader from '@/components/i18n/TranslationLoader';
@@ -24,12 +24,18 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
   const firstSegment = pathSegments[0];
   const isLanguagePrefix = languageCodes.includes(firstSegment);
   
-  // Debug logging
+  // Debug logging for pre-register route
+  console.log('[StabilizedRouter] === DEBUG INFO ===');
   console.log('[StabilizedRouter] Current path:', location.pathname);
   console.log('[StabilizedRouter] Path segments:', pathSegments);
   console.log('[StabilizedRouter] First segment:', firstSegment);
   console.log('[StabilizedRouter] Is language prefix:', isLanguagePrefix);
   console.log('[StabilizedRouter] Current language:', currentLanguage);
+  
+  if (location.pathname.includes('pre-register')) {
+    console.log('[StabilizedRouter] PRE-REGISTER ROUTE DETECTED');
+    console.log('[StabilizedRouter] Will pass to AppRoutes for handling');
+  }
   
   // Determine best language based on user preferences - memoized
   const getBestLanguage = useCallback(() => {
@@ -78,6 +84,11 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
         const cleanPath = pathWithoutLang === '/' ? '/' : pathWithoutLang;
         console.log('[StabilizedRouter] Path without language:', cleanPath);
         console.log('[StabilizedRouter] Is public route:', isPublicRoute(cleanPath));
+        
+        // For pre-register specifically
+        if (cleanPath === '/pre-register') {
+          console.log('[StabilizedRouter] Pre-register route - will be handled by AppRoutes');
+        }
         
       } 
       // No language prefix in URL - add it for public routes
@@ -143,7 +154,7 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
       </div>
     }>
       <Routes>
-        {/* Language-prefixed routes */}
+        {/* Language-prefixed routes - simplified to just pass through to children */}
         {languageCodes.map(lang => {
           console.log(`[StabilizedRouter] Setting up route for language: ${lang}`);
           return (
@@ -151,11 +162,15 @@ export const StabilizedLanguageRouter: React.FC<StabilizedLanguageRouterProps> =
           );
         })}
         
-        {/* Root path redirects to best language */}
-        <Route path="/" element={<Navigate to={`/${currentLanguage}`} replace />} />
-        
-        {/* Catch-all route for true 404s */}
-        <Route path="*" element={<Navigate to={`/${currentLanguage}/404`} replace />} />
+        {/* Root path redirects to best language - ONLY for root */}
+        <Route path="/" element={
+          (() => {
+            const bestLang = getBestLanguage();
+            console.log('[StabilizedRouter] Root redirect to:', `/${bestLang}`);
+            navigate(`/${bestLang}`, { replace: true });
+            return null;
+          })()
+        } />
       </Routes>
     </TranslationLoader>
   );

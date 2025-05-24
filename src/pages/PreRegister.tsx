@@ -1,5 +1,5 @@
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Layout from "@/components/Layout";
 import { PreRegistrationForm } from "@/components/pre-registration/PreRegistrationForm";
@@ -8,6 +8,12 @@ import { StabilizedAppBootstrap } from "@/components/StabilizedAppBootstrap";
 
 const PreRegisterContent = () => {
   const { t } = useTranslation('pre_register');
+  
+  useEffect(() => {
+    console.log('[PreRegister] *** COMPONENT MOUNTED SUCCESSFULLY ***');
+    console.log('[PreRegister] Current location:', window.location.pathname);
+    console.log('[PreRegister] Translation ready:', !!t);
+  }, [t]);
   
   return (
     <Layout>
@@ -28,6 +34,11 @@ const PreRegisterContent = () => {
 };
 
 export default function PreRegister() {
+  useEffect(() => {
+    console.log('[PreRegister] *** OUTER COMPONENT MOUNTING ***');
+    console.log('[PreRegister] Path:', window.location.pathname);
+  }, []);
+
   return (
     <StabilizedAppBootstrap 
       requiredNamespaces={['pre_register', 'errors', 'common']} 

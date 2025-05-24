@@ -60,11 +60,31 @@ import TranslationFeedbackAdmin from '@/pages/admin/TranslationFeedbackAdmin';
 import TranslationFeedbackDetail from '@/pages/admin/TranslationFeedbackDetail';
 
 const AppRoutes: React.FC = () => {
-  console.log('[AppRoutes] Rendering AppRoutes component');
+  console.log('[AppRoutes] === MOUNTING AppRoutes COMPONENT ===');
+  console.log('[AppRoutes] Current location:', window.location.pathname);
   
   return (
     <Routes>
-      {/* Public routes - now relative paths */}
+      {/* PUBLIC ROUTES - PRIORITIZED ORDER */}
+      
+      {/* PRE-REGISTER ROUTES - HIGHEST PRIORITY */}
+      <Route path="pre-register" element={
+        (() => {
+          console.log('[AppRoutes] *** PRE-REGISTER ROUTE MATCHED ***');
+          return (
+            <PublicRoute>
+              <PreRegister />
+            </PublicRoute>
+          );
+        })()
+      } />
+      <Route path="pre-register/success" element={
+        <PublicRoute>
+          <PreRegisterSuccess />
+        </PublicRoute>
+      } />
+      
+      {/* ROOT AND AUTH ROUTES */}
       <Route path="" element={
         <PublicRoute>
           <Landing />
@@ -95,16 +115,8 @@ const AppRoutes: React.FC = () => {
           <ResetPassword />
         </PublicRoute>
       } />
-      <Route path="pre-register" element={
-        <PublicRoute>
-          <PreRegister />
-        </PublicRoute>
-      } />
-      <Route path="pre-register/success" element={
-        <PublicRoute>
-          <PreRegisterSuccess />
-        </PublicRoute>
-      } />
+      
+      {/* OTHER PUBLIC ROUTES */}
       <Route path="faq" element={
         <PublicRoute>
           <Faq />
@@ -151,7 +163,7 @@ const AppRoutes: React.FC = () => {
         </PublicRoute>
       } />
 
-      {/* Protected routes - now relative paths */}
+      {/* PROTECTED ROUTES */}
       <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="dashboard/admin" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><DashboardAdmin /></ProtectedRoute>} />
       <Route path="dashboard/cm" element={<ProtectedRoute allowedRoles={['cm']}><DashboardCM /></ProtectedRoute>} />
@@ -175,7 +187,7 @@ const AppRoutes: React.FC = () => {
       <Route path="tracking/:orderId" element={<ProtectedRoute><Tracking /></ProtectedRoute>} />
       <Route path="trust-management" element={<ProtectedRoute><TrustManagement /></ProtectedRoute>} />
 
-      {/* Admin routes - now relative paths */}
+      {/* Admin routes */}
       <Route path="admin" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><Admin /></ProtectedRoute>} />
       <Route path="admin/dashboard" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><AdminAnalytics /></ProtectedRoute>} />
       <Route path="admin/validation" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ValidationAdmin /></ProtectedRoute>} />
@@ -184,22 +196,28 @@ const AppRoutes: React.FC = () => {
       <Route path="admin/users" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><UsersPage /></ProtectedRoute>} />
       <Route path="admin/invoice-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><AdminInvoiceTest /></ProtectedRoute>} />
       
-      {/* Translation Feedback Admin Routes - now relative paths */}
+      {/* Translation Feedback Admin Routes */}
       <Route path="admin/translation-feedback" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><TranslationFeedbackAdmin /></ProtectedRoute>} />
       <Route path="admin/translation-feedback/:id" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><TranslationFeedbackDetail /></ProtectedRoute>} />
 
-      {/* Development routes - now relative paths */}
+      {/* Development routes */}
       <Route path="email-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><EmailTest /></ProtectedRoute>} />
       <Route path="rls-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><RLSTest /></ProtectedRoute>} />
       <Route path="item-upload-demo" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ItemUploadDemoPage /></ProtectedRoute>} />
       <Route path="create-order-with-items-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><CreateOrderWithItemsTest /></ProtectedRoute>} />
       <Route path="shadcn-demo" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ShadcnDemo /></ProtectedRoute>} />
 
-      {/* 404 route - now relative path */}
+      {/* 404 route */}
       <Route path="404" element={<NotFound />} />
       
-      {/* Catch-all route - should stay in current language context */}
-      <Route path="*" element={<Navigate to="404" replace />} />
+      {/* Catch-all route within AppRoutes - redirect to 404 */}
+      <Route path="*" element={
+        (() => {
+          console.log('[AppRoutes] *** CATCH-ALL ROUTE - REDIRECTING TO 404 ***');
+          console.log('[AppRoutes] Unmatched path:', window.location.pathname);
+          return <Navigate to="404" replace />;
+        })()
+      } />
     </Routes>
   );
 };
