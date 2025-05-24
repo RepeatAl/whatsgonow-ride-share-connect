@@ -1,57 +1,12 @@
 
-import { Suspense, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import Layout from "@/components/Layout";
-import { PreRegistrationForm } from "@/components/pre-registration/PreRegistrationForm";
-import { StableLoading } from "@/components/ui/stable-loading";
-import { StabilizedAppBootstrap } from "@/components/StabilizedAppBootstrap";
-
-const PreRegisterContent = () => {
-  const { t } = useTranslation('pre_register');
-  
-  useEffect(() => {
-    console.log('[PreRegister] *** COMPONENT MOUNTED SUCCESSFULLY ***');
-    console.log('[PreRegister] Current location:', window.location.pathname);
-    console.log('[PreRegister] Translation ready:', !!t);
-    console.log('[PreRegister] Title translation:', t('title'));
-  }, [t]);
-  
-  return (
-    <Layout>
-      <div className="container py-12">
-        <div className="max-w-2xl mx-auto text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">
-            {t('title')}
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            {t('subtitle')}
-          </p>
-        </div>
-
-        <PreRegistrationForm />
-      </div>
-    </Layout>
-  );
-};
+import { useEffect } from "react";
 
 export default function PreRegister() {
+  console.log('[DEBUG] PreRegister function called!');
+  
   useEffect(() => {
-    console.log('[PreRegister] *** OUTER COMPONENT MOUNTING ***');
-    console.log('[PreRegister] Path:', window.location.pathname);
+    console.log('[DEBUG] PreRegister mounted!');
   }, []);
-
-  return (
-    <StabilizedAppBootstrap 
-      requiredNamespaces={['pre_register', 'errors', 'common']} 
-      requireAuth={false}
-    >
-      <Suspense fallback={
-        <Layout>
-          <StableLoading variant="page" message="Seite wird geladen..." />
-        </Layout>
-      }>
-        <PreRegisterContent />
-      </Suspense>
-    </StabilizedAppBootstrap>
-  );
+  
+  return <div style={{ padding: '20px', fontSize: '24px', color: 'green' }}>PREREGISTER WORKS!</div>;
 }
