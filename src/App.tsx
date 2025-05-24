@@ -2,8 +2,8 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import AppRoutes from './components/routing/AppRoutes';
-import { EnhancedLanguageRouter } from './components/routing/EnhancedLanguageRouter';
-import { LanguageProvider } from './contexts/language';
+import { StabilizedLanguageRouter } from './components/routing/StabilizedLanguageRouter';
+import { OptimizedLanguageProvider } from './contexts/language/OptimizedLanguageProvider';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { UserSessionProvider } from './contexts/UserSessionContext';
@@ -27,20 +27,22 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <ThemeProvider>
-          <UserSessionProvider>
-            <AuthProvider>
-              <LanguageProvider>
-                <TooltipProvider>
-                  <EnhancedLanguageRouter>
-                    <AppRoutes />
-                  </EnhancedLanguageRouter>
-                  <Toaster />
-                </TooltipProvider>
-              </LanguageProvider>
-            </AuthProvider>
-          </UserSessionProvider>
-        </ThemeProvider>
+        <div className="min-h-screen flex flex-col w-full">
+          <ThemeProvider>
+            <UserSessionProvider>
+              <AuthProvider>
+                <OptimizedLanguageProvider>
+                  <TooltipProvider>
+                    <StabilizedLanguageRouter>
+                      <AppRoutes />
+                    </StabilizedLanguageRouter>
+                    <Toaster />
+                  </TooltipProvider>
+                </OptimizedLanguageProvider>
+              </AuthProvider>
+            </UserSessionProvider>
+          </ThemeProvider>
+        </div>
       </Router>
     </QueryClientProvider>
   );

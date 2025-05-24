@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserSuspensionNotice } from "@/components/suspension";
 import { useTranslation } from "react-i18next";
+import React from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,28 +13,48 @@ interface LayoutProps {
   minimal?: boolean;
 }
 
-const Layout = ({ children, hideFooter = false, minimal = false }: LayoutProps) => {
+const Layout = React.memo(({ children, hideFooter = false, minimal = false }: LayoutProps) => {
   const { user } = useAuth();
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   
   return (
     <div 
-      className="flex flex-col min-h-screen transition-all duration-200 ease-in-out" 
+      className="flex flex-col transition-all duration-200 ease-in-out" 
       dir={isRTL ? 'rtl' : 'ltr'}
-      style={{ minHeight: '100vh' }} // Verhindert Layout-Sprünge
+      style={{ 
+        minHeight: '100vh',
+        width: '100%'
+      }}
     >
-      <Navbar />
-      <main className={`flex-grow ${minimal ? 'pt-0' : ''}`} style={{ minHeight: 'calc(100vh - 64px)' }}>
+      <div style={{ height: '64px' }}>
+        <Navbar />
+      </div>
+      
+      <main 
+        className={`flex-grow ${minimal ? 'pt-0' : ''}`} 
+        style={{ 
+          minHeight: 'calc(100vh - 64px)',
+          paddingTop: minimal ? 0 : undefined
+        }}
+      >
         <div className={`container mx-auto ${minimal ? 'max-w-none px-0' : ''}`}>
           {user && <UserSuspensionNotice userId={user.id} />}
           {children}
         </div>
       </main>
-      {!hideFooter && <Footer />}
+      
+      {!hideFooter && (
+        <div style={{ flexShrink: 0 }}>
+          <Footer />
+        </div>
+      )}
+      
       <Toaster />
     </div>
   );
-};
+});
+
+Layout.displayName = "Layout";
 
 export default Layout;
