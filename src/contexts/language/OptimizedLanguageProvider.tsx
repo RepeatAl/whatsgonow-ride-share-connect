@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { changeAppLanguage } from '@/services/LanguageService';
-import { supportedLanguages } from '@/config/supportedLanguages';
+import { supportedLanguages, languageCodes } from '@/config/supportedLanguages';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { LanguageContextType } from './types';
@@ -112,9 +112,9 @@ export const OptimizedLanguageProvider: React.FC<OptimizedLanguageProviderProps>
     }
   }, [currentLanguage, setLanguageByCode, getLanguageFromUrl]);
 
-  const ensureNamespaceLoaded = useCallback(async (namespace: string | string[]) => {
+  const ensureNamespaceLoaded = useCallback(async (namespace: string | string[]): Promise<void> => {
     // Placeholder for namespace loading logic
-    return true;
+    return Promise.resolve();
   }, []);
 
   // Memoized context value
