@@ -62,6 +62,10 @@ import CreateOrderWithItemsTest from '@/pages/CreateOrderWithItemsTest';
 import ShadcnDemo from '@/pages/ShadcnDemo';
 import NotFound from '@/pages/NotFound';
 
+// Rides Pages
+import CreateRide from "@/pages/CreateRide";
+import MyRidesPage from "@/pages/MyRides";
+
 import EnhancedLanguageSEO from '@/components/seo/EnhancedLanguageSEO';
 
 /**
@@ -87,17 +91,11 @@ export const MCPRouter: React.FC = () => {
 
   // Function to check if a path should be redirected
   const shouldRedirectToLocalized = (path: string): boolean => {
-    // Don't redirect root path (handled separately)
     if (path === '/' || path === '') return false;
-    
-    // Don't redirect paths that already have language prefix
     const pathSegments = path.split('/').filter(Boolean);
     const firstSegment = pathSegments[0];
     if (languageCodes.includes(firstSegment)) return false;
-    
-    // Don't redirect special routes
     if (specialRoutes.some(route => path.startsWith(route))) return false;
-    
     return true;
   };
 
@@ -118,7 +116,6 @@ export const MCPRouter: React.FC = () => {
       };
     }
     
-    // Check if this path should be redirected to localized version
     if (shouldRedirectToLocalized(location.pathname)) {
       const bestLanguage = determineBestLanguage(
         navigator.language?.split('-')[0],
@@ -134,7 +131,6 @@ export const MCPRouter: React.FC = () => {
       };
     }
     
-    // Handle root redirect
     if (location.pathname === '/' || location.pathname === '') {
       const bestLanguage = determineBestLanguage(
         navigator.language?.split('-')[0],
@@ -149,7 +145,6 @@ export const MCPRouter: React.FC = () => {
       };
     }
 
-    // For special routes, use default language without redirect
     const defaultLang = 'de';
     console.log('[MCP-ROUTER] Using default language for special route:', location.pathname);
     return {
@@ -378,6 +373,15 @@ export const MCPRouter: React.FC = () => {
         <Route path="/en/offer-transport" element={<ProtectedRoute allowedRoles={['driver']}><OfferTransport /></ProtectedRoute>} />
         <Route path="/ar/offer-transport" element={<ProtectedRoute allowedRoles={['driver']}><OfferTransport /></ProtectedRoute>} />
 
+        {/* Rides routes - NEW */}
+        <Route path="/de/rides" element={<ProtectedRoute allowedRoles={['driver']}><MyRidesPage /></ProtectedRoute>} />
+        <Route path="/en/rides" element={<ProtectedRoute allowedRoles={['driver']}><MyRidesPage /></ProtectedRoute>} />
+        <Route path="/ar/rides" element={<ProtectedRoute allowedRoles={['driver']}><MyRidesPage /></ProtectedRoute>} />
+        
+        <Route path="/de/rides/create" element={<ProtectedRoute allowedRoles={['driver']}><CreateRide /></ProtectedRoute>} />
+        <Route path="/en/rides/create" element={<ProtectedRoute allowedRoles={['driver']}><CreateRide /></ProtectedRoute>} />
+        <Route path="/ar/rides/create" element={<ProtectedRoute allowedRoles={['driver']}><CreateRide /></ProtectedRoute>} />
+
         {/* User features */}
         <Route path="/de/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
         <Route path="/en/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
@@ -482,6 +486,8 @@ export const MCPRouter: React.FC = () => {
               <li>/de/login, /en/login, /ar/login</li>
               <li>/de/register, /en/register, /ar/register</li>
               <li>/de/pre-register, /en/pre-register, /ar/pre-register</li>
+              <li>/de/rides, /en/rides, /ar/rides (Driver rides management)</li>
+              <li>/de/rides/create, /en/rides/create, /ar/rides/create (Create new ride)</li>
               <li>/debug (Debug info)</li>
             </ul>
           </div>

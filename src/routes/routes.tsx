@@ -35,6 +35,11 @@ export const ROUTES = {
   // Transport
   offerTransport: '/offer-transport',
   
+  // Rides - NEW
+  rides: '/rides',
+  createRide: '/rides/create',
+  editRide: (rideId: string) => `/rides/${rideId}/edit`,
+  
   // Feedback
   feedback: '/feedback',
   

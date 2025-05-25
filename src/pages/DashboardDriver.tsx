@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PlusCircle, Route, List } from "lucide-react";
+import { PlusCircle, Route, List, Search } from "lucide-react";
 
 const DashboardDriver = () => {
   const { profile } = useAuth();
@@ -77,7 +77,7 @@ const DashboardDriver = () => {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/orders")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <List className="h-5 w-5 text-orange-600" />
+                <Search className="h-5 w-5 text-orange-600" />
                 Aufträge finden
               </CardTitle>
             </CardHeader>
