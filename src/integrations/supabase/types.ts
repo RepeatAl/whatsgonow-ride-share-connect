@@ -1427,6 +1427,90 @@ export type Database = {
           },
         ]
       }
+      rides: {
+        Row: {
+          arrival_time: string | null
+          available_capacity_kg: number | null
+          available_capacity_m3: number | null
+          created_at: string | null
+          departure_time: string
+          description: string | null
+          driver_id: string
+          end_address: string
+          end_postal_code: string | null
+          flexible_time: boolean | null
+          flexible_time_hours: number | null
+          id: string
+          max_stops: number | null
+          price_per_kg: number | null
+          recurring: boolean | null
+          start_address: string
+          start_postal_code: string | null
+          status: string | null
+          updated_at: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          arrival_time?: string | null
+          available_capacity_kg?: number | null
+          available_capacity_m3?: number | null
+          created_at?: string | null
+          departure_time: string
+          description?: string | null
+          driver_id: string
+          end_address: string
+          end_postal_code?: string | null
+          flexible_time?: boolean | null
+          flexible_time_hours?: number | null
+          id?: string
+          max_stops?: number | null
+          price_per_kg?: number | null
+          recurring?: boolean | null
+          start_address: string
+          start_postal_code?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          arrival_time?: string | null
+          available_capacity_kg?: number | null
+          available_capacity_m3?: number | null
+          created_at?: string | null
+          departure_time?: string
+          description?: string | null
+          driver_id?: string
+          end_address?: string
+          end_postal_code?: string | null
+          flexible_time?: boolean | null
+          flexible_time_hours?: number | null
+          id?: string
+          max_stops?: number | null
+          price_per_kg?: number | null
+          recurring?: boolean | null
+          start_address?: string
+          start_postal_code?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rides_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "rides_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_change_logs: {
         Row: {
           changed_by: string

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
@@ -80,14 +79,15 @@ import ItemUploadDemoPage from '@/pages/ItemUploadDemoPage';
 import CreateOrderWithItemsTest from '@/pages/CreateOrderWithItemsTest';
 import ShadcnDemo from '@/pages/ShadcnDemo';
 
+import CreateRide from "@/pages/CreateRide";
+import MyRidesPage from "@/pages/MyRides";
+
 /**
  * Simplified App Routes - Phase 1 Stabilization
  * Clear route definitions with proper 404 handling
  * No complex language logic - handled by MCPRouter
  */
-const AppRoutes: React.FC = () => {
-  console.log('[APP-ROUTES] Rendering routes');
-
+const AppRoutes = () => {
   return (
     <Routes>
       {/* Root route */}
@@ -164,6 +164,24 @@ const AppRoutes: React.FC = () => {
       <Route path="item-upload-demo" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ItemUploadDemoPage /></ProtectedRoute>} />
       <Route path="create-order-with-items-test" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><CreateOrderWithItemsTest /></ProtectedRoute>} />
       <Route path="shadcn-demo" element={<ProtectedRoute allowedRoles={['admin', 'super_admin']}><ShadcnDemo /></ProtectedRoute>} />
+
+      {/* Ride Management Routes */}
+      <Route
+        path="/rides"
+        element={
+          <ProtectedRoute allowedRoles={['driver']}>
+            <MyRidesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rides/create"
+        element={
+          <ProtectedRoute allowedRoles={['driver']}>
+            <CreateRide />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Error handling - Fixed 404 route */}
       <Route path="404" element={<NotFound />} />
