@@ -4,6 +4,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/auth";
+import { useSimpleAuthRedirect } from "@/hooks/useSimpleAuthRedirect";
 
 interface SimpleAuthContextProps {
   user: User | null;
@@ -23,6 +24,9 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Verwende den vereinfachten Auth-Redirect Hook
+  useSimpleAuthRedirect(user, profile, loading);
 
   // Fetch user profile from profiles table
   const fetchProfile = async (userId: string): Promise<UserProfile | null> => {

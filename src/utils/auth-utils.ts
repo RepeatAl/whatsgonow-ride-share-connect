@@ -1,5 +1,5 @@
 
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
 
 /**
@@ -37,24 +37,50 @@ export const handleAuthError = (error: Error, context: string = "Aktion") => {
 };
 
 /**
- * Get the appropriate redirect path based on user role and profile status
+ * ZENTRALE Redirect-Logik für rollenbasierte Navigation
+ * Diese Funktion soll für alle Auth-Redirects verwendet werden
  */
-export const getRoleBasedRedirectPath = (role?: string): string => {
-  if (!role) return "/profile";  // Send to profile if no role set
+export const getRoleBasedRedirectPath = (role?: string, lang: string = 'de'): string => {
+  console.log(`🎯 getRoleBasedRedirectPath: role=${role}, lang=${lang}`);
+  
+  if (!role) {
+    console.log("🎯 No role provided, redirecting to profile");
+    return `/${lang}/profile`;
+  }
   
   switch (role) {
     case "super_admin":
     case "admin":
-      return "/admin";
+      console.log("🎯 Admin user, redirecting to admin dashboard");
+      return `/${lang}/dashboard/admin`;
     case "cm":
-      return "/community-manager";
+      console.log("🎯 CM user, redirecting to CM dashboard");
+      return `/${lang}/dashboard/cm`;
     case "driver":
-      return "/offer-transport";
+      console.log("🎯 Driver user, redirecting to driver dashboard");
+      return `/${lang}/dashboard/driver`;
     case "sender_business":
     case "sender_private":
+      console.log("🎯 Sender user, redirecting to sender dashboard");
+      return `/${lang}/dashboard/sender`;
     default:
-      return "/dashboard";
+      console.log("🎯 Unknown role, redirecting to main dashboard");
+      return `/${lang}/dashboard`;
   }
+};
+
+/**
+ * Hilfsfunktion: Aktuelle Sprache aus URL extrahieren
+ */
+export const getCurrentLanguage = (pathname: string = window.location.pathname): string => {
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const firstSegment = pathSegments[0];
+  
+  if (['de', 'en', 'ar'].includes(firstSegment)) {
+    return firstSegment;
+  }
+  
+  return 'de'; // Fallback
 };
 
 /**

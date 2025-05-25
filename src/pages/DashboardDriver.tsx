@@ -1,15 +1,19 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PlusCircle, Route, List, Search } from "lucide-react";
+import { PlusCircle, Route, List, Search, Truck } from "lucide-react";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const DashboardDriver = () => {
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
   const navigate = useNavigate();
+  const { getLocalizedUrl } = useLanguageMCP();
+
+  console.log("🚛 DashboardDriver rendered for user:", profile?.email);
 
   return (
     <Layout pageType="profile">
@@ -17,16 +21,16 @@ const DashboardDriver = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold">
-              Willkommen, {profile?.first_name || "Fahrer"}
+              Willkommen, {profile?.first_name || "Fahrer"}!
             </h1>
             <p className="text-muted-foreground">
-              Verwalte deine Fahrten und finde passende Aufträge.
+              Verwalten Sie Ihre Fahrten und finden Sie passende Transportaufträge.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={() => navigate("/rides")}
+              onClick={() => navigate(getLocalizedUrl("/rides"))}
             >
               <List className="h-4 w-4 mr-2" />
               Meine Fahrten
@@ -34,7 +38,7 @@ const DashboardDriver = () => {
             <Button
               variant="default"
               className="flex items-center gap-2"
-              onClick={() => navigate("/rides/create")}
+              onClick={() => navigate(getLocalizedUrl("/rides/create"))}
             >
               <PlusCircle className="h-4 w-4" />
               Fahrt einstellen
@@ -44,7 +48,7 @@ const DashboardDriver = () => {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
           {/* Fahrt einstellen Card */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/rides/create")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(getLocalizedUrl("/rides/create"))}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <PlusCircle className="h-5 w-5 text-blue-600" />
@@ -53,13 +57,13 @@ const DashboardDriver = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Veröffentliche eine neue Fahrt und finde passende Aufträge für deine Route.
+                Veröffentlichen Sie eine neue Fahrt und finden Sie passende Aufträge für Ihre Route.
               </p>
             </CardContent>
           </Card>
 
           {/* Meine Fahrten Card */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/rides")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(getLocalizedUrl("/rides"))}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Route className="h-5 w-5 text-green-600" />
@@ -68,13 +72,13 @@ const DashboardDriver = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Übersicht über alle deine eingestellten Fahrten und deren Status.
+                Übersicht über alle Ihre eingestellten Fahrten und deren Status.
               </p>
             </CardContent>
           </Card>
 
           {/* Aufträge finden Card */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/orders")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(getLocalizedUrl("/orders"))}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5 text-orange-600" />
@@ -83,7 +87,7 @@ const DashboardDriver = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Finde verfügbare Transportaufträge in deiner Region.
+                Finden Sie verfügbare Transportaufträge in Ihrer Region.
               </p>
             </CardContent>
           </Card>
@@ -92,20 +96,34 @@ const DashboardDriver = () => {
         {/* Status Section */}
         <Card>
           <CardHeader>
-            <CardTitle>Dein Status</CardTitle>
+            <CardTitle>Ihr Fahrer-Status</CardTitle>
           </CardHeader>
           <CardContent>
-            {profile?.verified ? (
-              <div className="flex items-center gap-2 text-green-600">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                <span>Verifiziert - Du kannst Fahrten einstellen</span>
+            <div className="space-y-2">
+              {profile?.verified ? (
+                <div className="flex items-center gap-2 text-green-600">
+                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  <span>Verifiziert - Sie können Fahrten einstellen und Aufträge annehmen</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-orange-600">
+                  <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
+                  <span>Verifizierung ausstehend - Bitte vervollständigen Sie Ihr Profil</span>
+                </div>
+              )}
+              <div className="text-sm text-muted-foreground">
+                Status: Fahrer Account
               </div>
-            ) : (
-              <div className="flex items-center gap-2 text-orange-600">
-                <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
-                <span>Verifizierung ausstehend - Bitte vervollständige dein Profil</span>
-              </div>
-            )}
+              {profile?.profile_complete ? (
+                <div className="text-sm text-green-600">
+                  ✓ Profil vollständig ausgefüllt
+                </div>
+              ) : (
+                <div className="text-sm text-orange-600">
+                  ⚠ Profil unvollständig - Bitte vervollständigen Sie Ihr Profil
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

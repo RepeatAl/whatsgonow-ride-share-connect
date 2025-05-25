@@ -1,33 +1,44 @@
 
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import Layout from "@/components/Layout";
-import { useAuth } from "@/contexts/AuthContext";
-import { getRoleBasedRedirectPath } from "@/utils/auth-utils";
-import { useLanguage } from "@/contexts/language";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { getRoleBasedRedirectPath, getCurrentLanguage } from "@/utils/auth-utils";
 
 /**
  * Dashboard-Komponente mit optimierter Weiterleitung
  * Nutzt die zentrale Auth-Redirect-Logik für nahtlose Navigation
  */
 const Dashboard = () => {
-  const { profile, loading } = useAuth();
+  const { profile, loading } = useSimpleAuth();
   const navigate = useNavigate();
-  const { getLocalizedUrl } = useLanguage();
+  const location = useLocation();
+  
+  console.log("📊 Dashboard component rendered");
+  console.log("📊 Profile:", profile);
+  console.log("📊 Loading:", loading);
+  console.log("📊 Current path:", location.pathname);
   
   useEffect(() => {
     if (!loading && profile) {
-      // Nur weiterleiten wenn wir ein spezifisches Rollendashboard haben
-      const roleBasedPath = getRoleBasedRedirectPath(profile.role);
-      if (roleBasedPath !== "/dashboard") {
-        const localizedPath = getLocalizedUrl(roleBasedPath);
-        navigate(localizedPath, { replace: true });
+      const currentLang = getCurrentLanguage(location.pathname);
+      const roleBasedPath = getRoleBasedRedirectPath(profile.role, currentLang);
+      
+      console.log("📊 Current language:", currentLang);
+      console.log("📊 Role-based path:", roleBasedPath);
+      console.log("📊 Current path:", location.pathname);
+      
+      // Nur weiterleiten wenn wir nicht schon auf dem richtigen rollenspezifischen Dashboard sind
+      if (location.pathname !== roleBasedPath && roleBasedPath !== `/${currentLang}/dashboard`) {
+        console.log("📊 Redirecting to role-specific dashboard:", roleBasedPath);
+        navigate(roleBasedPath, { replace: true });
       }
     }
-  }, [profile, loading, navigate, getLocalizedUrl]);
+  }, [profile, loading, navigate, location.pathname]);
   
   if (loading) {
+    console.log("📊 Showing loading spinner");
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[50vh]">
@@ -37,6 +48,7 @@ const Dashboard = () => {
     );
   }
 
+  console.log("📊 Rendering default dashboard content");
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -45,6 +57,9 @@ const Dashboard = () => {
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
             <p>Willkommen, {profile.first_name || profile.name || "Benutzer"}!</p>
             <p className="text-sm text-gray-500 mt-2">Ihre Rolle: {profile.role || "Unbekannt"}</p>
+            <div className="text-sm text-blue-600 mt-2">
+              Sie werden zu Ihrem rollenspezifischen Dashboard weitergeleitet...
+            </div>
           </div>
         )}
       </div>
