@@ -46,6 +46,16 @@ export const seoContent: SEOContent = {
       title: "Häufige Fragen (FAQ) | Whatsgonow",
       description: "Finde Antworten auf häufige Fragen zu Whatsgonow. Alles über Transporte, Preise, Sicherheit und Nutzung.",
       keywords: "FAQ, Fragen, Antworten, Hilfe, Whatsgonow, Transport"
+    },
+    profile: {
+      title: "Mein Profil | Whatsgonow",
+      description: "Verwalte dein Whatsgonow-Profil, deine Einstellungen und deine Aktivitäten. Sichere und personalisierte Nutzererfahrung.",
+      keywords: "Profil, Einstellungen, Account, Whatsgonow, Dashboard"
+    },
+    orders: {
+      title: "Aufträge & Bestellungen | Whatsgonow",
+      description: "Verwalte deine Transport-Aufträge, erstelle neue Bestellungen und verfolge den Status deiner Lieferungen.",
+      keywords: "Aufträge, Bestellungen, Transport, Lieferung, Tracking, Whatsgonow"
     }
   },
   en: {
@@ -80,6 +90,16 @@ export const seoContent: SEOContent = {
       title: "Frequently Asked Questions (FAQ) | Whatsgonow",
       description: "Find answers to frequently asked questions about Whatsgonow. Everything about transports, prices, security and usage.",
       keywords: "FAQ, Questions, Answers, Help, Whatsgonow, Transport"
+    },
+    profile: {
+      title: "My Profile | Whatsgonow",
+      description: "Manage your Whatsgonow profile, settings and activities. Secure and personalized user experience.",
+      keywords: "Profile, Settings, Account, Whatsgonow, Dashboard"
+    },
+    orders: {
+      title: "Orders & Requests | Whatsgonow",
+      description: "Manage your transport orders, create new requests and track the status of your deliveries.",
+      keywords: "Orders, Requests, Transport, Delivery, Tracking, Whatsgonow"
     }
   },
   ar: {
@@ -114,6 +134,16 @@ export const seoContent: SEOContent = {
       title: "الأسئلة الشائعة | Whatsgonow",
       description: "اعثر على إجابات للأسئلة الشائعة حول Whatsgonow. كل شيء عن النقل والأسعار والأمان والاستخدام.",
       keywords: "الأسئلة الشائعة, الأسئلة, الإجابات, المساعدة, Whatsgonow, النقل"
+    },
+    profile: {
+      title: "ملفي الشخصي | Whatsgonow",
+      description: "إدارة ملف Whatsgonow الشخصي والإعدادات والأنشطة. تجربة مستخدم آمنة وشخصية.",
+      keywords: "الملف الشخصي, الإعدادات, الحساب, Whatsgonow, لوحة التحكم"
+    },
+    orders: {
+      title: "الطلبات والطلبات | Whatsgonow",
+      description: "إدارة طلبات النقل الخاصة بك، وإنشاء طلبات جديدة وتتبع حالة التسليم الخاص بك.",
+      keywords: "الطلبات, الطلبات, النقل, التسليم, التتبع, Whatsgonow"
     }
   }
 };
