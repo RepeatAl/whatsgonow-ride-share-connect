@@ -1,13 +1,13 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { registerSchema, type RegisterFormData } from '@/components/auth/register/RegisterFormSchema';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { RegisterFormFields } from '@/components/auth/register/RegisterFormFields';
-import { SuccessMessage } from '@/components/auth/register/SuccessMessage';
 import { ErrorDisplay } from '@/components/auth/register/ErrorDisplay';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,8 +18,7 @@ interface RegisterFormProps {
 export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp } = useSimpleAuth();
   const navigate = useNavigate();
 
   const form = useForm<RegisterFormData>({
@@ -31,7 +30,7 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
       last_name: '',
       name_affix: '',
       phone: '',
-      region: '',
+      region: 'de',
       postal_code: '',
       city: '',
       street: '',
@@ -46,14 +45,11 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
   const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterFormData) => {
+    console.log("📝 Registration form submitted:", data);
     setError('');
     setIsLoading(true);
 
     try {
-      if (import.meta.env.DEV) {
-        console.log('🧪 Registration form data:', data);
-      }
-
       await signUp(data.email, data.password, {
         first_name: data.first_name,
         last_name: data.last_name,
@@ -69,13 +65,10 @@ export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
         ...(data.company_name ? { company_name: data.company_name } : {}),
       });
 
-      if (import.meta.env.DEV) {
-        console.log('✅ Sign up successful');
-      }
-
-      // Immer externe Success-Route nutzen
+      console.log("✅ Registration successful");
       navigate("/register/success");
     } catch (err: any) {
+      console.error("❌ Registration failed:", err);
       let message = "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
       if (err && typeof err.message === "string") message = err.message;
       setError(message);

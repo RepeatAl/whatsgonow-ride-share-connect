@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import Layout from "@/components/Layout";
 import { RegisterForm } from "@/components/auth/RegisterForm";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -17,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
@@ -28,23 +28,29 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, user, loading: authLoading, profile, sessionExpired } = useAuth();
+  const { signIn, user, loading: authLoading } = useSimpleAuth();
   const { getLocalizedUrl } = useLanguageMCP();
+
+  // Redirect if already logged in
+  if (!authLoading && user) {
+    console.log("👤 User already logged in, redirecting to dashboard");
+    navigate(getLocalizedUrl("/dashboard"));
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔐 Login form submitted for:", email);
     setError("");
     setIsLoading(true);
 
     try {
       await signIn(email, password);
-      // Die Weiterleitung erfolgt automatisch über useAuthRedirect Hook
+      console.log("✅ Login successful, redirecting...");
+      navigate(getLocalizedUrl("/dashboard"));
     } catch (err: any) {
-      if (err && typeof err.message === "string") {
-        setError(err.message);
-      } else {
-        setError("Anmeldung fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.");
-      }
+      console.error("❌ Login failed:", err);
+      setError(err.message || "Anmeldung fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.");
     } finally {
       setIsLoading(false);
     }
@@ -74,14 +80,6 @@ const Login = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {sessionExpired && (
-                  <Alert className="mb-4 bg-amber-50 border-amber-200">
-                    <AlertCircle className="h-4 w-4 text-amber-600" />
-                    <AlertDescription className="text-amber-600">
-                      Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.
-                    </AlertDescription>
-                  </Alert>
-                )}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">E-Mail</label>
