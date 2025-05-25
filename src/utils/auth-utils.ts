@@ -101,3 +101,31 @@ export const logAuthActivity = async (
   // In einer echten Anwendung könntest du diese Daten auch an Supabase senden
   // für fortgeschrittene Analyse und Sicherheitsmonitoring
 };
+
+/**
+ * Clean up authentication state completely
+ */
+export const cleanupAuthState = () => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    // Remove standard auth tokens
+    localStorage.removeItem('supabase.auth.token');
+    
+    // Remove all Supabase auth keys from localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Remove from sessionStorage if used
+    Object.keys(sessionStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  } catch (e) {
+    console.error("Error cleaning up auth state:", e);
+  }
+};

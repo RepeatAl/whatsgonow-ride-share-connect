@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/auth";
 import { useSimpleAuthRedirect } from "@/hooks/useSimpleAuthRedirect";
+import { cleanupAuthState } from "@/utils/auth-utils";
 
 interface SimpleAuthContextProps {
   user: User | null;
@@ -75,6 +76,9 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("🔐 Attempting sign in for:", email);
       setLoading(true);
 
+      // Clean up any existing auth state
+      cleanupAuthState();
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -115,7 +119,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         password,
         options: {
           data: metadata,
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/de/dashboard`
         }
       });
 
@@ -156,7 +160,10 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("🚪 Signing out...");
       setLoading(true);
 
-      const { error } = await supabase.auth.signOut();
+      // Clean up auth state first
+      cleanupAuthState();
+
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       
       if (error) {
         console.error("❌ Sign out error:", error);
@@ -174,6 +181,12 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         title: "Abmeldung erfolgreich",
         description: "Auf Wiedersehen!",
       });
+
+      // Force page reload for clean state
+      setTimeout(() => {
+        window.location.href = '/de';
+      }, 100);
+      
     } catch (error: any) {
       console.error("❌ Sign out failed:", error);
       toast({
@@ -206,10 +219,12 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         // Fetch profile when user signs in
         if (currentSession?.user && event === 'SIGNED_IN') {
           console.log("👤 User signed in, fetching profile...");
-          const profileData = await fetchProfile(currentSession.user.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
+          setTimeout(async () => {
+            if (mounted) {
+              const profileData = await fetchProfile(currentSession.user.id);
+              setProfile(profileData);
+            }
+          }, 0);
         } else if (event === 'SIGNED_OUT') {
           console.log("👋 User signed out, clearing profile");
           setProfile(null);

@@ -1,20 +1,24 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Lock, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabaseClient";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
+  const { getLocalizedUrl } = useLanguageMCP();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +29,11 @@ const ResetPassword = () => {
       return;
     }
 
+    if (password.length < 6) {
+      setError("Das Passwort muss mindestens 6 Zeichen lang sein.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -32,12 +41,17 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
+      setIsSuccess(true);
       toast({
         title: "Passwort aktualisiert",
         description: "Dein Passwort wurde erfolgreich zurückgesetzt.",
       });
 
-      navigate("/login");
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        navigate(getLocalizedUrl("/login"));
+      }, 2000);
+      
     } catch (err) {
       setError((err as Error).message);
       toast({
@@ -59,11 +73,36 @@ const ResetPassword = () => {
           title: "Ungültiger Link",
           description: "Der Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.",
         });
-        navigate("/login");
+        navigate(getLocalizedUrl("/forgot-password"));
       }
     };
     checkSession();
-  }, [navigate]);
+  }, [navigate, getLocalizedUrl]);
+
+  if (isSuccess) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen p-4 bg-neutral-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-center">Passwort erfolgreich zurückgesetzt!</CardTitle>
+              <CardDescription className="text-center">
+                Du wirst automatisch zur Anmeldung weitergeleitet.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Du kannst dich jetzt mit deinem neuen Passwort anmelden.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -81,29 +120,40 @@ const ResetPassword = () => {
                 <label htmlFor="password" className="text-sm font-medium">
                   Neues Passwort
                 </label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    disabled={isLoading}
+                    className="pl-10"
+                  />
+                </div>
               </div>
+              
               <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="text-sm font-medium">
                   Passwort bestätigen
                 </label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    disabled={isLoading}
+                    className="pl-10"
+                  />
+                </div>
               </div>
 
               {error && (
@@ -119,7 +169,12 @@ const ResetPassword = () => {
                 disabled={isLoading}
                 variant="brand"
               >
-                {isLoading ? "Wird verarbeitet..." : "Passwort aktualisieren"}
+                {isLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                    Wird verarbeitet...
+                  </>
+                ) : "Passwort aktualisieren"}
               </Button>
             </form>
           </CardContent>

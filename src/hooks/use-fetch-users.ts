@@ -5,7 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface User {
   user_id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
+  name?: string;
   email: string;
   phone?: string;
   role: string;
@@ -15,6 +17,11 @@ export interface User {
   flagged_by_cm?: boolean;
   flagged_at?: string;
   flag_reason?: string;
+  verified?: boolean;
+  active?: boolean;
+  region?: string;
+  city?: string;
+  postal_code?: string;
 }
 
 interface UseFetchUsersOptions {
@@ -39,19 +46,24 @@ export function useFetchUsers(region?: string, options: UseFetchUsersOptions = {
           return;
         }
         
-        // Start building query - select all necessary columns including flag data
+        // Query profiles table instead of users
         let query = supabase
           .from('profiles')
           .select(`
             user_id,
-            name,
+            first_name,
+            last_name,
             email,
             phone,
             role,
             created_at,
             flagged_by_cm,
             flagged_at,
-            flag_reason
+            flag_reason,
+            verified,
+            region,
+            city,
+            postal_code
           `);
         
         // Add region filter if not admin
@@ -77,16 +89,17 @@ export function useFetchUsers(region?: string, options: UseFetchUsersOptions = {
         if (error) throw error;
         
         // Transform the data to match our User interface
-        // In a real app, you'd probably want to fetch ratings and order counts separately
         const transformedUsers = data.map(user => ({
           ...user,
+          name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unbekannt',
           rating_avg: 0, // Placeholder - would come from a real query
-          orders_count: 0 // Placeholder - would come from a real query
+          orders_count: 0, // Placeholder - would come from a real query
+          active: true // Default value since profiles don't have active field
         }));
         
         setUsers(transformedUsers);
       } catch (err) {
-        console.error('Error fetching users:', err);
+        console.error('Error fetching users from profiles:', err);
       } finally {
         setLoading(false);
       }

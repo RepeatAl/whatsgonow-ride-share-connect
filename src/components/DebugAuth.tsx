@@ -33,7 +33,7 @@ export const DebugAuth = () => {
   return (
     <Card className="m-4">
       <CardHeader>
-        <CardTitle>Auth Debug Info</CardTitle>
+        <CardTitle>Auth Debug Info (Profiles-basiert)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -46,19 +46,28 @@ export const DebugAuth = () => {
           <strong>Session:</strong> {session ? "Active" : "None"}
         </div>
         <div>
-          <strong>Profile:</strong> {profile ? `${profile.first_name} ${profile.last_name}` : "None"}
+          <strong>Profile:</strong> {profile ? `${profile.first_name} ${profile.last_name} (${profile.role})` : "None"}
         </div>
-        <div className="space-x-2">
-          <Button onClick={refreshProfile} variant="outline">
+        <div>
+          <strong>Profile Table:</strong> profiles ✅ (users table removed)
+        </div>
+        <div>
+          <strong>User ID:</strong> {user?.id || "None"}
+        </div>
+        <div>
+          <strong>Profile Complete:</strong> {profile?.profile_complete ? "Yes" : "No"}
+        </div>
+        <div>
+          <strong>Email Verified:</strong> {user?.email_confirmed_at ? "Yes" : "No"}
+        </div>
+        
+        <div className="flex gap-2">
+          <Button onClick={refreshProfile} disabled={!user}>
             Refresh Profile
           </Button>
           <Button onClick={testRegistration} variant="outline">
             Test Registration
           </Button>
-        </div>
-        <div className="text-xs bg-gray-100 p-2 rounded">
-          <strong>Raw Data:</strong>
-          <pre>{JSON.stringify({ user: user?.id, profile: profile?.user_id }, null, 2)}</pre>
         </div>
       </CardContent>
     </Card>

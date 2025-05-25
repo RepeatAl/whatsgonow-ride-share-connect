@@ -38,9 +38,7 @@ export const authService = {
           verified,
           can_become_driver,
           dashboard_access_enabled,
-          wants_to_upload_items,
-          id_photo_url,
-          id_photo_verified
+          wants_to_upload_items
         `)
         .eq("user_id", userId)
         .maybeSingle();
@@ -78,14 +76,13 @@ export const authService = {
         email,
         first_name: meta.first_name || "",
         last_name: meta.last_name || "",
-        name: `${meta.first_name ?? ""} ${meta.last_name ?? ""}`.trim() || meta.name || "Neuer Benutzer",
         name_affix: meta.name_affix || null,
-        phone: meta.phone || null,
+        phone: meta.phone || "",
         role: meta.role || "sender_private",
         company_name: meta.company_name || null,
-        region: meta.region || null,
-        postal_code: meta.postal_code || null,
-        city: meta.city || null,
+        region: meta.region || "",
+        postal_code: meta.postal_code || "",
+        city: meta.city || "",
         street: meta.street || null,
         house_number: meta.house_number || null,
         address_extra: meta.address_extra || null,
@@ -110,7 +107,10 @@ export const authService = {
         title: "Profil erstellt",
         description: `Ein Standardprofil wurde angelegt. Bitte ergänze noch: ${missingFields.join(", ")}.`
       });
-      return data;
+      return {
+        ...data,
+        name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'New User'
+      };
     } catch (error) {
       toast({
         title: "Fehler beim Erstellen des Profils",
@@ -123,8 +123,16 @@ export const authService = {
 
   async signIn(email: string, password: string) {
     try {
-      // Verwende die korrigierte Methode der neuesten Supabase-SDK
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      // Clean up existing state before sign in
+      this.cleanupAuthState();
+      
+      console.log("🔐 Attempting sign in for:", email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
       if (error) throw error;
       console.log("✅ Sign in successful");
       return data;
@@ -154,7 +162,7 @@ export const authService = {
   ) {
     try {
       console.log("🔐 Attempting sign up for:", email, "with metadata:", metadata);
-      // Verwende die korrigierte Methode der neuesten Supabase-SDK
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -163,46 +171,19 @@ export const authService = {
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
+      
       if (error) throw error;
 
-      toast({
-        title: "Registrierung erfolgreich",
-        description: "Bestätige deine E‑Mail-Adresse, um fortzufahren."
-      });
-
-      await supabase
-        .from("profiles")
-        .insert([{
-          user_id: data.user!.id,
-          email,
-          first_name: metadata?.first_name ?? "",
-          last_name: metadata?.last_name ?? "",
-          name_affix: metadata?.name_affix ?? null,
-          phone: metadata?.phone ?? "",
-          role: metadata?.role ?? "sender_private",
-          company_name: metadata?.company_name ?? null,
-          region: metadata?.region ?? "",
-          postal_code: metadata?.postal_code ?? "",
-          city: metadata?.city ?? "",
-          street: metadata?.street ?? null,
-          house_number: metadata?.house_number ?? null,
-          address_extra: metadata?.address_extra ?? null,
-          profile_complete: false,
-          onboarding_complete: false
-        }]);
-
-      // Send confirmation email
-      try {
-        await supabase.functions.invoke('send-confirmation', {
-          body: { 
-            email: email,
-            firstName: metadata?.first_name || "Neuer Benutzer"
-          }
+      if (data.user && !data.session) {
+        toast({
+          title: "Registrierung erfolgreich",
+          description: "Bitte bestätige deine E-Mail-Adresse, um fortzufahren.",
         });
-        console.log("✅ Confirmation email sent");
-      } catch (emailError) {
-        console.error("❌ Error sending confirmation email:", emailError);
-        // Don't throw here, we still want to complete the signup
+      } else {
+        toast({
+          title: "Registrierung erfolgreich",
+          description: "Willkommen bei Whatsgonow!",
+        });
       }
 
       return data;
@@ -214,6 +195,8 @@ export const authService = {
 
   async signOut() {
     try {
+      console.log("🚪 Signing out...");
+      
       // Bereinigung des lokalen Speicherzustands
       this.cleanupAuthState();
 
@@ -224,6 +207,12 @@ export const authService = {
       
       if (error) throw error;
       console.log("✅ Sign out successful");
+      
+      // Force page reload for clean state
+      setTimeout(() => {
+        window.location.href = '/de';
+      }, 100);
+      
     } catch (error) {
       handleAuthError(error as Error, "Abmeldung");
       throw error;
