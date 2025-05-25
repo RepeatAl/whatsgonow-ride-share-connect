@@ -15,8 +15,11 @@ interface SEOMetadata {
   canonicalPath?: string;
 }
 
-interface EnhancedLanguageSEOProps extends SEOMetadata {
-  pageType?: 'landing' | 'login' | 'register' | 'pre-register' | 'support' | 'faq' | 'profile' | 'orders';
+// Use the same type definition as in useSEO
+type SEOPageType = 'landing' | 'login' | 'register' | 'pre-register' | 'support' | 'faq' | 'profile' | 'orders';
+
+export interface EnhancedLanguageSEOProps extends SEOMetadata {
+  pageType?: SEOPageType;
 }
 
 export const EnhancedLanguageSEO: React.FC<EnhancedLanguageSEOProps> = ({

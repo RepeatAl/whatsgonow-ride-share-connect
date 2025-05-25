@@ -3,6 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { getSEOContent } from '@/data/seoContent';
 
+// Define allowed page types to match EnhancedLanguageSEO
+type SEOPageType = 'landing' | 'login' | 'register' | 'pre-register' | 'support' | 'faq' | 'profile' | 'orders';
+
 interface SEOData {
   title: string;
   description: string;
@@ -10,7 +13,7 @@ interface SEOData {
   ogTitle?: string;
   ogDescription?: string;
   canonicalUrl: string;
-  pageType: string;
+  pageType: SEOPageType;
 }
 
 export const useSEO = (pageType?: string): SEOData => {
@@ -24,9 +27,15 @@ export const useSEO = (pageType?: string): SEOData => {
     return skipPaths.some(skipPath => path.startsWith(skipPath));
   };
   
-  // Enhanced automatic pageType detection
-  const inferPageType = (): string => {
-    if (pageType) return pageType;
+  // Enhanced automatic pageType detection with proper typing
+  const inferPageType = (): SEOPageType => {
+    if (pageType) {
+      // Validate and cast the provided pageType
+      const validPageTypes: SEOPageType[] = ['landing', 'login', 'register', 'pre-register', 'support', 'faq', 'profile', 'orders'];
+      if (validPageTypes.includes(pageType as SEOPageType)) {
+        return pageType as SEOPageType;
+      }
+    }
     
     const path = location.pathname;
     
@@ -36,8 +45,8 @@ export const useSEO = (pageType?: string): SEOData => {
       ? '/' + pathSegments.slice(1).join('/')
       : path;
     
-    // Route-based pageType mapping
-    const routeMap: Record<string, string> = {
+    // Route-based pageType mapping with proper return types
+    const routeMap: Record<string, SEOPageType> = {
       '/': 'landing',
       '/login': 'login',
       '/register': 'register',
@@ -81,7 +90,7 @@ export const useSEO = (pageType?: string): SEOData => {
       description: '',
       keywords: '',
       canonicalUrl: '',
-      pageType: 'internal'
+      pageType: 'landing'
     };
   }
   
