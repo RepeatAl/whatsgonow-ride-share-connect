@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { SimpleAuthProvider } from "@/contexts/SimpleAuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import MCPRouter from "@/components/routing/MCPRouter";
 
 const queryClient = new QueryClient({
@@ -21,15 +22,17 @@ const App = () => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <SimpleAuthProvider>
-          <BrowserRouter>
-            <MCPRouter />
-            <Toaster />
-            <Sonner />
-          </BrowserRouter>
-        </SimpleAuthProvider>
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <SimpleAuthProvider>
+            <BrowserRouter>
+              <MCPRouter />
+              <Toaster />
+              <Sonner />
+            </BrowserRouter>
+          </SimpleAuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
