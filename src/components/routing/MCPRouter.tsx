@@ -16,6 +16,7 @@ import Profile from '@/pages/Profile';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ESGDashboard from '@/pages/ESGDashboard';
+import Faq from '@/pages/Faq';
 
 // Import route guards
 import PublicRoute from './PublicRoute';
@@ -32,6 +33,7 @@ const MCPRouter = () => {
       {/* Language-specific routes */}
       <Route path="/:lang" element={<PublicRoute><Home /></PublicRoute>} />
       <Route path="/:lang/about" element={<PublicRoute><About /></PublicRoute>} />
+      <Route path="/:lang/faq" element={<PublicRoute><Faq /></PublicRoute>} />
       <Route path="/:lang/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/:lang/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/:lang/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />

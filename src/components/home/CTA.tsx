@@ -46,11 +46,11 @@ const CTA = () => {
     <section className="py-16 bg-brand-orange text-white" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
-          {t('cta.title')}
+          {t('cta.title', 'Sei dabei, wenn whatsgonow startet!')}
         </h2>
         
         <p className="text-xl mb-8 max-w-2xl mx-auto">
-          {t('cta.description')}
+          {t('cta.description', 'Melde dich jetzt für den Early Access an und sei einer der Ersten.')}
         </p>
         
         <div className="flex flex-wrap justify-center gap-4">
@@ -64,7 +64,7 @@ const CTA = () => {
               to={getLocalizedUrl("/login")}
               onClick={handleLinkClick}
             >
-              {t('cta.button_login')}
+              {t('cta.button_login', 'Anmelden')}
             </Link>
           </Button>
           
@@ -75,10 +75,10 @@ const CTA = () => {
             className="border-white text-white hover:bg-white/10"
           >
             <Link 
-              to={getLocalizedUrl("/register")}
+              to={getLocalizedUrl("/pre-register")}
               onClick={handleLinkClick}
             >
-              {t('cta.button_register')}
+              {t('cta.button_register', 'Jetzt dabei sein')}
             </Link>
           </Button>
         </div>

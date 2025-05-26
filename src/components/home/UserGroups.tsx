@@ -15,46 +15,46 @@ const UserGroups = () => {
     <section className="py-16 bg-gray-50 dark:bg-gray-900" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold">{t('user_groups.title')}</h2>
+          <h2 className="text-3xl font-bold">{t('user_groups.title', 'Für wen ist whatsgonow?')}</h2>
           <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-            {t('user_groups.description')}
+            {t('user_groups.description', 'Unsere Plattform verbindet verschiedene Nutzergruppen für effiziente Transporte')}
           </p>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <UserGroupCard 
             icon={<Package className="h-10 w-10 text-brand-orange" />}
-            title={t('user_groups.private.title')}
-            description={t('user_groups.private.description')}
-            learnMoreText={t('user_groups.private.learn_more')}
-            preRegisterText={t('user_groups.private.pre_register')}
+            title={t('user_groups.private.title', 'Private Sender')}
+            description={t('user_groups.private.description', 'Versende Gegenstände günstig und umweltfreundlich')}
+            learnMoreText={t('user_groups.private.learn_more', 'Mehr erfahren')}
+            earlyAccessText={t('user_groups.private.early_access', 'Early Access')}
             role="private"
           />
           
           <UserGroupCard 
             icon={<Building className="h-10 w-10 text-brand-orange" />}
-            title={t('user_groups.business.title')}
-            description={t('user_groups.business.description')}
-            learnMoreText={t('user_groups.business.learn_more')}
-            preRegisterText={t('user_groups.business.pre_register')}
+            title={t('user_groups.business.title', 'Geschäftskunden')}
+            description={t('user_groups.business.description', 'Flexible Logistiklösungen für dein Unternehmen')}
+            learnMoreText={t('user_groups.business.learn_more', 'Mehr erfahren')}
+            earlyAccessText={t('user_groups.business.early_access', 'Early Access')}
             role="business"
           />
           
           <UserGroupCard 
             icon={<Truck className="h-10 w-10 text-brand-orange" />}
-            title={t('user_groups.driver.title')}
-            description={t('user_groups.driver.description')}
-            learnMoreText={t('user_groups.driver.learn_more')}
-            preRegisterText={t('user_groups.driver.pre_register')}
+            title={t('user_groups.driver.title', 'Fahrer')}
+            description={t('user_groups.driver.description', 'Verdiene Geld mit deinen geplanten Fahrten')}
+            learnMoreText={t('user_groups.driver.learn_more', 'Mehr erfahren')}
+            earlyAccessText={t('user_groups.driver.early_access', 'Early Access')}
             role="driver"
           />
 
           <UserGroupCard 
             icon={<Users className="h-10 w-10 text-brand-orange" />}
-            title={t('user_groups.cm.title')}
-            description={t('user_groups.cm.description')}
-            learnMoreText={t('user_groups.cm.learn_more')}
-            preRegisterText={t('user_groups.cm.pre_register')}
+            title={t('user_groups.cm.title', 'Community Manager')}
+            description={t('user_groups.cm.description', 'Unterstütze whatsgonow in deiner Region')}
+            learnMoreText={t('user_groups.cm.learn_more', 'Mehr erfahren')}
+            earlyAccessText={t('user_groups.cm.early_access', 'Early Access')}
             role="cm"
           />
         </div>
@@ -68,11 +68,11 @@ interface UserGroupCardProps {
   title: string;
   description: string;
   learnMoreText: string;
-  preRegisterText: string;
+  earlyAccessText: string;
   role: string;
 }
 
-const UserGroupCard = ({ icon, title, description, learnMoreText, preRegisterText, role }: UserGroupCardProps) => {
+const UserGroupCard = ({ icon, title, description, learnMoreText, earlyAccessText, role }: UserGroupCardProps) => {
   const { getLocalizedUrl } = useLanguageMCP();
   
   return (
@@ -90,8 +90,8 @@ const UserGroupCard = ({ icon, title, description, learnMoreText, preRegisterTex
         <Button asChild variant="outline" className="w-full">
           <Link to={getLocalizedUrl(`/about?section=${role}`)}>{learnMoreText}</Link>
         </Button>
-        <Button asChild variant="ghost" size="sm" className="w-full">
-          <Link to={getLocalizedUrl(`/pre-register?role=${role}`)}>{preRegisterText}</Link>
+        <Button asChild className="w-full bg-brand-orange hover:bg-brand-orange/90">
+          <Link to={getLocalizedUrl(`/pre-register?role=${role}`)}>{earlyAccessText}</Link>
         </Button>
       </CardFooter>
     </Card>

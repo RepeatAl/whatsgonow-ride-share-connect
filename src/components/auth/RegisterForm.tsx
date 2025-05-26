@@ -25,6 +25,7 @@ export const RegisterForm = () => {
     firstName: "",
     lastName: "",
     phone: "",
+    region: "",
     postalCode: "",
     city: "",
     role: "",
@@ -47,6 +48,11 @@ export const RegisterForm = () => {
     // Validation
     if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
       setError("Bitte fülle alle Pflichtfelder aus.");
+      return;
+    }
+    
+    if (!formData.region) {
+      setError("Bitte wähle deine Region aus.");
       return;
     }
     
@@ -78,6 +84,7 @@ export const RegisterForm = () => {
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
+        region: formData.region,
         postal_code: formData.postalCode,
         city: formData.city,
         role: formData.role
@@ -157,6 +164,23 @@ export const RegisterForm = () => {
               onChange={(e) => handleInputChange("phone", e.target.value)}
               disabled={isLoading}
             />
+          </div>
+          
+          <div>
+            <Label htmlFor="region">Region *</Label>
+            <Select value={formData.region} onValueChange={(value) => handleInputChange("region", value)} disabled={isLoading}>
+              <SelectTrigger>
+                <SelectValue placeholder="Wähle deine Region" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Deutschland">Deutschland</SelectItem>
+                <SelectItem value="Österreich">Österreich</SelectItem>
+                <SelectItem value="Schweiz">Schweiz</SelectItem>
+                <SelectItem value="Niederlande">Niederlande</SelectItem>
+                <SelectItem value="Belgien">Belgien</SelectItem>
+                <SelectItem value="Luxemburg">Luxemburg</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="grid grid-cols-2 gap-4">

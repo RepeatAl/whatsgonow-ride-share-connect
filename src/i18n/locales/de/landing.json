@@ -1,153 +1,88 @@
 
 {
   "hero": {
-    "title": "Teile deine Fahrt, <span>verbinde</span> Menschen",
-    "description": "Whatsgonow ist die Plattform, die spontane und planbare Transporte zwischen Auftraggebern und mobilen Fahrern vermittelt.",
-    "cta_register": "Registrieren",
-    "cta_login": "Anmelden",
+    "title": "Teile deine Fahrt, <span class=\"text-brand-orange\">verbinde</span> Menschen",
+    "subtitle": "Nachhaltiger Transport durch intelligente Vermittlung zwischen Fahrern und Sendern",
     "cta_learn_more": "Mehr erfahren",
-    "cta_pre_register": "Sei dabei wenn wir starten",
-    "cta_faq": "FAQ",
-    "cta_esg": "ESG Dashboard"
+    "cta_early_access": "Early Access sichern"
   },
   "how_it_works": {
-    "title": "So funktioniert Whatsgonow",
-    "description": "Eine einfache Art, Transporte zu organisieren und Leerfahrten zu reduzieren",
+    "title": "So funktioniert whatsgonow",
     "step1": {
-      "title": "Ladung anmelden",
-      "description": "Gib an, was du transportieren möchtest und wohin es gehen soll."
+      "title": "Registrieren",
+      "description": "Erstelle dein Profil als Sender oder Fahrer"
     },
     "step2": {
-      "title": "Fahrer finden",
-      "description": "Finde Fahrer, die bereits eine Fahrt auf deiner Route planen."
+      "title": "Matchen", 
+      "description": "Finde passende Transportpartner für deine Route"
     },
     "step3": {
-      "title": "Deal abschließen",
-      "description": "Verhandle den Preis und schließe den Deal ab."
-    },
-    "step4": {
-      "title": "Transport erledigt",
-      "description": "Der Fahrer holt dein Paket ab und liefert es am Zielort ab."
+      "title": "Transportieren",
+      "description": "Sicher und nachhaltig von A nach B"
     }
   },
   "benefits": {
-    "title": "Vorteile von Whatsgonow",
-    "description": "Whatsgonow bringt viele Vorteile für Auftraggeber und Fahrer",
-    "time_saving": {
-      "title": "Zeitersparnis",
-      "description": "Spare Zeit durch effiziente Zustellung und einfache Vermittlung"
+    "title": "Warum whatsgonow?",
+    "sustainability": {
+      "title": "Nachhaltigkeit",
+      "description": "Reduziere CO2 durch geteilte Fahrten"
     },
-    "cost_saving": {
-      "title": "Kosteneinsparung",
-      "description": "Reduziere Transportkosten und schaffe zusätzliche Einnahmequellen"
-    },
-    "environmentally_friendly": {
-      "title": "Umweltfreundlich",
-      "description": "Weniger Leerfahrten bedeuten weniger CO₂-Emissionen"
-    },
-    "security": {
-      "title": "Sicherheit",
-      "description": "Verifizierte Profile und Bewertungssystem für mehr Sicherheit"
-    },
-    "flexibility": {
-      "title": "Flexibilität",
-      "description": "Plane Transporte spontan oder im Voraus nach deinen Bedürfnissen"
+    "efficiency": {
+      "title": "Effizienz", 
+      "description": "Nutze vorhandene Transportkapazitäten optimal"
     },
     "community": {
       "title": "Community",
-      "description": "Werde Teil einer wachsenden Community von Fahrern und Auftraggebern"
+      "description": "Verbinde dich mit Menschen in deiner Region"
     }
   },
   "user_groups": {
-    "title": "Für wen ist Whatsgonow?",
-    "description": "Whatsgonow ist für alle, die Güter transportieren oder Transportkapazitäten anbieten möchten",
+    "title": "Für wen ist whatsgonow?",
+    "description": "Unsere Plattform verbindet verschiedene Nutzergruppen für effiziente Transporte",
     "private": {
-      "title": "Privatkunden",
-      "description": "Du möchtest etwas transportieren lassen und suchst eine günstige und zuverlässige Lösung?",
-      "button": "Als Privatkunde starten",
+      "title": "Private Sender",
+      "description": "Versende Gegenstände günstig und umweltfreundlich",
       "learn_more": "Mehr erfahren",
-      "pre_register": "Vorab registrieren"
+      "early_access": "Early Access"
     },
     "business": {
-      "title": "Geschäftskunden",
-      "description": "Du brauchst regelmäßige Transporte für dein Unternehmen und willst Kosten optimieren?",
-      "button": "Als Geschäftskunde starten",
+      "title": "Geschäftskunden", 
+      "description": "Flexible Logistiklösungen für dein Unternehmen",
       "learn_more": "Mehr erfahren",
-      "pre_register": "Vorab registrieren"
+      "early_access": "Early Access"
     },
     "driver": {
       "title": "Fahrer",
-      "description": "Du bist unterwegs und möchtest deine Fahrt nutzen, um zusätzliches Geld zu verdienen?",
-      "button": "Als Fahrer starten",
-      "learn_more": "Mehr erfahren",
-      "pre_register": "Vorab registrieren"
+      "description": "Verdiene Geld mit deinen geplanten Fahrten",
+      "learn_more": "Mehr erfahren", 
+      "early_access": "Early Access"
     },
     "cm": {
       "title": "Community Manager",
-      "description": "Du möchtest als Community Manager Whatsgonow in deiner Region voranbringen?",
-      "button": "Als Community Manager starten",
+      "description": "Unterstütze whatsgonow in deiner Region",
       "learn_more": "Mehr erfahren",
-      "pre_register": "Vorab registrieren"
+      "early_access": "Early Access"
     }
   },
-  "esg": {
-    "title": "Nachhaltigkeit & Transparenz",
-    "description": "Wir sind Vorreiter für transparente ESG-Daten. Hier findest du unsere aktuellen Nachhaltigkeitskennzahlen.",
-    "metric1": {
-      "title": "CO₂ Einsparung",
-      "description": "Reduzierte CO₂-Emissionen durch optimierte Routen"
-    },
-    "metric2": {
-      "title": "Leerfahrten reduziert",
-      "description": "Vermiedene Leerfahrten in diesem Monat"
-    },
-    "metric3": {
-      "title": "ESG Score",
-      "description": "Unser aktueller Nachhaltigkeits-Score"
-    },
-    "cta_button": "Zum ESG Dashboard"
-  },
   "testimonials": {
-    "title": "Das sagen unsere Nutzer",
-    "description": "Erfahrungen von Kunden und Fahrern auf Whatsgonow",
-    "testimonial1": {
-      "text": "Ich brauchte dringend Hilfe beim Transport eines Schranks. Über whatsgonow fand ich schnell einen Fahrer, der in meine Richtung fuhr. Super einfach und kostengünstig!",
-      "name": "Marie Schmidt",
-      "role": "Privatkundin"
+    "title": "Was unsere Community sagt",
+    "user1": {
+      "quote": "Endlich eine Plattform, die Nachhaltigkeit und Effizienz vereint!",
+      "name": "Maria, Private Senderin"
     },
-    "testimonial2": {
-      "text": "Als Fahrer nutze ich meine Fahrten jetzt produktiv und verdiene zusätzliches Geld. Die App ist intuitiv und die Abwicklung unkompliziert.",
-      "name": "Thomas Becker",
-      "role": "Fahrer"
-    },
-    "testimonial3": {
-      "text": "Für unser kleines Unternehmen ist whatsgonow perfekt. Wir sparen Lieferkosten und unterstützen gleichzeitig die lokale Community.",
-      "name": "Laura Müller",
-      "role": "Geschäftskundin"
+    "user2": {
+      "quote": "Ich verdiene jetzt Geld mit Fahrten, die ich sowieso mache.",
+      "name": "Thomas, Fahrer"
     }
   },
   "cta": {
-    "title": "Bereit für effizientere Transporte?",
-    "description": "Registriere dich jetzt bei whatsgonow und entdecke, wie einfach du Transporte organisieren oder als Fahrer Geld verdienen kannst.",
+    "title": "Sei dabei, wenn whatsgonow startet!",
+    "description": "Melde dich jetzt für den Early Access an und sei einer der Ersten.",
     "button_login": "Anmelden",
-    "button_register": "Registrieren",
-    "button_pre_register": "Vorab registrieren",
-    "button_learn_more": "Mehr erfahren",
-    "existing_user": "Schon registriert? Jetzt anmelden.",
-    "new_user": "Neu bei Whatsgonow? Registrieren Sie sich kostenlos."
+    "button_register": "Jetzt dabei sein"
   },
-  "nav": {
-    "find_transport": "Transport finden",
-    "offer_transport": "Transport anbieten",
-    "messages": "Nachrichten",
-    "order": "Neuer Auftrag",
-    "profile": "Profil",
-    "dashboard": "Dashboard",
-    "login": "Anmelden",
-    "register": "Registrieren",
-    "pre_register": "Pre-Registrierung",
-    "learn_more": "Mehr erfahren",
-    "esg_dashboard": "ESG Dashboard",
-    "admin": "Admin"
+  "faq": {
+    "title": "Häufige Fragen",
+    "button": "Alle FAQs ansehen"
   }
 }

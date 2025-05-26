@@ -10,9 +10,11 @@ import FaqContactSupport from "@/components/faq/FaqContactSupport";
 import { faqItems } from "@/components/faq/faqData";
 import { FAQItem } from "@/types/faq";
 import { useTranslation } from "react-i18next";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const Faq = () => {
   const { t, i18n } = useTranslation('faq');
+  const { getLocalizedUrl } = useLanguageMCP();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredFAQs = faqItems.filter(
@@ -34,24 +36,24 @@ const Faq = () => {
   const isRTL = i18n.language === 'ar';
 
   return (
-    <Layout>
+    <Layout pageType="faq">
       <div 
         className="container max-w-4xl px-4 py-8" 
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div className="mb-6">
-          <Link to="/">
+          <Link to={getLocalizedUrl("/")}>
             <Button variant="outline" size="sm" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('back')}
+              {t('back', 'Zurück')}
             </Button>
           </Link>
           <div className="flex items-center gap-2 mb-2">
-            <HelpCircle className="h-8 w-8 text-brand-primary" />
-            <h1 className="text-3xl font-bold">{t('page_title')}</h1>
+            <HelpCircle className="h-8 w-8 text-brand-orange" />
+            <h1 className="text-3xl font-bold">{t('page_title', 'Häufig gestellte Fragen')}</h1>
           </div>
           <p className="text-muted-foreground mb-6">
-            {t('page_description')}
+            {t('page_description', 'Finde Antworten auf die häufigsten Fragen zu whatsgonow.')}
           </p>
           
           <FaqSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -64,10 +66,10 @@ const Faq = () => {
         ) : (
           <div className="text-center py-10">
             <p className="text-muted-foreground mb-4">
-              {t('search.no_results')} "{searchQuery}"
+              {t('search.no_results', 'Keine Ergebnisse gefunden für')} "{searchQuery}"
             </p>
             <Button variant="outline" onClick={() => setSearchQuery("")}>
-              {t('search.reset_search')}
+              {t('search.reset_search', 'Suche zurücksetzen')}
             </Button>
           </div>
         )}

@@ -1,33 +1,44 @@
 
 {
   "title": "Sei dabei, wenn whatsgonow startet!",
-  "subtitle": "Registriere dich jetzt für die Warteliste und sei einer der Ersten, die whatsgonow nutzen können.",
-  "heading": "Voranmeldung",
-  "first_name": "Vorname",
-  "last_name": "Nachname",
-  "email": "E-Mail",
-  "postal_code": "Postleitzahl",
-  "register_as": "Registrieren als",
-  "driver": "Fahrer",
-  "cm": "Community Manager",
-  "sender": "Versender",
-  "vehicle_types": {
-    "label": "Fahrzeugtyp",
-    "car_sizes": "Auto (Größen)",
-    "moped": "Moped/Motorrad",
-    "bike": "Fahrrad/Lastenrad",
-    "boat": "Schiff",
-    "plane": "Flugzeug"
+  "subtitle": "Sichere dir jetzt deinen Platz für den Early Access und sei einer der Ersten, die whatsgonow nutzen können.",
+  "form": {
+    "first_name": "Vorname",
+    "last_name": "Nachname", 
+    "email": "E-Mail-Adresse",
+    "postal_code": "Postleitzahl",
+    "language": "Bevorzugte Sprache",
+    "roles_title": "Ich möchte whatsgonow nutzen als:",
+    "wants_sender": "Sender (Gegenstände versenden)",
+    "wants_driver": "Fahrer (Gegenstände transportieren)",
+    "wants_cm": "Community Manager (whatsgonow in meiner Region unterstützen)",
+    "vehicle_types_title": "Welche Fahrzeugtypen stehen dir zur Verfügung?",
+    "vehicle_types": {
+      "car": "PKW",
+      "van": "Transporter/Van",
+      "truck": "LKW",
+      "motorcycle": "Motorrad/Roller"
+    },
+    "gdpr_consent": "Ich stimme der Datenverarbeitung gemäß Datenschutzerklärung zu",
+    "submit": "Early Access sichern",
+    "submitting": "Wird übertragen..."
   },
-  "gdpr_consent": "Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu",
-  "submit": "Jetzt vorregistrieren",
-  "processing": "Wird verarbeitet...",
   "success": {
-    "title": "Voranmeldung erfolgreich!",
-    "description": "Vielen Dank für dein Interesse an whatsgonow. Wir haben dir (falls technisch möglich) eine Bestätigungs-E-Mail geschickt.",
+    "title": "Willkommen im Early Access!",
+    "description": "Perfekt! Du bist jetzt Teil unserer exklusiven Early Access Community. Wir haben dir eine Bestätigungs-E-Mail geschickt.",
     "confirm_notice": "Bitte klicke auf den Bestätigungslink in dieser E-Mail, um deinen Zugang zu aktivieren.",
-    "login_notice": "Danach kannst du dich jederzeit einloggen!",
+    "login_notice": "Danach kannst du dich jederzeit einloggen und whatsgonow bereits vor dem offiziellen Launch nutzen!",
     "spam_notice": "Sollte die E-Mail nicht ankommen, prüfe deinen Spam-Ordner oder versuch es später erneut.",
     "back_to_home": "Zurück zur Startseite"
+  },
+  "validation": {
+    "first_name_required": "Vorname ist erforderlich",
+    "last_name_required": "Nachname ist erforderlich",
+    "email_required": "E-Mail ist erforderlich",
+    "email_invalid": "Ungültige E-Mail-Adresse",
+    "postal_code_required": "Postleitzahl ist erforderlich",
+    "role_required": "Bitte wähle mindestens eine Rolle aus",
+    "vehicle_types_required": "Bitte wähle mindestens einen Fahrzeugtyp aus",
+    "gdpr_required": "Zustimmung zur Datenverarbeitung ist erforderlich"
   }
 }

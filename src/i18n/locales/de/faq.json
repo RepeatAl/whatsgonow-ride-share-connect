@@ -1,45 +1,45 @@
 
 {
   "page_title": "Häufig gestellte Fragen",
-  "page_description": "Hier findest du Antworten auf die häufigsten Fragen zu unserer Plattform",
+  "page_description": "Finde Antworten auf die häufigsten Fragen zu whatsgonow.",
   "back": "Zurück",
   "search": {
-    "placeholder": "Suche in den FAQs...",
+    "placeholder": "Durchsuche FAQs...",
     "no_results": "Keine Ergebnisse gefunden für",
     "reset_search": "Suche zurücksetzen"
   },
   "categories": {
     "general": "Allgemein",
-    "registration": "Registrierung & Sicherheit",
+    "registration": "Registrierung & Sicherheit", 
     "orders": "Aufträge & Matching",
     "payment": "Bezahlung & Sicherheit",
     "support": "Support & Community"
   },
   "questions": {
     "what_is_whatsgonow": {
-      "question": "Was ist Whatsgonow?",
-      "answer": "Whatsgonow ist eine Crowd-Logistikplattform, die spontane oder geplante Lieferungen durch Privatpersonen oder lokale Fahrer ermöglicht. Die Plattform vermittelt Aufträge, ermöglicht Preisverhandlungen und bietet ein sicheres Zahlungs- und Bewertungssystem."
+      "question": "Was ist whatsgonow?",
+      "answer": "whatsgonow ist eine Crowdlogistik-Plattform, die spontane und planbare Transporte zwischen privaten oder kleingewerblichen Auftraggebern und mobilen Fahrern vermittelt. Unser Ziel ist es, Leerfahrten zu reduzieren, Einkommensquellen zu schaffen und Lieferungen effizienter zu gestalten."
     },
     "registration_required": {
-      "question": "Ist eine Registrierung notwendig?",
-      "answer": "Ja, sowohl Fahrer als auch Auftraggeber müssen sich registrieren. Für Fahrer ist zudem eine Verifizierung (KYC) erforderlich."
+      "question": "Muss ich mich registrieren, um whatsgonow zu nutzen?",
+      "answer": "Ja, für die Nutzung aller Funktionen ist eine Registrierung erforderlich. Du kannst dich aber bereits jetzt für die Warteliste anmelden und wirst benachrichtigt, sobald wir in deiner Region starten."
     },
     "find_transport_orders": {
-      "question": "Wie finde ich passende Transportaufträge?",
-      "answer": "Als Fahrer erhältst du Vorschläge basierend auf deiner Route, deinem Umkreis und deinem Transportprofil."
+      "question": "Wie finde ich Transportaufträge als Fahrer?",
+      "answer": "Nach der Registrierung kannst du deine geplanten Fahrten eintragen. Das System zeigt dir dann automatisch passende Transportaufträge für deine Route an. Du entscheidest selbst, welche Aufträge du annehmen möchtest."
     },
     "payment_process": {
       "question": "Wie funktioniert die Bezahlung?",
-      "answer": "Die Zahlung wird bei Deal-Bestätigung vorgemerkt (z. B. via PayPal) und nach erfolgreicher Lieferung freigegeben."
+      "answer": "Die Bezahlung erfolgt sicher über whatsgonow. Auftraggeber bezahlen bei Auftragsannahme, Fahrer erhalten ihr Geld nach erfolgreicher Lieferung. Wir behalten eine kleine Servicegebühr ein."
     },
     "problem_handling": {
-      "question": "Was mache ich bei Problemen?",
-      "answer": "Nutze den Support-Button oder melde einen Vorfall im Deal-Chat. Community Manager unterstützen dich in deiner Region."
+      "question": "Was passiert bei Problemen während des Transports?",
+      "answer": "Unser Support-Team hilft bei allen Problemen. Zusätzlich bieten wir optionale Versicherungen für höherwertige Gegenstände an. Bei Streitigkeiten vermitteln unsere Community Manager."
     }
   },
   "contact_support": {
-    "title": "Noch Fragen?",
-    "description": "Falls du keine Antwort auf deine Frage gefunden hast, kontaktiere unseren Support.",
-    "button": "Support kontaktieren"
+    "title": "Weitere Fragen?",
+    "description": "Falls du deine Frage hier nicht findest, helfen wir gerne weiter.",
+    "contact_button": "Support kontaktieren"
   }
 }

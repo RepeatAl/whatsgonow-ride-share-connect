@@ -23,7 +23,7 @@ const PreRegister = () => {
                   {t("pre_register:title", "Sei dabei, wenn whatsgonow startet!")}
                 </CardTitle>
                 <CardDescription className="text-lg mt-4">
-                  {t("pre_register:subtitle", "Registriere dich jetzt für die Warteliste und sei einer der Ersten, die whatsgonow nutzen können.")}
+                  {t("pre_register:subtitle", "Sichere dir jetzt deinen Platz für den Early Access und sei einer der Ersten, die whatsgonow nutzen können.")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-8">
