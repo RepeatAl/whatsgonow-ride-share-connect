@@ -20,7 +20,7 @@ import {
   PlusCircle,
   UserPlus
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
@@ -35,14 +35,14 @@ interface MobileMenuProps {
 const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { signOut } = useSimpleAuth();
   const { t } = useTranslation('landing');
   const { getLocalizedUrl } = useLanguageMCP();
   const isSender = userRole?.startsWith('sender_');
 
-  const signOut = async () => {
+  const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await signOut();
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -184,7 +184,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               
               <button onClick={() => {
                 setIsMenuOpen(false);
-                signOut();
+                handleSignOut();
               }} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
                 <LogOut className="h-5 w-5 mr-2" />
                 <span>{t('auth.logout')}</span>

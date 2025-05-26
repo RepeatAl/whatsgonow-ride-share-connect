@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, LogOut, MessageSquare, PlusCircle, Route, Package } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useTranslation } from "react-i18next";
 import ThemeLanguageControls from "./ThemeLanguageControls";
@@ -24,7 +24,7 @@ interface DesktopMenuProps {
 }
 
 const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessagesCount }) => {
-  const { signOut } = useAuth();
+  const { signOut } = useSimpleAuth();
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
   const { t } = useTranslation('landing');
@@ -69,44 +69,55 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
       .slice(0, 2);
   };
 
+  // Bestimme rollenspezifische Action Buttons
+  const getRoleSpecificButtons = () => {
+    switch (userRole) {
+      case 'driver':
+        return (
+          <div className="flex items-center space-x-2">
+            <Link to={getLocalizedUrl("/rides")}>
+              <Button variant="ghost" size="sm">
+                <Route className="h-4 w-4 mr-2" />
+                Meine Fahrten
+              </Button>
+            </Link>
+            <Link to={getLocalizedUrl("/rides/create")}>
+              <Button variant="default" size="sm">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Fahrt einstellen
+              </Button>
+            </Link>
+          </div>
+        );
+      case 'sender_private':
+      case 'sender_business':
+        return (
+          <div className="flex items-center space-x-2">
+            <Link to={getLocalizedUrl("/orders")}>
+              <Button variant="ghost" size="sm">
+                <Package className="h-4 w-4 mr-2" />
+                Aufträge
+              </Button>
+            </Link>
+            <Link to={getLocalizedUrl("/create-order")}>
+              <Button variant="default" size="sm">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Auftrag erstellen
+              </Button>
+            </Link>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="flex items-center space-x-4">
       <ThemeLanguageControls />
       
       {/* Role-specific Action Buttons */}
-      {userRole === 'driver' && (
-        <div className="flex items-center space-x-2">
-          <Link to={getLocalizedUrl("/rides")}>
-            <Button variant="ghost" size="sm">
-              <Route className="h-4 w-4 mr-2" />
-              Meine Fahrten
-            </Button>
-          </Link>
-          <Link to={getLocalizedUrl("/rides/create")}>
-            <Button variant="default" size="sm">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Fahrt einstellen
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {(userRole === 'sender_private' || userRole === 'sender_business') && (
-        <div className="flex items-center space-x-2">
-          <Link to={getLocalizedUrl("/orders")}>
-            <Button variant="ghost" size="sm">
-              <Package className="h-4 w-4 mr-2" />
-              Aufträge
-            </Button>
-          </Link>
-          <Link to={getLocalizedUrl("/create-order")}>
-            <Button variant="default" size="sm">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Auftrag erstellen
-            </Button>
-          </Link>
-        </div>
-      )}
+      {getRoleSpecificButtons()}
 
       {/* Inbox Button */}
       <Link to={getLocalizedUrl("/inbox")}>

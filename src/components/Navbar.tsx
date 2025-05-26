@@ -2,14 +2,14 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import DesktopMenu from "./navbar/DesktopMenu";
 import MobileMenu from "./navbar/MobileMenu";
 import NavbarLogo from "./navbar/NavbarLogo";
 
 const Navbar = React.memo(() => {
   const { theme } = useTheme();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading } = useSimpleAuth();
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   // Memoize user role to prevent unnecessary re-renders

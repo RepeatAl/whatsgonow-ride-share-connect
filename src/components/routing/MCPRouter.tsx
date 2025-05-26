@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
@@ -17,6 +16,11 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ESGDashboard from '@/pages/ESGDashboard';
 import Faq from '@/pages/Faq';
+
+// Import dashboard pages
+import DashboardDriver from '@/pages/dashboard/DashboardDriver';
+import DashboardCM from '@/pages/dashboard/DashboardCM';
+import DashboardAdmin from '@/pages/dashboard/DashboardAdmin';
 
 // Import route guards
 import PublicRoute from './PublicRoute';
@@ -44,9 +48,16 @@ const MCPRouter = () => {
       {/* Public ESG Dashboard - accessible to everyone */}
       <Route path="/:lang/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
       
-      {/* Protected routes */}
+      {/* Protected routes - Main Dashboard with role-based redirect */}
       <Route path="/:lang/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      
+      {/* Protected routes - Role-specific Dashboards */}
       <Route path="/:lang/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
+      <Route path="/:lang/dashboard/driver" element={<ProtectedRoute><DashboardDriver /></ProtectedRoute>} />
+      <Route path="/:lang/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
+      <Route path="/:lang/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
+      
+      {/* Other protected routes */}
       <Route path="/:lang/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       
       {/* Fallback */}
