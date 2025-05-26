@@ -8,6 +8,7 @@ const UserManagementTool = () => {
       title="Nutzerverwaltung"
       description="Verwaltung von Nutzerkonten, Rollen und Berechtigungen."
       icon={UserCheck}
+      status="inactive"
       disabled={true}
     />
   );

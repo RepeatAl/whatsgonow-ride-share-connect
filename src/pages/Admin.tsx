@@ -47,6 +47,7 @@ const Admin: React.FC = () => {
             title={t("admin.tools.user_management")}
             description={t("admin.tools.user_management_desc")}
             icon={Users}
+            status="active"
             href="/admin/users"
           />
           
@@ -54,6 +55,7 @@ const Admin: React.FC = () => {
             title={t("admin.tools.validation")}
             description={t("admin.tools.validation_desc")}
             icon={ShieldCheck}
+            status="active"
             href="/admin/validation"
           />
           
@@ -61,6 +63,7 @@ const Admin: React.FC = () => {
             title={t("admin.tools.feedback")}
             description={t("admin.tools.feedback_desc")}
             icon={MessageSquare}
+            status="active"
             href="/admin/feedback"
           />
           
@@ -68,6 +71,7 @@ const Admin: React.FC = () => {
             title={t("admin.tools.pre_registrations")}
             description={t("admin.tools.pre_registrations_desc")}
             icon={UserCheck}
+            status="active"
             href="/admin/pre-registrations"
           />
           
@@ -75,6 +79,7 @@ const Admin: React.FC = () => {
             title={t("admin.tools.system_activity")}
             description={t("admin.tools.system_activity_desc")}
             icon={History}
+            status="active"
             href="/admin/dashboard"
           />
           
@@ -82,6 +87,7 @@ const Admin: React.FC = () => {
             title={t("admin.tools.invoice_testing")}
             description={t("admin.tools.invoice_testing_desc")}
             icon={FileCheck}
+            status="active"
             href="/admin/invoice-test"
           />
           
@@ -89,6 +95,7 @@ const Admin: React.FC = () => {
             title={t("admin.tools.translation_feedback")}
             description={t("admin.tools.translation_feedback_desc")}
             icon={Globe}
+            status="active"
             href="/admin/translation-feedback"
             badge="New"
           />

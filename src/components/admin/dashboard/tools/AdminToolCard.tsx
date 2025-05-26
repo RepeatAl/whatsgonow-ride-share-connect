@@ -9,8 +9,8 @@ interface AdminToolCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
-  status: 'active' | 'inactive' | 'pending';
-  onClick: () => void;
+  status?: 'active' | 'inactive' | 'pending';
+  onClick?: () => void;
   badge?: string;
   href?: string;
   disabled?: boolean;
@@ -20,7 +20,7 @@ const AdminToolCard: React.FC<AdminToolCardProps> = ({
   title,
   description,
   icon: Icon,
-  status,
+  status = 'active',
   onClick,
   badge,
   href,
@@ -39,10 +39,20 @@ const AdminToolCard: React.FC<AdminToolCardProps> = ({
     }
   };
 
+  const handleClick = () => {
+    if (disabled) return;
+    
+    if (href) {
+      window.location.href = href;
+    } else if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <Card 
       className={`hover:shadow-md transition-shadow ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} 
-      onClick={disabled ? undefined : onClick}
+      onClick={handleClick}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">

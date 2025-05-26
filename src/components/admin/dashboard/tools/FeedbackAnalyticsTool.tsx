@@ -8,6 +8,7 @@ const FeedbackAnalyticsTool = () => {
       title="Feedback-Analytics"
       description="Detaillierte Auswertungen und Visualisierungen aller Nutzer-Feedbacks."
       icon={FileBarChart}
+      status="active"
       href="/admin/feedback-analytics"
     />
   );

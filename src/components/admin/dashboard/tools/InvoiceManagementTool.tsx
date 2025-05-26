@@ -8,6 +8,7 @@ const InvoiceManagementTool = () => {
       title="Rechnungsverwaltung"
       description="Prüfung und Validierung von Rechnungen, XRechnungs-Export."
       icon={FileSpreadsheet}
+      status="inactive"
       disabled={true}
     />
   );
