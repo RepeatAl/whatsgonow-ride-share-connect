@@ -41,7 +41,7 @@ export const LanguageSwitcher = ({
     try {
       setIsChanging(true);
       
-      await setLanguageByCode(langCode, true);
+      await setLanguageByCode(langCode);
       
       toast({
         description: t("language_changed", { language: supportedLanguages.find(l => l.code === langCode)?.name }),

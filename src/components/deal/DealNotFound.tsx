@@ -6,7 +6,7 @@ import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 export const DealNotFound = () => {
   const { t } = useTranslation("common");
-  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
+  const { getLocalizedUrl } = useLanguageMCP();
   
   return (
     <div className="flex-grow flex flex-col justify-center items-center p-6">
@@ -28,7 +28,7 @@ export const DealNotFound = () => {
             variant="outline" 
             asChild
           >
-            <a href={getLocalizedUrl("/orders", currentLanguage)}>
+            <a href={getLocalizedUrl("/orders")}>
               {t("browse_orders")}
             </a>
           </Button>

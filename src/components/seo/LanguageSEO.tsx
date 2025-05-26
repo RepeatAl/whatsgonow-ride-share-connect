@@ -46,7 +46,9 @@ export const LanguageSEO: React.FC<LanguageSEOProps> = ({
           return null;
         }
         
-        const langPath = getLocalizedUrl(path, lang.code);
+        // Create localized path manually since getLocalizedUrl only accepts one param
+        const pathWithoutLang = path.replace(/^\/[a-z]{2}/, '') || '/';
+        const langPath = `/${lang.code}${pathWithoutLang === '/' ? '' : pathWithoutLang}`;
         const alternateUrl = `${baseUrl}${langPath}`;
         
         return (
