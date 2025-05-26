@@ -44,9 +44,9 @@ const App = () => {
           <BrowserRouter>
             <SimpleAuthProvider>
               <AppWithLanguage />
-              <Toaster />
-              <Sonner />
             </SimpleAuthProvider>
+            <Toaster />
+            <Sonner />
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
