@@ -5,6 +5,8 @@
     "description": "Whatsgonow is the platform that connects contractors and mobile drivers for spontaneous and plannable transports.",
     "cta_register": "Register now",
     "cta_login": "Login",
+    "cta_learn_more": "Learn more",
+    "cta_pre_register": "Pre-Registration",
     "cta_faq": "FAQ",
     "cta_esg": "ESG Dashboard"
   },
@@ -62,22 +64,30 @@
     "private": {
       "title": "Private customers",
       "description": "You want to have something transported and are looking for an affordable and reliable solution?",
-      "button": "Start as a private customer"
+      "button": "Start as a private customer",
+      "learn_more": "Learn more",
+      "pre_register": "Pre-register"
     },
     "business": {
       "title": "Business customers",
       "description": "You need regular transports for your company and want to optimize costs?",
-      "button": "Start as a business customer"
+      "button": "Start as a business customer",
+      "learn_more": "Learn more",
+      "pre_register": "Pre-register"
     },
     "driver": {
       "title": "Drivers",
       "description": "You are on the road and want to use your journey to earn extra money?",
-      "button": "Start as a driver"
+      "button": "Start as a driver",
+      "learn_more": "Learn more",
+      "pre_register": "Pre-register"
     },
     "cm": {
       "title": "Community Managers",
       "description": "You want to advance Whatsgonow in your region as a Community Manager?",
-      "button": "Start as a Community Manager"
+      "button": "Start as a Community Manager",
+      "learn_more": "Learn more",
+      "pre_register": "Pre-register"
     }
   },
   "esg": {
@@ -121,6 +131,8 @@
     "description": "Register now with whatsgonow and discover how easily you can organize transport or earn money as a driver.",
     "button_login": "Login now",
     "button_register": "Register for free",
+    "button_pre_register": "Pre-register",
+    "button_learn_more": "Learn more",
     "existing_user": "Already registered? Login now.",
     "new_user": "New to Whatsgonow? Register for free."
   },
@@ -133,6 +145,9 @@
     "dashboard": "Dashboard",
     "login": "Login",
     "register": "Register",
+    "pre_register": "Pre-Registration",
+    "learn_more": "Learn more",
+    "esg_dashboard": "ESG Dashboard",
     "admin": "Admin"
   }
 }

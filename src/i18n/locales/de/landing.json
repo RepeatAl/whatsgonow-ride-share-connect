@@ -3,8 +3,10 @@
   "hero": {
     "title": "Teile deine Fahrt, <span>verbinde</span> Menschen",
     "description": "Whatsgonow ist die Plattform, die spontane und planbare Transporte zwischen Auftraggebern und mobilen Fahrern vermittelt.",
-    "cta_register": "Jetzt registrieren",
+    "cta_register": "Registrieren",
     "cta_login": "Anmelden",
+    "cta_learn_more": "Mehr erfahren",
+    "cta_pre_register": "Pre-Registrierung",
     "cta_faq": "FAQ",
     "cta_esg": "ESG Dashboard"
   },
@@ -62,22 +64,30 @@
     "private": {
       "title": "Privatkunden",
       "description": "Du möchtest etwas transportieren lassen und suchst eine günstige und zuverlässige Lösung?",
-      "button": "Als Privatkunde starten"
+      "button": "Als Privatkunde starten",
+      "learn_more": "Mehr erfahren",
+      "pre_register": "Vorab registrieren"
     },
     "business": {
       "title": "Geschäftskunden",
       "description": "Du brauchst regelmäßige Transporte für dein Unternehmen und willst Kosten optimieren?",
-      "button": "Als Geschäftskunde starten"
+      "button": "Als Geschäftskunde starten",
+      "learn_more": "Mehr erfahren",
+      "pre_register": "Vorab registrieren"
     },
     "driver": {
       "title": "Fahrer",
       "description": "Du bist unterwegs und möchtest deine Fahrt nutzen, um zusätzliches Geld zu verdienen?",
-      "button": "Als Fahrer starten"
+      "button": "Als Fahrer starten",
+      "learn_more": "Mehr erfahren",
+      "pre_register": "Vorab registrieren"
     },
     "cm": {
       "title": "Community Manager",
       "description": "Du möchtest als Community Manager Whatsgonow in deiner Region voranbringen?",
-      "button": "Als Community Manager starten"
+      "button": "Als Community Manager starten",
+      "learn_more": "Mehr erfahren",
+      "pre_register": "Vorab registrieren"
     }
   },
   "esg": {
@@ -119,8 +129,10 @@
   "cta": {
     "title": "Bereit für effizientere Transporte?",
     "description": "Registriere dich jetzt bei whatsgonow und entdecke, wie einfach du Transporte organisieren oder als Fahrer Geld verdienen kannst.",
-    "button_login": "Jetzt anmelden",
-    "button_register": "Kostenlos registrieren",
+    "button_login": "Anmelden",
+    "button_register": "Registrieren",
+    "button_pre_register": "Vorab registrieren",
+    "button_learn_more": "Mehr erfahren",
     "existing_user": "Schon registriert? Jetzt anmelden.",
     "new_user": "Neu bei Whatsgonow? Registrieren Sie sich kostenlos."
   },
@@ -133,6 +145,9 @@
     "dashboard": "Dashboard",
     "login": "Anmelden",
     "register": "Registrieren",
+    "pre_register": "Pre-Registrierung",
+    "learn_more": "Mehr erfahren",
+    "esg_dashboard": "ESG Dashboard",
     "admin": "Admin"
   }
 }

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -11,18 +12,20 @@ import {
   User, 
   LayoutDashboard, 
   Shield, 
-  Database, 
   LogIn, 
   LogOut, 
   Moon, 
   Sun, 
   FileText, 
-  PlusCircle 
+  PlusCircle,
+  BarChart3,
+  UserPlus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
-import { LanguageToggle } from "@/components/LanguageToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 interface MobileMenuProps {
   user: any;
@@ -33,22 +36,41 @@ interface MobileMenuProps {
 const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
+  const { getLocalizedUrl } = useLanguageMCP();
   const isSender = userRole?.startsWith('sender_');
 
-  const navLinks = [{
-    name: t('landing.nav.find_transport'),
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Always visible links
+  const publicLinks = [
+    {
+      name: t('nav.esg_dashboard'),
+      path: "/esg-dashboard",
+      icon: <BarChart3 className="h-5 w-5 mr-2" />
+    }
+  ];
+
+  const navLinks = user ? [{
+    name: t('nav.find_transport'),
     path: "/find-transport",
     icon: <Package className="h-5 w-5 mr-2" />
   }, {
-    name: t('landing.nav.offer_transport'),
+    name: t('nav.offer_transport'),
     path: "/offer-transport",
     icon: <Car className="h-5 w-5 mr-2" />
   }, {
-    name: t('landing.nav.messages'),
+    name: t('nav.messages'),
     path: "/inbox",
     icon: <MessageCircle className="h-5 w-5 mr-2" />
-  }];
+  }] : [];
 
   // Add create order link for senders
   if (isSender) {
@@ -59,20 +81,11 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
     });
   }
 
-  const adminLinks = [{
-    name: t('landing.nav.admin'),
+  const adminLinks = user && (userRole === 'admin' || userRole === 'admin_limited') ? [{
+    name: t('nav.admin'),
     path: "/admin",
     icon: <Shield className="h-5 w-5 mr-2" />
-  }];
-
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
+  }] : [];
 
   return (
     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
@@ -84,6 +97,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
       
       <SheetContent side="right" className="w-[250px] sm:w-[300px]">
         <div className="flex flex-col gap-4 mt-8">
+          {/* Theme and Language Controls */}
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
               {theme === "light" ? <>
@@ -94,20 +108,47 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 <span>Light Mode</span>
               </>}
             </button>
-            <LanguageToggle />
+            <LanguageSwitcher variant="compact" />
           </div>
 
-          {!user ? (
-            <Link to="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-              <LogIn className="h-5 w-5 mr-2" />
-              <span>{t('auth.login')}</span>
+          {/* Public Links - Always Visible */}
+          {publicLinks.map(link => (
+            <Link key={link.path} to={getLocalizedUrl(link.path)} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+              {link.icon}
+              <span>{link.name}</span>
             </Link>
+          ))}
+
+          {!user ? (
+            <>
+              {/* Auth Buttons for Non-Logged Users */}
+              <div className="border-t my-2"></div>
+              
+              <Link to={getLocalizedUrl("/pre-register")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                <UserPlus className="h-5 w-5 mr-2" />
+                <span>{t('nav.pre_register')}</span>
+              </Link>
+              
+              <Link to={getLocalizedUrl("/login")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                <LogIn className="h-5 w-5 mr-2" />
+                <span>{t('nav.login')}</span>
+              </Link>
+              
+              <Link 
+                to={getLocalizedUrl("/register")} 
+                onClick={() => setIsMenuOpen(false)} 
+                className="flex items-center py-2 px-3 rounded-md bg-brand-primary text-white hover:bg-brand-primary/90"
+              >
+                <PlusCircle className="h-5 w-5 mr-2" />
+                <span className="font-medium">{t('nav.register')}</span>
+              </Link>
+            </>
           ) : (
             <>
               {/* Highlight New Order for senders */}
               {isSender && (
                 <Link 
-                  to="/create-order" 
+                  to={getLocalizedUrl("/create-order")} 
                   onClick={() => setIsMenuOpen(false)} 
                   className="flex items-center py-2 px-3 rounded-md bg-brand-primary text-white hover:bg-brand-primary/90"
                 >
@@ -116,24 +157,28 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 </Link>
               )}
 
+              {/* Logged User Navigation */}
               {navLinks.map(link => (
-                <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Link key={link.path} to={getLocalizedUrl(link.path)} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                   {link.icon}
                   <span>{link.name}</span>
-                  {link.path === "/inbox" && unreadMessagesCount > 0 && <div className="ml-1 px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground text-xs">
+                  {link.path === "/inbox" && unreadMessagesCount > 0 && (
+                    <div className="ml-1 px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground text-xs">
                       {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
-                    </div>}
+                    </div>
+                  )}
                 </Link>
               ))}
               
-              {(userRole === 'admin' || userRole === 'admin_limited') && (
+              {/* Admin Links */}
+              {adminLinks.length > 0 && (
                 <>
                   <div className="border-t my-2"></div>
                   <div className="px-3 py-1 text-sm font-semibold text-muted-foreground">Admin</div>
                   {adminLinks.map(link => (
                     <NavLink
                       key={link.path}
-                      to={link.path}
+                      to={getLocalizedUrl(link.path)}
                       end={link.path === "/admin"}
                       className={({ isActive }) =>
                         `flex items-center py-2 px-3 rounded-md hover:bg-accent ${
@@ -149,20 +194,21 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 </>
               )}
               
+              {/* User Profile Links */}
               <div className="border-t my-2"></div>
-              <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+              <Link to={getLocalizedUrl("/profile")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <User className="h-5 w-5 mr-2" />
-                <span>{t('landing.nav.profile')}</span>
+                <span>{t('nav.profile')}</span>
               </Link>
-              <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+              <Link to={getLocalizedUrl("/dashboard")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <LayoutDashboard className="h-5 w-5 mr-2" />
-                <span>{t('landing.nav.dashboard')}</span>
+                <span>{t('nav.dashboard')}</span>
               </Link>
               
               <button onClick={() => {
-            setIsMenuOpen(false);
-            signOut();
-          }} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
+                setIsMenuOpen(false);
+                signOut();
+              }} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
                 <LogOut className="h-5 w-5 mr-2" />
                 <span>{t('auth.logout')}</span>
               </button>

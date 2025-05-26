@@ -43,6 +43,7 @@ const Footer = () => {
               <li><Link to={getLocalizedUrl("/offer-transport")} className="text-muted-foreground hover:text-foreground transition-colors">Offer Transport</Link></li>
               <li><Link to={getLocalizedUrl("/driver-requirements")} className="text-muted-foreground hover:text-foreground transition-colors">Requirements</Link></li>
               <li><Link to={getLocalizedUrl("/earnings")} className="text-muted-foreground hover:text-foreground transition-colors">Earnings</Link></li>
+              <li><Link to={getLocalizedUrl("/pre-register")} className="text-muted-foreground hover:text-foreground transition-colors">Pre-Registration</Link></li>
             </ul>
           </div>
 
@@ -50,6 +51,7 @@ const Footer = () => {
             <h4 className="font-semibold mb-4 text-orange-500">Company</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to={getLocalizedUrl("/esg-dashboard")} className="text-muted-foreground hover:text-foreground transition-colors">ESG Dashboard</Link></li>
+              <li><Link to={getLocalizedUrl("/about")} className="text-muted-foreground hover:text-foreground transition-colors">About Us</Link></li>
               <li><Link to={getLocalizedUrl("/privacy-policy")} className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
               <li><Link to={getLocalizedUrl("/terms")} className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
               <li><Link to={getLocalizedUrl("/imprint")} className="text-muted-foreground hover:text-foreground transition-colors">Imprint</Link></li>
