@@ -24,9 +24,9 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <TooltipProvider>
-          <SimpleAuthProvider>
-            <QueryClientProvider client={queryClient}>
-              <LanguageMCP>
+          <QueryClientProvider client={queryClient}>
+            <LanguageMCP>
+              <SimpleAuthProvider>
                 <Suspense fallback={
                   <div className="flex items-center justify-center h-screen w-screen">
                     <Loader2 className="h-10 w-10 animate-spin text-gray-400" />
@@ -34,9 +34,9 @@ function App() {
                 }>
                   <MCPRouter />
                 </Suspense>
-              </LanguageMCP>
-            </QueryClientProvider>
-          </SimpleAuthProvider>
+              </SimpleAuthProvider>
+            </LanguageMCP>
+          </QueryClientProvider>
         </TooltipProvider>
       </ThemeProvider>
     </BrowserRouter>
