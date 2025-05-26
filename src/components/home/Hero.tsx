@@ -54,11 +54,21 @@ const Hero = () => {
           <div className="flex flex-col items-center gap-4 pt-4">
             <div className="flex flex-wrap justify-center gap-4 w-full">
               <Button asChild size="lg" variant="brand" className="w-full max-w-md">
-                <Link to={getLocalizedUrl("/pre-register")} className="px-0">{t('hero.cta_primary')}</Link>
+                <Link to={getLocalizedUrl("/register")} className="px-0">{t('hero.cta_register')}</Link>
               </Button>
               
               <Button asChild size="lg" variant="outline" className="w-full max-w-md">
-                <Link to={getLocalizedUrl("/faq")}>{t('hero.cta_secondary')}</Link>
+                <Link to={getLocalizedUrl("/login")}>{t('hero.cta_login')}</Link>
+              </Button>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-2 w-full">
+              <Button asChild size="sm" variant="ghost">
+                <Link to={getLocalizedUrl("/faq")}>{t('hero.cta_faq')}</Link>
+              </Button>
+              
+              <Button asChild size="sm" variant="ghost" className="text-green-600 hover:text-green-700">
+                <Link to={getLocalizedUrl("/esg-dashboard")}>{t('hero.cta_esg')}</Link>
               </Button>
             </div>
           </div>

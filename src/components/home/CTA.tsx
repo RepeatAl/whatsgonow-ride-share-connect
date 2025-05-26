@@ -24,14 +24,21 @@ const CTA = () => {
           {t('cta.description')}
         </p>
         
-        <div className="flex flex-wrap justify-center gap-4">
-          <Button asChild size="lg" variant="default" className="bg-white text-brand-orange hover:bg-gray-100">
-            <Link to={getLocalizedUrl("/register")}>{t('cta.button_primary')}</Link>
-          </Button>
+        <div className="space-y-4 mb-6">
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button asChild size="lg" variant="default" className="bg-white text-brand-orange hover:bg-gray-100">
+              <Link to={getLocalizedUrl("/login")}>{t('cta.button_login')}</Link>
+            </Button>
+            
+            <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+              <Link to={getLocalizedUrl("/register")}>{t('cta.button_register')}</Link>
+            </Button>
+          </div>
           
-          <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-            <Link to={getLocalizedUrl("/faq")}>{t('cta.button_secondary')}</Link>
-          </Button>
+          <div className="text-sm space-y-1">
+            <p className="text-white/90">{t('cta.existing_user')}</p>
+            <p className="text-white/90">{t('cta.new_user')}</p>
+          </div>
         </div>
       </div>
     </section>

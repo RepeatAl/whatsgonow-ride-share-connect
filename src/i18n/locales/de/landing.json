@@ -3,8 +3,10 @@
   "hero": {
     "title": "Teile deine Fahrt, <span>verbinde</span> Menschen",
     "description": "Whatsgonow ist die Plattform, die spontane und planbare Transporte zwischen Auftraggebern und mobilen Fahrern vermittelt.",
-    "cta_primary": "Dabeisein wenn Whatsgonow startet",
-    "cta_secondary": "Mehr erfahren"
+    "cta_register": "Jetzt registrieren",
+    "cta_login": "Anmelden",
+    "cta_faq": "FAQ",
+    "cta_esg": "ESG Dashboard"
   },
   "how_it_works": {
     "title": "So funktioniert Whatsgonow",
@@ -78,6 +80,23 @@
       "button": "Als Community Manager starten"
     }
   },
+  "esg": {
+    "title": "Nachhaltigkeit & Transparenz",
+    "description": "Wir sind Vorreiter für transparente ESG-Daten. Hier findest du unsere aktuellen Nachhaltigkeitskennzahlen.",
+    "metric1": {
+      "title": "CO₂ Einsparung",
+      "description": "Reduzierte CO₂-Emissionen durch optimierte Routen"
+    },
+    "metric2": {
+      "title": "Leerfahrten reduziert",
+      "description": "Vermiedene Leerfahrten in diesem Monat"
+    },
+    "metric3": {
+      "title": "ESG Score",
+      "description": "Unser aktueller Nachhaltigkeits-Score"
+    },
+    "cta_button": "Zum ESG Dashboard"
+  },
   "testimonials": {
     "title": "Das sagen unsere Nutzer",
     "description": "Erfahrungen von Kunden und Fahrern auf Whatsgonow",
@@ -100,8 +119,10 @@
   "cta": {
     "title": "Bereit für effizientere Transporte?",
     "description": "Registriere dich jetzt bei whatsgonow und entdecke, wie einfach du Transporte organisieren oder als Fahrer Geld verdienen kannst.",
-    "button_primary": "Jetzt kostenlos registrieren",
-    "button_secondary": "Mehr erfahren"
+    "button_login": "Jetzt anmelden",
+    "button_register": "Kostenlos registrieren",
+    "existing_user": "Schon registriert? Jetzt anmelden.",
+    "new_user": "Neu bei Whatsgonow? Registrieren Sie sich kostenlos."
   },
   "nav": {
     "find_transport": "Transport finden",

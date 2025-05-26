@@ -3,8 +3,10 @@
   "hero": {
     "title": "Share your journey, <span>connect</span> people",
     "description": "Whatsgonow is the platform that connects contractors and mobile drivers for spontaneous and plannable transports.",
-    "cta_primary": "Join Whatsgonow at launch",
-    "cta_secondary": "Learn more"
+    "cta_register": "Register now",
+    "cta_login": "Login",
+    "cta_faq": "FAQ",
+    "cta_esg": "ESG Dashboard"
   },
   "how_it_works": {
     "title": "How Whatsgonow works",
@@ -78,6 +80,23 @@
       "button": "Start as a Community Manager"
     }
   },
+  "esg": {
+    "title": "Sustainability & Transparency",
+    "description": "We are pioneers for transparent ESG data. Here you can find our current sustainability metrics.",
+    "metric1": {
+      "title": "CO₂ Savings",
+      "description": "Reduced CO₂ emissions through optimized routes"
+    },
+    "metric2": {
+      "title": "Empty trips reduced",
+      "description": "Avoided empty trips this month"
+    },
+    "metric3": {
+      "title": "ESG Score",
+      "description": "Our current sustainability score"
+    },
+    "cta_button": "To ESG Dashboard"
+  },
   "testimonials": {
     "title": "What our users say",
     "description": "Experiences from customers and drivers on Whatsgonow",
@@ -100,8 +119,10 @@
   "cta": {
     "title": "Ready for more efficient transport?",
     "description": "Register now with whatsgonow and discover how easily you can organize transport or earn money as a driver.",
-    "button_primary": "Register now for free",
-    "button_secondary": "Learn more"
+    "button_login": "Login now",
+    "button_register": "Register for free",
+    "existing_user": "Already registered? Login now.",
+    "new_user": "New to Whatsgonow? Register for free."
   },
   "nav": {
     "find_transport": "Find Transport",
