@@ -1,158 +1,44 @@
 
-import { useState } from "react";
-import Layout from "@/components/Layout";
-import { RegisterForm } from "@/components/auth/RegisterForm";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { useNavigate } from "react-router-dom";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import React from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Mail, Lock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSignup, setIsSignup] = useState(false);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { signIn, user, loading: authLoading } = useSimpleAuth();
+  const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl } = useLanguageMCP();
 
-  // Redirect if already logged in
-  if (!authLoading && user) {
-    console.log("👤 User already logged in, redirecting to dashboard");
-    navigate(getLocalizedUrl("/dashboard"));
-    return null;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("🔐 Login form submitted for:", email);
-    setError("");
-    setIsLoading(true);
-
-    try {
-      await signIn(email, password);
-      console.log("✅ Login successful, redirecting...");
-      navigate(getLocalizedUrl("/dashboard"));
-    } catch (err: any) {
-      console.error("❌ Login failed:", err);
-      setError(err.message || "Anmeldung fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const toggleSignup = () => {
-    setIsSignup((prev) => !prev);
-    setError("");
-  };
-
-  if (authLoading) {
-    return <LoadingScreen message="Authentifizierung wird überprüft..." />;
-  }
-
   return (
-    <Layout minimal>
-      <TooltipProvider>
-        <div className="flex items-center justify-center min-h-screen p-4 bg-neutral-50">
-          {isSignup ? (
-            <RegisterForm onSwitchToLogin={toggleSignup} />
-          ) : (
-            <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle>Login</CardTitle>
-                <CardDescription>
-                  Logge dich in dein Whatsgonow-Konto ein
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium">E-Mail</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="deine@email.de"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
-                        disabled={isLoading}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="password" className="text-sm font-medium">Passwort</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        required
-                        disabled={isLoading}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  <div className="flex justify-end">
-                    <Button variant="link" asChild className="px-0">
-                      <Link to={getLocalizedUrl("/forgot-password")}>Passwort vergessen?</Link>
-                    </Button>
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isLoading}
-                    variant="brand"
-                  >
-                    {isLoading ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                        Wird verarbeitet...
-                      </>
-                    ) : "Einloggen"}
-                  </Button>
-                </form>
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <Button
-                  variant="link"
-                  onClick={toggleSignup}
-                  className="text-sm"
-                >
-                  Noch kein Konto? Jetzt registrieren
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
-        </div>
-      </TooltipProvider>
-    </Layout>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            {t("auth:login", "Anmelden")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-center text-gray-600">
+            Login-Formular wird hier implementiert
+          </p>
+          <div className="text-center">
+            <Link to={getLocalizedUrl("/register")}>
+              <Button variant="link">
+                {t("auth:no_account", "Noch kein Konto? Registrieren")}
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center">
+            <Link to={getLocalizedUrl("/")}>
+              <Button variant="outline">
+                {t("common:back_home", "Zurück zur Startseite")}
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

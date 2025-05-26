@@ -1,69 +1,44 @@
 
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import Layout from "@/components/Layout";
-import { RegisterForm } from "@/components/auth/RegisterForm";
-import { LoadingScreen } from "@/components/ui/loading-screen";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
-/**
- * Registration page component
- * 
- * SECURITY NOTE: This component handles users who have been redirected here
- * because they have a valid authentication session but no associated profile.
- * The security redirect happens in ProfileCheck.tsx using hasValidProfile() utility.
- */
 const Register = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, loading, profile } = useAuth();
-  const [showForm, setShowForm] = useState(false);
-  const [isRedirectedUser, setIsRedirectedUser] = useState(false);
-
-  useEffect(() => {
-    if (!loading) {
-      // If user has a session and a complete profile, redirect to dashboard
-      if (user && profile && profile.profile_complete) {
-        navigate("/dashboard");
-        return;
-      }
-      
-      // If user has a session but no profile, show the form with a notice
-      // This handles users redirected from ProfileCheck - SECURITY FIX
-      if (user && !profile) {
-        setIsRedirectedUser(true);
-        setShowForm(true);
-        return;
-      }
-      
-      // If user is not logged in, show the regular registration form
-      if (!user) {
-        setShowForm(true);
-      }
-    }
-  }, [user, loading, profile, navigate]);
-
-  if (loading || !showForm) {
-    return <LoadingScreen message="Lade Registrierungsseite..." />;
-  }
+  const { t } = useTranslation(["auth", "common"]);
+  const { getLocalizedUrl } = useLanguageMCP();
 
   return (
-    <Layout>
-      <div className="container py-12">
-        {isRedirectedUser && (
-          <Alert variant="destructive" className="mb-6 max-w-md mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Sie wurden hierher weitergeleitet, da für Ihren Account kein vollständiges Profil existiert. 
-              Bitte vervollständigen Sie Ihre Registrierung, um fortzufahren.
-            </AlertDescription>
-          </Alert>
-        )}
-        <RegisterForm onSwitchToLogin={() => navigate("/login")} />
-      </div>
-    </Layout>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            {t("auth:register", "Registrieren")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-center text-gray-600">
+            Registrierungs-Formular wird hier implementiert
+          </p>
+          <div className="text-center">
+            <Link to={getLocalizedUrl("/login")}>
+              <Button variant="link">
+                {t("auth:have_account", "Bereits ein Konto? Anmelden")}
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center">
+            <Link to={getLocalizedUrl("/")}>
+              <Button variant="outline">
+                {t("common:back_home", "Zurück zur Startseite")}
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

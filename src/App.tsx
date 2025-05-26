@@ -3,10 +3,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import { SimpleAuthProvider } from "@/contexts/SimpleAuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageMCP } from "@/mcp/language/LanguageMCP";
 import MCPRouter from "@/components/routing/MCPRouter";
+import { extractLanguageFromUrl } from "@/contexts/language/utils";
+import { defaultLanguage } from "@/contexts/language/constants";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,6 +20,20 @@ const queryClient = new QueryClient({
   },
 });
 
+// Component to extract language from URL
+const AppWithLanguage = () => {
+  const location = useLocation();
+  
+  // Extract language from current URL
+  const currentLanguage = extractLanguageFromUrl(location.pathname) || defaultLanguage;
+  
+  return (
+    <LanguageMCP initialLanguage={currentLanguage}>
+      <MCPRouter />
+    </LanguageMCP>
+  );
+};
+
 const App = () => {
   console.log("🚀 App starting...");
   
@@ -26,7 +43,7 @@ const App = () => {
         <TooltipProvider>
           <BrowserRouter>
             <SimpleAuthProvider>
-              <MCPRouter />
+              <AppWithLanguage />
               <Toaster />
               <Sonner />
             </SimpleAuthProvider>
