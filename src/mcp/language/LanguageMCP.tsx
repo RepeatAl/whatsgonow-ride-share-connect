@@ -40,12 +40,8 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
   const [languageLoading, setLanguageLoading] = useState<boolean>(false);
   const { user } = useAuth();
 
-  console.log('[LANGUAGE-MCP] Initializing with language:', initialLanguage);
-  console.log('[LANGUAGE-MCP] Current user:', user?.email || 'none');
-
   // Initialize language on mount
   useEffect(() => {
-    console.log('[LANGUAGE-MCP] Setting up initial language:', initialLanguage);
     setCurrentLanguage(initialLanguage);
     
     // Change app language immediately
@@ -56,8 +52,6 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
 
   // Language change handler with user profile update
   const setLanguageByCode = useCallback(async (languageCode: string) => {
-    console.log('[LANGUAGE-MCP] Changing language to:', languageCode);
-    
     if (!SUPPORTED_LANGUAGES.find(lang => lang.code === languageCode)) {
       console.error('[LANGUAGE-MCP] Unsupported language code:', languageCode);
       return;
@@ -74,7 +68,6 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
       
       // Update user profile if authenticated
       if (user) {
-        console.log('[LANGUAGE-MCP] Updating user language preference in database');
         const { error } = await supabase
           .from('profiles')
           .update({ language: languageCode })
@@ -84,8 +77,6 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
           console.error('[LANGUAGE-MCP] Failed to update user language preference:', error);
         }
       }
-      
-      console.log('[LANGUAGE-MCP] Language change completed successfully');
     } catch (error) {
       console.error('[LANGUAGE-MCP] Language change failed:', error);
     } finally {
@@ -93,16 +84,12 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
     }
   }, [user]);
 
-  // URL localization with enhanced debugging
+  // URL localization
   const getLocalizedUrl = useCallback((path: string): string => {
-    console.log('[LANGUAGE-MCP] getLocalizedUrl called with path:', path);
-    console.log('[LANGUAGE-MCP] Current language:', currentLanguage);
-    
     // Remove leading slash for consistency
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
     const localizedUrl = `/${currentLanguage}${cleanPath ? `/${cleanPath}` : ''}`;
     
-    console.log('[LANGUAGE-MCP] Generated URL:', localizedUrl);
     return localizedUrl;
   }, [currentLanguage]);
 
@@ -115,12 +102,6 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
     supportedLanguages: SUPPORTED_LANGUAGES,
     isRtl: RTL_LANGUAGES.includes(currentLanguage)
   }), [currentLanguage, setLanguageByCode, getLocalizedUrl, languageLoading]);
-
-  console.log('[LANGUAGE-MCP] Context value:', {
-    currentLanguage: contextValue.currentLanguage,
-    languageLoading: contextValue.languageLoading,
-    isRtl: contextValue.isRtl
-  });
 
   return (
     <MCPErrorBoundary>

@@ -17,13 +17,8 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   
-  console.log('[PUBLIC-ROUTE] Current path:', location.pathname);
-  console.log('[PUBLIC-ROUTE] User:', user?.email || 'none');
-  console.log('[PUBLIC-ROUTE] Loading:', loading);
-  
   // Special handling for pre-register route - always allow
   if (location.pathname.includes('pre-register')) {
-    console.log('[PUBLIC-ROUTE] Pre-register route - allowing access');
     return <>{!loading && children}</>;
   }
   
@@ -35,13 +30,11 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
                           (location.pathname.includes('/register') && !location.pathname.includes('/pre-register'));
                      
   if (!loading && user && isStrictAuthPage) {
-    console.log('[PUBLIC-ROUTE] Authenticated user on auth page - redirecting');
     const redirectUrl = getLocalizedUrl(from !== '/' ? from : '/dashboard');
     return <Navigate to={redirectUrl} replace />;
   }
   
   // For all other public routes, render when not loading
-  console.log('[PUBLIC-ROUTE] Rendering public content');
   return <>{!loading && children}</>;
 };
 
