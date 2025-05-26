@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useStabilizedAuthContext } from "@/contexts/StabilizedAuthContext";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -14,7 +15,7 @@ import AuthErrorHandler from "@/components/auth/AuthErrorHandler";
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
-  const { signIn, loading } = useSimpleAuth();
+  const { signIn, isLoading } = useStabilizedAuthContext();
   const navigate = useNavigate();
   
   const [email, setEmail] = useState("");
@@ -59,7 +60,7 @@ const Login = () => {
       setError("");
       console.log("🔐 Starting login process for:", email);
       await signIn(email, password);
-      console.log("✅ Login successful, redirect should happen automatically");
+      console.log("✅ Login successful");
     } catch (err: any) {
       console.error("❌ Login error:", err);
       if (err.message?.includes('fetch')) {
@@ -84,7 +85,7 @@ const Login = () => {
 
   if (showConnectionError || isOffline) {
     return (
-      <Layout pageType="auth">
+      <Layout pageType="auth" hideNavigation>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <Card className="w-full max-w-md">
             <CardContent className="p-6">
@@ -105,7 +106,7 @@ const Login = () => {
   }
 
   return (
-    <Layout pageType="auth">
+    <Layout pageType="auth" hideNavigation>
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -133,7 +134,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("auth:email_placeholder", "ihre@email.com")}
-                  disabled={loading || formLoading}
+                  disabled={isLoading || formLoading}
                   required
                   autoComplete="email"
                 />
@@ -147,7 +148,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  disabled={loading || formLoading}
+                  disabled={isLoading || formLoading}
                   required
                   autoComplete="current-password"
                 />
@@ -160,8 +161,8 @@ const Login = () => {
                   </Link>
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={loading || formLoading}>
-                {loading || formLoading ? (
+              <Button type="submit" className="w-full" disabled={isLoading || formLoading}>
+                {isLoading || formLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {t("auth:logging_in", "Anmelden...")}
@@ -174,12 +175,12 @@ const Login = () => {
 
             <div className="text-center space-y-2">
               <Link to={getLocalizedUrl("/register")}>
-                <Button variant="link" disabled={loading || formLoading}>
+                <Button variant="link" disabled={isLoading || formLoading}>
                   {t("auth:no_account", "Noch kein Konto? Registrieren")}
                 </Button>
               </Link>
               <div>
-                <Button variant="outline" disabled={loading || formLoading} onClick={handleBackToHome}>
+                <Button variant="outline" disabled={isLoading || formLoading} onClick={handleBackToHome}>
                   {t("common:back_home", "Zurück zur Startseite")}
                 </Button>
               </div>

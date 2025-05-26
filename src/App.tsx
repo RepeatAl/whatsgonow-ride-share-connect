@@ -2,11 +2,12 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import { SimpleAuthProvider } from '@/contexts/SimpleAuthContext';
+import { StabilizedAuthProvider } from '@/contexts/StabilizedAuthContext';
 import { LanguageMCP } from '@/mcp/language/LanguageMCP';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MCPRouter from '@/components/routing/MCPRouter';
+import StabilizedLayout from '@/components/layout/StabilizedLayout';
 import { Loader2 } from 'lucide-react';
 
 // Create a client
@@ -26,15 +27,17 @@ function App() {
         <TooltipProvider>
           <QueryClientProvider client={queryClient}>
             <LanguageMCP>
-              <SimpleAuthProvider>
+              <StabilizedAuthProvider>
                 <Suspense fallback={
                   <div className="flex items-center justify-center h-screen w-screen">
                     <Loader2 className="h-10 w-10 animate-spin text-gray-400" />
                   </div>
                 }>
-                  <MCPRouter />
+                  <StabilizedLayout>
+                    <MCPRouter />
+                  </StabilizedLayout>
                 </Suspense>
-              </SimpleAuthProvider>
+              </StabilizedAuthProvider>
             </LanguageMCP>
           </QueryClientProvider>
         </TooltipProvider>

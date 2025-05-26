@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,19 +12,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, LogOut, MessageSquare, PlusCircle, Route, Package } from "lucide-react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useStabilizedAuthContext } from "@/contexts/StabilizedAuthContext";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useTranslation } from "react-i18next";
 import ThemeLanguageControls from "./ThemeLanguageControls";
 
 interface DesktopMenuProps {
-  user: any;
-  userRole: string | null;
-  unreadMessagesCount: number;
+  unreadMessagesCount?: number;
 }
 
-const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessagesCount }) => {
-  const { signOut } = useSimpleAuth();
+const DesktopMenu = memo(({ unreadMessagesCount = 0 }: DesktopMenuProps) => {
+  const { user, profile, signOut } = useStabilizedAuthContext();
   const navigate = useNavigate();
   const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
   const { t } = useTranslation(['landing', 'common']);
@@ -39,22 +38,16 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
   };
 
   if (!user) {
-    console.log("[DesktopMenu] No user, showing auth buttons");
-    console.log("[DesktopMenu] Login URL:", getLocalizedUrl("/login"));
-    console.log("[DesktopMenu] Register URL:", getLocalizedUrl("/register"));
-    
     return (
       <div className="flex items-center space-x-4">
         <ThemeLanguageControls />
         
-        {/* Login Button */}
         <Link to={getLocalizedUrl("/login")}>
           <Button variant="ghost" size="sm">
             {t('landing:nav.login', 'Anmelden')}
           </Button>
         </Link>
         
-        {/* Register Button - Primary */}
         <Link to={getLocalizedUrl("/register")}>
           <Button variant="brand" size="sm">
             {t('landing:nav.register', 'Registrieren')}
@@ -73,9 +66,8 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
       .slice(0, 2);
   };
 
-  // Bestimme rollenspezifische Action Buttons
   const getRoleSpecificButtons = () => {
-    switch (userRole) {
+    switch (profile?.role) {
       case 'driver':
         return (
           <div className="flex items-center space-x-2">
@@ -120,10 +112,8 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
     <div className="flex items-center space-x-4">
       <ThemeLanguageControls />
       
-      {/* Role-specific Action Buttons */}
       {getRoleSpecificButtons()}
 
-      {/* Inbox Button */}
       <Link to={getLocalizedUrl("/inbox")}>
         <Button variant="ghost" size="sm" className="relative">
           <MessageSquare className="h-4 w-4" />
@@ -135,14 +125,13 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
         </Button>
       </Link>
 
-      {/* User Menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.avatar_url || ""} alt={user?.name || ""} />
+              <AvatarImage src={user?.user_metadata?.avatar_url || ""} alt={profile?.name || ""} />
               <AvatarFallback>
-                {getInitials(user?.name || user?.email || "U")}
+                {getInitials(profile?.name || user?.email || "U")}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -150,7 +139,7 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col space-y-1 leading-none">
-              <p className="font-medium">{user?.name || user?.email}</p>
+              <p className="font-medium">{profile?.name || user?.email}</p>
               <p className="w-[200px] truncate text-sm text-muted-foreground">
                 {user?.email}
               </p>
@@ -178,6 +167,8 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
       </DropdownMenu>
     </div>
   );
-};
+});
+
+DesktopMenu.displayName = "DesktopMenu";
 
 export default DesktopMenu;

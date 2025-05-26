@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, memo } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -16,34 +17,33 @@ import {
   Moon, 
   Sun, 
   FileText, 
-  PlusCircle,
-  UserPlus
+  PlusCircle
 } from "lucide-react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useStabilizedAuthContext } from "@/contexts/StabilizedAuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 interface MobileMenuProps {
-  user: any;
-  userRole: string | null;
-  unreadMessagesCount: number;
+  unreadMessagesCount?: number;
 }
 
-const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) => {
+const MobileMenu = memo(({ unreadMessagesCount = 0 }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { signOut } = useSimpleAuth();
+  const { user, profile, signOut } = useStabilizedAuthContext();
   const { t } = useTranslation(['landing', 'common']);
-  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
+  const { getLocalizedUrl } = useLanguageMCP();
+  
+  const userRole = profile?.role;
   const isSender = userRole?.startsWith('sender_');
 
   const handleSignOut = async () => {
     try {
       await signOut();
       setIsMenuOpen(false);
-      console.log("[MobileMenu] Signed out, navigation should happen automatically");
+      console.log("[MobileMenu] Signed out");
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -63,7 +63,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
     icon: <MessageCircle className="h-5 w-5 mr-2" />
   }] : [];
 
-  // Add create order link for senders
   if (isSender) {
     navLinks.push({
       name: t('common:dashboard.newOrder', 'Neuer Auftrag'),
@@ -78,10 +77,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
     icon: <Shield className="h-5 w-5 mr-2" />
   }] : [];
 
-  console.log("[MobileMenu] User state:", !!user);
-  console.log("[MobileMenu] Login URL:", getLocalizedUrl("/login"));
-  console.log("[MobileMenu] Register URL:", getLocalizedUrl("/register"));
-
   return (
     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <SheetTrigger asChild>
@@ -92,7 +87,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
       
       <SheetContent side="right" className="w-[250px] sm:w-[300px]">
         <div className="flex flex-col gap-4 mt-8">
-          {/* Theme and Language Controls */}
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
               {theme === "light" ? <>
@@ -108,7 +102,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
 
           {!user ? (
             <>
-              {/* Auth Buttons for Non-Logged Users */}
               <div className="border-t my-2"></div>
               
               <Link to={getLocalizedUrl("/login")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -127,7 +120,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
             </>
           ) : (
             <>
-              {/* Highlight New Order for senders */}
               {isSender && (
                 <Link 
                   to={getLocalizedUrl("/create-order")} 
@@ -139,7 +131,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 </Link>
               )}
 
-              {/* Logged User Navigation */}
               {navLinks.map(link => (
                 <Link key={link.path} to={getLocalizedUrl(link.path)} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                   {link.icon}
@@ -152,7 +143,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 </Link>
               ))}
               
-              {/* Admin Links */}
               {adminLinks.length > 0 && (
                 <>
                   <div className="border-t my-2"></div>
@@ -176,7 +166,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 </>
               )}
               
-              {/* User Profile Links */}
               <div className="border-t my-2"></div>
               <Link to={getLocalizedUrl("/profile")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <User className="h-5 w-5 mr-2" />
@@ -197,6 +186,8 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
       </SheetContent>
     </Sheet>
   );
-};
+});
+
+MobileMenu.displayName = "MobileMenu";
 
 export default MobileMenu;
