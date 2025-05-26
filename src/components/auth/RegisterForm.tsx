@@ -1,123 +1,127 @@
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
-import { registerSchema, type RegisterFormData } from '@/components/auth/register/RegisterFormSchema';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { RegisterFormFields } from '@/components/auth/register/RegisterFormFields';
-import { ErrorDisplay } from '@/components/auth/register/ErrorDisplay';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { AlertCircle, Loader2 } from "lucide-react";
 
-interface RegisterFormProps {
-  onSwitchToLogin?: () => void;
-}
-
-export const RegisterForm = ({ onSwitchToLogin }: RegisterFormProps) => {
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+export const RegisterForm = () => {
+  const { t } = useTranslation(["auth", "common"]);
   const { signUp } = useSimpleAuth();
-  const navigate = useNavigate();
+  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      first_name: '',
-      last_name: '',
-      name_affix: '',
-      phone: '',
-      region: 'de',
-      postal_code: '',
-      city: '',
-      street: '',
-      house_number: '',
-      address_extra: '',
-      role: 'sender_private',
-      company_name: '',
-    },
-  });
-
-  const { watch } = form;
-  const selectedRole = watch('role');
-
-  const onSubmit = async (data: RegisterFormData) => {
-    console.log("📝 Registration form submitted:", data);
-    setError('');
-    setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password || !firstName || !lastName) {
+      setError(t("auth:validation.all_fields_required", "Alle Felder sind erforderlich"));
+      return;
+    }
 
     try {
-      await signUp(data.email, data.password, {
-        first_name: data.first_name,
-        last_name: data.last_name,
-        name_affix: data.name_affix,
-        phone: data.phone,
-        region: data.region,
-        postal_code: data.postal_code,
-        city: data.city,
-        street: data.street,
-        house_number: data.house_number,
-        address_extra: data.address_extra,
-        role: data.role,
-        ...(data.company_name ? { company_name: data.company_name } : {}),
+      setLoading(true);
+      setError("");
+      
+      await signUp(email, password, {
+        first_name: firstName,
+        last_name: lastName
       });
-
-      console.log("✅ Registration successful");
-      navigate("/register/success");
     } catch (err: any) {
-      console.error("❌ Registration failed:", err);
-      let message = "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
-      if (err && typeof err.message === "string") message = err.message;
-      setError(message);
+      console.error("Registration error:", err);
+      setError(err.message || t("auth:error.register_failed", "Registrierung fehlgeschlagen"));
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLoginClick = () => {
-    if (onSwitchToLogin) {
-      onSwitchToLogin();
-    } else {
-      navigate('/login');
+      setLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Registrieren</CardTitle>
-        <CardDescription>
-          Erstelle ein neues Konto bei Whatsgonow
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <RegisterFormFields control={form.control} selectedRole={selectedRole} />
-            <ErrorDisplay error={error} />
-            <Button type="submit" className="w-full" disabled={isLoading} variant="brand">
-              {isLoading ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                  Wird verarbeitet...
-                </>
-              ) : "Registrieren"}
-            </Button>
-          </form>
-        </Form>
+    <Card>
+      <CardContent className="p-6">
+        {error && (
+          <div className="flex items-center gap-2 p-4 bg-red-50 rounded-lg border border-red-200 mb-4">
+            <AlertCircle className="h-5 w-5 text-red-600" />
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t("auth:first_name", "Vorname")}
+              </label>
+              <Input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder={t("auth:first_name_placeholder", "Max")}
+                disabled={loading}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t("auth:last_name", "Nachname")}
+              </label>
+              <Input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder={t("auth:last_name_placeholder", "Mustermann")}
+                disabled={loading}
+                required
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t("auth:email", "E-Mail")}
+            </label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("auth:email_placeholder", "ihre@email.com")}
+              disabled={loading}
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t("auth:password", "Passwort")}
+            </label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              disabled={loading}
+              required
+            />
+          </div>
+          
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("auth:registering", "Registrieren...")}
+              </>
+            ) : (
+              t("auth:register", "Registrieren")
+            )}
+          </Button>
+        </form>
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <Button
-          variant="link"
-          onClick={handleLoginClick}
-          className="text-sm"
-        >
-          Schon registriert? Login
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

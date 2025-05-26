@@ -1,9 +1,23 @@
+
 {
   "welcome": "Willkommen",
   "loading": "Lädt...",
   "error": "Fehler",
   "retry": "Erneut versuchen",
   "back": "Zurück",
+  "back_home": "Zurück zur Startseite",
+  "home": "Startseite",
+  "about": "Über uns",
+  "contact": "Kontakt",
+  "help": "Hilfe",
+  "navigation": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "dashboard": "Dashboard",
+    "profile": "Profil"
+  },
   
   "language_changed": "Sprache wurde zu {{language}} gewechselt",
   "language_change_error": "Fehler beim Ändern der Sprache",

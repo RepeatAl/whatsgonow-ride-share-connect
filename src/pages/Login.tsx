@@ -2,15 +2,23 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { ConnectionError } from "@/components/ui/connection-error";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl } = useLanguageMCP();
+  const { signIn } = useSimpleAuth();
+  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [showConnectionError, setShowConnectionError] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
@@ -31,7 +39,7 @@ const Login = () => {
     };
   }, []);
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isOffline) {
@@ -39,12 +47,30 @@ const Login = () => {
       return;
     }
 
-    // Placeholder for actual login logic
-    console.log("Login form submitted (placeholder)");
+    if (!email || !password) {
+      setError(t("auth:validation.email_password_required", "E-Mail und Passwort sind erforderlich"));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      await signIn(email, password);
+    } catch (err: any) {
+      console.error("Login error:", err);
+      if (err.message?.includes('fetch')) {
+        setShowConnectionError(true);
+      } else {
+        setError(err.message || t("auth:error.login_failed", "Anmeldung fehlgeschlagen"));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRetry = () => {
     setShowConnectionError(false);
+    setError("");
   };
 
   if (showConnectionError || isOffline) {
@@ -53,7 +79,7 @@ const Login = () => {
         <Card className="w-full max-w-md">
           <CardContent className="p-6">
             <ConnectionError 
-              message="Keine Internetverbindung. Das Login benötigt eine aktive Internetverbindung."
+              message={t("auth:error.no_connection", "Keine Internetverbindung. Das Login benötigt eine aktive Internetverbindung.")}
               onRetry={handleRetry}
             />
             <div className="mt-4 text-center">
@@ -78,34 +104,49 @@ const Login = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <AlertCircle className="h-5 w-5 text-blue-600" />
-            <p className="text-sm text-blue-800">
-              Login-Funktionalität wird aktuell implementiert. Diese Seite dient zur UI-Demonstration.
-            </p>
-          </div>
+          {error && (
+            <div className="flex items-center gap-2 p-4 bg-red-50 rounded-lg border border-red-200">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
           
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">E-Mail</label>
-              <input 
+              <label className="block text-sm font-medium mb-1">
+                {t("auth:email", "E-Mail")}
+              </label>
+              <Input
                 type="email" 
-                className="w-full p-2 border rounded-md" 
-                placeholder="ihre@email.com"
-                disabled
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t("auth:email_placeholder", "ihre@email.com")}
+                disabled={loading}
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Passwort</label>
-              <input 
+              <label className="block text-sm font-medium mb-1">
+                {t("auth:password", "Passwort")}
+              </label>
+              <Input
                 type="password" 
-                className="w-full p-2 border rounded-md" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                disabled
+                disabled={loading}
+                required
               />
             </div>
-            <Button type="submit" className="w-full" disabled>
-              {t("auth:login", "Anmelden")}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("auth:logging_in", "Anmelden...")}
+                </>
+              ) : (
+                t("auth:login", "Anmelden")
+              )}
             </Button>
           </form>
 

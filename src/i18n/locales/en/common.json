@@ -1,9 +1,23 @@
+
 {
   "welcome": "Welcome",
   "loading": "Loading...",
   "error": "Error",
   "retry": "Retry",
   "back": "Back",
+  "back_home": "Back to Home",
+  "home": "Home",
+  "about": "About",
+  "contact": "Contact",
+  "help": "Help",
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "profile": "Profile"
+  },
   
   "language_changed": "Language changed to {{language}}",
   "language_change_error": "Error changing language",
