@@ -5,8 +5,10 @@ import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
 // Import pages
 import Home from '@/pages/Home';
+import About from '@/pages/About';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
+import PreRegister from '@/pages/PreRegister';
 import Dashboard from '@/pages/Dashboard';
 import DashboardSender from '@/pages/DashboardSender';
 import Profile from '@/pages/Profile';
@@ -28,8 +30,10 @@ const MCPRouter = () => {
       
       {/* Language-specific routes */}
       <Route path="/:lang" element={<PublicRoute><Home /></PublicRoute>} />
+      <Route path="/:lang/about" element={<PublicRoute><About /></PublicRoute>} />
       <Route path="/:lang/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/:lang/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/:lang/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
       <Route path="/:lang/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
       <Route path="/:lang/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
       

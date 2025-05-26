@@ -2,9 +2,12 @@
 // List of routes that are publicly accessible without authentication
 const PUBLIC_ROUTES = [
   '/',
+  '/about',
   '/login',
   '/register',
   '/register/success',
+  '/pre-register',
+  '/pre-register/success',
   '/forgot-password',
   '/reset-password',
   '/faq',
@@ -13,11 +16,10 @@ const PUBLIC_ROUTES = [
   '/upload-complete',
   '/delivery',
   '/invoice-download',
-  '/pre-register',
-  '/pre-register/success',
   '/legal',
   '/privacy-policy',
   '/payment/status',
+  '/esg-dashboard',
 ];
 
 // Function to check if a route is public with improved language support
