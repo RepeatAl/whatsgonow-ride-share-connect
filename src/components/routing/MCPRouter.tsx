@@ -9,6 +9,7 @@ import About from '@/pages/About';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import PreRegister from '@/pages/PreRegister';
+import PreRegisterSuccess from '@/pages/PreRegisterSuccess';
 import Dashboard from '@/pages/Dashboard';
 import DashboardSender from '@/pages/DashboardSender';
 import Profile from '@/pages/Profile';
@@ -34,6 +35,7 @@ const MCPRouter = () => {
       <Route path="/:lang/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/:lang/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/:lang/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
+      <Route path="/:lang/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
       <Route path="/:lang/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
       <Route path="/:lang/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
       

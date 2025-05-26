@@ -1,91 +1,64 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { toast } from "@/hooks/use-toast";
-import { PreRegistrationFormData } from "@/lib/validators/pre-registration";
-import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
-import i18next from "i18next";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
+import { useToast } from '@/hooks/use-toast';
+import { PreRegistrationFormData } from '@/lib/validators/pre-registration';
 
-export function usePreRegistrationSubmit() {
-  const { t } = useTranslation('pre_register');
+export interface SubmitResult {
+  success: boolean;
+  fieldErrors?: Record<string, string>;
+}
+
+export const usePreRegistrationSubmit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
-  
-  const handleSubmit = async (data: PreRegistrationFormData) => {
-    console.log("Form data on submit:", data);
+  const { toast } = useToast();
+
+  const handleSubmit = async (data: PreRegistrationFormData): Promise<SubmitResult> => {
     setIsSubmitting(true);
     
     try {
-      // Add the current language to the form data
-      const submissionData = {
-        ...data,
-        language: i18next.language
-      };
+      // Simulate API call for now
+      console.log('Pre-registration data:', data);
       
-      console.log("Sending data to pre-register endpoint (public/anonymous):", submissionData.language);
+      // Mock validation
+      const fieldErrors: Record<string, string> = {};
       
-      const response = await fetch("https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept-Language": i18next.language,
-          // No Authorization header - this is a public endpoint
-        },
-        body: JSON.stringify(submissionData)
-      });
-      
-      // Improved error handling
-      if (!response.ok) {
-        let errorMessage;
-        try {
-          const errorData = await response.json();
-          console.error("Pre-registration error response:", errorData);
-          
-          if (errorData.errors) {
-            // Show form field errors as toast
-            Object.entries(errorData.errors).forEach(([field, message]) => {
-              toast({
-                variant: "destructive",
-                title: t("errors.field_error", { field, ns: 'errors' }),
-                description: message as string
-              });
-            });
-            return { success: false, fieldErrors: errorData.errors };
-          }
-          errorMessage = errorData.error || t("errors.registration_failed", { ns: 'errors' });
-        } catch (parseError) {
-          const errorText = await response.text();
-          console.error("Pre-registration error text:", errorText);
-          errorMessage = t("errors.registration_failed", { ns: 'errors' });
-        }
-        
-        throw new Error(errorMessage);
+      if (!data.wants_driver && !data.wants_cm && !data.wants_sender) {
+        fieldErrors.wants_driver = 'Bitte wähle mindestens eine Rolle aus';
+        return { success: false, fieldErrors };
       }
       
-      const result = await response.json();
-      console.log("Pre-registration success:", result);
+      if (data.wants_driver && (!data.vehicle_types || data.vehicle_types.length === 0)) {
+        fieldErrors.vehicle_types = 'Bitte wähle mindestens einen Fahrzeugtyp aus';
+        return { success: false, fieldErrors };
+      }
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Show success toast
       toast({
-        title: t("success.title"),
-        description: t("success.description"),
-        variant: "default"
+        title: "Voranmeldung erfolgreich!",
+        description: "Wir haben deine Anmeldung erhalten. Du erhältst bald weitere Informationen per E-Mail.",
+        duration: 5000,
       });
-
-      // Navigate to localized success page
-      const successUrl = getLocalizedUrl("/pre-register/success");
-      navigate(successUrl, { replace: true });
-      return { success: true };
-    } catch (error) {
-      console.error("Pre-registration error:", error);
       
-      // Show error toast with proper translation
+      // Navigate to success page
+      navigate(getLocalizedUrl('/pre-register/success'));
+      
+      return { success: true };
+      
+    } catch (error) {
+      console.error('Pre-registration submission error:', error);
+      
       toast({
+        title: "Fehler bei der Anmeldung",
+        description: "Es ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
         variant: "destructive",
-        title: t("errors.registration_failed", { ns: 'errors' }),
-        description: error instanceof Error ? error.message : t("common.retry")
+        duration: 5000,
       });
       
       return { success: false };
@@ -95,7 +68,7 @@ export function usePreRegistrationSubmit() {
   };
 
   return {
-    isSubmitting,
-    handleSubmit
+    handleSubmit,
+    isSubmitting
   };
-}
+};

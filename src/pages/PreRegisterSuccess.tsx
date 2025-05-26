@@ -1,57 +1,80 @@
 
-import { Suspense } from "react";
-import { Link } from "react-router-dom";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import Layout from "@/components/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, Mail } from "lucide-react";
-import { LoadingScreen } from "@/components/ui/loading-screen";
-import { useLanguage } from "@/contexts/language";
+import Layout from "@/components/Layout";
+import { CheckCircle, Mail, Home } from "lucide-react";
 
-export default function PreRegisterSuccess() {
-  const { t } = useTranslation('pre_register');
-  const { getLocalizedUrl } = useLanguage();
-  
+const PreRegisterSuccess = () => {
+  const { t } = useTranslation(["pre_register", "common"]);
+  const { getLocalizedUrl } = useLanguageMCP();
+
   return (
-    <Layout>
-      <Suspense fallback={<LoadingScreen variant="inline" />}>
-        <div className="container py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
-            <h1 className="text-4xl font-bold mb-4">
-              {t('success.title')}
-            </h1>
-            <p className="text-lg text-muted-foreground mb-4">
-              {t('success.description')}
-            </p>
-            <div className="bg-blue-50 p-4 rounded-lg mb-6">
-              <Mail className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-              <p className="text-sm text-blue-700 mb-2">
-                {t('success.confirm_notice')}
-              </p>
-              <p className="text-sm text-blue-600">
-                {t('success.spam_notice')}
-              </p>
-            </div>
-            <p className="text-base text-gray-600 mb-8">
-              {t('success.login_notice')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild variant="default">
-                <Link to={getLocalizedUrl("/")} replace>
-                  {t('success.back_to_home')}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to={getLocalizedUrl("/faq")}>
-                  {t('success.learn_more', 'Mehr erfahren')}
-                </Link>
-              </Button>
-            </div>
+    <Layout pageType="pre-register-success">
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <Card className="shadow-lg">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-green-700">
+                  {t("pre_register:success.title", "Voranmeldung erfolgreich!")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <div className="text-center space-y-4">
+                  <p className="text-lg text-gray-700">
+                    {t("pre_register:success.description", "Vielen Dank für dein Interesse an whatsgonow. Wir haben dir (falls technisch möglich) eine Bestätigungs-E-Mail geschickt.")}
+                  </p>
+                  
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Mail className="w-5 h-5 text-blue-600" />
+                      <h3 className="font-semibold text-blue-800">Nächste Schritte:</h3>
+                    </div>
+                    <div className="text-blue-700 space-y-2 text-sm">
+                      <p>
+                        {t("pre_register:success.confirm_notice", "Bitte klicke auf den Bestätigungslink in dieser E-Mail, um deinen Zugang zu aktivieren.")}
+                      </p>
+                      <p>
+                        {t("pre_register:success.login_notice", "Danach kannst du dich jederzeit einloggen!")}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <p className="text-yellow-800 text-sm">
+                      {t("pre_register:success.spam_notice", "Sollte die E-Mail nicht ankommen, prüfe deinen Spam-Ordner oder versuch es später erneut.")}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+                  <Link to={getLocalizedUrl("/login")}>
+                    <Button className="w-full sm:w-auto bg-brand-orange hover:bg-brand-orange/90">
+                      Jetzt anmelden
+                    </Button>
+                  </Link>
+                  
+                  <Link to={getLocalizedUrl("/")}>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      <Home className="w-4 h-4 mr-2" />
+                      {t("pre_register:success.back_to_home", "Zurück zur Startseite")}
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </Suspense>
+      </div>
     </Layout>
   );
-}
+};
+
+export default PreRegisterSuccess;
