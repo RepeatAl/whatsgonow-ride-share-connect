@@ -151,6 +151,14 @@ const Login = () => {
                   required
                   autoComplete="current-password"
                 />
+                <div className="mt-2 text-right">
+                  <Link 
+                    to={getLocalizedUrl("/forgot-password")} 
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    {t("auth:forgot_password", "Passwort vergessen?")}
+                  </Link>
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={loading || formLoading}>
                 {loading || formLoading ? (

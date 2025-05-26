@@ -1,7 +1,9 @@
 
-import React from "react";
-import { AlertCircle, Mail, Shield } from "lucide-react";
+import React, { useState } from "react";
+import { AlertCircle, Mail, Shield, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "@/hooks/use-toast";
 
 interface AuthErrorHandlerProps {
   error: string;
@@ -17,6 +19,7 @@ const ADMIN_WHITELIST = [
 ];
 
 const AuthErrorHandler = ({ error, email, onRetry, onBackToHome }: AuthErrorHandlerProps) => {
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
   const isAdminEmail = email && ADMIN_WHITELIST.includes(email.toLowerCase());
   
   // Categorize error types for better UX
@@ -65,6 +68,43 @@ const AuthErrorHandler = ({ error, email, onRetry, onBackToHome }: AuthErrorHand
     };
   };
 
+  const handleResendEmail = async () => {
+    if (!email) {
+      toast({
+        title: "Fehler",
+        description: "E-Mail-Adresse ist erforderlich",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsResendingEmail(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/de/dashboard`
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "E-Mail gesendet",
+        description: "Bestätigungs-E-Mail wurde erneut gesendet. Bitte überprüfe dein Postfach.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Fehler beim Senden",
+        description: error.message || "E-Mail konnte nicht gesendet werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
+
   const errorInfo = getErrorInfo(error);
 
   return (
@@ -75,10 +115,31 @@ const AuthErrorHandler = ({ error, email, onRetry, onBackToHome }: AuthErrorHand
         <p className="text-sm text-gray-700 mb-3">{errorInfo.message}</p>
         
         {/* Action buttons based on error type */}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           {onRetry && (
             <Button size="sm" variant="outline" onClick={onRetry}>
               Erneut versuchen
+            </Button>
+          )}
+          
+          {(errorInfo.type === "email_unverified" || errorInfo.type === "admin_blocked") && email && (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleResendEmail}
+              disabled={isResendingEmail}
+            >
+              {isResendingEmail ? (
+                <>
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  Sende...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-3 w-3" />
+                  E-Mail erneut senden
+                </>
+              )}
             </Button>
           )}
           
