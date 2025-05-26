@@ -27,6 +27,10 @@ export const handleAuthError = (error: Error, context: string = "Aktion") => {
     errorMessage = "Das Passwort muss mindestens 6 Zeichen lang sein.";
   } else if (error.message.includes("Signup")) {
     errorMessage = "Fehler bei der Registrierung. Bitte versuche es später noch einmal.";
+  } else if (error.message.includes("infinite recursion")) {
+    errorMessage = "Es gab ein temporäres Problem. Bitte versuche es noch einmal.";
+    // Clear auth state to prevent stuck states
+    cleanupAuthState();
   }
   
   toast({
@@ -103,29 +107,56 @@ export const logAuthActivity = async (
 };
 
 /**
- * Clean up authentication state completely
+ * Clean up authentication state completely - improved version
  */
 export const cleanupAuthState = () => {
   if (typeof window === 'undefined') return;
 
   try {
+    console.log("🧹 Cleaning up auth state...");
+    
     // Remove standard auth tokens
     localStorage.removeItem('supabase.auth.token');
     
     // Remove all Supabase auth keys from localStorage
     Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('orgcruwmxqiwnjnkxpjb')) {
+        console.log(`🧹 Removing localStorage key: ${key}`);
         localStorage.removeItem(key);
       }
     });
     
     // Remove from sessionStorage if used
     Object.keys(sessionStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('orgcruwmxqiwnjnkxpjb')) {
+        console.log(`🧹 Removing sessionStorage key: ${key}`);
         sessionStorage.removeItem(key);
       }
     });
+    
+    console.log("✅ Auth state cleanup completed");
   } catch (e) {
-    console.error("Error cleaning up auth state:", e);
+    console.error("❌ Error cleaning up auth state:", e);
   }
+};
+
+/**
+ * Enhanced profile validation
+ */
+export const isValidProfile = (profile: any): boolean => {
+  if (!profile) return false;
+  
+  // Basic required fields
+  const hasBasicFields = profile.user_id && profile.email && profile.role;
+  
+  if (!hasBasicFields) {
+    console.log("❌ Profile missing basic fields:", { 
+      user_id: !!profile.user_id, 
+      email: !!profile.email, 
+      role: !!profile.role 
+    });
+    return false;
+  }
+  
+  return true;
 };

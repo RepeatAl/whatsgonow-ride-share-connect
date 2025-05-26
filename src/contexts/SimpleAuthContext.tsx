@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/auth";
 import { useSimpleAuthRedirect } from "@/hooks/useSimpleAuthRedirect";
-import { cleanupAuthState } from "@/utils/auth-utils";
+import { cleanupAuthState, isValidProfile, handleAuthError } from "@/utils/auth-utils";
 
 interface SimpleAuthContextProps {
   user: User | null;
@@ -29,31 +29,61 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
   // Verwende den vereinfachten Auth-Redirect Hook
   useSimpleAuthRedirect(user, profile, loading);
 
-  // Fetch user profile from profiles table
+  // Fetch user profile from profiles table - improved error handling
   const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
     try {
       console.log("🔍 Fetching profile for user:", userId);
       
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
+      // Add retry logic for temporary issues
+      let retries = 3;
+      let lastError: any = null;
+      
+      while (retries > 0) {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", userId)
+            .maybeSingle();
 
-      if (error) {
-        console.error("❌ Profile fetch error:", error);
-        throw error;
+          if (error) {
+            lastError = error;
+            if (error.message.includes("infinite recursion")) {
+              console.warn("⚠️ RLS recursion detected, cleaning auth state...");
+              cleanupAuthState();
+              retries--;
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              continue;
+            }
+            throw error;
+          }
+
+          if (!data) {
+            console.warn("⚠️ No profile found for user:", userId);
+            return null;
+          }
+
+          if (!isValidProfile(data)) {
+            console.warn("⚠️ Invalid profile data:", data);
+            return null;
+          }
+
+          console.log("✅ Profile loaded:", data);
+          return data;
+        } catch (error) {
+          lastError = error;
+          retries--;
+          if (retries > 0) {
+            console.log(`🔄 Retrying profile fetch... ${retries} attempts left`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       }
-
-      if (!data) {
-        console.warn("⚠️ No profile found for user:", userId);
-        return null;
-      }
-
-      console.log("✅ Profile loaded:", data);
-      return data;
+      
+      throw lastError;
     } catch (error) {
       console.error("❌ Profile fetch failed:", error);
+      handleAuthError(error as Error, "Profil laden");
       return null;
     }
   };
@@ -70,7 +100,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(profileData);
   };
 
-  // Sign in with email and password
+  // Sign in with email and password - improved error handling
   const signIn = async (email: string, password: string) => {
     try {
       console.log("🔐 Attempting sign in for:", email);
@@ -86,6 +116,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error("❌ Sign in error:", error);
+        handleAuthError(error, "Anmeldung");
         throw error;
       }
 
@@ -96,11 +127,6 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       });
     } catch (error: any) {
       console.error("❌ Sign in failed:", error);
-      toast({
-        title: "Anmeldung fehlgeschlagen",
-        description: error.message || "Bitte überprüfe deine Anmeldedaten.",
-        variant: "destructive",
-      });
       throw error;
     } finally {
       setLoading(false);
@@ -125,6 +151,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error("❌ Sign up error:", error);
+        handleAuthError(error, "Registrierung");
         throw error;
       }
 
@@ -143,18 +170,13 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error: any) {
       console.error("❌ Sign up failed:", error);
-      toast({
-        title: "Registrierung fehlgeschlagen",
-        description: error.message || "Bitte versuche es später erneut.",
-        variant: "destructive",
-      });
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Sign out
+  // Sign out - improved
   const signOut = async () => {
     try {
       console.log("🚪 Signing out...");
@@ -167,7 +189,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) {
         console.error("❌ Sign out error:", error);
-        throw error;
+        // Don't throw error for sign out - still proceed with cleanup
       }
 
       console.log("✅ Sign out successful");
@@ -189,18 +211,20 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       
     } catch (error: any) {
       console.error("❌ Sign out failed:", error);
-      toast({
-        title: "Fehler beim Abmelden",
-        description: error.message || "Bitte versuche es später erneut.",
-        variant: "destructive",
-      });
-      throw error;
+      // Still try to clear state even if sign out failed
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      setTimeout(() => {
+        window.location.href = '/de';
+      }, 100);
     } finally {
       setLoading(false);
     }
   };
 
-  // Initialize auth state and listeners
+  // Initialize auth state and listeners - improved
   useEffect(() => {
     console.log("🚀 Initializing SimpleAuthContext...");
     let mounted = true;
@@ -216,15 +240,26 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
-        // Fetch profile when user signs in
+        // Fetch profile when user signs in - with improved error handling
         if (currentSession?.user && event === 'SIGNED_IN') {
           console.log("👤 User signed in, fetching profile...");
+          // Use setTimeout to prevent potential deadlocks
           setTimeout(async () => {
             if (mounted) {
-              const profileData = await fetchProfile(currentSession.user.id);
-              setProfile(profileData);
+              try {
+                const profileData = await fetchProfile(currentSession.user.id);
+                if (mounted) {
+                  setProfile(profileData);
+                }
+              } catch (error) {
+                console.error("❌ Error fetching profile after sign in:", error);
+                // Don't block the UI if profile fetch fails
+                if (mounted) {
+                  setProfile(null);
+                }
+              }
             }
-          }, 0);
+          }, 100);
         } else if (event === 'SIGNED_OUT') {
           console.log("👋 User signed out, clearing profile");
           setProfile(null);
@@ -255,6 +290,12 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
           fetchProfile(session.user.id).then(profileData => {
             if (mounted) {
               setProfile(profileData);
+              setLoading(false);
+            }
+          }).catch(error => {
+            console.error("❌ Error fetching initial profile:", error);
+            if (mounted) {
+              setProfile(null);
               setLoading(false);
             }
           });
