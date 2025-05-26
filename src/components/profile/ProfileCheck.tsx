@@ -1,21 +1,28 @@
 
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { hasValidProfile } from "@/utils/profile-check";
+import ProfileErrorRecovery from "@/components/auth/ProfileErrorRecovery";
 
 export function ProfileCheck({ children }: { children: React.ReactNode }) {
-  const { profile, loading, isInitialLoad, user } = useAuth();
+  const { 
+    profile, 
+    loading, 
+    user, 
+    isProfileLoading, 
+    profileError, 
+    hasProfileTimedOut,
+    refreshProfile 
+  } = useSimpleAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (loading || isInitialLoad) return;
+    if (loading || isProfileLoading) return;
 
     // First check for users with valid session but no profile - SECURITY FIX
-    // Verhindert, dass eingeloggte User ohne verknüpftes Profil geschützte Seiten betreten
-    // Essentielle Absicherung bei Supabase-basierten Architekturen
     if (user && !hasValidProfile(profile)) {
       console.warn("⚠️ Kein Profil gefunden – Weiterleitung zu /register");
       navigate("/register", { state: { from: location.pathname }, replace: true });
@@ -27,22 +34,20 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
       navigate("/complete-profile", { state: { from: location.pathname }, replace: true });
       return;
     }
+  }, [profile, loading, isProfileLoading, user, navigate, location.pathname]);
 
-    // If profile is complete but user is on profile page and is a sender, consider redirecting to create-order
-    // Only redirect from main profile page, not from other sections
-    if (user && 
-        profile && 
-        profile.profile_complete && 
-        profile.role?.startsWith('sender') && 
-        location.pathname === "/profile") {
-      
-      // You could add additional logic here to check if the user has no active orders
-      // For now, we'll just show a notification or hint on the profile page instead of auto-redirecting
-      // This is handled in the ProfileTabs component by setting the default tab to 'sender'
-    }
-  }, [profile, loading, isInitialLoad, user, navigate, location.pathname]);
+  // Show profile error recovery if there's an error or timeout
+  if (user && (profileError || hasProfileTimedOut)) {
+    return (
+      <ProfileErrorRecovery
+        error={profileError || ""}
+        hasTimedOut={hasProfileTimedOut}
+        onRetry={refreshProfile}
+      />
+    );
+  }
 
-  if (loading || isInitialLoad) {
+  if (loading || isProfileLoading) {
     return (
       <div className="container max-w-md mx-auto py-20">
         <Card>
@@ -51,7 +56,10 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
           </CardHeader>
           <CardContent>
             <div className="w-10 h-10 border-4 border-muted-foreground border-t-transparent rounded-full animate-spin mx-auto my-4"></div>
-            <p className="text-center">Dein Profil wird überprüft...</p>
+            <p className="text-center">Dein Profil wird geladen...</p>
+            <p className="text-center text-sm text-gray-500 mt-2">
+              Dauert das zu lange? Die Seite wird automatisch eine Lösung anbieten.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -72,8 +80,6 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  // Removed the profile check display - we're now redirecting instead
 
   return <>{children}</>;
 }

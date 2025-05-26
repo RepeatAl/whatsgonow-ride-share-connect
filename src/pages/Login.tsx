@@ -4,17 +4,19 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { ConnectionError } from "@/components/ui/connection-error";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
+import AuthErrorHandler from "@/components/auth/AuthErrorHandler";
 
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl } = useLanguageMCP();
   const { signIn, loading } = useSimpleAuth();
+  const navigate = useNavigate();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,23 +51,22 @@ const Login = () => {
     }
 
     if (!email || !password) {
-      setError(t("auth:validation.email_password_required", "E-Mail und Passwort sind erforderlich"));
+      setError("E-Mail und Passwort sind erforderlich");
       return;
     }
 
     try {
       setFormLoading(true);
       setError("");
-      console.log("🔐 Starting login process...");
+      console.log("🔐 Starting login process for:", email);
       await signIn(email, password);
       console.log("✅ Login successful, redirect should happen automatically");
-      // Redirect wird vom useSimpleAuthRedirect Hook gehandhabt
     } catch (err: any) {
       console.error("❌ Login error:", err);
       if (err.message?.includes('fetch')) {
         setShowConnectionError(true);
       } else {
-        setError(err.message || t("auth:error.login_failed", "Anmeldung fehlgeschlagen"));
+        setError(err.message || "Anmeldung fehlgeschlagen");
       }
     } finally {
       setFormLoading(false);
@@ -77,6 +78,10 @@ const Login = () => {
     setError("");
   };
 
+  const handleBackToHome = () => {
+    navigate(getLocalizedUrl("/"));
+  };
+
   if (showConnectionError || isOffline) {
     return (
       <Layout pageType="auth">
@@ -84,15 +89,13 @@ const Login = () => {
           <Card className="w-full max-w-md">
             <CardContent className="p-6">
               <ConnectionError 
-                message={t("auth:error.no_connection", "Keine Internetverbindung. Das Login benötigt eine aktive Internetverbindung.")}
+                message="Keine Internetverbindung. Das Login benötigt eine aktive Internetverbindung."
                 onRetry={handleRetry}
               />
               <div className="mt-4 text-center">
-                <Link to={getLocalizedUrl("/")}>
-                  <Button variant="outline">
-                    {t("common:back_home", "Zurück zur Startseite")}
-                  </Button>
-                </Link>
+                <Button variant="outline" onClick={handleBackToHome}>
+                  Zurück zur Startseite
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -112,10 +115,12 @@ const Login = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <div className="flex items-center gap-2 p-4 bg-red-50 rounded-lg border border-red-200">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
+              <AuthErrorHandler 
+                error={error}
+                email={email}
+                onRetry={() => setError("")}
+                onBackToHome={handleBackToHome}
+              />
             )}
             
             <form onSubmit={handleFormSubmit} className="space-y-4">
@@ -166,11 +171,9 @@ const Login = () => {
                 </Button>
               </Link>
               <div>
-                <Link to={getLocalizedUrl("/")}>
-                  <Button variant="outline" disabled={loading || formLoading}>
-                    {t("common:back_home", "Zurück zur Startseite")}
-                  </Button>
-                </Link>
+                <Button variant="outline" disabled={loading || formLoading} onClick={handleBackToHome}>
+                  {t("common:back_home", "Zurück zur Startseite")}
+                </Button>
               </div>
             </div>
           </CardContent>
