@@ -1,12 +1,21 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Users, ArrowRight, MapPin } from "lucide-react";
+import { Users, ArrowRight, MapPin, Settings } from "lucide-react";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import VideoPlayer from "./VideoPlayer";
+import VideoUploadDialog from "../admin/VideoUploadDialog";
 
 const HowItWorks = () => {
   const { t } = useTranslation('landing');
+  const { profile } = useSimpleAuth();
+  const [showVideoUpload, setShowVideoUpload] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  // Nur Admin/Community Manager können Videos hochladen
+  const canUploadVideo = profile?.role === 'admin' || profile?.role === 'community_manager';
 
   const steps = [
     {
@@ -26,6 +35,11 @@ const HowItWorks = () => {
     },
   ];
 
+  const handleVideoUploaded = (url: string) => {
+    setVideoUrl(url);
+    // TODO: Save video URL to database/configuration
+  };
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -42,35 +56,28 @@ const HowItWorks = () => {
         <div className="mb-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                {t('how_it_works.video.title')}
-              </h3>
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {t('how_it_works.video.title')}
+                </h3>
+                {canUploadVideo && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowVideoUpload(true)}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Video verwalten
+                  </Button>
+                )}
+              </div>
               <p className="text-gray-600">
                 {t('how_it_works.video.description')}
               </p>
             </div>
             
-            <div className="relative bg-gray-800 rounded-lg overflow-hidden shadow-2xl">
-              {/* Video Placeholder - Replace with actual video when available */}
-              <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-brand-primary to-brand-orange">
-                <div className="text-center text-white">
-                  <Play className="h-16 w-16 mx-auto mb-4" />
-                  <p className="text-lg font-medium">
-                    Video wird bald verfügbar sein
-                  </p>
-                  <p className="text-sm opacity-80 mt-2">
-                    Hier wird das Erklärvideo zu whatsgonow eingebettet
-                  </p>
-                </div>
-              </div>
-              
-              {/* Overlay for future video */}
-              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
-                  <Play className="h-5 w-5 mr-2" />
-                  Video abspielen
-                </Button>
-              </div>
+            <div className="shadow-2xl rounded-lg overflow-hidden">
+              <VideoPlayer src={videoUrl} />
             </div>
           </div>
         </div>
@@ -100,6 +107,15 @@ const HowItWorks = () => {
             </div>
           ))}
         </div>
+        
+        {/* Video Upload Dialog - Nur für Admins */}
+        {canUploadVideo && (
+          <VideoUploadDialog
+            open={showVideoUpload}
+            onOpenChange={setShowVideoUpload}
+            onVideoUploaded={handleVideoUploaded}
+          />
+        )}
       </div>
     </section>
   );
