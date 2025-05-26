@@ -9,6 +9,7 @@ import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { AlertCircle, Loader2 } from "lucide-react";
+import Layout from "@/components/Layout";
 
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
@@ -55,6 +56,11 @@ const Login = () => {
       return;
     }
 
+    if (!signIn) {
+      setError("Login-Funktion ist nicht verfügbar. Bitte lade die Seite neu.");
+      return;
+    }
+
     try {
       setFormLoading(true);
       setError("");
@@ -79,109 +85,113 @@ const Login = () => {
 
   if (showConnectionError || isOffline) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6">
-            <ConnectionError 
-              message={t("auth:error.no_connection", "Keine Internetverbindung. Das Login benötigt eine aktive Internetverbindung.")}
-              onRetry={handleRetry}
-            />
-            <div className="mt-4 text-center">
-              <Link to={getLocalizedUrl("/")}>
-                <Button variant="outline">
-                  {t("common:back_home", "Zurück zur Startseite")}
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Layout pageType="auth">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-6">
+              <ConnectionError 
+                message={t("auth:error.no_connection", "Keine Internetverbindung. Das Login benötigt eine aktive Internetverbindung.")}
+                onRetry={handleRetry}
+              />
+              <div className="mt-4 text-center">
+                <Link to={getLocalizedUrl("/")}>
+                  <Button variant="outline">
+                    {t("common:back_home", "Zurück zur Startseite")}
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">
-            {t("auth:login", "Anmelden")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 rounded-lg border border-red-200">
-              <AlertCircle className="h-5 w-5 text-red-600" />
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
+    <Layout pageType="auth">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">
+              {t("auth:login", "Anmelden")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 p-4 bg-red-50 rounded-lg border border-red-200">
+                <AlertCircle className="h-5 w-5 text-red-600" />
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
 
-          {/* Zeige spezifische Loading-States */}
-          {isProfileLoading && (
-            <div className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-              <p className="text-sm text-blue-800">Profil wird geladen...</p>
-            </div>
-          )}
-          
-          <form onSubmit={handleFormSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                {t("auth:email", "E-Mail")}
-              </label>
-              <Input
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("auth:email_placeholder", "ihre@email.com")}
-                disabled={isLoading}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                {t("auth:password", "Passwort")}
-              </label>
-              <Input
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                disabled={isLoading}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isProfileLoading 
-                    ? "Profil wird geladen..." 
-                    : t("auth:logging_in", "Anmelden...")
-                  }
-                </>
-              ) : (
-                t("auth:login", "Anmelden")
-              )}
-            </Button>
-          </form>
-
-          <div className="text-center space-y-2">
-            <Link to={getLocalizedUrl("/register")}>
-              <Button variant="link" disabled={isLoading}>
-                {t("auth:no_account", "Noch kein Konto? Registrieren")}
+            {/* Zeige spezifische Loading-States */}
+            {isProfileLoading && (
+              <div className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                <p className="text-sm text-blue-800">Profil wird geladen...</p>
+              </div>
+            )}
+            
+            <form onSubmit={handleFormSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t("auth:email", "E-Mail")}
+                </label>
+                <Input
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("auth:email_placeholder", "ihre@email.com")}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t("auth:password", "Passwort")}
+                </label>
+                <Input
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isProfileLoading 
+                      ? "Profil wird geladen..." 
+                      : t("auth:logging_in", "Anmelden...")
+                    }
+                  </>
+                ) : (
+                  t("auth:login", "Anmelden")
+                )}
               </Button>
-            </Link>
-            <div>
-              <Link to={getLocalizedUrl("/")}>
-                <Button variant="outline" disabled={isLoading}>
-                  {t("common:back_home", "Zurück zur Startseite")}
+            </form>
+
+            <div className="text-center space-y-2">
+              <Link to={getLocalizedUrl("/register")}>
+                <Button variant="link" disabled={isLoading}>
+                  {t("auth:no_account", "Noch kein Konto? Registrieren")}
                 </Button>
               </Link>
+              <div>
+                <Link to={getLocalizedUrl("/")}>
+                  <Button variant="outline" disabled={isLoading}>
+                    {t("common:back_home", "Zurück zur Startseite")}
+                  </Button>
+                </Link>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
   );
 };
 

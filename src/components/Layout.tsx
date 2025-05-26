@@ -2,7 +2,7 @@
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 import { Toaster } from "@/components/ui/toaster";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { UserSuspensionNotice } from "@/components/suspension";
 import { useTranslation } from "react-i18next";
 import React from "react";
@@ -28,7 +28,7 @@ const Layout = React.memo(({
   pageType,
   hideNavigation = false
 }: LayoutProps) => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   
