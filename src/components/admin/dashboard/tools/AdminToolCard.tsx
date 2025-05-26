@@ -1,19 +1,20 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-interface AdminToolCardProps {
+export interface AdminToolCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
-  status?: 'active' | 'inactive' | 'pending';
-  onClick?: () => void;
-  badge?: string;
+  status?: 'active' | 'inactive' | 'maintenance';
   href?: string;
+  onClick?: () => void;
   disabled?: boolean;
+  badge?: string;
 }
 
 const AdminToolCard: React.FC<AdminToolCardProps> = ({
@@ -21,67 +22,71 @@ const AdminToolCard: React.FC<AdminToolCardProps> = ({
   description,
   icon: Icon,
   status = 'active',
-  onClick,
-  badge,
   href,
-  disabled = false
+  onClick,
+  disabled = false,
+  badge
 }) => {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = () => {
     switch (status) {
-      case 'active':
-        return 'default';
-      case 'inactive':
-        return 'secondary';
-      case 'pending':
-        return 'outline';
-      default:
-        return 'secondary';
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-gray-100 text-gray-800';
+      case 'maintenance': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleClick = () => {
-    if (disabled) return;
+  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (disabled) {
+      return <div className="opacity-50 cursor-not-allowed">{children}</div>;
+    }
     
     if (href) {
-      window.location.href = href;
-    } else if (onClick) {
-      onClick();
+      return <Link to={href} className="block">{children}</Link>;
     }
+    
+    if (onClick) {
+      return <div onClick={onClick} className="cursor-pointer">{children}</div>;
+    }
+    
+    return <div>{children}</div>;
   };
 
   return (
-    <Card 
-      className={`hover:shadow-md transition-shadow ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} 
-      onClick={handleClick}
-    >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Icon className="h-4 w-4" />
-          {title}
-        </CardTitle>
-        <Badge variant={getStatusColor(status)}>
-          {status}
-        </Badge>
-      </CardHeader>
-      <CardContent>
-        <CardDescription className="text-xs text-muted-foreground mb-3">
-          {description}
-        </CardDescription>
-        {badge && (
-          <Badge variant="outline" className="mb-2">
-            {badge}
-          </Badge>
+    <CardWrapper>
+      <Card className={`h-full transition-all duration-200 ${!disabled && (href || onClick) ? 'hover:shadow-lg hover:scale-105' : ''}`}>
+        <CardHeader className="flex flex-row items-center gap-4">
+          <div className="p-2 rounded-lg bg-brand-orange/10">
+            <Icon className="h-6 w-6 text-brand-orange" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <CardTitle className="text-lg">{title}</CardTitle>
+              {badge && (
+                <Badge variant="secondary" className="text-xs">
+                  {badge}
+                </Badge>
+              )}
+            </div>
+            <Badge className={`text-xs ${getStatusColor()}`}>
+              {status === 'active' ? 'Aktiv' : status === 'inactive' ? 'Inaktiv' : 'Wartung'}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <CardDescription className="text-sm text-gray-600">
+            {description}
+          </CardDescription>
+        </CardContent>
+        {(href || onClick) && !disabled && (
+          <CardFooter>
+            <Button variant="outline" size="sm" className="w-full">
+              Öffnen
+            </Button>
+          </CardFooter>
         )}
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="w-full"
-          disabled={disabled}
-        >
-          {disabled ? 'Nicht verfügbar' : 'Öffnen'}
-        </Button>
-      </CardContent>
-    </Card>
+      </Card>
+    </CardWrapper>
   );
 };
 

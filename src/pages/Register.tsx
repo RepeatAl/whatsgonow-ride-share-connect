@@ -1,43 +1,46 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
+import { RegisterForm } from "@/components/auth/RegisterForm";
+import { Button } from "@/components/ui/button";
 
 const Register = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl } = useLanguageMCP();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
             {t("auth:register", "Registrieren")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-center text-gray-600">
-            Registrierungs-Formular wird hier implementiert
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Erstelle dein Konto bei Whatsgonow
           </p>
-          <div className="text-center">
-            <Link to={getLocalizedUrl("/login")}>
-              <Button variant="link">
-                {t("auth:have_account", "Bereits ein Konto? Anmelden")}
-              </Button>
+        </div>
+        
+        <RegisterForm />
+        
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Bereits ein Konto?{" "}
+            <Link to={getLocalizedUrl("/login")} className="font-medium text-brand-orange hover:text-brand-orange/80">
+              Hier anmelden
             </Link>
-          </div>
-          <div className="text-center">
-            <Link to={getLocalizedUrl("/")}>
-              <Button variant="outline">
-                {t("common:back_home", "Zurück zur Startseite")}
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+          </p>
+        </div>
+        
+        <div className="text-center">
+          <Link to={getLocalizedUrl("/")}>
+            <Button variant="outline" className="w-full">
+              {t("common:back_home", "Zurück zur Startseite")}
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,107 +1,113 @@
 
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import Layout from '@/components/Layout';
-import AdminToolsGrid from '@/components/admin/dashboard/AdminToolsGrid';
-import AdminToolCard from '@/components/admin/dashboard/tools/AdminToolCard';
-import { useTranslation } from "react-i18next";
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import { 
   Users, 
-  ShieldCheck, 
-  FileCheck, 
-  MessageSquare, 
+  FileSpreadsheet, 
+  MessageSquareWarning, 
+  FileBarChart, 
+  ClipboardCheck, 
+  FileText, 
   UserCheck, 
-  History,
-  Globe
-} from 'lucide-react';
+  TrendingUp 
+} from "lucide-react";
+import AdminToolCard from "@/components/admin/dashboard/tools/AdminToolCard";
 
-const Admin: React.FC = () => {
-  const { user, loading } = useAuth();
-  const { t } = useTranslation();
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="container mx-auto py-8 flex justify-center items-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-lg">{t("admin.loading")}</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
+const Admin = () => {
   return (
-    <Layout>
-      <div className="container mx-auto py-6 px-4">
-        <h1 className="text-3xl font-bold mb-6">{t("admin.dashboard.title")}</h1>
-        
-        <AdminToolsGrid>
-          <AdminToolCard 
-            title={t("admin.tools.user_management")}
-            description={t("admin.tools.user_management_desc")}
-            icon={Users}
-            status="active"
-            href="/admin/users"
-          />
-          
-          <AdminToolCard 
-            title={t("admin.tools.validation")}
-            description={t("admin.tools.validation_desc")}
-            icon={ShieldCheck}
-            status="active"
-            href="/admin/validation"
-          />
-          
-          <AdminToolCard 
-            title={t("admin.tools.feedback")}
-            description={t("admin.tools.feedback_desc")}
-            icon={MessageSquare}
-            status="active"
-            href="/admin/feedback"
-          />
-          
-          <AdminToolCard 
-            title={t("admin.tools.pre_registrations")}
-            description={t("admin.tools.pre_registrations_desc")}
-            icon={UserCheck}
-            status="active"
-            href="/admin/pre-registrations"
-          />
-          
-          <AdminToolCard 
-            title={t("admin.tools.system_activity")}
-            description={t("admin.tools.system_activity_desc")}
-            icon={History}
-            status="active"
-            href="/admin/dashboard"
-          />
-          
-          <AdminToolCard 
-            title={t("admin.tools.invoice_testing")}
-            description={t("admin.tools.invoice_testing_desc")}
-            icon={FileCheck}
-            status="active"
-            href="/admin/invoice-test"
-          />
-          
-          <AdminToolCard 
-            title={t("admin.tools.translation_feedback")}
-            description={t("admin.tools.translation_feedback_desc")}
-            icon={Globe}
-            status="active"
-            href="/admin/translation-feedback"
-            badge="New"
-          />
-        </AdminToolsGrid>
+    <div className="container mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+        <p className="text-gray-600">Verwaltung und Überwachung der Whatsgonow-Plattform</p>
       </div>
-    </Layout>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AdminToolCard
+          title="Nutzer-Validierung"
+          description="KYC-Prozess und Identitätsprüfung für neue Nutzer."
+          icon={ClipboardCheck}
+          status="active"
+          href="/admin/validation"
+        />
+        
+        <AdminToolCard
+          title="Vorregistrierungen"
+          description="Verwaltung der Vorregistrierungsdaten und Lead-Generation."
+          icon={FileText}
+          status="active"
+          href="/admin/pre-registrations"
+        />
+        
+        <AdminToolCard
+          title="Feedback-Management"
+          description="Bearbeitung und Verwaltung von Nutzerfeedback."
+          icon={MessageSquareWarning}
+          status="active"
+          href="/admin/feedback"
+        />
+        
+        <AdminToolCard
+          title="Analytics"
+          description="Detaillierte Auswertungen und Plattform-Metriken."
+          icon={FileBarChart}
+          status="active"
+          href="/admin/analytics"
+        />
+        
+        <AdminToolCard
+          title="Nutzerverwaltung"
+          description="Verwaltung von Nutzerkonten und Berechtigungen."
+          icon={UserCheck}
+          status="inactive"
+          disabled={true}
+        />
+        
+        <AdminToolCard
+          title="Rechnungswesen"
+          description="Invoice-Management und XRechnung-Export."
+          icon={FileSpreadsheet}
+          status="inactive"
+          disabled={true}
+        />
+        
+        <AdminToolCard
+          title="System-Monitoring"
+          description="Überwachung der Plattform-Performance und -Verfügbarkeit."
+          icon={TrendingUp}
+          status="active"
+          href="/admin/monitoring"
+          badge="Beta"
+        />
+      </div>
+
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Schnellzugriff</CardTitle>
+            <CardDescription>Häufig verwendete Funktionen</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link to="/admin/users">Alle Nutzer</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/admin/logs">System-Logs</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/admin/reports">Berichte</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/admin/settings">Einstellungen</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
