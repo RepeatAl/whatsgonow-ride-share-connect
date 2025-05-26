@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -39,10 +38,10 @@ export const EnhancedSuspendUserDialog = ({
     const success = await suspendUser({
       user_id: userId,
       reason,
-      reason_code: reasonCode,
+      reasonCode: reasonCode, // Fixed: use reasonCode instead of reason_code
       suspension_type: suspensionType,
       duration: suspensionType === 'permanent' ? null : duration,
-      audit_notes: auditNotes
+      auditNotes: auditNotes
     });
     
     if (success) {
