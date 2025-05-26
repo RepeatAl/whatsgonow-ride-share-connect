@@ -21,10 +21,12 @@ import Faq from '@/pages/Faq';
 import DashboardDriver from '@/pages/dashboard/DashboardDriver';
 import DashboardCM from '@/pages/dashboard/DashboardCM';
 import DashboardAdmin from '@/pages/dashboard/DashboardAdmin';
+import DashboardAdminEnhanced from '@/pages/dashboard/DashboardAdminEnhanced';
 
 // Import route guards
 import PublicRoute from './PublicRoute';
 import ProtectedRoute from './ProtectedRoute';
+import AdminRoute from './AdminRoute';
 
 const MCPRouter = () => {
   const { currentLanguage } = useLanguageMCP();
@@ -56,6 +58,15 @@ const MCPRouter = () => {
       <Route path="/:lang/dashboard/driver" element={<ProtectedRoute><DashboardDriver /></ProtectedRoute>} />
       <Route path="/:lang/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
       <Route path="/:lang/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
+      
+      {/* Enhanced Admin Dashboard */}
+      <Route path="/:lang/admin-enhanced" element={
+        <ProtectedRoute>
+          <AdminRoute>
+            <DashboardAdminEnhanced />
+          </AdminRoute>
+        </ProtectedRoute>
+      } />
       
       {/* Other protected routes */}
       <Route path="/:lang/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

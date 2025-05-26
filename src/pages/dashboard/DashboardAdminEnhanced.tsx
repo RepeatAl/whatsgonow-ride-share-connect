@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UsersIcon, Shield, Ban, Video } from "lucide-react";
 import { EnhancedSuspendedUsersTab } from "@/components/suspension/EnhancedSuspendedUsersTab";
-import { UnsuspendExpiredUsersButton } from "@/components/suspension";
+import { UnsuspendExpiredUsersButton } from "@/components/admin/UnsuspendExpiredUsersButton";
 import { AdminVideoUploadPanel } from "@/components/admin/AdminVideoUploadPanel";
 import { EscalationsTab } from "@/components/escalation";
 

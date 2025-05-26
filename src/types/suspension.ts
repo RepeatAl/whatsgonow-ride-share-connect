@@ -1,7 +1,7 @@
 
-import { UserProfile } from "@/types/auth"; // Changed to import UserProfile instead of Profile
+import { UserProfile } from "@/types/auth";
 
-export type SuspensionType = 'hard' | 'temporary' | 'soft';
+export type SuspensionType = 'hard' | 'temporary' | 'soft' | 'permanent';
 
 export interface UserSuspension {
   id: string;
@@ -29,6 +29,7 @@ export interface SuspendedUserInfo {
   suspension_type: SuspensionType;
   suspended_until: string | null;
   is_active: boolean;
+  is_currently_suspended?: boolean; // Add this optional property
 }
 
 export interface SuspendUserOptions {

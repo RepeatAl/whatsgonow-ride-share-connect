@@ -35,7 +35,21 @@ export const EnhancedSuspendedUsersTab: React.FC = () => {
       status: statusFilter,
       type: typeFilter
     });
-    setSuspendedUsers(users as EnhancedSuspendedUserInfo[]);
+    
+    // Transform users to include is_currently_suspended
+    const enhancedUsers: EnhancedSuspendedUserInfo[] = users.map(user => {
+      const now = new Date();
+      const isCurrentlySuspended = user.suspended_until ? 
+        new Date(user.suspended_until) > now : 
+        true; // permanent suspension
+      
+      return {
+        ...user,
+        is_currently_suspended: isCurrentlySuspended
+      } as EnhancedSuspendedUserInfo;
+    });
+    
+    setSuspendedUsers(enhancedUsers);
   };
   
   const handleReactivateClick = (user: EnhancedSuspendedUserInfo) => {
@@ -187,7 +201,7 @@ export const EnhancedSuspendedUsersTab: React.FC = () => {
                         <User className="h-3.5 w-3.5" />
                         {user.first_name} {user.last_name}
                         {!user.is_currently_suspended && (
-                          <AlertTriangle className="h-3.5 w-3.5 text-orange-500" title="Suspension abgelaufen" />
+                          <AlertTriangle className="h-3.5 w-3.5 text-orange-500" />
                         )}
                       </span>
                       <span className="text-xs text-muted-foreground">{user.email}</span>
