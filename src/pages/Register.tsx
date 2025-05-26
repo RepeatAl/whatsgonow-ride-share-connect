@@ -1,42 +1,46 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Button } from "@/components/ui/button";
-import Layout from "@/components/Layout";
 
 const Register = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl } = useLanguageMCP();
 
   return (
-    <Layout pageType="register">
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">
               {t("auth:register", "Registrieren")}
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Erstelle dein Konto bei Whatsgonow
-            </p>
-          </div>
-          
-          <RegisterForm />
-          
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Bereits ein Konto?{" "}
-              <Link to={getLocalizedUrl("/login")} className="font-medium text-brand-orange hover:text-brand-orange/80">
-                Hier anmelden
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RegisterForm />
+            
+            <div className="text-center space-y-2 mt-4">
+              <Link to={getLocalizedUrl("/login")}>
+                <Button variant="link">
+                  {t("auth:have_account", "Bereits ein Konto? Anmelden")}
+                </Button>
               </Link>
-            </p>
-          </div>
-        </div>
+              <div>
+                <Link to={getLocalizedUrl("/")}>
+                  <Button variant="outline">
+                    {t("common:back_home", "Zurück zur Startseite")}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </Layout>
+    </div>
   );
 };
 

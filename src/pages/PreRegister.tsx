@@ -1,50 +1,56 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { PreRegistrationForm } from "@/components/pre-registration/PreRegistrationForm";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
+import { Button } from "@/components/ui/button";
+import Layout from "@/components/Layout";
 
-export default function PreRegister() {
-  const { t } = useTranslation('pre_register');
+const PreRegister = () => {
+  const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl } = useLanguageMCP();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header with back navigation */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="mb-4">
-            <Link to={getLocalizedUrl("/")} className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              {t('back_to_home', { ns: 'common' })}
-            </Link>
-          </Button>
-          
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {t('title')}
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              {t('description')}
-            </p>
-          </div>
-        </div>
-
-        {/* Registration Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
-          <PreRegistrationForm />
-        </div>
-
-        {/* Footer text */}
-        <div className="text-center mt-8">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('footer_text')}
-          </p>
+    <Layout pageType="auth">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">
+                {t("auth:pre_register", "Vorab-Registrierung")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center space-y-4">
+                <p className="text-gray-600">
+                  Registriere dich jetzt für den frühen Zugang zu Whatsgonow.
+                </p>
+                
+                <div className="space-y-2">
+                  <Link to={getLocalizedUrl("/register")}>
+                    <Button className="w-full bg-brand-orange hover:bg-brand-orange/90">
+                      Jetzt registrieren
+                    </Button>
+                  </Link>
+                  <Link to={getLocalizedUrl("/login")}>
+                    <Button variant="outline" className="w-full">
+                      Bereits registriert? Anmelden
+                    </Button>
+                  </Link>
+                  <Link to={getLocalizedUrl("/")}>
+                    <Button variant="link">
+                      {t("common:back_home", "Zurück zur Startseite")}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </div>
+    </Layout>
   );
-}
+};
+
+export default PreRegister;

@@ -1,25 +1,37 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const DashboardSender = () => {
-  const { t } = useTranslation(["dashboard", "common"]);
+  const { t } = useTranslation(["common"]);
+  const { user, profile } = useSimpleAuth();
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">
-        {t("dashboard:sender_title", "Sender Dashboard")}
-      </h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("dashboard:sender_welcome", "Willkommen Sender")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Sender Dashboard-Inhalte werden hier implementiert</p>
-        </CardContent>
-      </Card>
-    </div>
+    <Layout pageType="dashboard">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">
+            Sender Dashboard
+          </h1>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Willkommen, {profile?.first_name || user?.email}!
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                Dein Sender-Dashboard wird bald verfügbar sein.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </Layout>
   );
 };
 
