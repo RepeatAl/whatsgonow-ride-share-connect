@@ -1,63 +1,62 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { LucideIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LucideIcon } from 'lucide-react';
 
 interface AdminToolCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
-  href?: string;
+  status: 'active' | 'inactive' | 'pending';
+  onClick: () => void;
   badge?: string;
-  disabled?: boolean;
 }
 
-const AdminToolCard = ({ 
-  title, 
-  description, 
-  icon: Icon, 
-  href, 
-  badge,
-  disabled 
-}: AdminToolCardProps) => {
+const AdminToolCard: React.FC<AdminToolCardProps> = ({
+  title,
+  description,
+  icon: Icon,
+  status,
+  onClick,
+  badge
+}) => {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'default'; // Changed from 'success' to 'default'
+      case 'inactive':
+        return 'secondary';
+      case 'pending':
+        return 'outline';
+      default:
+        return 'secondary';
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center">
-          <Icon className="mr-2 h-5 w-5 text-primary" />
+    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Icon className="h-4 w-4" />
           {title}
-          {badge && (
-            <Badge className="ml-2" variant="success">
-              {badge}
-            </Badge>
-          )}
         </CardTitle>
+        <Badge variant={getStatusColor(status)}>
+          {status}
+        </Badge>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-4">
+        <CardDescription className="text-xs text-muted-foreground mb-3">
           {description}
-        </p>
-        <Button 
-          variant="outline" 
-          className="w-full justify-between" 
-          disabled={disabled}
-          asChild={!disabled && !!href}
-        >
-          {!disabled && href ? (
-            <Link to={href}>
-              {disabled ? 'In Entwicklung' : 'Öffnen'}
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          ) : (
-            <>
-              In Entwicklung
-              <ChevronRight className="h-4 w-4" />
-            </>
-          )}
+        </CardDescription>
+        {badge && (
+          <Badge variant="outline" className="mb-2">
+            {badge}
+          </Badge>
+        )}
+        <Button size="sm" variant="outline" className="w-full">
+          Öffnen
         </Button>
       </CardContent>
     </Card>
