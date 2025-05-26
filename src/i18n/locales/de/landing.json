@@ -23,6 +23,26 @@
   },
   "benefits": {
     "title": "Warum whatsgonow?",
+    "time_saving": {
+      "title": "Zeitersparnis",
+      "description": "Spare Zeit durch effiziente Routenplanung und direkten Kontakt"
+    },
+    "cost_saving": {
+      "title": "Kostenersparnis",
+      "description": "Günstigere Transporte durch geteilte Fahrtkosten"
+    },
+    "environmentally_friendly": {
+      "title": "Umweltfreundlich",
+      "description": "Reduziere CO2-Emissionen durch optimierte Auslastung"
+    },
+    "security": {
+      "title": "Sicherheit",
+      "description": "Verifizierte Nutzer und sichere Zahlungsabwicklung"
+    },
+    "flexibility": {
+      "title": "Flexibilität",
+      "description": "Spontane oder geplante Transporte nach deinen Bedürfnissen"
+    },
     "sustainability": {
       "title": "Nachhaltigkeit",
       "description": "Reduziere CO2 durch geteilte Fahrten"

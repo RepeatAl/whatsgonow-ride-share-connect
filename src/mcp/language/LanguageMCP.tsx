@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useMe
 import { useAuth } from '@/contexts/AuthContext';
 import { changeAppLanguage } from '@/services/LanguageService';
 import { supabase } from '@/lib/supabaseClient';
+import { supportedLanguages, defaultLanguage } from '@/config/supportedLanguages';
 import MCPErrorBoundary from '@/mcp/components/MCPErrorBoundary';
 
 // Language MCP Types
@@ -15,15 +16,6 @@ export interface LanguageMCPContextType {
   isRtl: boolean;
 }
 
-// Supported languages configuration
-const SUPPORTED_LANGUAGES = [
-  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' }
-];
-
-const RTL_LANGUAGES = ['ar'];
-
 // Create the context
 const LanguageMCPContext = createContext<LanguageMCPContextType | undefined>(undefined);
 
@@ -34,7 +26,7 @@ interface LanguageMCPProps {
 
 export const LanguageMCP: React.FC<LanguageMCPProps> = ({ 
   children, 
-  initialLanguage = 'de' 
+  initialLanguage = defaultLanguage 
 }) => {
   const [currentLanguage, setCurrentLanguage] = useState<string>(initialLanguage);
   const [languageLoading, setLanguageLoading] = useState<boolean>(false);
@@ -52,7 +44,7 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
 
   // Language change handler with user profile update
   const setLanguageByCode = useCallback(async (languageCode: string) => {
-    if (!SUPPORTED_LANGUAGES.find(lang => lang.code === languageCode)) {
+    if (!supportedLanguages.find(lang => lang.code === languageCode)) {
       console.error('[LANGUAGE-MCP] Unsupported language code:', languageCode);
       return;
     }
@@ -93,15 +85,31 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
     return localizedUrl;
   }, [currentLanguage]);
 
+  // Convert supportedLanguages format for backward compatibility
+  const formattedSupportedLanguages = useMemo(() => 
+    supportedLanguages.map(lang => ({
+      code: lang.code,
+      name: lang.name,
+      nativeName: lang.localName, // Map localName to nativeName for backward compatibility
+      flag: lang.flag
+    })), []
+  );
+
+  // Check if current language is RTL
+  const isRtl = useMemo(() => {
+    const currentLang = supportedLanguages.find(lang => lang.code === currentLanguage);
+    return currentLang?.rtl || false;
+  }, [currentLanguage]);
+
   // Memoized context value
   const contextValue = useMemo(() => ({
     currentLanguage,
     setLanguageByCode,
     getLocalizedUrl,
     languageLoading,
-    supportedLanguages: SUPPORTED_LANGUAGES,
-    isRtl: RTL_LANGUAGES.includes(currentLanguage)
-  }), [currentLanguage, setLanguageByCode, getLocalizedUrl, languageLoading]);
+    supportedLanguages: formattedSupportedLanguages,
+    isRtl
+  }), [currentLanguage, setLanguageByCode, getLocalizedUrl, languageLoading, formattedSupportedLanguages, isRtl]);
 
   return (
     <MCPErrorBoundary>
