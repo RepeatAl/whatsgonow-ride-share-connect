@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,13 +64,13 @@ export const EscalationsTab = () => {
 
       if (error) throw error;
       
-      // Transform data to flatten profile info
+      // Transform data to flatten profile info - fix array access
       const transformedData = data?.map(item => ({
         ...item,
-        first_name: item.profiles?.first_name || 'Unknown',
-        last_name: item.profiles?.last_name || 'User',
-        email: item.profiles?.email || 'No email',
-        role: item.profiles?.role || 'unknown'
+        first_name: item.profiles?.[0]?.first_name || 'Unknown',
+        last_name: item.profiles?.[0]?.last_name || 'User', 
+        email: item.profiles?.[0]?.email || 'No email',
+        role: item.profiles?.[0]?.role || 'unknown'
       })) || [];
 
       setEscalations(transformedData);
