@@ -1,93 +1,93 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, RefreshCw, Home, LogOut } from "lucide-react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { RefreshCw, AlertCircle, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
 interface ProfileErrorRecoveryProps {
-  error: string;
-  hasTimedOut: boolean;
-  onRetry: () => void;
+  error?: string;
+  hasTimedOut?: boolean;
+  onRetry?: (() => Promise<void>) | null;
 }
 
-const ProfileErrorRecovery = ({ error, hasTimedOut, onRetry }: ProfileErrorRecoveryProps) => {
-  const { signOut } = useSimpleAuth();
-  const { getLocalizedUrl } = useLanguageMCP();
+export const ProfileErrorRecovery: React.FC<ProfileErrorRecoveryProps> = ({
+  error,
+  hasTimedOut,
+  onRetry
+}) => {
   const navigate = useNavigate();
+  const { getLocalizedUrl } = useLanguageMCP();
+  
+  const handleGoHome = () => {
+    navigate(getLocalizedUrl('/'), { replace: true });
+  };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error("Error signing out:", error);
-      // Force navigation even if signOut fails
-      navigate(getLocalizedUrl("/"));
+  const handleRetry = async () => {
+    if (onRetry) {
+      try {
+        await onRetry();
+      } catch (err) {
+        console.error('Retry failed:', err);
+      }
     }
   };
 
-  const handleGoHome = () => {
-    navigate(getLocalizedUrl("/"));
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-          <CardTitle className="text-xl">
-            {hasTimedOut ? "Profil-Laden unterbrochen" : "Profil-Problem"}
+    <div className="container max-w-md mx-auto py-20">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-500" />
+            Profil-Ladeprobleme
           </CardTitle>
+          <CardDescription>
+            Es gab ein Problem beim Laden deines Profils
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-gray-600 text-center">
-            {hasTimedOut 
-              ? "Das Laden deines Profils hat zu lange gedauert. Dies kann an einer langsamen Internetverbindung liegen."
-              : error || "Es gab ein Problem beim Laden deines Profils."
-            }
-          </p>
-          
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {hasTimedOut 
+                ? "Das Laden des Profils dauert ungewöhnlich lange. Dies kann an einer langsamen Internetverbindung oder einem temporären Serverproblem liegen."
+                : error || "Ein unbekannter Fehler ist aufgetreten beim Laden deines Profils."
+              }
+            </AlertDescription>
+          </Alert>
+
           <div className="space-y-2">
-            <Button 
-              onClick={onRetry} 
-              className="w-full" 
-              variant="default"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Profil erneut laden
-            </Button>
+            {onRetry && (
+              <Button 
+                onClick={handleRetry}
+                className="w-full"
+                variant="default"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Erneut versuchen
+              </Button>
+            )}
             
             <Button 
-              onClick={handleGoHome} 
-              className="w-full" 
+              onClick={handleGoHome}
+              className="w-full"
               variant="outline"
             >
               <Home className="h-4 w-4 mr-2" />
               Zur Startseite
             </Button>
-            
-            <Button 
-              onClick={handleSignOut} 
-              className="w-full" 
-              variant="ghost"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Abmelden und neu versuchen
-            </Button>
           </div>
-          
-          <div className="text-center pt-4 border-t">
-            <p className="text-sm text-gray-500">
-              Problem weiterhin bestehen?{" "}
-              <a 
-                href="mailto:support@whatsgonow.com" 
-                className="text-brand-orange hover:underline"
-              >
-                Support kontaktieren
-              </a>
-            </p>
+
+          <div className="text-sm text-muted-foreground space-y-2">
+            <p><strong>Mögliche Lösungen:</strong></p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Seite neu laden (F5)</li>
+              <li>Browser-Cache leeren</li>
+              <li>Internetverbindung prüfen</li>
+              <li>Falls das Problem weiterhin besteht, wende dich an den Support</li>
+            </ul>
           </div>
         </CardContent>
       </Card>

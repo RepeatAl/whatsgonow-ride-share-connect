@@ -249,6 +249,13 @@ export type Database = {
             foreignKeyName: "escalation_log_resolved_by_fkey"
             columns: ["resolved_by"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "escalation_log_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -258,6 +265,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "escalation_log_user_id_fkey"
@@ -316,6 +330,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_feedback_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "fk_feedback_user"
             columns: ["user_id"]
@@ -837,6 +858,13 @@ export type Database = {
             foreignKeyName: "fk_messages_recipient"
             columns: ["recipient_id"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_messages_recipient"
+            columns: ["recipient_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -846,6 +874,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_messages_sender"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "fk_messages_sender"
@@ -907,6 +942,13 @@ export type Database = {
           value?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "moderation_thresholds_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "moderation_thresholds_updated_by_fkey"
             columns: ["updated_by"]
@@ -985,6 +1027,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_offers_driver"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "fk_offers_driver"
             columns: ["driver_id"]
@@ -1171,6 +1220,13 @@ export type Database = {
             foreignKeyName: "fk_orders_sender"
             columns: ["sender_id"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_orders_sender"
+            columns: ["sender_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -1263,6 +1319,7 @@ export type Database = {
           flagged_by_cm: boolean | null
           house_number: string | null
           is_pre_suspended: boolean | null
+          is_suspended: boolean | null
           last_name: string
           name_affix: string | null
           onboarding_complete: boolean
@@ -1274,6 +1331,8 @@ export type Database = {
           region: string
           role: string
           street: string | null
+          suspended_until: string | null
+          suspension_reason: string | null
           updated_at: string
           user_id: string
           verified: boolean | null
@@ -1294,6 +1353,7 @@ export type Database = {
           flagged_by_cm?: boolean | null
           house_number?: string | null
           is_pre_suspended?: boolean | null
+          is_suspended?: boolean | null
           last_name: string
           name_affix?: string | null
           onboarding_complete?: boolean
@@ -1305,6 +1365,8 @@ export type Database = {
           region: string
           role: string
           street?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
           updated_at?: string
           user_id: string
           verified?: boolean | null
@@ -1325,6 +1387,7 @@ export type Database = {
           flagged_by_cm?: boolean | null
           house_number?: string | null
           is_pre_suspended?: boolean | null
+          is_suspended?: boolean | null
           last_name?: string
           name_affix?: string | null
           onboarding_complete?: boolean
@@ -1336,6 +1399,8 @@ export type Database = {
           region?: string
           role?: string
           street?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
           updated_at?: string
           user_id?: string
           verified?: boolean | null
@@ -1373,6 +1438,13 @@ export type Database = {
             foreignKeyName: "fk_ratings_from_user"
             columns: ["from_user"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_ratings_from_user"
+            columns: ["from_user"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -1389,6 +1461,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "fk_ratings_to_user"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "fk_ratings_to_user"
@@ -1495,6 +1574,13 @@ export type Database = {
           vehicle_type?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "rides_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "rides_driver_id_fkey"
             columns: ["driver_id"]
@@ -1611,6 +1697,13 @@ export type Database = {
             foreignKeyName: "fk_transactions_payer"
             columns: ["payer_id"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_payer"
+            columns: ["payer_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -1620,6 +1713,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_transactions_receiver"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "fk_transactions_receiver"
@@ -1691,6 +1791,13 @@ export type Database = {
             foreignKeyName: "trust_score_audit_actor_id_fkey"
             columns: ["actor_id"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "trust_score_audit_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -1700,6 +1807,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trust_score_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "trust_score_audit_user_id_fkey"
@@ -1809,6 +1923,13 @@ export type Database = {
             foreignKeyName: "user_flag_audit_actor_id_fkey"
             columns: ["actor_id"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_flag_audit_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -1818,6 +1939,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_flag_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "user_flag_audit_user_id_fkey"
@@ -1933,6 +2061,111 @@ export type Database = {
       }
     }
     Views: {
+      active_profiles: {
+        Row: {
+          address_extra: string | null
+          avatar_url: string | null
+          can_become_driver: boolean | null
+          city: string | null
+          company_name: string | null
+          created_at: string | null
+          dashboard_access_enabled: boolean | null
+          email: string | null
+          first_name: string | null
+          flag_reason: string | null
+          flagged_at: string | null
+          flagged_by_cm: boolean | null
+          house_number: string | null
+          is_pre_suspended: boolean | null
+          is_suspended: boolean | null
+          last_name: string | null
+          name_affix: string | null
+          onboarding_complete: boolean | null
+          phone: string | null
+          postal_code: string | null
+          pre_suspend_at: string | null
+          pre_suspend_reason: string | null
+          profile_complete: boolean | null
+          region: string | null
+          role: string | null
+          street: string | null
+          suspended_until: string | null
+          suspension_reason: string | null
+          updated_at: string | null
+          user_id: string | null
+          verified: boolean | null
+          wants_to_upload_items: boolean | null
+        }
+        Insert: {
+          address_extra?: string | null
+          avatar_url?: string | null
+          can_become_driver?: boolean | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          dashboard_access_enabled?: boolean | null
+          email?: string | null
+          first_name?: string | null
+          flag_reason?: string | null
+          flagged_at?: string | null
+          flagged_by_cm?: boolean | null
+          house_number?: string | null
+          is_pre_suspended?: boolean | null
+          is_suspended?: boolean | null
+          last_name?: string | null
+          name_affix?: string | null
+          onboarding_complete?: boolean | null
+          phone?: string | null
+          postal_code?: string | null
+          pre_suspend_at?: string | null
+          pre_suspend_reason?: string | null
+          profile_complete?: boolean | null
+          region?: string | null
+          role?: string | null
+          street?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+          wants_to_upload_items?: boolean | null
+        }
+        Update: {
+          address_extra?: string | null
+          avatar_url?: string | null
+          can_become_driver?: boolean | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          dashboard_access_enabled?: boolean | null
+          email?: string | null
+          first_name?: string | null
+          flag_reason?: string | null
+          flagged_at?: string | null
+          flagged_by_cm?: boolean | null
+          house_number?: string | null
+          is_pre_suspended?: boolean | null
+          is_suspended?: boolean | null
+          last_name?: string | null
+          name_affix?: string | null
+          onboarding_complete?: boolean | null
+          phone?: string | null
+          postal_code?: string | null
+          pre_suspend_at?: string | null
+          pre_suspend_reason?: string | null
+          profile_complete?: boolean | null
+          region?: string | null
+          role?: string | null
+          street?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+          wants_to_upload_items?: boolean | null
+        }
+        Relationships: []
+      }
       user_regions: {
         Row: {
           id: string | null

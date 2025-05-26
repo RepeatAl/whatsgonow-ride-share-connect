@@ -1,4 +1,3 @@
-
 import { User, Session } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -29,6 +28,10 @@ export interface UserProfile {
   wants_to_upload_items?: boolean;
   id_photo_url?: string;
   id_photo_verified?: boolean;
+  // Enhanced suspension fields
+  is_suspended?: boolean;
+  suspended_until?: string | null;
+  suspension_reason?: string | null;
 }
 
 export interface AuthContextProps {
