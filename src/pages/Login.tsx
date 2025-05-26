@@ -130,6 +130,7 @@ const Login = () => {
                   placeholder={t("auth:email_placeholder", "ihre@email.com")}
                   disabled={loading || formLoading}
                   required
+                  autoComplete="email"
                 />
               </div>
               <div>
@@ -143,6 +144,7 @@ const Login = () => {
                   placeholder="••••••••"
                   disabled={loading || formLoading}
                   required
+                  autoComplete="current-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading || formLoading}>

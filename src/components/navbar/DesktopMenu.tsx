@@ -27,7 +27,7 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
   const { signOut } = useSimpleAuth();
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
-  const { t } = useTranslation('landing');
+  const { t } = useTranslation(['landing', 'common']);
 
   const handleSignOut = async () => {
     try {
@@ -46,14 +46,14 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
         {/* Login Button */}
         <Link to={getLocalizedUrl("/login")}>
           <Button variant="ghost" size="sm">
-            {t('nav.login')}
+            {t('landing:nav.login', 'Anmelden')}
           </Button>
         </Link>
         
         {/* Register Button - Primary */}
         <Link to={getLocalizedUrl("/register")}>
           <Button variant="brand" size="sm">
-            {t('nav.register')}
+            {t('landing:nav.register', 'Registrieren')}
           </Button>
         </Link>
       </div>

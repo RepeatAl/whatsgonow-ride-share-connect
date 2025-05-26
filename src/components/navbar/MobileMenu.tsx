@@ -36,7 +36,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { signOut } = useSimpleAuth();
-  const { t } = useTranslation('landing');
+  const { t } = useTranslation(['landing', 'common']);
   const { getLocalizedUrl } = useLanguageMCP();
   const isSender = userRole?.startsWith('sender_');
 
@@ -49,15 +49,15 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
   };
 
   const navLinks = user ? [{
-    name: t('nav.find_transport'),
+    name: t('landing:nav.find_transport', 'Transport finden'),
     path: "/find-transport",
     icon: <Package className="h-5 w-5 mr-2" />
   }, {
-    name: t('nav.offer_transport'),
+    name: t('landing:nav.offer_transport', 'Transport anbieten'),
     path: "/offer-transport",
     icon: <Car className="h-5 w-5 mr-2" />
   }, {
-    name: t('nav.messages'),
+    name: t('landing:nav.messages', 'Nachrichten'),
     path: "/inbox",
     icon: <MessageCircle className="h-5 w-5 mr-2" />
   }] : [];
@@ -65,14 +65,14 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
   // Add create order link for senders
   if (isSender) {
     navLinks.push({
-      name: t('dashboard.newOrder'),
+      name: t('common:dashboard.newOrder', 'Neuer Auftrag'),
       path: "/create-order",
       icon: <FileText className="h-5 w-5 mr-2" />
     });
   }
 
   const adminLinks = user && (userRole === 'admin' || userRole === 'admin_limited') ? [{
-    name: t('nav.admin'),
+    name: t('landing:nav.admin', 'Admin'),
     path: "/admin",
     icon: <Shield className="h-5 w-5 mr-2" />
   }] : [];
@@ -108,7 +108,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               
               <Link to={getLocalizedUrl("/login")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <LogIn className="h-5 w-5 mr-2" />
-                <span>{t('nav.login')}</span>
+                <span>{t('landing:nav.login', 'Anmelden')}</span>
               </Link>
               
               <Link 
@@ -117,7 +117,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 className="flex items-center py-2 px-3 rounded-md bg-brand-primary text-white hover:bg-brand-primary/90"
               >
                 <PlusCircle className="h-5 w-5 mr-2" />
-                <span className="font-medium">{t('nav.register')}</span>
+                <span className="font-medium">{t('landing:nav.register', 'Registrieren')}</span>
               </Link>
             </>
           ) : (
@@ -130,7 +130,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                   className="flex items-center py-2 px-3 rounded-md bg-brand-primary text-white hover:bg-brand-primary/90"
                 >
                   <PlusCircle className="h-5 w-5 mr-2" />
-                  <span className="font-medium">{t('dashboard.newOrder')}</span>
+                  <span className="font-medium">{t('common:dashboard.newOrder', 'Neuer Auftrag')}</span>
                 </Link>
               )}
 
@@ -175,11 +175,11 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
               <div className="border-t my-2"></div>
               <Link to={getLocalizedUrl("/profile")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <User className="h-5 w-5 mr-2" />
-                <span>{t('nav.profile')}</span>
+                <span>{t('landing:nav.profile', 'Profil')}</span>
               </Link>
               <Link to={getLocalizedUrl("/dashboard")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <LayoutDashboard className="h-5 w-5 mr-2" />
-                <span>{t('nav.dashboard')}</span>
+                <span>{t('landing:nav.dashboard', 'Dashboard')}</span>
               </Link>
               
               <button onClick={() => {
@@ -187,7 +187,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 handleSignOut();
               }} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
                 <LogOut className="h-5 w-5 mr-2" />
-                <span>{t('auth.logout')}</span>
+                <span>{t('common:auth.logout', 'Abmelden')}</span>
               </button>
             </>
           )}

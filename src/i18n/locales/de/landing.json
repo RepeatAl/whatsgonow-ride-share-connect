@@ -1,5 +1,11 @@
 
 {
+  "nav": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "profile": "Profil",
+    "dashboard": "Dashboard"
+  },
   "hero": {
     "title": "Teile deine Fahrt, <span class=\"text-brand-orange\">verbinde</span> Menschen",
     "subtitle": "Nachhaltiger Transport durch intelligente Vermittlung zwischen Fahrern und Sendern",
@@ -8,6 +14,7 @@
   },
   "how_it_works": {
     "title": "So funktioniert whatsgonow",
+    "description": "Einfach, sicher und nachhaltig - in nur drei Schritten zum erfolgreichen Transport",
     "step1": {
       "title": "Registrieren",
       "description": "Erstelle dein Profil als Sender oder Fahrer"
@@ -19,6 +26,10 @@
     "step3": {
       "title": "Transportieren",
       "description": "Sicher und nachhaltig von A nach B"
+    },
+    "video": {
+      "title": "Sieh dir an, wie einfach es funktioniert",
+      "description": "In diesem Video erklären wir dir Schritt für Schritt, wie du whatsgonow nutzen kannst."
     }
   },
   "benefits": {
