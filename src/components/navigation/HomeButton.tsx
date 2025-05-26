@@ -12,22 +12,23 @@ export const HomeButton = () => {
 
   const handleGoHome = () => {
     try {
-      navigate(getLocalizedUrl("/"), { replace: true });
+      navigate(getLocalizedUrl('/'), { replace: true });
     } catch (error) {
       console.error("Navigation error:", error);
-      // Fallback to home page on error
-      navigate("/", { replace: true });
+      // Fallback to root
+      window.location.href = '/de';
     }
   };
 
   return (
     <Button 
-      variant="ghost" 
+      variant="outline" 
+      size="sm"
       className="w-fit" 
       onClick={handleGoHome}
     >
       <Home className="h-4 w-4 mr-2" />
-      {t('common.home', 'Home')}
+      {t('common.home', 'Startseite')}
     </Button>
   );
 };
