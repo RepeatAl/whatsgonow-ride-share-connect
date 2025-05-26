@@ -13,14 +13,17 @@ import { AlertCircle, Loader2 } from "lucide-react";
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl } = useLanguageMCP();
-  const { signIn } = useSimpleAuth();
+  const { signIn, loading: authLoading, isProfileLoading } = useSimpleAuth();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState("");
   const [showConnectionError, setShowConnectionError] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  // Kombiniere Auth-Loading und Profile-Loading für UI-State
+  const isLoading = authLoading || formLoading || isProfileLoading;
 
   // Monitor online/offline status
   React.useEffect(() => {
@@ -53,9 +56,10 @@ const Login = () => {
     }
 
     try {
-      setLoading(true);
+      setFormLoading(true);
       setError("");
       await signIn(email, password);
+      // Redirect wird vom useSimpleAuthRedirect Hook gehandhabt
     } catch (err: any) {
       console.error("Login error:", err);
       if (err.message?.includes('fetch')) {
@@ -64,7 +68,7 @@ const Login = () => {
         setError(err.message || t("auth:error.login_failed", "Anmeldung fehlgeschlagen"));
       }
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   };
 
@@ -110,6 +114,14 @@ const Login = () => {
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
+
+          {/* Zeige spezifische Loading-States */}
+          {isProfileLoading && (
+            <div className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+              <p className="text-sm text-blue-800">Profil wird geladen...</p>
+            </div>
+          )}
           
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <div>
@@ -121,7 +133,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("auth:email_placeholder", "ihre@email.com")}
-                disabled={loading}
+                disabled={isLoading}
                 required
               />
             </div>
@@ -134,15 +146,18 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                disabled={loading}
+                disabled={isLoading}
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("auth:logging_in", "Anmelden...")}
+                  {isProfileLoading 
+                    ? "Profil wird geladen..." 
+                    : t("auth:logging_in", "Anmelden...")
+                  }
                 </>
               ) : (
                 t("auth:login", "Anmelden")
@@ -152,13 +167,13 @@ const Login = () => {
 
           <div className="text-center space-y-2">
             <Link to={getLocalizedUrl("/register")}>
-              <Button variant="link">
+              <Button variant="link" disabled={isLoading}>
                 {t("auth:no_account", "Noch kein Konto? Registrieren")}
               </Button>
             </Link>
             <div>
               <Link to={getLocalizedUrl("/")}>
-                <Button variant="outline">
+                <Button variant="outline" disabled={isLoading}>
                   {t("common:back_home", "Zurück zur Startseite")}
                 </Button>
               </Link>

@@ -12,6 +12,7 @@ interface SimpleAuthContextProps {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  isProfileLoading: boolean; // Neuer State für Profile-Loading
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<void>;
   signOut: () => Promise<void>;
@@ -25,16 +26,18 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
 
-  // Verwende den vereinfachten Auth-Redirect Hook
-  useSimpleAuthRedirect(user, profile, loading);
+  // Verwende den vereinfachten Auth-Redirect Hook mit neuem State
+  useSimpleAuthRedirect(user, profile, loading, isProfileLoading);
 
-  // Fetch user profile from profiles table - improved error handling
+  // Fetch user profile from profiles table - optimiert ohne künstliche Verzögerung
   const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
     try {
       console.log("🔍 Fetching profile for user:", userId);
+      setIsProfileLoading(true);
       
-      // Add retry logic for temporary issues
+      // Entferne die setTimeout-Verzögerung für direkten Fetch
       let retries = 3;
       let lastError: any = null;
       
@@ -68,7 +71,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
             return null;
           }
 
-          console.log("✅ Profile loaded:", data);
+          console.log("✅ Profile loaded successfully:", data);
           return data;
         } catch (error) {
           lastError = error;
@@ -83,8 +86,17 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       throw lastError;
     } catch (error) {
       console.error("❌ Profile fetch failed:", error);
-      handleAuthError(error as Error, "Profil laden");
+      
+      // Spezifischer Fehler-Toast für Profile-Probleme
+      toast({
+        title: "Profil konnte nicht geladen werden",
+        description: "Bitte versuche es später erneut oder melde dich neu an.",
+        variant: "destructive",
+      });
+      
       return null;
+    } finally {
+      setIsProfileLoading(false);
     }
   };
 
@@ -100,7 +112,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(profileData);
   };
 
-  // Sign in with email and password - improved error handling
+  // Sign in with email and password - optimiert
   const signIn = async (email: string, password: string) => {
     try {
       console.log("🔐 Attempting sign in for:", email);
@@ -123,7 +135,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("✅ Sign in successful:", data.user?.email);
       toast({
         title: "Anmeldung erfolgreich",
-        description: "Willkommen zurück!",
+        description: "Willkommen zurück! Profil wird geladen...",
       });
     } catch (error: any) {
       console.error("❌ Sign in failed:", error);
@@ -198,6 +210,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       setProfile(null);
+      setIsProfileLoading(false);
       
       toast({
         title: "Abmeldung erfolgreich",
@@ -215,6 +228,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       setProfile(null);
+      setIsProfileLoading(false);
       
       setTimeout(() => {
         window.location.href = '/de';
@@ -224,7 +238,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Initialize auth state and listeners - improved
+  // Initialize auth state and listeners - verbessert für Profile-Loading
   useEffect(() => {
     console.log("🚀 Initializing SimpleAuthContext...");
     let mounted = true;
@@ -240,29 +254,27 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
-        // Fetch profile when user signs in - with improved error handling
+        // Fetch profile when user signs in - ohne setTimeout-Verzögerung
         if (currentSession?.user && event === 'SIGNED_IN') {
           console.log("👤 User signed in, fetching profile...");
-          // Use setTimeout to prevent potential deadlocks
-          setTimeout(async () => {
-            if (mounted) {
-              try {
-                const profileData = await fetchProfile(currentSession.user.id);
-                if (mounted) {
-                  setProfile(profileData);
-                }
-              } catch (error) {
-                console.error("❌ Error fetching profile after sign in:", error);
-                // Don't block the UI if profile fetch fails
-                if (mounted) {
-                  setProfile(null);
-                }
+          if (mounted) {
+            try {
+              const profileData = await fetchProfile(currentSession.user.id);
+              if (mounted) {
+                setProfile(profileData);
+              }
+            } catch (error) {
+              console.error("❌ Error fetching profile after sign in:", error);
+              // Don't block the UI if profile fetch fails
+              if (mounted) {
+                setProfile(null);
               }
             }
-          }, 100);
+          }
         } else if (event === 'SIGNED_OUT') {
           console.log("👋 User signed out, clearing profile");
           setProfile(null);
+          setIsProfileLoading(false);
         }
 
         if (mounted) {
@@ -316,6 +328,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     session,
     profile,
     loading,
+    isProfileLoading,
     signIn,
     signUp,
     signOut,

@@ -6,20 +6,21 @@ import type { UserProfile } from "@/types/auth";
 import { getRoleBasedRedirectPath, getCurrentLanguage } from "@/utils/auth-utils";
 
 /**
- * Vereinfachter Auth-Redirect Hook
- * Verwendet die zentrale Redirect-Logik ohne komplexe Verschachtelungen
+ * Vereinfachter Auth-Redirect Hook mit Profile-Loading-State
+ * Wartet bis sowohl User als auch Profile geladen sind, bevor Redirect erfolgt
  */
 export function useSimpleAuthRedirect(
   user: User | null,
   profile: UserProfile | null,
-  loading: boolean
+  loading: boolean,
+  isProfileLoading: boolean  // Neuer Parameter
 ) {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) {
-      console.log("🔄 Auth still loading, waiting...");
+    if (loading || isProfileLoading) {
+      console.log("🔄 Auth/Profile still loading, waiting...");
       return;
     }
 
@@ -31,6 +32,7 @@ export function useSimpleAuthRedirect(
     console.log("🔄 Current language:", currentLanguage);
     console.log("🔄 User:", user?.email || "none");
     console.log("🔄 Profile role:", profile?.role || "none");
+    console.log("🔄 Loading:", loading, "Profile Loading:", isProfileLoading);
     
     // Auth-Seiten (Login, Register, etc.)
     const isAuthPage = [
@@ -44,6 +46,7 @@ export function useSimpleAuthRedirect(
     // Öffentliche Seiten
     const isPublicPage = [
       `/${currentLanguage}`,
+      `/${currentLanguage}/about`,
       `/${currentLanguage}/faq`,
       `/${currentLanguage}/support`,
       `/${currentLanguage}/legal`,
@@ -51,11 +54,18 @@ export function useSimpleAuthRedirect(
     ].includes(currentPath);
 
     try {
-      // Fall 1: Authentifizierter User auf Auth-Seite
-      if (user && profile && isAuthPage) {
+      // Fall 1: Authentifizierter User auf Auth-Seite - ABER nur wenn Profile auch da ist
+      if (user && profile && isAuthPage && !loading && !isProfileLoading) {
         const targetPath = getRoleBasedRedirectPath(profile.role, currentLanguage);
-        console.log("🔄 Authenticated user on auth page, redirecting to:", targetPath);
+        console.log("🔄 Authenticated user with profile ready, redirecting to:", targetPath);
         navigate(targetPath, { replace: true });
+        return;
+      }
+
+      // Fall 1b: User eingeloggt, aber Profil fehlt dauerhaft (nach Timeout)
+      if (user && !profile && isAuthPage && !loading && !isProfileLoading) {
+        console.log("🔄 User without profile, staying on auth page with info");
+        // Hier könnten wir eine spezielle Meldung anzeigen, aber nicht redirecten
         return;
       }
 
@@ -70,8 +80,8 @@ export function useSimpleAuthRedirect(
         return;
       }
 
-      // Fall 3: Profile unvollständig
-      if (user && profile && !profile.profile_complete && !currentPath.includes('/complete-profile')) {
+      // Fall 3: Profile unvollständig (nur wenn Profile geladen wurde)
+      if (user && profile && !profile.profile_complete && !currentPath.includes('/complete-profile') && !isProfileLoading) {
         const completePath = `/${currentLanguage}/complete-profile`;
         console.log("🔄 Incomplete profile, redirecting to:", completePath);
         navigate(completePath, { replace: true });
@@ -88,5 +98,5 @@ export function useSimpleAuthRedirect(
         navigate(homePath, { replace: true });
       }
     }
-  }, [user, profile, loading, location.pathname, navigate]);
+  }, [user, profile, loading, isProfileLoading, location.pathname, navigate]);
 }
