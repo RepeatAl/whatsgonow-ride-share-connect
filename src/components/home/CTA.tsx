@@ -25,12 +25,42 @@ const CTA = () => {
         </p>
         
         <div className="flex flex-wrap justify-center gap-4">
-          <Button asChild size="lg" variant="default" className="bg-white text-brand-orange hover:bg-gray-100">
-            <Link to={getLocalizedUrl("/login")}>{t('cta.button_login')}</Link>
+          <Button 
+            asChild 
+            size="lg" 
+            variant="default" 
+            className="bg-white text-brand-orange hover:bg-gray-100"
+            style={{ zIndex: 10, position: 'relative' }}
+            onClick={() => console.log('CTA Login button clicked')}
+          >
+            <Link 
+              to={getLocalizedUrl("/login")}
+              onClick={(e) => {
+                console.log('CTA Login link clicked:', getLocalizedUrl("/login"));
+                console.log('Event:', e);
+              }}
+            >
+              {t('cta.button_login')}
+            </Link>
           </Button>
           
-          <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-            <Link to={getLocalizedUrl("/register")}>{t('cta.button_register')}</Link>
+          <Button 
+            asChild 
+            size="lg" 
+            variant="outline" 
+            className="border-white text-white hover:bg-white/10"
+            style={{ zIndex: 10, position: 'relative' }}
+            onClick={() => console.log('CTA Register button clicked')}
+          >
+            <Link 
+              to={getLocalizedUrl("/register")}
+              onClick={(e) => {
+                console.log('CTA Register link clicked:', getLocalizedUrl("/register"));
+                console.log('Event:', e);
+              }}
+            >
+              {t('cta.button_register')}
+            </Link>
           </Button>
         </div>
       </div>

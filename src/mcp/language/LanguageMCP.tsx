@@ -1,115 +1,109 @@
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { changeAppLanguage } from '@/services/LanguageService';
-import { supportedLanguages, languageCodes } from '@/config/supportedLanguages';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { changeAppLanguage } from '@/services/LanguageService';
 import { supabase } from '@/lib/supabaseClient';
-import { defaultLanguage } from '@/contexts/language/constants';
+import MCPErrorBoundary from '@/mcp/components/MCPErrorBoundary';
 
-interface LanguageMCPContextType {
+// Language MCP Types
+export interface LanguageMCPContextType {
   currentLanguage: string;
-  setLanguageByCode: (lang: string, storeInProfile?: boolean) => Promise<void>;
-  getLocalizedUrl: (path: string, lang?: string) => string;
+  setLanguageByCode: (languageCode: string) => Promise<void>;
+  getLocalizedUrl: (path: string) => string;
   languageLoading: boolean;
-  supportedLanguages: typeof supportedLanguages;
+  supportedLanguages: Array<{ code: string; name: string; nativeName: string; flag: string }>;
   isRtl: boolean;
 }
 
+// Supported languages configuration
+const SUPPORTED_LANGUAGES = [
+  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' }
+];
+
+const RTL_LANGUAGES = ['ar'];
+
+// Create the context
 const LanguageMCPContext = createContext<LanguageMCPContextType | undefined>(undefined);
 
 interface LanguageMCPProps {
-  children: React.ReactNode;
-  initialLanguage: string;
+  children: ReactNode;
+  initialLanguage?: string;
 }
 
-/**
- * Language MCP - Master Control Point for all language-related operations
- * Handles: UI language switching, URL localization, RTL support
- * Scope: Global UI, routing, static content
- */
 export const LanguageMCP: React.FC<LanguageMCPProps> = ({ 
   children, 
-  initialLanguage 
+  initialLanguage = 'de' 
 }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [currentLanguage, setCurrentLanguage] = useState<string>(initialLanguage);
   const [languageLoading, setLanguageLoading] = useState<boolean>(false);
   const { user } = useAuth();
 
-  // Initialize i18n with provided language
-  React.useEffect(() => {
-    const langMeta = supportedLanguages.find(l => l.code === initialLanguage);
-    if (langMeta) {
-      changeAppLanguage(initialLanguage);
-      setCurrentLanguage(initialLanguage);
-    }
+  console.log('[LANGUAGE-MCP] Initializing with language:', initialLanguage);
+  console.log('[LANGUAGE-MCP] Current user:', user?.email || 'none');
+
+  // Initialize language on mount
+  useEffect(() => {
+    console.log('[LANGUAGE-MCP] Setting up initial language:', initialLanguage);
+    setCurrentLanguage(initialLanguage);
+    
+    // Change app language immediately
+    changeAppLanguage(initialLanguage).catch((error) => {
+      console.error('[LANGUAGE-MCP] Failed to set initial language:', error);
+    });
   }, [initialLanguage]);
 
-  // Memoized language metadata
-  const currentLanguageMeta = useMemo(() => {
-    return supportedLanguages.find(l => l.code === currentLanguage);
-  }, [currentLanguage]);
-
-  const isRtl = useMemo(() => {
-    return currentLanguageMeta?.rtl ?? false;
-  }, [currentLanguageMeta]);
-
-  // Language change with navigation
-  const setLanguageByCode = useCallback(async (lang: string, storeInProfile: boolean = true) => {
-    if (lang === currentLanguage) return;
+  // Language change handler with user profile update
+  const setLanguageByCode = useCallback(async (languageCode: string) => {
+    console.log('[LANGUAGE-MCP] Changing language to:', languageCode);
     
+    if (!SUPPORTED_LANGUAGES.find(lang => lang.code === languageCode)) {
+      console.error('[LANGUAGE-MCP] Unsupported language code:', languageCode);
+      return;
+    }
+
     try {
       setLanguageLoading(true);
       
-      const langMeta = supportedLanguages.find(l => l.code === lang);
-      if (!langMeta) return;
+      // Change app language
+      await changeAppLanguage(languageCode);
       
-      // Apply language change
-      await changeAppLanguage(lang);
-      setCurrentLanguage(lang);
+      // Update local state
+      setCurrentLanguage(languageCode);
       
-      // Update URL with new language
-      const pathSegments = location.pathname.split('/').filter(Boolean);
-      const currentLang = pathSegments[0];
-      
-      if (languageCodes.includes(currentLang)) {
-        // Replace existing language
-        pathSegments[0] = lang;
-      } else {
-        // Add language prefix
-        pathSegments.unshift(lang);
-      }
-      
-      const newPath = '/' + pathSegments.join('/');
-      navigate(newPath, { replace: true });
-      
-      // Store in user profile if logged in
-      if (user?.id && storeInProfile) {
-        try {
-          await supabase
-            .from('profiles')
-            .update({ language: lang })
-            .eq('user_id', user.id);
-        } catch (error) {
-          console.error('Failed to update user language preference:', error);
+      // Update user profile if authenticated
+      if (user) {
+        console.log('[LANGUAGE-MCP] Updating user language preference in database');
+        const { error } = await supabase
+          .from('profiles')
+          .update({ language: languageCode })
+          .eq('user_id', user.id);
+          
+        if (error) {
+          console.error('[LANGUAGE-MCP] Failed to update user language preference:', error);
         }
       }
-
+      
+      console.log('[LANGUAGE-MCP] Language change completed successfully');
     } catch (error) {
-      console.error('Error changing language:', error);
+      console.error('[LANGUAGE-MCP] Language change failed:', error);
     } finally {
       setLanguageLoading(false);
     }
-  }, [currentLanguage, user?.id, location.pathname, navigate]);
+  }, [user]);
 
-  // URL helpers
-  const getLocalizedUrl = useCallback((path: string, lang?: string) => {
-    const targetLang = lang || currentLanguage;
-    // Remove leading slash and add language prefix
+  // URL localization with enhanced debugging
+  const getLocalizedUrl = useCallback((path: string): string => {
+    console.log('[LANGUAGE-MCP] getLocalizedUrl called with path:', path);
+    console.log('[LANGUAGE-MCP] Current language:', currentLanguage);
+    
+    // Remove leading slash for consistency
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    return cleanPath ? `/${targetLang}/${cleanPath}` : `/${targetLang}`;
+    const localizedUrl = `/${currentLanguage}${cleanPath ? `/${cleanPath}` : ''}`;
+    
+    console.log('[LANGUAGE-MCP] Generated URL:', localizedUrl);
+    return localizedUrl;
   }, [currentLanguage]);
 
   // Memoized context value
@@ -118,27 +112,34 @@ export const LanguageMCP: React.FC<LanguageMCPProps> = ({
     setLanguageByCode,
     getLocalizedUrl,
     languageLoading,
-    supportedLanguages,
-    isRtl,
-  }), [
-    currentLanguage,
-    setLanguageByCode,
-    getLocalizedUrl,
-    languageLoading,
-    isRtl,
-  ]);
+    supportedLanguages: SUPPORTED_LANGUAGES,
+    isRtl: RTL_LANGUAGES.includes(currentLanguage)
+  }), [currentLanguage, setLanguageByCode, getLocalizedUrl, languageLoading]);
+
+  console.log('[LANGUAGE-MCP] Context value:', {
+    currentLanguage: contextValue.currentLanguage,
+    languageLoading: contextValue.languageLoading,
+    isRtl: contextValue.isRtl
+  });
 
   return (
-    <LanguageMCPContext.Provider value={contextValue}>
-      {children}
-    </LanguageMCPContext.Provider>
+    <MCPErrorBoundary>
+      <LanguageMCPContext.Provider value={contextValue}>
+        {children}
+      </LanguageMCPContext.Provider>
+    </MCPErrorBoundary>
   );
 };
 
-export const useLanguageMCP = () => {
+// Custom hook to use Language MCP
+export const useLanguageMCP = (): LanguageMCPContextType => {
   const context = useContext(LanguageMCPContext);
+  
   if (context === undefined) {
     throw new Error('useLanguageMCP must be used within a LanguageMCP');
   }
+  
   return context;
 };
+
+export default LanguageMCP;

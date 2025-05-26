@@ -1,108 +1,94 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
+import SystemCheck from "@/components/debug/SystemCheck";
 
 const Hero = () => {
-  const [videoError, setVideoError] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
   const { t, i18n, ready } = useTranslation('landing');
   const { getLocalizedUrl } = useLanguageMCP();
-  
-  // Debug translations in development mode
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[HERO-DEBUG] Landing namespace loaded:', i18n.hasResourceBundle(i18n.language, 'landing'));
-      console.log('[HERO-DEBUG] Current language:', i18n.language);
-      console.log('[HERO-DEBUG] Translation ready:', ready);
-      console.log('[HERO-DEBUG] Hero title translation:', t('hero.title'));
-    }
-  }, [i18n.language, ready, t]);
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
   const isRTL = i18n.language === 'ar';
   
-  // Show loading indicator if translations aren't ready yet
+  console.log('[HERO-DEBUG] Landing namespace loaded:', ready);
+  console.log('[HERO-DEBUG] Current language:', i18n.language);
+  console.log('[HERO-DEBUG] Translation ready:', ready);
+  console.log('[HERO-DEBUG] Hero title translation:', t('hero.title'));
+  
   if (!ready) {
     return (
-      <div className="h-96 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-t-brand-orange border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-orange"></div>
       </div>
     );
   }
-
+  
   return (
-    <div className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/20 to-brand-blue/10 z-0"></div>
+    <>
+      {/* Debug Panel - nur in Development Mode sichtbar */}
+      {process.env.NODE_ENV === 'development' && <SystemCheck />}
       
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="grid md:grid-cols-2 gap-12 items-center"
-             dir={isRTL ? 'rtl' : 'ltr'}>
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight" 
-                dangerouslySetInnerHTML={{__html: t('hero.title')}} />
+      <section className="relative py-20 bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Hero Title */}
+            <h1 
+              className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"
+              dangerouslySetInnerHTML={{ 
+                __html: t('hero.title', 'Teile deine Fahrt, <span class="text-brand-orange">verbinde</span> Menschen') 
+              }}
+            />
             
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-lg">
-              {t('hero.description')}
+            {/* Hero Subtitle */}
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+              {t('hero.subtitle', 'Nachhaltiger Transport durch intelligente Vermittlung zwischen Fahrern und Sendern')}
             </p>
-
-            <div className="flex flex-col gap-4 pt-4">
-              {/* Zwei große Hauptbuttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" variant="outline" className="flex-1">
-                  <Link to={getLocalizedUrl("/about")}>{t('hero.cta_learn_more')}</Link>
-                </Button>
-                
-                <Button asChild size="lg" variant="brand" className="flex-1">
-                  <Link to={getLocalizedUrl("/pre-register")}>Sei dabei wenn wir starten</Link>
-                </Button>
-              </div>
+            
+            {/* CTA Buttons with enhanced debugging */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                asChild 
+                size="lg" 
+                className="bg-brand-orange hover:bg-brand-orange/90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                style={{ zIndex: 10, position: 'relative' }}
+                onClick={() => console.log('Hero CTA button clicked')}
+              >
+                <Link 
+                  to={getLocalizedUrl("/about")} 
+                  className="block w-full h-full"
+                  onClick={(e) => {
+                    console.log('Link clicked:', getLocalizedUrl("/about"));
+                    console.log('Event:', e);
+                  }}
+                >
+                  {t('hero.cta_learn_more', 'Mehr erfahren')}
+                </Link>
+              </Button>
+              
+              <Button 
+                asChild 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white px-8 py-3 text-lg font-semibold transition-all duration-200"
+                style={{ zIndex: 10, position: 'relative' }}
+                onClick={() => console.log('Pre-register button clicked')}
+              >
+                <Link 
+                  to={getLocalizedUrl("/pre-register")}
+                  className="block w-full h-full"
+                  onClick={(e) => {
+                    console.log('Pre-register link clicked:', getLocalizedUrl("/pre-register"));
+                    console.log('Event:', e);
+                  }}
+                >
+                  {t('hero.cta_preregister', 'Vorab registrieren')}
+                </Link>
+              </Button>
             </div>
           </div>
-
-          <div className="flex justify-center relative">
-            {!videoError ? (
-              <div className="relative inline-block">
-                <button
-                  onClick={toggleMute}
-                  className="absolute top-4 right-4 z-30 p-2.5 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors shadow-lg hover:scale-105 transform duration-200"
-                  aria-label={isMuted ? t('common:unmute', 'Unmute') : t('common:mute', 'Mute')}
-                >
-                  {isMuted ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-                </button>
-                <div className="rounded-lg overflow-hidden shadow-xl">
-                  <video 
-                    className="w-full max-w-md rounded-lg"
-                    autoPlay
-                    muted={isMuted}
-                    loop
-                    playsInline
-                    onError={() => setVideoError(true)}
-                  >
-                    <source 
-                      src="https://orgcruwmxqiwnjnkxpjb.supabase.co/storage/v1/object/public/explainvideo1/Whatsgonow-Whatsabout-Klein.mp4" 
-                      type="video/mp4" 
-                    />
-                  </video>
-                </div>
-              </div>
-            ) : (
-              <img 
-                src="/lovable-uploads/910fd168-e7e1-4688-bd5d-734fb140c7df.png" 
-                alt="Whatsgonow Platform" 
-                className="w-full max-w-md rounded-lg shadow-lg"
-              />
-            )}
-          </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   );
 };
 
