@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Settings, LogOut, MessageSquare, PlusCircle, Route, Package, BarChart3 } from "lucide-react";
+import { User, Settings, LogOut, MessageSquare, PlusCircle, Route, Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useTranslation } from "react-i18next";
@@ -43,21 +43,6 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
       <div className="flex items-center space-x-4">
         <ThemeLanguageControls />
         
-        {/* ESG Dashboard Button for all users */}
-        <Link to={getLocalizedUrl("/esg-dashboard")}>
-          <Button variant="ghost" size="sm">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            {t('nav.esg_dashboard')}
-          </Button>
-        </Link>
-        
-        {/* Pre-Registration Button */}
-        <Link to={getLocalizedUrl("/pre-register")}>
-          <Button variant="outline" size="sm">
-            {t('nav.pre_register')}
-          </Button>
-        </Link>
-        
         {/* Login Button */}
         <Link to={getLocalizedUrl("/login")}>
           <Button variant="ghost" size="sm">
@@ -87,14 +72,6 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessage
   return (
     <div className="flex items-center space-x-4">
       <ThemeLanguageControls />
-      
-      {/* ESG Dashboard - always visible */}
-      <Link to={getLocalizedUrl("/esg-dashboard")}>
-        <Button variant="ghost" size="sm">
-          <BarChart3 className="h-4 w-4 mr-2" />
-          {t('nav.esg_dashboard')}
-        </Button>
-      </Link>
       
       {/* Role-specific Action Buttons */}
       {userRole === 'driver' && (

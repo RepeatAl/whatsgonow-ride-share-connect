@@ -52,34 +52,15 @@ const Hero = () => {
               {t('hero.description')}
             </p>
 
-            <div className="flex flex-col items-center gap-6 pt-4">
-              {/* First Row - Primary Actions */}
-              <div className="flex flex-wrap justify-center gap-4 w-full">
-                <Button asChild size="lg" variant="brand" className="w-full max-w-xs">
-                  <Link to={getLocalizedUrl("/register")} className="px-0">{t('hero.cta_register')}</Link>
-                </Button>
-                
-                <Button asChild size="lg" variant="outline" className="w-full max-w-xs">
-                  <Link to={getLocalizedUrl("/login")}>{t('hero.cta_login')}</Link>
-                </Button>
-              </div>
-              
-              {/* Second Row - Secondary Actions */}
-              <div className="flex flex-wrap justify-center gap-2 w-full">
-                <Button asChild size="sm" variant="ghost">
+            <div className="flex flex-col gap-4 pt-4">
+              {/* Zwei große Hauptbuttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild size="lg" variant="outline" className="flex-1">
                   <Link to={getLocalizedUrl("/about")}>{t('hero.cta_learn_more')}</Link>
                 </Button>
                 
-                <Button asChild size="sm" variant="ghost">
-                  <Link to={getLocalizedUrl("/pre-register")}>{t('hero.cta_pre_register')}</Link>
-                </Button>
-                
-                <Button asChild size="sm" variant="ghost">
-                  <Link to={getLocalizedUrl("/faq")}>{t('hero.cta_faq')}</Link>
-                </Button>
-                
-                <Button asChild size="sm" variant="ghost" className="text-green-600 hover:text-green-700">
-                  <Link to={getLocalizedUrl("/esg-dashboard")}>{t('hero.cta_esg')}</Link>
+                <Button asChild size="lg" variant="brand" className="flex-1">
+                  <Link to={getLocalizedUrl("/pre-register")}>Sei dabei wenn wir starten</Link>
                 </Button>
               </div>
             </div>

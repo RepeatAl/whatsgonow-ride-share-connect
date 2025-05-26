@@ -18,7 +18,6 @@ import {
   Sun, 
   FileText, 
   PlusCircle,
-  BarChart3,
   UserPlus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,15 +47,6 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
       console.error('Error signing out:', error);
     }
   };
-
-  // Always visible links
-  const publicLinks = [
-    {
-      name: t('nav.esg_dashboard'),
-      path: "/esg-dashboard",
-      icon: <BarChart3 className="h-5 w-5 mr-2" />
-    }
-  ];
 
   const navLinks = user ? [{
     name: t('nav.find_transport'),
@@ -111,23 +101,10 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
             <LanguageSwitcher variant="compact" />
           </div>
 
-          {/* Public Links - Always Visible */}
-          {publicLinks.map(link => (
-            <Link key={link.path} to={getLocalizedUrl(link.path)} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-              {link.icon}
-              <span>{link.name}</span>
-            </Link>
-          ))}
-
           {!user ? (
             <>
               {/* Auth Buttons for Non-Logged Users */}
               <div className="border-t my-2"></div>
-              
-              <Link to={getLocalizedUrl("/pre-register")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-                <UserPlus className="h-5 w-5 mr-2" />
-                <span>{t('nav.pre_register')}</span>
-              </Link>
               
               <Link to={getLocalizedUrl("/login")} onClick={() => setIsMenuOpen(false)} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 <LogIn className="h-5 w-5 mr-2" />

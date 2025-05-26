@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 import React from "react";
 import { EnhancedLanguageSEO } from "@/components/seo/EnhancedLanguageSEO";
 import { useSEO } from "@/hooks/useSEO";
+import { BackButton } from "@/components/navigation/BackButton";
+import { HomeButton } from "@/components/navigation/HomeButton";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,6 +17,7 @@ interface LayoutProps {
   minimal?: boolean;
   disableSEO?: boolean;
   pageType?: string;
+  hideNavigation?: boolean;
 }
 
 const Layout = React.memo(({ 
@@ -22,7 +25,8 @@ const Layout = React.memo(({
   hideFooter = false, 
   minimal = false, 
   disableSEO = false,
-  pageType 
+  pageType,
+  hideNavigation = false
 }: LayoutProps) => {
   const { user } = useAuth();
   const { i18n } = useTranslation();
@@ -57,6 +61,15 @@ const Layout = React.memo(({
         >
           <div className={`container mx-auto ${minimal ? 'max-w-none px-0' : ''}`}>
             {user && <UserSuspensionNotice userId={user.id} />}
+            
+            {/* Navigation Buttons - nur anzeigen wenn nicht ausgeblendet */}
+            {!hideNavigation && (
+              <div className="flex items-center gap-2 p-4 border-b bg-gray-50 dark:bg-gray-900">
+                <BackButton />
+                <HomeButton />
+              </div>
+            )}
+            
             {children}
           </div>
         </main>
