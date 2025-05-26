@@ -8,15 +8,16 @@ import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 export const HomeButton = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { currentLanguage } = useLanguageMCP();
 
   const handleGoHome = () => {
     try {
-      navigate(getLocalizedUrl('/'), { replace: true });
+      console.log("[HomeButton] Navigating to home:", `/${currentLanguage}`);
+      navigate(`/${currentLanguage}`, { replace: true });
     } catch (error) {
       console.error("Navigation error:", error);
       // Fallback to root
-      window.location.href = '/de';
+      window.location.href = `/${currentLanguage}`;
     }
   };
 

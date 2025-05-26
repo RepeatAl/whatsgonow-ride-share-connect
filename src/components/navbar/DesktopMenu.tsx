@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -26,19 +25,24 @@ interface DesktopMenuProps {
 const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, userRole, unreadMessagesCount }) => {
   const { signOut } = useSimpleAuth();
   const navigate = useNavigate();
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
   const { t } = useTranslation(['landing', 'common']);
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate(getLocalizedUrl("/"));
+      console.log("[DesktopMenu] Signed out, navigating to home:", `/${currentLanguage}`);
+      navigate(`/${currentLanguage}`, { replace: true });
     } catch (error) {
       console.error("Error signing out:", error);
     }
   };
 
   if (!user) {
+    console.log("[DesktopMenu] No user, showing auth buttons");
+    console.log("[DesktopMenu] Login URL:", getLocalizedUrl("/login"));
+    console.log("[DesktopMenu] Register URL:", getLocalizedUrl("/register"));
+    
     return (
       <div className="flex items-center space-x-4">
         <ThemeLanguageControls />

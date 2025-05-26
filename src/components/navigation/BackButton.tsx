@@ -12,18 +12,23 @@ export const BackButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { currentLanguage } = useLanguageMCP();
   
   // Don't render on excluded paths (landing pages)
   if (excludedPaths.includes(location.pathname)) {
+    console.log("[BackButton] Not rendering on landing page:", location.pathname);
     return null;
   }
 
   const handleGoBack = () => {
     try {
+      console.log("[BackButton] Going back from:", location.pathname);
+      
       // Check if we're on profile page and redirect to dashboard instead
       if (location.pathname.includes('/profile')) {
-        navigate(getLocalizedUrl('/dashboard'), { replace: true });
+        const dashboardPath = `/${currentLanguage}/dashboard`;
+        console.log("[BackButton] On profile, redirecting to dashboard:", dashboardPath);
+        navigate(dashboardPath, { replace: true });
         return;
       }
 
@@ -32,19 +37,22 @@ export const BackButton = () => {
         // Check if we can safely go back
         const referrer = document.referrer;
         if (referrer && referrer.includes(window.location.origin)) {
+          console.log("[BackButton] Going back in history");
           navigate(-1);
         } else {
           // If no valid referrer, go to dashboard
-          navigate(getLocalizedUrl('/dashboard'), { replace: true });
+          console.log("[BackButton] No valid referrer, going to dashboard");
+          navigate(`/${currentLanguage}/dashboard`, { replace: true });
         }
       } else {
         // If there's no history or only one item, go to dashboard
-        navigate(getLocalizedUrl('/dashboard'), { replace: true });
+        console.log("[BackButton] No history, going to dashboard");
+        navigate(`/${currentLanguage}/dashboard`, { replace: true });
       }
     } catch (error) {
       console.error("Navigation error:", error);
       // Fallback to dashboard on any error
-      navigate(getLocalizedUrl('/dashboard'), { replace: true });
+      navigate(`/${currentLanguage}/dashboard`, { replace: true });
     }
   };
 

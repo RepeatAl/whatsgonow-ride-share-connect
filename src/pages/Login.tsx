@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import AuthErrorHandler from "@/components/auth/AuthErrorHandler";
 
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
   const { signIn, loading } = useSimpleAuth();
   const navigate = useNavigate();
   
@@ -79,7 +78,8 @@ const Login = () => {
   };
 
   const handleBackToHome = () => {
-    navigate(getLocalizedUrl("/"));
+    console.log("[Login] Navigating back to home:", `/${currentLanguage}`);
+    navigate(`/${currentLanguage}`, { replace: true });
   };
 
   if (showConnectionError || isOffline) {

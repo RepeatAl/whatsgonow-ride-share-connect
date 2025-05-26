@@ -9,7 +9,12 @@ import { Button } from "@/components/ui/button";
 
 const Register = () => {
   const { t } = useTranslation(["auth", "common"]);
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
+
+  console.log("[Register] Current language:", currentLanguage);
+  console.log("[Register] Register URL:", getLocalizedUrl("/register"));
+  console.log("[Register] Login URL:", getLocalizedUrl("/login"));
+  console.log("[Register] Home URL:", `/${currentLanguage}`);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -30,7 +35,7 @@ const Register = () => {
                 </Button>
               </Link>
               <div>
-                <Link to={getLocalizedUrl("/")}>
+                <Link to={`/${currentLanguage}`}>
                   <Button variant="outline">
                     {t("common:back_home", "Zurück zur Startseite")}
                   </Button>

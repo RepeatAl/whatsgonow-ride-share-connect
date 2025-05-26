@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -37,12 +36,14 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
   const { theme, toggleTheme } = useTheme();
   const { signOut } = useSimpleAuth();
   const { t } = useTranslation(['landing', 'common']);
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
   const isSender = userRole?.startsWith('sender_');
 
   const handleSignOut = async () => {
     try {
       await signOut();
+      setIsMenuOpen(false);
+      console.log("[MobileMenu] Signed out, navigation should happen automatically");
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -76,6 +77,10 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
     path: "/admin",
     icon: <Shield className="h-5 w-5 mr-2" />
   }] : [];
+
+  console.log("[MobileMenu] User state:", !!user);
+  console.log("[MobileMenu] Login URL:", getLocalizedUrl("/login"));
+  console.log("[MobileMenu] Register URL:", getLocalizedUrl("/register"));
 
   return (
     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
@@ -182,10 +187,7 @@ const MobileMenu = ({ user, userRole, unreadMessagesCount }: MobileMenuProps) =>
                 <span>{t('landing:nav.dashboard', 'Dashboard')}</span>
               </Link>
               
-              <button onClick={() => {
-                setIsMenuOpen(false);
-                handleSignOut();
-              }} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
+              <button onClick={handleSignOut} className="flex items-center py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left">
                 <LogOut className="h-5 w-5 mr-2" />
                 <span>{t('common:auth.logout', 'Abmelden')}</span>
               </button>
