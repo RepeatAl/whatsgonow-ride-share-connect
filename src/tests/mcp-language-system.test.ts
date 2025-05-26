@@ -1,6 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import React from 'react';
 import { LanguageMCP, useLanguageMCP } from '@/mcp/language/LanguageMCP';

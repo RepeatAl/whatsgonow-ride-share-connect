@@ -1,9 +1,10 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MCPOrchestrator } from '@/mcp/orchestrator/MCPOrchestrator';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import React from 'react';
+import { MCPOrchestrator } from '@/mcp/orchestrator/MCPOrchestrator';
 
 // Mock all dependencies
 vi.mock('@/contexts/AuthContext', () => ({
