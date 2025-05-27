@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNotifications } from './use-notifications';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 export const useNotificationRealtime = () => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const { fetchNotifications, unreadCount } = useNotifications();
   const [isSubscribed, setIsSubscribed] = useState(false);
   

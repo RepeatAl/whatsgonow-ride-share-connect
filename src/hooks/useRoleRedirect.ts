@@ -3,7 +3,7 @@
 // This file follows the conventions from /docs/conventions/roles_and_ids.md
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 
 /**
  * Hook to redirect users to their role-specific dashboard
@@ -11,10 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
  */
 export const useRoleRedirect = () => {
   const navigate = useNavigate();
-  const { profile, isInitialLoad } = useAuth();
+  const { profile, loading } = useSimpleAuth();
 
   useEffect(() => {
-    if (isInitialLoad) return;
+    if (loading) return;
 
     if (!profile) {
       navigate("/login");
@@ -39,5 +39,5 @@ export const useRoleRedirect = () => {
       default:
         navigate("/profile", { replace: true });
     }
-  }, [profile, isInitialLoad, navigate]);
+  }, [profile, loading, navigate]);
 };

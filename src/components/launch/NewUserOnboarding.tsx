@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getOnboardingSteps } from "@/components/onboarding/OnboardingContent";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 
 interface NewUserOnboardingProps {
   onComplete: () => void;
@@ -12,7 +12,7 @@ interface NewUserOnboardingProps {
 const NewUserOnboarding = ({ onComplete }: NewUserOnboardingProps) => {
   const [open, setOpen] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
   
   const steps = getOnboardingSteps(profile?.role);
 

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -18,7 +18,7 @@ const LogoutButton = ({
   showIcon = true,
   className = ""
 }: LogoutButtonProps) => {
-  const { signOut } = useAuth();
+  const { signOut } = useSimpleAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
@@ -27,7 +27,7 @@ const LogoutButton = ({
     try {
       setLoading(true);
       
-      // Verwende signOut von AuthContext
+      // Verwende signOut von SimpleAuth
       await signOut();
       
       toast({

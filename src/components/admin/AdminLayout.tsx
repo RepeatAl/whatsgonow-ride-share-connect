@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { Shield, LayoutDashboard, Users, MessageCircle, Home } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 
 // This component follows the conventions from /docs/conventions/roles_and_ids.md
 const adminNavItems = [
@@ -36,7 +36,7 @@ const adminNavItems = [
 
 const AdminLayout = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
 
   // Redirect non-admin users
   if (!profile || (profile.role !== 'admin' && profile.role !== 'super_admin')) {
