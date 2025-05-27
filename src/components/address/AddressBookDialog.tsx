@@ -10,8 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAddressBook } from '@/hooks/useAddressBook';
-import { AddressBookEntry } from '@/types/address';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { AddressBookEntry } from '@/hooks/useAddressBook';
+import { Loader2 } from 'lucide-react';
 
 interface AddressBookDialogProps {
   open: boolean;
@@ -26,28 +26,27 @@ export function AddressBookDialog({
   onSelect,
   type = 'delivery'
 }: AddressBookDialogProps) {
-  const { getAddressBook, isLoading } = useAddressBook();
-  const [addresses, setAddresses] = useState<AddressBookEntry[]>([]);
+  const { addresses, loading, fetchAddresses } = useAddressBook();
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
-  // Lade Adressen beim Öffnen des Dialogs
+  // Load addresses when dialog opens
   useEffect(() => {
     if (open) {
-      loadAddresses();
+      fetchAddresses();
     }
-  }, [open]);
+  }, [open, fetchAddresses]);
 
-  const loadAddresses = async () => {
-    const addressList = await getAddressBook(type);
-    setAddresses(addressList);
-    // Vorauswahl der Standard-Adresse, falls vorhanden
-    const defaultAddress = addressList.find(addr => addr.is_default);
-    if (defaultAddress) {
-      setSelectedAddressId(defaultAddress.id);
-    } else if (addressList.length > 0) {
-      setSelectedAddressId(addressList[0].id);
+  // Set default selection
+  useEffect(() => {
+    if (addresses.length > 0) {
+      const defaultAddress = addresses.find(addr => addr.is_default);
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.id);
+      } else {
+        setSelectedAddressId(addresses[0].id);
+      }
     }
-  };
+  }, [addresses]);
 
   const handleSelect = () => {
     const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
@@ -64,9 +63,9 @@ export function AddressBookDialog({
           <DialogTitle>Adresse aus Adressbuch wählen</DialogTitle>
         </DialogHeader>
         
-        {isLoading ? (
+        {loading ? (
           <div className="flex justify-center py-8">
-            <LoadingSpinner />
+            <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : addresses.length === 0 ? (
           <div className="text-center py-6">

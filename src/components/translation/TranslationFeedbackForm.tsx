@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,19 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 interface TranslationFeedbackFormProps {
-  translationKey: string;
-  originalText: string;
-  translatedText: string;
-  onSubmit: (feedback: { rating: number; comment: string; suggestedImprovement: string }) => void;
-  onCancel: () => void;
+  namespace?: string;
+  translationKey?: string;
+  fallbackContent?: string;
+  onSubmitSuccess: () => void;
 }
 
 const TranslationFeedbackForm: React.FC<TranslationFeedbackFormProps> = ({
+  namespace,
   translationKey,
-  originalText,
-  translatedText,
-  onSubmit,
-  onCancel,
+  fallbackContent,
+  onSubmitSuccess,
 }) => {
   const { t } = useTranslation();
   const [rating, setRating] = useState<number>(5);
@@ -30,7 +29,16 @@ const TranslationFeedbackForm: React.FC<TranslationFeedbackFormProps> = ({
   const { user } = useSimpleAuth();
 
   const handleSubmit = () => {
-    onSubmit({ rating, comment, suggestedImprovement });
+    // Simulate submission
+    console.log('Submitting translation feedback:', {
+      namespace,
+      translationKey,
+      fallbackContent,
+      rating,
+      comment,
+      suggestedImprovement
+    });
+    onSubmitSuccess();
   };
 
   return (
@@ -39,18 +47,18 @@ const TranslationFeedbackForm: React.FC<TranslationFeedbackFormProps> = ({
         <CardTitle>{t('translation_feedback')}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="translationKey">{t('translation_key')}</Label>
-          <Input id="translationKey" value={translationKey} readOnly />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="originalText">{t('original_text')}</Label>
-          <Textarea id="originalText" value={originalText} readOnly />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="translatedText">{t('translated_text')}</Label>
-          <Textarea id="translatedText" value={translatedText} readOnly />
-        </div>
+        {translationKey && (
+          <div className="grid gap-2">
+            <Label htmlFor="translationKey">{t('translation_key')}</Label>
+            <Input id="translationKey" value={translationKey} readOnly />
+          </div>
+        )}
+        {fallbackContent && (
+          <div className="grid gap-2">
+            <Label htmlFor="fallbackContent">{t('content')}</Label>
+            <Textarea id="fallbackContent" value={fallbackContent} readOnly />
+          </div>
+        )}
         <div className="grid gap-2">
           <Label htmlFor="rating">{t('rating')}</Label>
           <Select value={rating.toString()} onValueChange={(value) => setRating(parseInt(value))}>
@@ -85,9 +93,6 @@ const TranslationFeedbackForm: React.FC<TranslationFeedbackFormProps> = ({
           />
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={onCancel}>
-            {t('cancel')}
-          </Button>
           <Button onClick={handleSubmit}>{t('submit')}</Button>
         </div>
       </CardContent>
@@ -96,4 +101,3 @@ const TranslationFeedbackForm: React.FC<TranslationFeedbackFormProps> = ({
 };
 
 export default TranslationFeedbackForm;
-

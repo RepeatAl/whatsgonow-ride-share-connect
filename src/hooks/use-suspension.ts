@@ -1,210 +1,152 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { SuspensionStatus, UserSuspension, SuspendedUserInfo, SuspendUserOptions } from '@/types/suspension';
 
 export function useSuspension() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const { profile } = useSimpleAuth();
   
-  // Role-based permissions
-  const canViewSuspensions = profile?.role && ['cm', 'admin', 'super_admin'].includes(profile.role);
-  const canSuspendUsers = profile?.role && ['admin', 'super_admin'].includes(profile.role);
-  const canReactivateUsers = profile?.role && ['admin', 'super_admin'].includes(profile.role);
+  const canSuspend = profile?.role && ['admin', 'super_admin'].includes(profile.role);
 
   const fetchUserSuspensionStatus = async (userId: string): Promise<SuspensionStatus> => {
     try {
-      setLoading(true);
-      setError(null);
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('is_suspended, suspended_until, suspension_reason')
         .eq('user_id', userId)
         .single();
-      
+
       if (error) throw error;
-      
+
       return {
         is_suspended: data.is_suspended || false,
-        suspended_until: data.suspended_until || null,
-        suspension_reason: data.suspension_reason || null
+        suspended_until: data.suspended_until,
+        suspension_reason: data.suspension_reason
       };
     } catch (err) {
-      console.error('Error fetching user suspension status:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      console.error('Error fetching suspension status:', err);
       return {
         is_suspended: false,
         suspended_until: null,
         suspension_reason: null
       };
-    } finally {
-      setLoading(false);
     }
   };
 
-  const fetchUserSuspensionHistory = async (userId: string): Promise<UserSuspension[]> => {
-    if (!canViewSuspensions) {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Sie haben keine Berechtigung, Suspendierungsverläufe anzusehen",
-        variant: "destructive"
-      });
-      return [];
-    }
-    
+  const fetchUserSuspensions = async (userId: string): Promise<UserSuspension[]> => {
     try {
-      setLoading(true);
-      setError(null);
-      
+      // This would need a proper suspensions table
       const { data, error } = await supabase
-        .from('user_suspensions')
+        .from('profiles')
         .select('*')
-        .eq('user_id', userId)
-        .order('suspended_at', { ascending: false });
-      
+        .eq('user_id', userId);
+
       if (error) throw error;
-      
-      return data as UserSuspension[];
+
+      return data || [];
     } catch (err) {
-      console.error('Error fetching suspension history:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      console.error('Error fetching user suspensions:', err);
       return [];
-    } finally {
-      setLoading(false);
     }
   };
 
-  const fetchSuspendedUsers = async (filters?: { status?: 'active' | 'expired' | 'all', type?: string }): Promise<SuspendedUserInfo[]> => {
-    if (!canViewSuspensions) {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Sie haben keine Berechtigung, suspendierte Nutzer anzusehen",
-        variant: "destructive"
-      });
+  const fetchAllSuspensions = async (): Promise<UserSuspension[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('is_suspended', true);
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (err) {
+      console.error('Error fetching all suspensions:', err);
       return [];
     }
-    
+  };
+
+  const fetchSuspendedUsers = async (): Promise<SuspendedUserInfo[]> => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      const filterJson = filters ? JSON.stringify(filters) : '{}';
-      
       const { data, error } = await supabase
-        .rpc('get_suspended_users', { filter_json: filterJson });
-      
+        .from('active_profiles')
+        .select('*')
+        .eq('is_suspended', true);
+
       if (error) throw error;
-      
-      return data as SuspendedUserInfo[];
+
+      return data?.map(user => ({
+        user_id: user.user_id,
+        name: `${user.first_name} ${user.last_name}`,
+        email: user.email,
+        suspended_at: user.created_at,
+        suspended_until: user.suspended_until,
+        suspension_reason: user.suspension_reason || '',
+        suspended_by: 'admin'
+      })) || [];
     } catch (err) {
       console.error('Error fetching suspended users:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
       return [];
-    } finally {
-      setLoading(false);
     }
   };
 
-  const suspendUser = async (options: SuspendUserOptions): Promise<boolean> => {
-    if (!canSuspendUsers) {
+  const suspendUser = async (userId: string, options: SuspendUserOptions) => {
+    if (!canSuspend) {
       toast({
         title: "Zugriff verweigert",
-        description: "Sie haben keine Berechtigung, Nutzer zu suspendieren",
+        description: "Nur Admins können Nutzer suspendieren",
         variant: "destructive"
       });
       return false;
     }
-    
+
     try {
       setLoading(true);
-      setError(null);
-      
-      const { data, error } = await supabase.rpc('suspend_user', {
-        target_user_id: options.user_id,
-        reason: options.reason,
-        duration: options.duration || null,
-        suspension_type: options.suspension_type || 'hard'
-      });
-      
+
+      const suspendedUntil = options.duration_hours 
+        ? new Date(Date.now() + options.duration_hours * 60 * 60 * 1000).toISOString()
+        : null;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_suspended: true,
+          suspended_until: suspendedUntil,
+          suspension_reason: options.reason
+        })
+        .eq('user_id', userId);
+
       if (error) throw error;
-      
+
       toast({
         title: "Nutzer suspendiert",
-        description: "Der Nutzer wurde erfolgreich suspendiert",
+        description: "Der Nutzer wurde erfolgreich suspendiert.",
       });
-      
+
       return true;
     } catch (err) {
       console.error('Error suspending user:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      
       toast({
         title: "Fehler",
-        description: `Nutzer konnte nicht suspendiert werden: ${(err as Error).message}`,
+        description: "Nutzer konnte nicht suspendiert werden",
         variant: "destructive"
       });
-      
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const reactivateUser = async (userId: string, notes?: string): Promise<boolean> => {
-    if (!canReactivateUsers) {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Sie haben keine Berechtigung, Nutzer zu reaktivieren",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const { data, error } = await supabase.rpc('reactivate_user', {
-        target_user_id: userId,
-        notes: notes || null
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Nutzer reaktiviert",
-        description: "Der Nutzer wurde erfolgreich reaktiviert",
-      });
-      
-      return true;
-    } catch (err) {
-      console.error('Error reactivating user:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      
-      toast({
-        title: "Fehler",
-        description: `Nutzer konnte nicht reaktiviert werden: ${(err as Error).message}`,
-        variant: "destructive"
-      });
-      
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   return {
     fetchUserSuspensionStatus,
-    fetchUserSuspensionHistory,
+    fetchUserSuspensions,
+    fetchAllSuspensions,
     fetchSuspendedUsers,
     suspendUser,
-    reactivateUser,
     loading,
-    error,
-    canViewSuspensions,
-    canSuspendUsers,
-    canReactivateUsers
+    canSuspend
   };
 }

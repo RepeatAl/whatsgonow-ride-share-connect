@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { ProfileForm } from "@/components/profile/ProfileForm";
-import { DriverApplication } from "@/components/profile/DriverApplication";
+import DriverApplication from "@/components/profile/DriverApplication";
 import { useProfileManager } from "@/hooks/use-profile-manager";
 import type { UserProfile } from "@/types/auth";
 

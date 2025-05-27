@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { LanguageMCP } from '../language/LanguageMCP';
+import { LanguageMCPProvider } from '../language/LanguageMCP';
 import MCPErrorBoundary from '../components/MCPErrorBoundary';
 
 interface MCPOrchestratorProps {
   children: React.ReactNode;
-  initialLanguage: string;
   enabledMCPs?: string[];
 }
 
@@ -16,11 +15,9 @@ interface MCPOrchestratorProps {
  */
 export const MCPOrchestrator: React.FC<MCPOrchestratorProps> = ({ 
   children, 
-  initialLanguage,
   enabledMCPs = ['language'] // Only language MCP for now
 }) => {
   console.log('[MCP-ORCHESTRATOR] Enabled MCPs:', enabledMCPs);
-  console.log('[MCP-ORCHESTRATOR] Initial language:', initialLanguage);
 
   let content = children;
 
@@ -31,7 +28,7 @@ export const MCPOrchestrator: React.FC<MCPOrchestratorProps> = ({
       <MCPErrorBoundary onError={(error) => {
         console.error('[MCP-ORCHESTRATOR] LanguageMCP Error:', error);
       }}>
-        <LanguageMCP initialLanguage={initialLanguage}>{content}</LanguageMCP>
+        <LanguageMCPProvider>{content}</LanguageMCPProvider>
       </MCPErrorBoundary>
     );
   }

@@ -1,46 +1,32 @@
 
-import { UserProfile } from "@/types/auth";
-
-export type SuspensionType = 'hard' | 'temporary' | 'soft' | 'permanent';
-
-export interface UserSuspension {
-  id: string;
-  user_id: string;
-  suspended_at: string;
-  suspended_by: string;
-  reason: string;
-  duration: string | null; // PostgreSQL interval as string
-  suspension_type: SuspensionType;
-  unblocked_at: string | null;
-  unblocked_by: string | null;
-  notes: string | null;
-  metadata?: Record<string, any>;
-}
-
-export interface SuspendedUserInfo {
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  suspended_at: string;
-  suspended_by: string;
-  suspended_by_name: string;
-  reason: string;
-  suspension_type: SuspensionType;
-  suspended_until: string | null;
-  is_active: boolean;
-  is_currently_suspended?: boolean; // Add this optional property
-}
-
-export interface SuspendUserOptions {
-  user_id: string;
-  reason: string;
-  duration?: string | null; // PostgreSQL interval as string
-  suspension_type?: SuspensionType;
-}
-
 export interface SuspensionStatus {
   is_suspended: boolean;
   suspended_until: string | null;
   suspension_reason: string | null;
+}
+
+export interface UserSuspension {
+  id: string;
+  user_id: string;
+  suspended_by: string;
+  suspension_reason: string;
+  suspended_at: string;
+  suspended_until: string | null;
+  is_active: boolean;
+}
+
+export interface SuspendedUserInfo {
+  user_id: string;
+  name: string;
+  email: string;
+  suspended_at: string;
+  suspended_until: string | null;
+  suspension_reason: string;
+  suspended_by: string;
+}
+
+export interface SuspendUserOptions {
+  duration_hours?: number;
+  reason: string;
+  notify_user?: boolean;
 }

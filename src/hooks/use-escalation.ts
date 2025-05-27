@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { EscalationStatus, Escalation, EscalationFilter } from '@/types/escalation';
+
+export type { EscalationStatus };
 
 export function useEscalation() {
   const [loading, setLoading] = useState(false);
@@ -88,11 +91,106 @@ export function useEscalation() {
       setLoading(false);
     }
   };
+
+  const fetchUserEscalationStatus = async (userId: string): Promise<EscalationStatus> => {
+    try {
+      const { data, error } = await supabase
+        .from('escalation_log')
+        .select('*')
+        .eq('user_id', userId)
+        .is('resolved_at', null)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching escalation status:', error);
+      }
+
+      const status: EscalationStatus = {
+        hasActiveEscalation: !!data,
+        isPreSuspended: data?.escalation_type === 'pre_suspend',
+        preSuspendReason: data?.trigger_reason || null,
+        preSuspendAt: data?.triggered_at || null
+      };
+
+      return status;
+    } catch (err) {
+      console.error('Error fetching escalation status:', err);
+      return {
+        hasActiveEscalation: false,
+        isPreSuspended: false,
+        preSuspendReason: null,
+        preSuspendAt: null
+      };
+    }
+  };
+
+  const evaluateUser = async (userId: string) => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase.rpc('evaluate_user_for_escalation', {
+        target_user_id: userId
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Nutzer evaluiert",
+        description: "Die automatische Prüfung wurde durchgeführt.",
+      });
+      
+      return data;
+    } catch (err) {
+      console.error('Error evaluating user:', err);
+      toast({
+        title: "Fehler",
+        description: "Fehler bei der Nutzer-Evaluation",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEscalations = async (filter?: EscalationFilter): Promise<Escalation[]> => {
+    try {
+      let query = supabase
+        .from('escalation_log')
+        .select('*')
+        .order('triggered_at', { ascending: false });
+
+      if (filter?.status === 'pending') {
+        query = query.is('resolved_at', null);
+      } else if (filter?.status === 'resolved') {
+        query = query.not('resolved_at', 'is', null);
+      }
+
+      if (filter?.escalation_type) {
+        query = query.eq('escalation_type', filter.escalation_type);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (err) {
+      console.error('Error fetching escalations:', err);
+      return [];
+    }
+  };
+
+  const canResolve = canPreSuspend;
   
   return {
     preSuspendUser,
     resolveEscalation,
+    fetchUserEscalationStatus,
+    evaluateUser,
+    fetchEscalations,
     loading,
-    canPreSuspend
+    canPreSuspend,
+    canResolve
   };
 }
