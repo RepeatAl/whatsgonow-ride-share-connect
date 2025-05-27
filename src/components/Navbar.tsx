@@ -16,11 +16,6 @@ const Navbar = React.memo(() => {
   const { getLocalizedUrl } = useLanguageMCP();
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
-  // Memoize user role to prevent unnecessary re-renders
-  const userRole = useMemo(() => {
-    return profile?.role || null;
-  }, [profile?.role]);
-
   // Memoize user existence check
   const isAuthenticated = useMemo(() => {
     return !!user && !loading;
@@ -60,19 +55,11 @@ const Navbar = React.memo(() => {
           ) : (
             <>
               <div className="hidden md:flex">
-                <DesktopMenu 
-                  user={user} 
-                  userRole={userRole} 
-                  unreadMessagesCount={unreadMessagesCount} 
-                />
+                <DesktopMenu unreadMessagesCount={unreadMessagesCount} />
               </div>
               
               <div className="md:hidden">
-                <MobileMenu 
-                  user={user}
-                  userRole={userRole}
-                  unreadMessagesCount={unreadMessagesCount}
-                />
+                <MobileMenu unreadMessagesCount={unreadMessagesCount} />
               </div>
             </>
           )}
