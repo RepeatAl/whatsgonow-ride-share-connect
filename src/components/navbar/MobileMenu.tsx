@@ -19,7 +19,7 @@ import {
   FileText, 
   PlusCircle
 } from "lucide-react";
-import { useStabilizedAuthContext } from "@/contexts/StabilizedAuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,7 @@ interface MobileMenuProps {
 const MobileMenu = memo(({ unreadMessagesCount = 0 }: MobileMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { user, profile, signOut } = useStabilizedAuthContext();
+  const { user, profile, signOut } = useSimpleAuth();
   const { t } = useTranslation(['landing', 'common']);
   const { getLocalizedUrl } = useLanguageMCP();
   

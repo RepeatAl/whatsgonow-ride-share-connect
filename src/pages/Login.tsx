@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
-import { useStabilizedAuthContext } from "@/contexts/StabilizedAuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -15,7 +15,7 @@ import AuthErrorHandler from "@/components/auth/AuthErrorHandler";
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
-  const { signIn, isLoading } = useStabilizedAuthContext();
+  const { signIn, loading: isLoading } = useSimpleAuth();
   const navigate = useNavigate();
   
   const [email, setEmail] = useState("");
