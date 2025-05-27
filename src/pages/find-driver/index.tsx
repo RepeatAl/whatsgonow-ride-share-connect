@@ -97,7 +97,6 @@ const FindDriverPage = () => {
           open={isAddressBookOpen}
           onClose={() => setIsAddressBookOpen(false)}
           onSelectAddress={handleSelectAddress}
-          addressType={addressType}
         />
       </div>
     </Layout>
