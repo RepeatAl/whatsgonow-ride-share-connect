@@ -1,6 +1,6 @@
 
 import React, { ReactNode } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useLocation, Navigate } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
@@ -9,11 +9,11 @@ interface PublicRouteProps {
 }
 
 /**
- * PublicRoute - Phase 1 MCP Integration
- * Uses unified LanguageMCP instead of multiple language providers
+ * PublicRoute - Updated for SimpleAuth integration
+ * Uses unified SimpleAuth instead of legacy auth providers
  */
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { loading, user } = useAuth();
+  const { loading, user } = useSimpleAuth();
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   
