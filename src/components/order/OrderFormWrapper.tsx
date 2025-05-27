@@ -11,21 +11,12 @@ import { useTranslation } from 'react-i18next';
 import CreateOrderForm from './CreateOrderForm';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { OrderSchema, OrderSchemaType } from '@/lib/validators/order';
+import { createOrderSchema, CreateOrderFormValues } from '@/lib/validators/order';
 
 interface OrderFormWrapperProps {
   isEditMode?: boolean;
   orderId?: string;
 }
-
-interface CreateOrderFormProps {
-  form: any;
-  onSubmit: (values: OrderSchemaType) => Promise<void>;
-}
-
-const CreateOrderFormWithProps: React.FC<CreateOrderFormProps> = ({ form, onSubmit }) => {
-  return <CreateOrderForm form={form} onSubmit={onSubmit} />;
-};
 
 const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ isEditMode = false, orderId }) => {
   const navigate = useNavigate();
@@ -33,15 +24,47 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ isEditMode = false,
   const { t } = useTranslation();
   const { user } = useSimpleAuth();
 
-  const form = useForm<OrderSchemaType>({
-    resolver: zodResolver(OrderSchema),
+  const form = useForm<CreateOrderFormValues>({
+    resolver: zodResolver(createOrderSchema),
     defaultValues: {
-      pickupAddress: '',
-      deliveryAddress: '',
-      pickupDate: new Date(),
-      itemDetails: [{ name: '', quantity: 1, weight: 1, dimensions: { length: 1, width: 1, height: 1 } }],
-      transportRequirements: [],
-      additionalNotes: '',
+      title: "",
+      description: "",
+      pickupStreet: "",
+      pickupHouseNumber: "",
+      pickupPostalCode: "",
+      pickupCity: "",
+      pickupCountry: "Deutschland",
+      pickupAddressExtra: "",
+      pickupPhone: "",
+      pickupEmail: "",
+      deliveryStreet: "",
+      deliveryHouseNumber: "",
+      deliveryPostalCode: "",
+      deliveryCity: "",
+      deliveryCountry: "Deutschland",
+      deliveryAddressExtra: "",
+      deliveryPhone: "",
+      deliveryEmail: "",
+      itemName: "",
+      category: "",
+      width: undefined,
+      height: undefined,
+      depth: undefined,
+      weight: undefined,
+      value: undefined,
+      insurance: false,
+      fragile: false,
+      loadAssistance: false,
+      toolsRequired: "",
+      securityMeasures: "",
+      price: undefined,
+      negotiable: false,
+      preferredVehicleType: "",
+      pickupTimeStart: undefined,
+      pickupTimeEnd: undefined,
+      deliveryTimeStart: undefined,
+      deliveryTimeEnd: undefined,
+      deadline: undefined,
     },
   });
 
@@ -73,7 +96,7 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ isEditMode = false,
     }
   };
 
-  const handleSubmitOrder = async (values: OrderSchemaType) => {
+  const handleSubmitOrder = async (values: CreateOrderFormValues) => {
     setIsSaving(true);
     try {
       // Simulate submit logic
@@ -108,7 +131,7 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ isEditMode = false,
                 {t('back')}
               </Button>
             </div>
-            <CreateOrderFormWithProps form={form} onSubmit={handleSubmitOrder} />
+            <CreateOrderForm form={form} onSubmit={handleSubmitOrder} />
             <div className="flex justify-between mt-6">
               <Button variant="secondary" onClick={handleSaveDraft} disabled={isSaving}>
                 <Save className="mr-2 h-4 w-4" />

@@ -19,10 +19,11 @@ const FeedbackAnalyticsPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
-    data: analyticsData,
+    feedbackVolume,
+    ratingTrends,
+    featureRequests,
     isLoading,
-    isError,
-    refetch
+    refreshData
   } = useFeedbackAnalyticsDashboard({
     timeRange,
     refreshInterval: 30000, // 30 seconds
@@ -30,7 +31,7 @@ const FeedbackAnalyticsPage = () => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await refetch();
+    await refreshData();
     setIsRefreshing(false);
   };
 
@@ -48,21 +49,6 @@ const FeedbackAnalyticsPage = () => {
               <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
               <p>{t('loading')}</p>
             </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{t('error_loading_data')}</p>
-            <Button onClick={handleRefresh}>
-              {t('try_again')}
-            </Button>
           </div>
         </div>
       </Layout>
@@ -130,23 +116,23 @@ const FeedbackAnalyticsPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {analyticsData?.feedbackVolume ? (
+            {feedbackVolume ? (
               <div className="h-64 flex items-center justify-center">
                 {/* Chart implementation would go here */}
                 <div className="text-center text-gray-500">
                   <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>{t('chart_implementation_pending')}</p>
                   <p className="text-sm mt-2">
-                    {t('total_feedback')}: {analyticsData.feedbackVolume.total}
+                    {t('total_feedback')}: {feedbackVolume.total}
                   </p>
                   <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
                     <div>
                       <p className="font-medium">{t('positive')}</p>
-                      <p className="text-green-600">{analyticsData.feedbackVolume.positive}</p>
+                      <p className="text-green-600">{feedbackVolume.positive}</p>
                     </div>
                     <div>
                       <p className="font-medium">{t('negative')}</p>
-                      <p className="text-red-600">{analyticsData.feedbackVolume.negative}</p>
+                      <p className="text-red-600">{feedbackVolume.negative}</p>
                     </div>
                   </div>
                 </div>
@@ -168,7 +154,7 @@ const FeedbackAnalyticsPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {analyticsData?.ratingTrends ? (
+            {ratingTrends ? (
               <div className="h-64 flex items-center justify-center">
                 {/* Chart implementation would go here */}
                 <div className="text-center text-gray-500">
@@ -178,19 +164,19 @@ const FeedbackAnalyticsPage = () => {
                     <div>
                       <p className="font-medium">{t('average_rating')}</p>
                       <p className="text-blue-600">
-                        {analyticsData.ratingTrends.averageRating?.toFixed(1) || 'N/A'}
+                        {ratingTrends.averageRating?.toFixed(1) || 'N/A'}
                       </p>
                     </div>
                     <div>
                       <p className="font-medium">{t('highest_rating')}</p>
                       <p className="text-green-600">
-                        {analyticsData.ratingTrends.highestRating || 'N/A'}
+                        {ratingTrends.highestRating || 'N/A'}
                       </p>
                     </div>
                     <div>
                       <p className="font-medium">{t('lowest_rating')}</p>
                       <p className="text-red-600">
-                        {analyticsData.ratingTrends.lowestRating || 'N/A'}
+                        {ratingTrends.lowestRating || 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -210,9 +196,9 @@ const FeedbackAnalyticsPage = () => {
             <CardTitle>{t('feature_requests_summary')}</CardTitle>
           </CardHeader>
           <CardContent>
-            {analyticsData?.featureRequests ? (
+            {featureRequests ? (
               <div className="space-y-4">
-                {analyticsData.featureRequests.map((request: any, index: number) => (
+                {featureRequests.map((request: any, index: number) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                       <p className="font-medium">{request.feature}</p>

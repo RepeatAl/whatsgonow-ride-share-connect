@@ -94,7 +94,7 @@ const FindDriverPage = () => {
         </Card>
 
         <AddressBookDialog
-          isOpen={isAddressBookOpen}
+          open={isAddressBookOpen}
           onClose={() => setIsAddressBookOpen(false)}
           onSelectAddress={handleSelectAddress}
           addressType={addressType}
