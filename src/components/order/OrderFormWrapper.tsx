@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,12 +11,21 @@ import { useTranslation } from 'react-i18next';
 import CreateOrderForm from './CreateOrderForm';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { OrderSchema, OrderSchemaType } from '@/validation/order';
+import { OrderSchema, OrderSchemaType } from '@/lib/validators/order';
 
 interface OrderFormWrapperProps {
   isEditMode?: boolean;
   orderId?: string;
 }
+
+interface CreateOrderFormProps {
+  form: any;
+  onSubmit: (values: OrderSchemaType) => Promise<void>;
+}
+
+const CreateOrderFormWithProps: React.FC<CreateOrderFormProps> = ({ form, onSubmit }) => {
+  return <CreateOrderForm form={form} onSubmit={onSubmit} />;
+};
 
 const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ isEditMode = false, orderId }) => {
   const navigate = useNavigate();
@@ -98,7 +108,7 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ isEditMode = false,
                 {t('back')}
               </Button>
             </div>
-            <CreateOrderForm form={form} onSubmit={handleSubmitOrder} />
+            <CreateOrderFormWithProps form={form} onSubmit={handleSubmitOrder} />
             <div className="flex justify-between mt-6">
               <Button variant="secondary" onClick={handleSaveDraft} disabled={isSaving}>
                 <Save className="mr-2 h-4 w-4" />

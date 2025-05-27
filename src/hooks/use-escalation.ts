@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { EscalationStatus, Escalation, EscalationFilter } from '@/types/escalation';
 
-export type { EscalationStatus };
+export type { EscalationStatus, Escalation, EscalationFilter };
 
 export function useEscalation() {
   const [loading, setLoading] = useState(false);
@@ -160,21 +160,24 @@ export function useEscalation() {
         .select('*')
         .order('triggered_at', { ascending: false });
 
-      if (filter?.status === 'pending') {
+      if (filter?.status === 'pending' || filter?.status === 'active') {
         query = query.is('resolved_at', null);
       } else if (filter?.status === 'resolved') {
         query = query.not('resolved_at', 'is', null);
       }
 
-      if (filter?.escalation_type) {
-        query = query.eq('escalation_type', filter.escalation_type);
+      if (filter?.escalation_type || filter?.type) {
+        query = query.eq('escalation_type', filter.escalation_type || filter.type);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
 
-      return data || [];
+      return data?.map(item => ({
+        ...item,
+        user_name: item.user_name || 'Unknown User'
+      })) || [];
     } catch (err) {
       console.error('Error fetching escalations:', err);
       return [];

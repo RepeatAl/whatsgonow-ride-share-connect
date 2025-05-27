@@ -5,28 +5,43 @@ export interface SuspensionStatus {
   suspension_reason: string | null;
 }
 
+export type SuspensionType = 'hard' | 'soft' | 'temporary';
+
 export interface UserSuspension {
   id: string;
   user_id: string;
   suspended_by: string;
   suspension_reason: string;
+  reason: string;
   suspended_at: string;
   suspended_until: string | null;
+  duration: string | null;
+  suspension_type: SuspensionType;
   is_active: boolean;
+  unblocked_at?: string | null;
+  notes?: string;
 }
 
 export interface SuspendedUserInfo {
   user_id: string;
   name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   suspended_at: string;
   suspended_until: string | null;
   suspension_reason: string;
+  reason: string;
   suspended_by: string;
+  suspended_by_name: string;
+  suspension_type: SuspensionType;
+  is_active: boolean;
 }
 
 export interface SuspendUserOptions {
-  duration_hours?: number;
+  user_id: string;
+  duration?: string;
   reason: string;
+  suspension_type: SuspensionType;
   notify_user?: boolean;
 }

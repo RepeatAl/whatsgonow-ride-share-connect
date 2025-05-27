@@ -9,6 +9,7 @@ export interface EscalationStatus {
 export interface Escalation {
   id: string;
   user_id: string;
+  user_name: string;
   trigger_reason: string;
   escalation_type: string;
   triggered_at: string;
@@ -19,7 +20,8 @@ export interface Escalation {
 }
 
 export interface EscalationFilter {
-  status?: 'pending' | 'resolved' | 'all';
+  status?: 'pending' | 'resolved' | 'all' | 'active';
+  type?: string;
   escalation_type?: string;
   date_from?: string;
   date_to?: string;
