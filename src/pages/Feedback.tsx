@@ -2,7 +2,8 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useLaunch } from "@/components/launch/LaunchProvider";
-import FeedbackForm, { FeedbackData } from "@/components/feedback/FeedbackForm";
+import FeedbackForm from "@/components/feedback/FeedbackForm";
+import type { FeedbackData } from "@/components/feedback/types";
 import FeedbackHeader from "@/components/feedback/FeedbackHeader";
 import FeatureUnavailable from "@/components/feedback/FeatureUnavailable";
 import SuccessConfirmation from "@/components/data-deletion/SuccessConfirmation";
@@ -11,7 +12,6 @@ const Feedback = () => {
   const { isLaunchReady, isTest, trackEvent } = useLaunch();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Only show if launched or in test region
   if (!isLaunchReady && !isTest) {
     return (
       <Layout>
@@ -29,6 +29,10 @@ const Feedback = () => {
     
     console.log("Feedback submitted:", feedbackData);
     setIsSubmitted(true);
+  };
+
+  const handleCancel = () => {
+    console.log("Feedback cancelled");
   };
 
   if (isSubmitted) {
@@ -49,7 +53,7 @@ const Feedback = () => {
     <Layout>
       <div className="container max-w-2xl px-4 py-8">
         <FeedbackHeader />
-        <FeedbackForm onSubmit={handleSubmit} />
+        <FeedbackForm onSubmit={handleSubmit} onCancel={handleCancel} />
       </div>
     </Layout>
   );

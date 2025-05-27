@@ -3,8 +3,19 @@ import React from "react";
 import Layout from "@/components/Layout";
 import CreateOrderForm from "@/components/order/CreateOrderForm";
 import { BackButton } from "@/components/navigation/BackButton";
+import { useOrderForm } from "@/hooks/useOrderForm";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOrderSubmit } from "@/hooks/useOrderSubmit";
 
 const CreateOrderWithItemsTest = () => {
+  const { user } = useSimpleAuth();
+  const { form, clearDraft } = useOrderForm();
+  const { handleSubmit } = useOrderSubmit(user?.id, clearDraft);
+
+  const onSubmit = async (values: any) => {
+    await handleSubmit(values, []);
+  };
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-16">
@@ -18,7 +29,7 @@ const CreateOrderWithItemsTest = () => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <CreateOrderForm />
+            <CreateOrderForm form={form} onSubmit={onSubmit} />
           </div>
         </div>
       </div>

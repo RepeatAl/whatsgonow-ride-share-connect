@@ -1,126 +1,104 @@
 
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import Layout from "@/components/Layout";
-import { AddressBookDriverList } from "@/components/driver/AddressBookDriverList";
-import { useAddressBook } from "@/hooks/useAddressBook";
-import { AddressBookEntry } from "@/types/address";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { toast } from "sonner";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-
-interface LocationState {
-  fromNewOrder?: boolean;
-  useAddressBook?: boolean;
-}
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MapPin, Calendar, Clock, Package } from "lucide-react";
+import Layout from "@/components/Layout";
+import { useAddressBook } from "@/hooks/useAddressBook";
+import AddressBookDialog from "@/components/address/AddressBookDialog";
 
 const FindDriverPage = () => {
-  const location = useLocation();
-  const { getAddressBook } = useAddressBook();
-  const { user, profile } = useSimpleAuth();
-  const [drivers, setDrivers] = useState<AddressBookEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const state = location.state as LocationState;
-  const shouldUseAddressBook = !!state?.useAddressBook;
-  
-  // Check if user role is allowed to see this feature
-  const isBusinessOrCM = profile?.role === 'sender_business' || profile?.role === 'cm';
+  const [isAddressBookOpen, setIsAddressBookOpen] = useState(false);
+  const [addressType, setAddressType] = useState<'pickup' | 'delivery'>('pickup');
+  const { addresses, loading, fetchAddresses } = useAddressBook();
 
   useEffect(() => {
-    const loadDrivers = async () => {
-      setIsLoading(true);
-      try {
-        // Get drivers from address book
-        const addressBookEntries = await getAddressBook('driver');
-        setDrivers(addressBookEntries);
-      } catch (error) {
-        console.error("Error loading drivers from address book:", error);
-        toast.error("Fehler beim Laden der Fahrer aus dem Adressbuch");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    fetchAddresses();
+  }, [fetchAddresses]);
 
-    if (shouldUseAddressBook && isBusinessOrCM) {
-      loadDrivers();
-    } else {
-      setIsLoading(false);
-    }
-  }, [getAddressBook, shouldUseAddressBook, isBusinessOrCM]);
-
-  // Mock function to send request to driver
-  const sendDriverRequest = async (driver: AddressBookEntry) => {
-    try {
-      toast.success(`Anfrage wurde an ${driver.name || "den Fahrer"} gesendet`);
-      // Here would be the actual implementation to send a request to the driver
-      // For now, we just show a success message
-    } catch (error) {
-      console.error("Error sending driver request:", error);
-      toast.error("Fehler beim Senden der Anfrage an den Fahrer");
-    }
+  const handleSelectAddress = (address: any) => {
+    console.log('Selected address:', address);
+    setIsAddressBookOpen(false);
   };
 
-  const renderContent = () => {
-    // If user is not a business sender or community manager
-    if (!isBusinessOrCM) {
-      return (
-        <Card>
-          <CardHeader>
-            <CardTitle>Funktion nicht verfügbar</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Diese Funktion ist nur für Geschäftskunden und Community Manager verfügbar.
-            </p>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    // If using address book drivers
-    if (shouldUseAddressBook) {
-      return (
-        <AddressBookDriverList
-          drivers={drivers}
-          onSelect={sendDriverRequest}
-          isLoading={isLoading}
-        />
-      );
-    }
-
-    // Default driver search view
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Fahrer finden</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Hier können Sie alle verfügbaren Fahrer durchsuchen.
-          </p>
-          <div className="bg-muted p-4 rounded-md text-center">
-            Fahrersuche-Formular (wird später implementiert)
-          </div>
-        </CardContent>
-      </Card>
-    );
+  const openAddressBook = (type: 'pickup' | 'delivery') => {
+    setAddressType(type);
+    setIsAddressBookOpen(true);
   };
 
   return (
     <Layout>
-      <div className="container mx-auto py-8">
-        <div className="mb-6 flex items-center">
-          <Button variant="ghost" size="sm" className="mr-2" onClick={() => window.history.back()}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> Zurück
-          </Button>
-          <h1 className="text-2xl font-bold">Fahrer finden</h1>
-        </div>
-        
-        <div className="max-w-3xl mx-auto">
-          {renderContent()}
-        </div>
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Fahrer finden
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pickup">Abholort</Label>
+                <div className="flex gap-2">
+                  <Input id="pickup" placeholder="Abholadresse eingeben" className="flex-1" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openAddressBook('pickup')}
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="delivery">Zielort</Label>
+                <div className="flex gap-2">
+                  <Input id="delivery" placeholder="Lieferadresse eingeben" className="flex-1" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openAddressBook('delivery')}
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date">Abholdatum</Label>
+                <div className="flex gap-2">
+                  <Input id="date" type="date" className="flex-1" />
+                  <Calendar className="h-4 w-4 mt-3 text-gray-400" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="time">Uhrzeit</Label>
+                <div className="flex gap-2">
+                  <Input id="time" type="time" className="flex-1" />
+                  <Clock className="h-4 w-4 mt-3 text-gray-400" />
+                </div>
+              </div>
+            </div>
+
+            <Button className="w-full" size="lg">
+              Verfügbare Fahrer suchen
+            </Button>
+          </CardContent>
+        </Card>
+
+        <AddressBookDialog
+          isOpen={isAddressBookOpen}
+          onClose={() => setIsAddressBookOpen(false)}
+          onSelectAddress={handleSelectAddress}
+          addressType={addressType}
+        />
       </div>
     </Layout>
   );

@@ -2,9 +2,9 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { AddressBookEntry } from '@/types/address';
+import type { AddressBookEntry } from '@/types/address';
 
-export { AddressBookEntry };
+export type { AddressBookEntry };
 
 export function useAddressBook() {
   const [addresses, setAddresses] = useState<AddressBookEntry[]>([]);
@@ -36,7 +36,7 @@ export function useAddressBook() {
     }
   }, []);
 
-  const getAddressBook = fetchAddresses; // Alias for backward compatibility
+  const getAddressBook = fetchAddresses;
 
   const addAddress = useCallback(async (address: Omit<AddressBookEntry, 'id' | 'created_at' | 'updated_at'>) => {
     try {
@@ -124,7 +124,6 @@ export function useAddressBook() {
   }, []);
 
   const setAsDefault = useCallback(async (id: string) => {
-    // Implementation for setting default address
     return updateAddress(id, { is_default: true });
   }, [updateAddress]);
 
@@ -148,7 +147,7 @@ export function useAddressBook() {
     addresses,
     loading,
     fetchAddresses,
-    getAddressBook, // For backward compatibility
+    getAddressBook,
     addAddress,
     updateAddress,
     deleteAddress,

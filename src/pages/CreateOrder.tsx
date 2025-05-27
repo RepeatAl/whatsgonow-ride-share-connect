@@ -4,8 +4,19 @@ import CreateOrderForm from "@/components/order/CreateOrderForm";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { BackButton } from "@/components/navigation/BackButton";
+import { useOrderForm } from "@/hooks/useOrderForm";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOrderSubmit } from "@/hooks/useOrderSubmit";
 
 const CreateOrder = () => {
+  const { user } = useSimpleAuth();
+  const { form, clearDraft } = useOrderForm();
+  const { handleSubmit } = useOrderSubmit(user?.id, clearDraft);
+
+  const onSubmit = async (values: any) => {
+    await handleSubmit(values, []);
+  };
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-16">
@@ -24,7 +35,7 @@ const CreateOrder = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             }>
-              <CreateOrderForm />
+              <CreateOrderForm form={form} onSubmit={onSubmit} />
             </Suspense>
           </div>
         </div>

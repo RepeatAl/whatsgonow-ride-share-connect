@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,9 +8,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Star } from 'lucide-react';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import type { FeedbackData } from './types';
 
-interface FeedbackFormProps {
-  onSubmit: (rating: number, comment: string) => void;
+export interface FeedbackFormProps {
+  onSubmit: (data: FeedbackData) => void;
   onCancel: () => void;
 }
 
@@ -24,7 +26,15 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSubmit, onCancel }) => {
       alert(t('feedback.rating_required'));
       return;
     }
-    onSubmit(rating, comment);
+    
+    const feedbackData: FeedbackData = {
+      feedbackType: 'general',
+      satisfaction: rating,
+      features: [],
+      comment
+    };
+    
+    onSubmit(feedbackData);
   };
 
   return (

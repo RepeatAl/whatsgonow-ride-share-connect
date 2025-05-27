@@ -1,77 +1,67 @@
 
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/Layout";
 import CreateOrderForm from "@/components/order/CreateOrderForm";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { toast } from "sonner";
-import { CreateOrderFormValues } from "@/lib/validators/order";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOrderForm } from "@/hooks/useOrderForm";
+import { useOrderSubmit } from "@/hooks/useOrderSubmit";
 
 interface DraftData {
-  draft_data: Partial<CreateOrderFormValues>;
+  draft_data: any;
   photo_urls: string[];
+  items?: any[];
 }
 
 const DraftEdit = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [draftData, setDraftData] = useState<DraftData | null>(null);
+  const { user } = useSimpleAuth();
+  const { form, clearDraft } = useOrderForm();
+  const { handleSubmit } = useOrderSubmit(user?.id, clearDraft);
 
   useEffect(() => {
-    const loadDraft = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("order_drafts")
-          .select("*")
-          .eq("id", draftId)
-          .single();
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
-        if (error) throw error;
-        
-        const formattedData: DraftData = {
-          draft_data: data.draft_data || {},
-          photo_urls: data.photo_urls || [],
-        };
-        
-        setDraftData(formattedData);
-      } catch (error) {
-        console.error("Error loading draft:", error);
-        toast.error("Entwurf konnte nicht geladen werden");
-        navigate("/orders/drafts");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const onSubmit = async (values: any) => {
+    const result = await handleSubmit(values, []);
+    if (result.success) {
+      navigate('/orders');
+    }
+  };
 
-    loadDraft();
-  }, [draftId, navigate]);
-
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="container mx-auto py-8">
-          <LoadingSpinner />
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!draftData) {
-    return (
-      <Layout>
-        <div className="container mx-auto py-8">
-          <p>Entwurf nicht gefunden.</p>
-        </div>
-      </Layout>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
     <Layout>
-      <div className="container mx-auto py-8 px-4">
-        <CreateOrderForm initialData={draftData} />
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Zurück
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Entwurf bearbeiten
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Bearbeiten Sie Ihren gespeicherten Auftragsentwurf.
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <CreateOrderForm form={form} onSubmit={onSubmit} />
+        </div>
       </div>
     </Layout>
   );

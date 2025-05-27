@@ -1,6 +1,6 @@
 
 import Layout from "@/components/Layout";
-import { ProfileCompletion } from "@/components/profile/ProfileCompletion";
+import ProfileCompletion from "@/components/profile/ProfileCompletion";
 
 const CompleteProfile = () => {
   return (
