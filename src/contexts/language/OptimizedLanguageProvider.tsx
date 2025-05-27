@@ -1,168 +1,99 @@
 
-// DEPRECATED: This provider is deprecated in favor of MCP architecture
-// Use @/mcp/language/LanguageMCP instead
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { debounce } from 'lodash';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { changeAppLanguage } from '@/services/LanguageService';
-import { supportedLanguages, languageCodes } from '@/config/supportedLanguages';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
-import { LanguageContextType } from './types';
-import { defaultLanguage } from './constants';
-
-// Show deprecation warning
-console.warn('[DEPRECATED] OptimizedLanguageProvider is deprecated. Use @/mcp/language/LanguageMCP instead.');
-
-const OptimizedLanguageContext = createContext<LanguageContextType | undefined>(undefined);
-
-interface OptimizedLanguageProviderProps {
-  children: React.ReactNode;
-  initialLanguage: string;
+interface OptimizedLanguageContextValue {
+  currentLanguage: string;
+  setLanguage: (lang: string) => void;
+  getLocalizedUrl: (path: string) => string;
+  isRTL: boolean;
+  supportedLanguages: string[];
 }
 
-/**
- * @deprecated Use @/mcp/language/LanguageMCP instead
- * This provider is maintained for backward compatibility only
- */
-export const OptimizedLanguageProvider: React.FC<OptimizedLanguageProviderProps> = ({ 
-  children, 
-  initialLanguage 
-}) => {
-  const navigate = useNavigate();
+const OptimizedLanguageContext = createContext<OptimizedLanguageContextValue>({
+  currentLanguage: 'de',
+  setLanguage: () => {},
+  getLocalizedUrl: (path: string) => path,
+  isRTL: false,
+  supportedLanguages: ['de', 'en'],
+});
+
+export const useOptimizedLanguage = () => useContext(OptimizedLanguageContext);
+
+export const OptimizedLanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { i18n } = useTranslation();
   const location = useLocation();
-  const [currentLanguage, setCurrentLanguage] = useState<string>(initialLanguage);
-  const [languageLoading, setLanguageLoading] = useState<boolean>(false);
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useSimpleAuth();
+  
+  const supportedLanguages = useMemo(() => ['de', 'en', 'fr', 'es', 'it'], []);
+  const currentLanguage = i18n.language || 'de';
+  const isRTL = useMemo(() => ['ar', 'he', 'fa', 'ur'].includes(currentLanguage), [currentLanguage]);
 
-  // Initialize i18n with provided language
-  React.useEffect(() => {
-    const langMeta = supportedLanguages.find(l => l.code === initialLanguage);
-    if (langMeta) {
-      changeAppLanguage(initialLanguage);
-      setCurrentLanguage(initialLanguage);
+  // Extract language from URL path
+  const pathLanguage = useMemo(() => location.pathname.split('/')[1], [location.pathname]);
+
+  // Debounced navigation to prevent rapid redirects
+  const debouncedNavigate = useMemo(
+    () => debounce((path: string) => navigate(path, { replace: true }), 100),
+    [navigate]
+  );
+
+  useEffect(() => {
+    // Check if the URL starts with a supported language
+    if (supportedLanguages.includes(pathLanguage)) {
+      if (pathLanguage !== currentLanguage) {
+        i18n.changeLanguage(pathLanguage);
+      }
+    } else {
+      // If no valid language in URL, redirect to the current language
+      const newPath = `/${currentLanguage}${location.pathname}${location.search}`;
+      debouncedNavigate(newPath);
     }
-  }, [initialLanguage]);
+  }, [pathLanguage, currentLanguage, location.pathname, location.search, debouncedNavigate, i18n, supportedLanguages]);
 
-  // Memoized language metadata
-  const currentLanguageMeta = useMemo(() => {
-    return supportedLanguages.find(l => l.code === currentLanguage);
-  }, [currentLanguage]);
-
-  const isRtl = useMemo(() => {
-    return currentLanguageMeta?.rtl ?? false;
-  }, [currentLanguageMeta]);
-
-  // Language change with navigation
-  const setLanguageByCode = useCallback(async (lang: string, storeInProfile: boolean = true) => {
-    if (lang === currentLanguage) return;
-    
-    try {
-      setLanguageLoading(true);
-      
-      const langMeta = supportedLanguages.find(l => l.code === lang);
-      if (!langMeta) return;
-      
-      // Apply language change
-      await changeAppLanguage(lang);
-      setCurrentLanguage(lang);
-      
+  const setLanguage = useMemo(() => (lang: string) => {
+    if (supportedLanguages.includes(lang)) {
+      i18n.changeLanguage(lang);
       // Update URL with new language
-      const pathSegments = location.pathname.split('/').filter(Boolean);
-      const currentLang = pathSegments[0];
-      
-      if (languageCodes.includes(currentLang)) {
-        // Replace existing language
-        pathSegments[0] = lang;
-      } else {
-        // Add language prefix
-        pathSegments.unshift(lang);
-      }
-      
-      const newPath = '/' + pathSegments.join('/');
+      const pathWithoutLang = location.pathname.split('/').slice(2).join('/');
+      const newPath = `/${lang}/${pathWithoutLang}${location.search}`;
       navigate(newPath, { replace: true });
-      
-      // Store in user profile if logged in
-      if (user?.id && storeInProfile) {
-        try {
-          await supabase
-            .from('profiles')
-            .update({ language: lang })
-            .eq('user_id', user.id);
-        } catch (error) {
-          console.error('Failed to update user language preference:', error);
-        }
-      }
-
-    } catch (error) {
-      console.error('Error changing language:', error);
-    } finally {
-      setLanguageLoading(false);
     }
-  }, [currentLanguage, user?.id, location.pathname, navigate]);
+  }, [i18n, location.pathname, location.search, navigate, supportedLanguages]);
 
-  // URL helpers
-  const getLocalizedUrl = useCallback((path: string, lang?: string) => {
-    const targetLang = lang || currentLanguage;
-    // Remove leading slash and add language prefix
+  const getLocalizedUrl = useMemo(() => (path: string): string => {
+    // Remove leading slash if present
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    return cleanPath ? `/${targetLang}/${cleanPath}` : `/${targetLang}`;
+    
+    // If path is empty or just '/', return language prefix
+    if (!cleanPath || cleanPath === '') {
+      return `/${currentLanguage}`;
+    }
+    
+    // If path already starts with language code, return as is
+    if (cleanPath.startsWith(`${currentLanguage}/`)) {
+      return `/${cleanPath}`;
+    }
+    
+    // Add language prefix
+    return `/${currentLanguage}/${cleanPath}`;
   }, [currentLanguage]);
 
-  const getLanguageFromUrl = useCallback((path: string) => {
-    const segments = path.split('/').filter(Boolean);
-    const possibleLang = segments[0];
-    return languageCodes.includes(possibleLang) ? possibleLang : defaultLanguage;
-  }, []);
-
-  const setLanguageByUrl = useCallback(async (path: string) => {
-    const langFromUrl = getLanguageFromUrl(path);
-    if (langFromUrl !== currentLanguage) {
-      await setLanguageByCode(langFromUrl, false);
-    }
-  }, [currentLanguage, setLanguageByCode, getLanguageFromUrl]);
-
-  const ensureNamespaceLoaded = useCallback(async (namespace: string | string[]): Promise<void> => {
-    // Placeholder for namespace loading logic
-    return Promise.resolve();
-  }, []);
-
-  // Memoized context value
-  const contextValue = useMemo(() => ({
+  const value: OptimizedLanguageContextValue = useMemo(() => ({
     currentLanguage,
-    setLanguageByCode,
-    setLanguageByUrl,
+    setLanguage,
     getLocalizedUrl,
-    getLanguageFromUrl,
-    languageLoading,
+    isRTL,
     supportedLanguages,
-    isRtl,
-    ensureNamespaceLoaded,
-  }), [
-    currentLanguage,
-    setLanguageByCode,
-    setLanguageByUrl,
-    getLocalizedUrl,
-    getLanguageFromUrl,
-    languageLoading,
-    isRtl,
-    ensureNamespaceLoaded,
-  ]);
+  }), [currentLanguage, setLanguage, getLocalizedUrl, isRTL, supportedLanguages]);
 
   return (
-    <OptimizedLanguageContext.Provider value={contextValue}>
+    <OptimizedLanguageContext.Provider value={value}>
       {children}
     </OptimizedLanguageContext.Provider>
   );
-};
-
-/**
- * @deprecated Use useLanguageMCP from @/mcp/language/LanguageMCP instead
- */
-export const useOptimizedLanguage = () => {
-  const context = useContext(OptimizedLanguageContext);
-  if (context === undefined) {
-    throw new Error('useOptimizedLanguage must be used within an OptimizedLanguageProvider');
-  }
-  return context;
 };

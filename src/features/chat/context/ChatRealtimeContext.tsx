@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUnreadMessages } from "@/features/chat/hooks/use-unread-messages";
 import { useMessageSubscription } from "@/features/chat/hooks/use-message-subscription";
@@ -23,7 +23,7 @@ const ChatRealtimeContext = createContext<ChatRealtimeContextType>({
 export const useChatRealtime = () => useContext(ChatRealtimeContext);
 
 export const ChatRealtimeProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const { toast } = useToast();
   const { unreadCount, fetchUnreadCount, resetUnreadCount, markMessagesAsRead } = useUnreadMessages();
   const { activeOrderId, setActiveOrderId } = useChatContextState();

@@ -5,7 +5,7 @@ import Layout from "@/components/Layout";
 import { AddressBookDriverList } from "@/components/driver/AddressBookDriverList";
 import { useAddressBook } from "@/hooks/useAddressBook";
 import { AddressBookEntry } from "@/types/address";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ interface LocationState {
 const FindDriverPage = () => {
   const location = useLocation();
   const { getAddressBook } = useAddressBook();
-  const { user, profile } = useAuth();
+  const { user, profile } = useSimpleAuth();
   const [drivers, setDrivers] = useState<AddressBookEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const state = location.state as LocationState;

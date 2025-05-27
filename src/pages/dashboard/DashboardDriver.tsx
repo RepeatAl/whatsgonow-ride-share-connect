@@ -1,13 +1,13 @@
 
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PlusCircle, Search } from "lucide-react";
 
 const DashboardDriver = () => {
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
   const navigate = useNavigate();
 
   return (

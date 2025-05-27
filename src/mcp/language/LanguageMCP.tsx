@@ -1,134 +1,63 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { changeAppLanguage } from '@/services/LanguageService';
-import { supabase } from '@/lib/supabaseClient';
-import { supportedLanguages, defaultLanguage } from '@/config/supportedLanguages';
-import MCPErrorBoundary from '@/mcp/components/MCPErrorBoundary';
+import React, { createContext, useContext } from 'react';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useTranslation } from 'react-i18next';
 
-// Language MCP Types
-export interface LanguageMCPContextType {
+interface LanguageMCPContextValue {
   currentLanguage: string;
-  setLanguageByCode: (languageCode: string) => Promise<void>;
+  setLanguage: (lang: string) => void;
   getLocalizedUrl: (path: string) => string;
-  languageLoading: boolean;
-  supportedLanguages: Array<{ code: string; name: string; nativeName: string; flag: string }>;
-  isRtl: boolean;
+  isRTL: boolean;
 }
 
-// Create the context
-const LanguageMCPContext = createContext<LanguageMCPContextType | undefined>(undefined);
+const LanguageMCPContext = createContext<LanguageMCPContextValue>({
+  currentLanguage: 'de',
+  setLanguage: () => {},
+  getLocalizedUrl: (path: string) => path,
+  isRTL: false,
+});
 
-interface LanguageMCPProps {
-  children: ReactNode;
-  initialLanguage?: string;
-}
+export const useLanguageMCP = () => useContext(LanguageMCPContext);
 
-export const LanguageMCP: React.FC<LanguageMCPProps> = ({ 
-  children, 
-  initialLanguage = defaultLanguage 
-}) => {
-  const [currentLanguage, setCurrentLanguage] = useState<string>(initialLanguage);
-  const [languageLoading, setLanguageLoading] = useState<boolean>(false);
-  const { user } = useAuth();
+export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { i18n } = useTranslation();
+  const { user } = useSimpleAuth();
+  
+  const currentLanguage = i18n.language || 'de';
+  const isRTL = ['ar', 'he', 'fa', 'ur'].includes(currentLanguage);
 
-  // Initialize language on mount
-  useEffect(() => {
-    setCurrentLanguage(initialLanguage);
-    
-    // Change app language immediately
-    changeAppLanguage(initialLanguage).catch((error) => {
-      console.error('[LANGUAGE-MCP] Failed to set initial language:', error);
-    });
-  }, [initialLanguage]);
+  const setLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
 
-  // Language change handler with user profile update
-  const setLanguageByCode = useCallback(async (languageCode: string) => {
-    if (!supportedLanguages.find(lang => lang.code === languageCode)) {
-      console.error('[LANGUAGE-MCP] Unsupported language code:', languageCode);
-      return;
-    }
-
-    try {
-      setLanguageLoading(true);
-      
-      // Change app language
-      await changeAppLanguage(languageCode);
-      
-      // Update local state
-      setCurrentLanguage(languageCode);
-      
-      // Update user profile if authenticated
-      if (user) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ language: languageCode })
-          .eq('user_id', user.id);
-          
-        if (error) {
-          console.error('[LANGUAGE-MCP] Failed to update user language preference:', error);
-        }
-      }
-    } catch (error) {
-      console.error('[LANGUAGE-MCP] Language change failed:', error);
-    } finally {
-      setLanguageLoading(false);
-    }
-  }, [user]);
-
-  // URL localization
-  const getLocalizedUrl = useCallback((path: string): string => {
-    // Remove leading slash for consistency
+  const getLocalizedUrl = (path: string): string => {
+    // Remove leading slash if present
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    const localizedUrl = `/${currentLanguage}${cleanPath ? `/${cleanPath}` : ''}`;
     
-    return localizedUrl;
-  }, [currentLanguage]);
+    // If path is empty or just '/', return language prefix
+    if (!cleanPath || cleanPath === '') {
+      return `/${currentLanguage}`;
+    }
+    
+    // If path already starts with language code, return as is
+    if (cleanPath.startsWith(`${currentLanguage}/`)) {
+      return `/${cleanPath}`;
+    }
+    
+    // Add language prefix
+    return `/${currentLanguage}/${cleanPath}`;
+  };
 
-  // Convert supportedLanguages format for backward compatibility
-  const formattedSupportedLanguages = useMemo(() => 
-    supportedLanguages.map(lang => ({
-      code: lang.code,
-      name: lang.name,
-      nativeName: lang.localName, // Map localName to nativeName for backward compatibility
-      flag: lang.flag
-    })), []
-  );
-
-  // Check if current language is RTL
-  const isRtl = useMemo(() => {
-    const currentLang = supportedLanguages.find(lang => lang.code === currentLanguage);
-    return currentLang?.rtl || false;
-  }, [currentLanguage]);
-
-  // Memoized context value
-  const contextValue = useMemo(() => ({
+  const value: LanguageMCPContextValue = {
     currentLanguage,
-    setLanguageByCode,
+    setLanguage,
     getLocalizedUrl,
-    languageLoading,
-    supportedLanguages: formattedSupportedLanguages,
-    isRtl
-  }), [currentLanguage, setLanguageByCode, getLocalizedUrl, languageLoading, formattedSupportedLanguages, isRtl]);
+    isRTL,
+  };
 
   return (
-    <MCPErrorBoundary>
-      <LanguageMCPContext.Provider value={contextValue}>
-        {children}
-      </LanguageMCPContext.Provider>
-    </MCPErrorBoundary>
+    <LanguageMCPContext.Provider value={value}>
+      {children}
+    </LanguageMCPContext.Provider>
   );
 };
-
-// Custom hook to use Language MCP
-export const useLanguageMCP = (): LanguageMCPContextType => {
-  const context = useContext(LanguageMCPContext);
-  
-  if (context === undefined) {
-    throw new Error('useLanguageMCP must be used within a LanguageMCP');
-  }
-  
-  return context;
-};
-
-export default LanguageMCP;

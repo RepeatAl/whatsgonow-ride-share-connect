@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +8,7 @@ import { UsersIcon, Shield, LineChart } from "lucide-react";
 import EscalationsTab from "@/components/escalation/EscalationsTab";
 
 const DashboardCM = () => {
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
   const [activeTab, setActiveTab] = useState<string>("overview");
   
   return (

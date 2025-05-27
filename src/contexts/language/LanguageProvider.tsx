@@ -1,213 +1,82 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { changeAppLanguage } from '@/services/LanguageService';
-import { supportedLanguages } from '@/config/supportedLanguages';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
-import i18next from 'i18next';
-import { LanguageContextType } from './types';
-import { defaultLanguage } from './constants';
-import { extractLanguageFromUrl, addLanguageToUrl } from './utils';
-import { toast } from '@/hooks/use-toast';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
-// Create the context
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+interface LanguageContextValue {
+  currentLanguage: string;
+  setLanguage: (lang: string) => void;
+  getLocalizedUrl: (path: string) => string;
+  isRTL: boolean;
+}
+
+const LanguageContext = createContext<LanguageContextValue>({
+  currentLanguage: 'de',
+  setLanguage: () => {},
+  getLocalizedUrl: (path: string) => path,
+  isRTL: false,
+});
+
+export const useLanguage = () => useContext(LanguageContext);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const location = useLocation();
-  const [currentLanguage, setCurrentLanguage] = useState<string>(defaultLanguage);
-  const [languageLoading, setLanguageLoading] = useState<boolean>(true);
-  const [isRtl, setIsRtl] = useState<boolean>(false);
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useSimpleAuth();
+  
+  const currentLanguage = i18n.language || 'de';
+  const isRTL = ['ar', 'he', 'fa', 'ur'].includes(currentLanguage);
 
-  // Method to ensure namespaces are loaded
-  const ensureNamespaceLoaded = async (namespace: string | string[]) => {
-    const namespaces = Array.isArray(namespace) ? namespace : [namespace];
-    try {
-      await i18next.loadNamespaces(namespaces);
-    } catch (error) {
-      console.error(`[i18n] Error loading namespaces ${namespaces.join(', ')}:`, error);
-    }
-  };
+  // Extract language from URL path
+  const pathLanguage = location.pathname.split('/')[1];
+  const supportedLanguages = ['de', 'en', 'fr', 'es', 'it'];
 
-  // Method to set language and update URL
-  const setLanguageByCode = async (lang: string, storeInProfile: boolean = true) => {
-    try {
-      setLanguageLoading(true);
-      
-      // Find language metadata
-      const langMeta = supportedLanguages.find(l => l.code === lang);
-      if (!langMeta) return;
-      
-      // Apply language change
-      await changeAppLanguage(lang);
-      
-      // Update state
-      setCurrentLanguage(lang);
-      setIsRtl(langMeta.rtl ?? false);
-      
-      // Update URL without triggering page reload
-      const newPath = addLanguageToUrl(location.pathname, lang);
-      navigate(newPath + location.search, { replace: true });
-      
-      // Store preference in user profile if logged in
-      if (user?.id && storeInProfile) {
-        try {
-          await supabase
-            .from('profiles')
-            .update({ language: lang })
-            .eq('user_id', user.id);
-            
-          console.log('[LANG] Updated user profile language preference:', lang);
-        } catch (error) {
-          console.error('[LANG] Failed to update user language preference:', error);
-        }
-      }
-
-    } catch (error) {
-      console.error('[LANG] Error changing language:', error);
-      toast({
-        variant: "destructive",
-        title: "Language change failed",
-        description: "There was an error changing the language. Please try again."
-      });
-    } finally {
-      setLanguageLoading(false);
-    }
-  };
-
-  // Set language from URL
-  const setLanguageByUrl = async (path: string) => {
-    const langFromUrl = extractLanguageFromUrl(path);
-    await setLanguageByCode(langFromUrl, false); // Don't update profile when just from URL
-  };
-
-  // Get localized URL for a path
-  const getLocalizedUrl = (path: string, lang?: string) => {
-    const targetLang = lang || currentLanguage;
-    return addLanguageToUrl(path, targetLang);
-  };
-
-  // Get language from URL
-  const getLanguageFromUrl = (path: string) => {
-    return extractLanguageFromUrl(path);
-  };
-
-  // Initialize language from URL on first load
   useEffect(() => {
-    const initLanguage = async () => {
-      setLanguageLoading(true);
-      
-      try {
-        // First try from URL
-        let finalLanguage = extractLanguageFromUrl(location.pathname);
-        
-        // If no language in URL, try from user profile or localStorage
-        if (!finalLanguage || finalLanguage === defaultLanguage) {
-          if (user?.id) {
-            const { data } = await supabase
-              .from('profiles')
-              .select('language')
-              .eq('user_id', user.id)
-              .single();
-            
-            if (data?.language) {
-              finalLanguage = data.language;
-              console.log('[LANG] Loaded language from user profile:', finalLanguage);
-            }
-          } else {
-            const savedLang = localStorage.getItem('i18nextLng');
-            if (savedLang && supportedLanguages.some(l => l.code === savedLang)) {
-              finalLanguage = savedLang;
-              console.log('[LANG] Loaded language from localStorage:', finalLanguage);
-            }
-          }
-          
-          // If still no language, use browser preference or default
-          if (!finalLanguage) {
-            const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
-            
-            if (browserLang && supportedLanguages.some(l => l.code === browserLang)) {
-              finalLanguage = browserLang;
-              console.log('[LANG] Using browser language:', finalLanguage);
-            } else {
-              finalLanguage = defaultLanguage;
-              console.log('[LANG] Using default language:', finalLanguage);
-            }
-          }
-          
-          // Update URL with language prefix if needed
-          const newPath = addLanguageToUrl(location.pathname, finalLanguage);
-          if (newPath !== location.pathname) {
-            navigate(newPath + location.search, { replace: true });
-          }
-        }
-        
-        // Apply language change
-        const langMeta = supportedLanguages.find(l => l.code === finalLanguage);
-        if (langMeta) {
-          await changeAppLanguage(finalLanguage);
-          setCurrentLanguage(finalLanguage);
-          setIsRtl(langMeta.rtl ?? false);
-        }
-      } catch (error) {
-        console.error('[LANG] Error initializing language:', error);
-        // Fallback to default
-        await changeAppLanguage(defaultLanguage);
-        setCurrentLanguage(defaultLanguage);
-        setIsRtl(false);
-      } finally {
-        setLanguageLoading(false);
+    // Check if the URL starts with a supported language
+    if (supportedLanguages.includes(pathLanguage)) {
+      if (pathLanguage !== currentLanguage) {
+        i18n.changeLanguage(pathLanguage);
       }
-    };
+    } else {
+      // If no valid language in URL, redirect to the current language
+      const newPath = `/${currentLanguage}${location.pathname}${location.search}`;
+      navigate(newPath, { replace: true });
+    }
+  }, [pathLanguage, currentLanguage, location.pathname, location.search, navigate, i18n]);
+
+  const setLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    // Update URL with new language
+    const pathWithoutLang = location.pathname.split('/').slice(2).join('/');
+    const newPath = `/${lang}/${pathWithoutLang}${location.search}`;
+    navigate(newPath, { replace: true });
+  };
+
+  const getLocalizedUrl = (path: string): string => {
+    // Remove leading slash if present
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
     
-    initLanguage();
-  }, [location.pathname, user, navigate]);
-
-  // Update language when user logs in or out
-  useEffect(() => {
-    if (user) {
-      // When user logs in, check if they have a language preference
-      const syncUserLanguage = async () => {
-        try {
-          const { data } = await supabase
-            .from('profiles')
-            .select('language')
-            .eq('user_id', user.id)
-            .single();
-          
-          if (data?.language && data.language !== currentLanguage) {
-            console.log('[LANG] Syncing language from user profile:', data.language);
-            setLanguageByCode(data.language, false);
-          } else if (currentLanguage) {
-            // If user doesn't have a language preference, update their profile with current language
-            await supabase
-              .from('profiles')
-              .update({ language: currentLanguage })
-              .eq('user_id', user.id);
-          }
-        } catch (error) {
-          console.error('[LANG] Error syncing user language:', error);
-        }
-      };
-      
-      syncUserLanguage();
+    // If path is empty or just '/', return language prefix
+    if (!cleanPath || cleanPath === '') {
+      return `/${currentLanguage}`;
     }
-  }, [user?.id]); // Only run when user ID changes (login/logout)
+    
+    // If path already starts with language code, return as is
+    if (cleanPath.startsWith(`${currentLanguage}/`)) {
+      return `/${cleanPath}`;
+    }
+    
+    // Add language prefix
+    return `/${currentLanguage}/${cleanPath}`;
+  };
 
-  // Context value
-  const value = {
+  const value: LanguageContextValue = {
     currentLanguage,
-    setLanguageByCode,
-    setLanguageByUrl,
+    setLanguage,
     getLocalizedUrl,
-    getLanguageFromUrl,
-    languageLoading,
-    supportedLanguages,
-    isRtl,
-    ensureNamespaceLoaded,
+    isRTL,
   };
 
   return (
@@ -215,13 +84,4 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       {children}
     </LanguageContext.Provider>
   );
-};
-
-// Hook for using language context
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
 };

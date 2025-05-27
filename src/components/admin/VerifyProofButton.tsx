@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { supabase } from "@/lib/supabaseClient";
 
 interface VerifyProofButtonProps {
@@ -18,7 +18,7 @@ export const VerifyProofButton: React.FC<VerifyProofButtonProps> = ({
   onVerified
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { session, profile } = useAuth();
+  const { session, profile } = useSimpleAuth();
   
   // Check if user is admin
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';

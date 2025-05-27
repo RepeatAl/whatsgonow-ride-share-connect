@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Table } from "lucide-react";
@@ -12,7 +12,7 @@ import { PreRegistrationsExport } from "@/components/admin/pre-registrations/Pre
 import { usePreRegistrations } from "@/hooks/admin/usePreRegistrations";
 
 const PreRegistrationsPage = () => {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, loading: authLoading } = useSimpleAuth();
   const navigate = useNavigate();
   
   const {

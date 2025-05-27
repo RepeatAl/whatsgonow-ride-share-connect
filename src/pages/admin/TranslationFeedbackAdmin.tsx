@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { useAdminTranslationFeedback } from '@/hooks/use-admin-translation-feedback';
 import { TranslationFeedbackFilter } from '@/services/translation-feedback';
 import Layout from '@/components/Layout';
@@ -10,7 +10,7 @@ import TranslationFeedbackFilters from '@/components/translation/admin/Translati
 import { useTranslation } from 'react-i18next';
 
 const TranslationFeedbackAdmin: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useSimpleAuth();
   const { loadAllFeedback, loading } = useAdminTranslationFeedback();
   const { t } = useTranslation();
   

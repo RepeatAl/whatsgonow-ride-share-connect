@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import type { AdminUser } from "@/hooks/use-admin-users";
 import { RoleManager } from '@/components/admin/users/RoleManager';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 // This component follows the conventions from /docs/conventions/roles_and_ids.md
 interface UsersTableProps {
@@ -31,7 +31,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   onDeleteUser,
   onUserUpdated
 }) => {
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
   const isSuperAdmin = profile?.role === 'super_admin';
 
   if (isLoading) {

@@ -1,193 +1,111 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import { NotificationType, NotificationPriority } from '@/constants/notificationTypes';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 export interface Notification {
   id: string;
   user_id: string;
-  event_type: string;
-  entity_id: string;
   title: string;
   message: string;
-  read_at: string | null;
+  type: 'info' | 'warning' | 'error' | 'success';
+  priority: 'low' | 'medium' | 'high';
+  read: boolean;
   created_at: string;
-  metadata: Record<string, any>;
-  priority: string;
+  data?: Record<string, any>;
 }
 
 export const useNotifications = () => {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch notifications
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = async () => {
     if (!user?.id) return;
     
+    setLoading(true);
     try {
-      setLoading(true);
-      
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
-      
+
       setNotifications(data || []);
-      setUnreadCount(data?.filter(n => n.read_at === null).length || 0);
-    } catch (err) {
-      console.error('Fehler beim Laden der Benachrichtigungen:', err);
-      setError(err instanceof Error ? err : new Error('Unbekannter Fehler'));
-      toast({
-        title: 'Fehler',
-        description: 'Benachrichtigungen konnten nicht geladen werden.',
-        variant: 'destructive',
-      });
+      setUnreadCount((data || []).filter(n => !n.read).length);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
-  
-  // Mark notification as read
-  const markAsRead = useCallback(async (notificationId: string) => {
-    if (!user?.id) return;
-    
+  };
+
+  const markAsRead = async (notificationId: string) => {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ read_at: new Date().toISOString() })
-        .eq('id', notificationId)
-        .eq('user_id', user.id);
-      
+        .update({ read: true })
+        .eq('id', notificationId);
+
       if (error) throw error;
-      
-      // Update local state
+
       setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId 
-            ? { ...n, read_at: new Date().toISOString() } 
-            : n
-        )
+        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       );
-      
-      // Update unread count
       setUnreadCount(prev => Math.max(0, prev - 1));
-      
-    } catch (err) {
-      console.error('Fehler beim Markieren als gelesen:', err);
-      toast({
-        title: 'Fehler',
-        description: 'Benachrichtigung konnte nicht als gelesen markiert werden.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
-  }, [user?.id]);
-  
-  // Mark all notifications as read
-  const markAllAsRead = useCallback(async () => {
+  };
+
+  const markAllAsRead = async () => {
     if (!user?.id) return;
-    
+
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ read_at: new Date().toISOString() })
+        .update({ read: true })
         .eq('user_id', user.id)
-        .is('read_at', null);
-      
+        .eq('read', false);
+
       if (error) throw error;
-      
-      // Update local state
-      setNotifications(prev => 
-        prev.map(n => 
-          n.read_at === null 
-            ? { ...n, read_at: new Date().toISOString() } 
-            : n
-        )
-      );
-      
-      // Update unread count
+
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
-      
-    } catch (err) {
-      console.error('Fehler beim Markieren aller als gelesen:', err);
-      toast({
-        title: 'Fehler',
-        description: 'Benachrichtigungen konnten nicht als gelesen markiert werden.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
     }
-  }, [user?.id]);
-  
-  // Send a notification (utility function)
-  const sendNotification = useCallback(async ({
-    userId,
-    userIds,
-    eventType,
-    entityId,
-    title,
-    message,
-    metadata,
-    priority
-  }: {
-    userId?: string;
-    userIds?: string[];
-    eventType: NotificationType;
-    entityId: string;
-    title?: string;
-    message: string;
-    metadata?: Record<string, any>;
-    priority?: NotificationPriority;
-  }) => {
+  };
+
+  const deleteNotification = async (notificationId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('notify-user', {
-        body: {
-          userId,
-          userIds,
-          eventType,
-          entityId,
-          title,
-          message,
-          metadata,
-          priority
-        }
-      });
-      
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+
       if (error) throw error;
-      return { success: true, data };
-    } catch (err) {
-      console.error('Fehler beim Senden einer Benachrichtigung:', err);
-      return { success: false, error: err };
+
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
     }
-  }, []);
-  
-  // Load notifications on initial mount and when user changes
+  };
+
   useEffect(() => {
-    if (user?.id) {
-      fetchNotifications();
-    } else {
-      setNotifications([]);
-      setUnreadCount(0);
-    }
-  }, [user?.id, fetchNotifications]);
-  
+    fetchNotifications();
+  }, [user?.id]);
+
   return {
     notifications,
     unreadCount,
     loading,
-    error,
     fetchNotifications,
     markAsRead,
     markAllAsRead,
-    sendNotification
+    deleteNotification,
   };
 };
-
-export default useNotifications;

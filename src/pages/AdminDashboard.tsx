@@ -15,12 +15,12 @@ import UserActivityTable from '@/components/admin/dashboard/UserActivityTable';
 import TransactionsTable from '@/components/admin/dashboard/TransactionsTable';
 import LogsTable from '@/components/admin/dashboard/LogsTable';
 import FilterOptions from '@/components/admin/dashboard/FilterOptions';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { useAdminLogs } from '@/hooks/use-admin-logs';
 import TrustScoreAdminPanel from '@/components/admin/TrustScoreAdminPanel';
 
 const AdminDashboard = () => {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, loading: authLoading } = useSimpleAuth();
   const { t } = useTranslation();
   
   const {
