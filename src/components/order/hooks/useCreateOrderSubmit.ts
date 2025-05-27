@@ -1,9 +1,22 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
-import { OrderFormData } from '@/types/order';
+
+interface OrderFormData {
+  pickupAddress: string;
+  deliveryAddress: string;
+  itemDescription: string;
+  itemWeight: number;
+  itemImage: string;
+  pickupDate: Date | undefined;
+  deliveryDate: Date | undefined;
+  transportType: string;
+  price: number;
+  notes: string;
+}
 
 export const useCreateOrderSubmit = () => {
   const [loading, setLoading] = useState(false);

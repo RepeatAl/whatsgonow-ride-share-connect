@@ -97,7 +97,7 @@ const DealPanel = () => {
               Posted {new Date(deal.createdAt).toLocaleDateString()}
             </p>
           </div>
-          <Badge variant={deal.status === 'open' ? 'success' : 'secondary'}>
+          <Badge variant={deal.status === 'open' ? 'default' : 'secondary'}>
             {deal.status === 'open' ? 'Available' : 'Closed'}
           </Badge>
         </div>
