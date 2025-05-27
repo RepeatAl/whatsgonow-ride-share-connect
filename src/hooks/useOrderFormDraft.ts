@@ -1,61 +1,71 @@
 
-import { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { CreateOrderFormValues } from '@/lib/validators/order';
-import { toast } from 'sonner';
-
-const DRAFT_KEY = "order-form-draft";
-
-interface OrderFormDraft {
-  formValues: Partial<CreateOrderFormValues>;
-  photoUrls: string[];
-  lastModified: number;
-}
+import { useEffect, useRef } from "react";
+import { UseFormReturn } from "react-hook-form";
+import { CreateOrderFormValues } from "@/lib/validators/order";
 
 export function useOrderFormDraft(
   form: UseFormReturn<CreateOrderFormValues>,
-  uploadedPhotoUrls: string[]
+  uploadedPhotoUrls: string[],
+  items: any[] = []
 ) {
-  // Load draft on mount
-  useEffect(() => {
-    const savedDraft = localStorage.getItem(DRAFT_KEY);
-    if (savedDraft) {
-      try {
-        const draft: OrderFormDraft = JSON.parse(savedDraft);
-        Object.entries(draft.formValues).forEach(([key, value]) => {
-          // Convert deadline string back to Date if it exists
-          if (key === 'deadline' && value) {
-            // Make sure we're only passing valid date values
-            if (typeof value === 'string' || typeof value === 'number') {
-              form.setValue(key as keyof CreateOrderFormValues, new Date(value));
-            }
-          } else {
-            form.setValue(key as keyof CreateOrderFormValues, value);
-          }
-        });
-      } catch (error) {
-        console.error('Error loading draft:', error);
-        localStorage.removeItem(DRAFT_KEY);
-      }
-    }
-  }, [form]);
+  const watchedValues = form.watch();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-save draft on form changes
   useEffect(() => {
-    const subscription = form.watch((formValues) => {
-      const draft: OrderFormDraft = {
-        formValues,
+    // Clear previous timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set new timeout to save draft after 2 seconds of inactivity
+    timeoutRef.current = setTimeout(() => {
+      const draftData = {
+        formData: watchedValues,
         photoUrls: uploadedPhotoUrls,
-        lastModified: Date.now(),
+        items: items,
+        lastSaved: new Date().toISOString(),
       };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    });
-    return () => subscription.unsubscribe();
-  }, [form.watch, uploadedPhotoUrls]);
+
+      try {
+        localStorage.setItem('orderFormDraft', JSON.stringify(draftData));
+        console.log('Draft saved automatically');
+      } catch (error) {
+        console.error('Error saving draft:', error);
+      }
+    }, 2000);
+
+    // Cleanup function
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [watchedValues, uploadedPhotoUrls, items]);
 
   const clearDraft = () => {
-    localStorage.removeItem(DRAFT_KEY);
+    try {
+      localStorage.removeItem('orderFormDraft');
+      console.log('Draft cleared');
+    } catch (error) {
+      console.error('Error clearing draft:', error);
+    }
   };
 
-  return { clearDraft };
+  const loadDraft = () => {
+    try {
+      const savedDraft = localStorage.getItem('orderFormDraft');
+      if (savedDraft) {
+        return JSON.parse(savedDraft);
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error);
+    }
+    return null;
+  };
+
+  return {
+    clearDraft,
+    loadDraft,
+  };
 }

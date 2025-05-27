@@ -10,9 +10,9 @@ export interface ItemDetails {
   description?: string;
   image_url?: string;
   orderId?: string;
-  analysis_status?: AnalysisStatus; // Verwende den neuen Typ
-  id?: string; // Neue ID für die Identifikation
-  category?: string; // Kategorie für die Artikelsortierung
+  analysis_status?: AnalysisStatus;
+  id?: string;
+  category?: string;
 }
 
 export interface ItemFormProps {
@@ -40,7 +40,6 @@ export interface ItemDetailsSectionProps {
   onRemoveItem?: (index: number) => void;
 }
 
-// Neue Interfaces für Phase 4.5: Bulk Item Upload
 export interface ItemAnalysisCardProps {
   imageUrl: string;
   suggestion: any;
