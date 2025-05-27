@@ -1,284 +1,240 @@
-import React from 'react';
-import Layout from '@/components/Layout';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
-// Recharts Components
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
-import { ChartTooltipContent } from '@/components/ui/chart/ChartTooltip';
-import { ChartLegendContent } from '@/components/ui/chart/ChartLegend';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import Layout from '@/components/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, RefreshCw, Download, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
+import { useFeedbackAnalyticsDashboard } from '@/hooks/use-feedback-analytics-dashboard';
+import { SentimentAnalysisComingSoonCard } from '@/components/feedback/admin/SentimentAnalysisComingSoonCard';
+
+type TimeRange = '7d' | '30d' | '90d' | '1y';
 
 const FeedbackAnalyticsPage = () => {
-  const { user, profile } = useSimpleAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  
-  const { 
-    timeRange, 
-    setTimeRange, 
-    typeDistribution, 
-    timeTrend, 
-    isLoading, 
-    exportData, 
-    refreshData 
-  } = useFeedbackAnalyticsDashboard();
+  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Redirect if user is not authorized
-  React.useEffect(() => {
-    if (!isLoading && profile && !['admin', 'admin_limited'].includes(profile.role)) {
-      navigate('/dashboard');
-    }
-  }, [profile, isLoading, navigate]);
+  const {
+    data: analyticsData,
+    isLoading,
+    isError,
+    refetch
+  } = useFeedbackAnalyticsDashboard({
+    timeRange,
+    refreshInterval: 30000, // 30 seconds
+  });
 
-  // Chart configuration
-  const chartConfig = {
-    "bar-blue": { color: '#6366f1' },
-    "bar-orange": { color: '#f97316' },
-    "bar-green": { color: '#10b981' },
-    "bar-red": { color: '#ef4444' },
-    "line-primary": { color: '#6366f1' },
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
   };
 
-  // Format feedback type for display
-  const formatFeedbackType = (type: string) => {
-    const typeMap: Record<string, string> = {
-      'suggestion': t('feedback.types.suggestion'),
-      'bug': t('feedback.types.bug'),
-      'compliment': t('feedback.types.compliment'),
-      'question': t('feedback.types.question')
-    };
-    return typeMap[type] || type;
+  const handleExport = () => {
+    // Export functionality would be implemented here
+    console.log('Exporting analytics data...');
   };
 
-  // Format date for display
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat('de-DE', { 
-      month: 'short', 
-      day: 'numeric' 
-    }).format(date);
-  };
-
-  return (
-    <Layout>
-      <div className="container mx-auto p-4 py-6">
-        <div className="flex flex-col gap-6">
-          {/* Header with navigation and controls */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <Button 
-                variant="ghost" 
-                className="pl-0 mb-2" 
-                onClick={() => navigate('/admin-dashboard')}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Zurück zum Admin-Dashboard
-              </Button>
-              <h1 className="text-2xl font-bold">Feedback-Analytics</h1>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-              <Select
-                value={timeRange}
-                onValueChange={(value) => setTimeRange(value as TimeRange)}
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Zeitraum wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Letzte 7 Tage</SelectItem>
-                  <SelectItem value="30">Letzte 30 Tage</SelectItem>
-                  <SelectItem value="90">Letzte 90 Tage</SelectItem>
-                  <SelectItem value="365">Letztes Jahr</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={refreshData}
-                  title="Daten aktualisieren"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={exportData}
-                  className="w-full sm:w-auto"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  CSV Export
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Analytics content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main charts section - 2/3 width on large screens */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Feedback Type Distribution Chart */}
-              <Card className="shadow-md">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <BarChart3 className="h-5 w-5 text-muted-foreground" />
-                    Feedback nach Typ
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                    </div>
-                  ) : typeDistribution.length === 0 ? (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <p className="text-muted-foreground">Keine Daten für den ausgewählten Zeitraum</p>
-                    </div>
-                  ) : (
-                    <div className="h-[300px] w-full">
-                      <ChartContainer config={chartConfig}>
-                        <BarChart data={typeDistribution}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="type" 
-                            tickFormatter={formatFeedbackType} 
-                            tick={{ fontSize: 12 }}
-                          />
-                          <YAxis allowDecimals={false} />
-                          <Tooltip content={<ChartTooltipContent labelFormatter={formatFeedbackType} />} />
-                          <Legend content={<ChartLegendContent />} />
-                          <Bar 
-                            dataKey="count" 
-                            name="Anzahl" 
-                            fill="var(--color-bar-blue)" 
-                            radius={[4, 4, 0, 0]} 
-                          />
-                        </BarChart>
-                      </ChartContainer>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              {/* Feedback Trend Chart */}
-              <Card className="shadow-md">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <LineChartIcon className="h-5 w-5 text-muted-foreground" />
-                    Feedback-Trend über Zeit
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                    </div>
-                  ) : timeTrend.length === 0 ? (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <p className="text-muted-foreground">Keine Daten für den ausgewählten Zeitraum</p>
-                    </div>
-                  ) : (
-                    <div className="h-[300px] w-full">
-                      <ChartContainer config={chartConfig}>
-                        <LineChart data={timeTrend}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="date" 
-                            tickFormatter={formatDate}
-                            tick={{ fontSize: 12 }}
-                          />
-                          <YAxis allowDecimals={false} />
-                          <Tooltip 
-                            labelFormatter={(label) => formatDate(label)}
-                            content={<ChartTooltipContent />}
-                          />
-                          <Legend content={<ChartLegendContent />} />
-                          <Line 
-                            type="monotone" 
-                            dataKey="count" 
-                            name="Anzahl Feedback" 
-                            stroke="var(--color-line-primary)" 
-                            strokeWidth={2}
-                            dot={{ r: 4 }}
-                            activeDot={{ r: 6 }}
-                          />
-                        </LineChart>
-                      </ChartContainer>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Sidebar section - 1/3 width on large screens */}
-            <div className="space-y-6">
-              {/* Summary Card */}
-              <Card className="shadow-md">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Zusammenfassung</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="animate-pulse space-y-3">
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Gesamtzahl Feedback</p>
-                        <p className="text-2xl font-bold">
-                          {typeDistribution.reduce((sum, item) => sum + item.count, 0)}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <p className="text-sm text-muted-foreground">Häufigster Feedback-Typ</p>
-                        {typeDistribution.length > 0 ? (
-                          <p className="text-lg font-semibold">
-                            {formatFeedbackType(
-                              typeDistribution.sort((a, b) => b.count - a.count)[0]?.type || ''
-                            )}
-                          </p>
-                        ) : (
-                          <p className="text-lg">-</p>
-                        )}
-                      </div>
-                      
-                      {timeTrend.length > 0 && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Tag mit meistem Feedback</p>
-                          <p className="text-lg font-semibold">
-                            {formatDate(
-                              timeTrend.sort((a, b) => b.count - a.count)[0]?.date || ''
-                            )}
-                          </p>
-                        </div>
-                      )}
-                      
-                      <div className="pt-2">
-                        <div className="text-sm text-muted-foreground mb-2">Verteilung</div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {typeDistribution.map(item => (
-                            <div key={item.type} className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                              <p className="text-xs text-muted-foreground">{formatFeedbackType(item.type)}</p>
-                              <p className="font-medium">{item.count}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              {/* Sentiment Analysis Card (Coming Soon) */}
-              <SentimentAnalysisComingSoonCard />
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p>{t('loading')}</p>
             </div>
           </div>
         </div>
+      </Layout>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{t('error_loading_data')}</p>
+            <Button onClick={handleRefresh}>
+              {t('try_again')}
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/admin')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t('back')}
+            </Button>
+            <h1 className="text-2xl font-bold">{t('feedback_analytics')}</h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <Select
+              value={timeRange}
+              onValueChange={(value: TimeRange) => setTimeRange(value)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">{t('last_7_days')}</SelectItem>
+                <SelectItem value="30d">{t('last_30_days')}</SelectItem>
+                <SelectItem value="90d">{t('last_90_days')}</SelectItem>
+                <SelectItem value="1y">{t('last_year')}</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {t('refresh')}
+            </Button>
+            <Button
+              onClick={handleExport}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              {t('export')}
+            </Button>
+          </div>
+        </div>
+
+        {/* Feedback Volume Chart */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              {t('feedback_volume_over_time')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analyticsData?.feedbackVolume ? (
+              <div className="h-64 flex items-center justify-center">
+                {/* Chart implementation would go here */}
+                <div className="text-center text-gray-500">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>{t('chart_implementation_pending')}</p>
+                  <p className="text-sm mt-2">
+                    {t('total_feedback')}: {analyticsData.feedbackVolume.total}
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+                    <div>
+                      <p className="font-medium">{t('positive')}</p>
+                      <p className="text-green-600">{analyticsData.feedbackVolume.positive}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">{t('negative')}</p>
+                      <p className="text-red-600">{analyticsData.feedbackVolume.negative}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                {t('no_data_available')}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Rating Trends Chart */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LineChartIcon className="h-5 w-5" />
+              {t('rating_trends')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analyticsData?.ratingTrends ? (
+              <div className="h-64 flex items-center justify-center">
+                {/* Chart implementation would go here */}
+                <div className="text-center text-gray-500">
+                  <LineChartIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>{t('chart_implementation_pending')}</p>
+                  <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
+                    <div>
+                      <p className="font-medium">{t('average_rating')}</p>
+                      <p className="text-blue-600">
+                        {analyticsData.ratingTrends.averageRating?.toFixed(1) || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">{t('highest_rating')}</p>
+                      <p className="text-green-600">
+                        {analyticsData.ratingTrends.highestRating || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">{t('lowest_rating')}</p>
+                      <p className="text-red-600">
+                        {analyticsData.ratingTrends.lowestRating || 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                {t('no_data_available')}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Feature Requests Summary */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>{t('feature_requests_summary')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analyticsData?.featureRequests ? (
+              <div className="space-y-4">
+                {analyticsData.featureRequests.map((request: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{request.feature}</p>
+                      <p className="text-sm text-gray-600">{request.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{request.requests} {t('requests')}</p>
+                      <p className="text-sm text-gray-600">{request.priority}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                {t('no_feature_requests')}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Sentiment Analysis (Coming Soon) */}
+        <SentimentAnalysisComingSoonCard />
       </div>
     </Layout>
   );

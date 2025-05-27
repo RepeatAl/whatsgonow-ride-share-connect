@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { OrderSchemaType } from '@/lib/validators/order';
+import { CreateOrderFormValues } from '@/lib/validators/order';
 
 interface CreateOrderFormProps {
-  form: UseFormReturn<OrderSchemaType>;
-  onSubmit: (values: OrderSchemaType) => Promise<void>;
+  form: UseFormReturn<CreateOrderFormValues>;
+  onSubmit: (values: CreateOrderFormValues) => Promise<void>;
 }
 
 const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ form, onSubmit }) => {

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { MapPin, Calendar, Clock, Package } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAddressBook } from "@/hooks/useAddressBook";
-import AddressBookDialog from "@/components/address/AddressBookDialog";
+import { AddressBookDialog } from "@/components/address/AddressBookDialog";
 
 const FindDriverPage = () => {
   const [isAddressBookOpen, setIsAddressBookOpen] = useState(false);
