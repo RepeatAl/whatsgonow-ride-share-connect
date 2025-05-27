@@ -11,6 +11,8 @@ export interface Notification {
   type: 'info' | 'warning' | 'error' | 'success';
   priority: 'low' | 'medium' | 'high';
   read: boolean;
+  read_at?: string;
+  event_type?: string;
   created_at: string;
   data?: Record<string, any>;
 }

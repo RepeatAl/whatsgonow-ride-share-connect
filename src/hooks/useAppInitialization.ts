@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUserSession } from '@/contexts/UserSessionContext';
-import { useLanguage } from '@/contexts/language';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { loadNamespace } from '@/i18n/i18n';
 
 export interface AppInitializationState {
@@ -22,7 +22,7 @@ export const useAppInitialization = (requiredNamespaces: string[] = ['common'], 
   });
 
   const { loading: authLoading, isInitialLoad } = useUserSession();
-  const { languageLoading, currentLanguage } = useLanguage();
+  const { languageLoading, currentLanguage } = useLanguageMCP();
 
   useEffect(() => {
     const initializeApp = async () => {

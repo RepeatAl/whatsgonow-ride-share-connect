@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 export interface ChatMessage {
   id: string;
@@ -20,7 +19,7 @@ export function useChatMessages(orderId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
 
   useEffect(() => {
     if (!user || !orderId) return;

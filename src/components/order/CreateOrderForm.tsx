@@ -1,136 +1,138 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { MapPin, Calendar, Package, Euro, Clock, ArrowRight } from 'lucide-react';
+import Layout from '@/components/Layout';
+import { toast } from '@/hooks/use-toast';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import AddressSection from './form-sections/AddressSection';
+import ItemDetailsSection from './form-sections/ItemDetailsSection';
+import { useForm } from 'react-hook-form';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { Calendar } from "@/components/ui/calendar"
+import { enGB } from 'date-fns/locale';
+import { DateRange } from "react-day-picker"
+import { addDays } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import ImageUploader from '@/components/ImageUploader';
 
-import React from "react";
-import { useOrderForm } from "@/hooks/useOrderForm";
-import { GeneralInformationSection } from "./form-sections/GeneralInformationSection";
-import { AddressSection } from "./form-sections/AddressSection";
-import { ItemDetailsSection } from "./form-sections/ItemDetailsSection";
-import { ImageUploadSection } from "./form-sections/ImageUploadSection";
-import { AdditionalOptionsSection } from "./form-sections/AdditionalOptionsSection";
-import { DeadlineSection } from "./form-sections/DeadlineSection";
-import { SubmitButton } from "./form-sections/SubmitButton";
-import { FormNavigation } from "./form-sections/FormNavigation";
-import { useCreateOrderSubmit } from "./hooks/useCreateOrderSubmit";
-import { FindDriverDialog } from "./FindDriverDialog";
-import { useAuth } from "@/contexts/AuthContext";
-import { CreateOrderFormValues } from "@/lib/validators/order";
-import { Form } from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-
-interface CreateOrderFormProps {
-  initialData?: {
-    draft_data: Partial<CreateOrderFormValues>;
-    photo_urls: string[];
-    items?: any[];
-  };
+interface OrderFormValues {
+  pickupAddress: string;
+  deliveryAddress: string;
+  itemDescription: string;
+  itemWeight: number;
+  itemImage: string;
+  pickupDate: Date | undefined;
+  deliveryDate: Date | undefined;
+  transportType: string;
+  price: number;
+  notes: string;
 }
 
-const CreateOrderForm = ({ initialData }: CreateOrderFormProps) => {
-  const { 
-    form, 
-    uploadedPhotoUrls, 
-    items,
-    addItem,
-    removeItem,
-    saveAllItems,
-    tempOrderId, 
-    isSaving, 
-    isProcessing,
-    handlePhotosUploaded, 
-    handleFormClear, 
-    isFormValid, 
-    insuranceEnabled 
-  } = useOrderForm(initialData);
-  
-  const { user } = useAuth();
-  const { 
-    handleCreateOrder, 
-    isSubmitting, 
-    showFindDriverDialog,
-    handleFindDriverDialogClose,
-    userId
-  } = useCreateOrderSubmit(() => {
-    // Leere Funktion, da clearDraft bereits in useCreateOrderSubmit verwendet wird
-    return Promise.resolve(true);
+const CreateOrderForm = () => {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { user } = useSimpleAuth();
+  const [activeSection, setActiveSection] = useState<
+    "address" | "itemDetails" | "confirmation"
+  >("address");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [itemImage, setItemImage] = useState<string | null>(null);
+
+  const form = useForm<OrderFormValues>({
+    defaultValues: {
+      pickupAddress: '',
+      deliveryAddress: '',
+      itemDescription: '',
+      itemWeight: 1,
+      itemImage: '',
+      pickupDate: undefined,
+      deliveryDate: undefined,
+      transportType: 'standard',
+      price: 50,
+      notes: '',
+    }
   });
 
-  // Funktion zum Speichern als Entwurf
-  const saveDraft = async () => {
-    // Der Hook useOrderDraftStorage speichert automatisch
-    // Diese Funktion ist nur für den "Als Entwurf speichern" Button
-    return Promise.resolve();
+  const onSubmit = async (values: OrderFormValues) => {
+    console.log("Form values:", values);
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    setIsSubmitting(false);
+    toast({
+      title: "Order created!",
+      description: "Your order has been successfully created.",
+    });
+    navigate("/dashboard");
   };
 
-  // Funktion zum Submit des Formulars
-  const submitForm = async () => {
-    const valid = await form.trigger();
-    if (valid) {
-      const formValues = form.getValues();
-      const orderId = await handleCreateOrder(formValues, uploadedPhotoUrls);
-      
-      // Wenn orderId zurückgegeben wurde und Artikel vorhanden sind, speichere diese
-      if (orderId && items.length > 0) {
-        await saveAllItems(orderId);
-      }
-    }
+  const handleImageUploadComplete = (publicUrl: string) => {
+    setItemImage(publicUrl);
+    form.setValue("itemImage", publicUrl);
   };
 
   return (
-    <Form {...form}>
-      <div className="space-y-6">
-        {/* Navigationsleiste für Formular-Aktionen */}
-        <FormNavigation 
-          onSaveDraft={saveDraft}
-          onSubmitForm={submitForm}
-          onClearForm={handleFormClear}
-          isSaving={isSaving || isProcessing}
-          isSubmitting={isSubmitting}
-          isValid={isFormValid}
-          isAuthenticated={!!user}
-        />
-        
-        {/* Bestehende Formular-Sektionen */}
-        <GeneralInformationSection form={form} />
-        <Separator />
-        <AddressSection form={form} type="pickup" />
-        <Separator />
-        <AddressSection form={form} type="delivery" />
-        <Separator />
-        <ItemDetailsSection 
-          form={form} 
-          insuranceEnabled={insuranceEnabled}
-          items={items}
-          onAddItem={addItem}
-          onRemoveItem={removeItem}
-        />
-        <Separator />
-        <ImageUploadSection 
-          userId={user?.id} 
-          orderId={tempOrderId}
-          uploadedPhotoUrls={uploadedPhotoUrls}
-          onPhotosUploaded={handlePhotosUploaded}
-        />
-        <Separator />
-        <AdditionalOptionsSection form={form} />
-        <Separator />
-        <DeadlineSection form={form} />
-        
-        {/* Submit Button am Ende des Formulars */}
-        <div className="flex justify-end">
-          <SubmitButton 
-            isSubmitting={isSubmitting || isProcessing} 
-            onClick={submitForm}
-          />
-        </div>
-        
-        {/* Dialog für "Fahrer suchen" nach erfolgreicher Veröffentlichung */}
-        {showFindDriverDialog && (
-          <FindDriverDialog
-            open={showFindDriverDialog}
-            onClose={handleFindDriverDialogClose}
-          />
-        )}
+    <Layout>
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Frachtauftrag erstellen</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <AddressSection form={form} />
+                <ItemDetailsSection form={form} onImageUploadComplete={handleImageUploadComplete} />
+
+                {/* Confirmation Section */}
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">Bestätigung</h3>
+                  <p>Bitte überprüfe deine Angaben:</p>
+                  <ul className="list-disc list-inside">
+                    <li>Abholadresse: {form.getValues("pickupAddress")}</li>
+                    <li>Lieferadresse: {form.getValues("deliveryAddress")}</li>
+                    <li>Artikelbeschreibung: {form.getValues("itemDescription")}</li>
+                    <li>Gewicht: {form.getValues("itemWeight")} kg</li>
+                    <li>Foto: {form.getValues("itemImage")}</li>
+                    <li>Abholdatum: {form.getValues("pickupDate")?.toLocaleDateString()}</li>
+                    <li>Lieferdatum: {form.getValues("deliveryDate")?.toLocaleDateString()}</li>
+                    <li>Transporttyp: {form.getValues("transportType")}</li>
+                    <li>Preis: {form.getValues("price")} €</li>
+                    <li>Notizen: {form.getValues("notes")}</li>
+                  </ul>
+                </div>
+
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Erstellung..." : "Auftrag erstellen"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
-    </Form>
+    </Layout>
   );
 };
 

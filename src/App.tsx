@@ -3,7 +3,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SimpleAuthProvider } from '@/contexts/SimpleAuthContext';
-import { LanguageMCP } from '@/mcp/language/LanguageMCP';
+import { LanguageMCPProvider } from '@/mcp/language/LanguageMCP';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MCPRouter from '@/components/routing/MCPRouter';
@@ -25,7 +25,7 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <QueryClientProvider client={queryClient}>
-            <LanguageMCP>
+            <LanguageMCPProvider>
               <SimpleAuthProvider>
                 <Suspense fallback={
                   <div className="flex items-center justify-center h-screen w-screen">
@@ -35,7 +35,7 @@ function App() {
                   <MCPRouter />
                 </Suspense>
               </SimpleAuthProvider>
-            </LanguageMCP>
+            </LanguageMCPProvider>
           </QueryClientProvider>
         </TooltipProvider>
       </ThemeProvider>

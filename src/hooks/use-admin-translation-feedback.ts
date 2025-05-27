@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { 
   translationFeedbackService,
   TranslationFeedback,
@@ -10,7 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
 export function useAdminTranslationFeedback() {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const [loading, setLoading] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const { t } = useTranslation();

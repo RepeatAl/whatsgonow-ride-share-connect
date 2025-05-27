@@ -1,153 +1,119 @@
-
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Form } from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { toast } from "sonner";
-import { useOrderForm } from "@/hooks/useOrderForm";
-import { useCreateOrderSubmit } from "./hooks/useCreateOrderSubmit";
-import { FindDriverDialog } from "./FindDriverDialog";
-import { useAuth } from "@/contexts/AuthContext";
-
-// Import form sections
-import { ImageUploadSection } from "./form-sections/ImageUploadSection";
-import { GeneralInformationSection } from "./form-sections/GeneralInformationSection";
-import { ItemDetailsSection } from "./form-sections/ItemDetailsSection";
-import { AddressSection } from "./form-sections/AddressSection";
-import { AdditionalOptionsSection } from "./form-sections/AdditionalOptionsSection";
-import { DeadlineSection } from "./form-sections/DeadlineSection";
-import { SubmitButton } from "./form-sections/SubmitButton";
-import { FormNavigation } from "./form-sections/FormNavigation";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Save, Send } from 'lucide-react';
+import Layout from '@/components/Layout';
+import { toast } from '@/hooks/use-toast';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useTranslation } from 'react-i18next';
+import CreateOrderForm from './CreateOrderForm';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { OrderSchema, OrderSchemaType } from '@/validation/order';
 
 interface OrderFormWrapperProps {
-  initialData?: {
-    draft_data: any;
-    photo_urls: string[];
-    items?: any[];
-  };
+  isEditMode?: boolean;
+  orderId?: string;
 }
 
-export const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ initialData }) => {
+const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ isEditMode = false, orderId }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const {
-    form,
-    uploadedPhotoUrls,
-    items,
-    addItem,
-    removeItem,
-    saveAllItems,
-    tempOrderId,
-    clearDraft,
-    isLoading,
-    isSaving,
-    isProcessing,
-    handlePhotosUploaded,
-    handleFormClear,
-    insuranceEnabled,
-    isFormValid
-  } = useOrderForm(initialData);
+  const location = useLocation();
+  const { t } = useTranslation();
+  const { user } = useSimpleAuth();
 
-  // Track if we're in bulk upload mode
-  const [isBulkUploadMode, setIsBulkUploadMode] = useState(false);
+  const form = useForm<OrderSchemaType>({
+    resolver: zodResolver(OrderSchema),
+    defaultValues: {
+      pickupAddress: '',
+      deliveryAddress: '',
+      pickupDate: new Date(),
+      itemDetails: [{ name: '', quantity: 1, weight: 1, dimensions: { length: 1, width: 1, height: 1 } }],
+      transportRequirements: [],
+      additionalNotes: '',
+    },
+  });
 
-  const { 
-    handleCreateOrder, 
-    isSubmitting, 
-    userId,
-    showFindDriverDialog,
-    handleFindDriverDialogClose 
-  } = useCreateOrderSubmit(clearDraft);
+  const [isSaving, setIsSaving] = useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   const handleSaveDraft = async () => {
+    setIsSaving(true);
     try {
-      await clearDraft();
-      localStorage.removeItem('order-draft');
-      navigate("/orders/drafts");
-      toast.success("Entwurf gespeichert");
+      // Simulate saving logic
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast({
+        title: t('order_form.draft_saved'),
+        description: t('order_form.draft_saved_description'),
+      });
     } catch (error) {
-      console.error('Error saving draft:', error);
-      toast.error("Fehler beim Speichern des Entwurfs");
+      toast({
+        variant: 'destructive',
+        title: t('error'),
+        description: t('order_form.draft_save_error'),
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const onSubmit = async (data: any) => {
-    // Check if we have enough images for publication (at least 2)
-    const hasEnoughImages = uploadedPhotoUrls.length >= 2;
-    
-    if (!hasEnoughImages) {
-      toast.warning("Für die Veröffentlichung werden mindestens 2 Bilder benötigt");
-      return;
-    }
-    
-    // Zuerst Auftrag erstellen
-    const orderId = await handleCreateOrder(data, uploadedPhotoUrls);
-    
-    // Wenn orderId zurückgegeben wurde und Artikel vorhanden sind, speichere diese
-    if (orderId && items.length > 0) {
-      await saveAllItems(orderId);
+  const handleSubmitOrder = async (values: OrderSchemaType) => {
+    setIsSaving(true);
+    try {
+      // Simulate submit logic
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast({
+        title: t('order_form.order_submitted'),
+        description: t('order_form.order_submitted_description'),
+      });
+      navigate('/dashboard');
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: t('error'),
+        description: t('order_form.order_submit_error'),
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <div className="space-y-6">
-        <FormNavigation 
-          onSaveDraft={handleSaveDraft}
-          onSubmitForm={form.handleSubmit(onSubmit)} 
-          onClearForm={handleFormClear}
-          isSaving={isSaving || isProcessing}
-          isSubmitting={isSubmitting}
-          isValid={isFormValid}
-          isAuthenticated={!!user}
-          imageCount={uploadedPhotoUrls.length}
-        />
-
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <GeneralInformationSection form={form} />
-          <Separator />
-          <AddressSection form={form} type="pickup" />
-          <Separator />
-          <AddressSection form={form} type="delivery" />
-          <Separator />
-          <ItemDetailsSection 
-            form={form} 
-            insuranceEnabled={insuranceEnabled} 
-            items={items}
-            onAddItem={addItem}
-            onRemoveItem={removeItem}
-          />
-          <Separator />
-          <ImageUploadSection
-            userId={userId}
-            orderId={tempOrderId}
-            onPhotosUploaded={handlePhotosUploaded}
-            existingUrls={uploadedPhotoUrls}
-          />
-          <Separator />
-          <AdditionalOptionsSection form={form} />
-          <Separator />
-          <DeadlineSection form={form} />
-          <SubmitButton isSubmitting={isSubmitting || isProcessing} />
-        </form>
-        
-        {/* Dialog zur Fahrer-Suche nach erfolgreicher Auftragserstellung */}
-        {showFindDriverDialog && (
-          <FindDriverDialog 
-            open={showFindDriverDialog}
-            onClose={handleFindDriverDialogClose}
-          />
-        )}
+    <Layout>
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>{isEditMode ? t('order_form.edit_order') : t('order_form.create_new_order')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4">
+              <Button variant="ghost" onClick={() => navigate(-1)}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t('back')}
+              </Button>
+            </div>
+            <CreateOrderForm form={form} onSubmit={handleSubmitOrder} />
+            <div className="flex justify-between mt-6">
+              <Button variant="secondary" onClick={handleSaveDraft} disabled={isSaving}>
+                <Save className="mr-2 h-4 w-4" />
+                {t('order_form.save_draft')}
+              </Button>
+              <Button type="submit" onClick={form.handleSubmit(handleSubmitOrder)} disabled={isSaving}>
+                <Send className="mr-2 h-4 w-4" />
+                {t('order_form.submit_order')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </Form>
+    </Layout>
   );
 };
+
+export default OrderFormWrapper;

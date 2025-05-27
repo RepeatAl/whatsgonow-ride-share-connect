@@ -10,7 +10,7 @@ export const useLanguage = () => {
     changeLanguage: context.setLanguageByCode,
     currentLanguage: context.currentLanguage,
     loading: context.languageLoading,
-    isRtl: context.isRtl,
+    isRtl: context.isRTL,
     // Add new functionality
     ensureNamespaces: safeLoadNamespaces,
     getLocalizedUrl: context.getLocalizedUrl,

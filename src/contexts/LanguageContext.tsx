@@ -2,13 +2,13 @@
 // DEPRECATED: This file is maintained for backward compatibility only
 // New code should use @/mcp/language/LanguageMCP directly
 
-import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
+import { useLanguageMCP, LanguageMCPProvider } from '@/mcp/language/LanguageMCP';
 
 // Re-export the MCP hook for backward compatibility
 export const useLanguage = useLanguageMCP;
 
 // For any remaining legacy imports, redirect to MCP
-export { LanguageMCP as LanguageProvider } from '@/mcp/language/LanguageMCP';
+export { LanguageMCPProvider as LanguageProvider };
 
 // Re-export the context type for backward compatibility - mapped from MCP
 export interface LanguageContextType {
@@ -22,7 +22,4 @@ export interface LanguageContextType {
 
 console.warn('[DEPRECATED] LanguageContext is deprecated. Use @/mcp/language/LanguageMCP instead.');
 
-export default { LanguageProvider: LanguageMCP, useLanguage: useLanguageMCP };
-
-// Import fix to avoid circular dependency
-import { LanguageMCP } from '@/mcp/language/LanguageMCP';
+export default { LanguageProvider: LanguageMCPProvider, useLanguage: useLanguageMCP };

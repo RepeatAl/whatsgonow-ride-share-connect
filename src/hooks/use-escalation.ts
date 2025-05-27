@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 export interface Escalation {
   id: string;
@@ -32,7 +31,7 @@ export interface EscalationStatus {
 export function useEscalation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
   
   // Role-based permissions
   const canViewEscalations = profile?.role && ['cm', 'admin', 'super_admin'].includes(profile.role);

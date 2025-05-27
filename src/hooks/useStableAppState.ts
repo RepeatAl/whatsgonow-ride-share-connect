@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useUserSession } from '@/contexts/UserSessionContext';
-import { useLanguage } from '@/contexts/language';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { loadNamespace } from '@/i18n/i18n';
 
 export interface StableAppState {
@@ -36,7 +36,7 @@ export const useStableAppState = (options: UseStableAppStateOptions = {}) => {
   });
 
   const { loading: authLoading, isInitialLoad } = useUserSession();
-  const { languageLoading, currentLanguage } = useLanguage();
+  const { languageLoading, currentLanguage } = useLanguageMCP();
 
   // Track minimum load time to prevent flashing
   useEffect(() => {

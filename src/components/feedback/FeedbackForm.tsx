@@ -1,172 +1,72 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Send, Loader2, MessageSquare, Bug, Star, HelpCircle } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-import { useFeedback } from "@/hooks/use-feedback";
-import FeedbackTypes from "./FeedbackTypes";
-
-export type FeedbackData = {
-  feedbackType: "suggestion" | "bug" | "compliment" | "question";
-  satisfaction: string;
-  features: string[];
-  content: string;
-  title?: string;
-  email?: string;
-};
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Star } from 'lucide-react';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 interface FeedbackFormProps {
-  onSubmit?: (data: FeedbackData) => void;
+  onSubmit: (rating: number, comment: string) => void;
+  onCancel: () => void;
 }
 
-const FeedbackForm = ({ onSubmit }: FeedbackFormProps) => {
-  const { user } = useAuth();
-  const { submitFeedback, loading } = useFeedback();
-  
-  const [feedbackType, setFeedbackType] = useState<"suggestion" | "bug" | "compliment" | "question">("suggestion");
-  const [satisfaction, setSatisfaction] = useState("3");
-  const [features, setFeatures] = useState<string[]>([]);
-  const [feedbackText, setFeedbackText] = useState("");
+const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSubmit, onCancel }) => {
+  const { t } = useTranslation();
+  const [rating, setRating] = useState<number | null>(null);
+  const [comment, setComment] = useState<string>('');
+  const { user } = useSimpleAuth();
 
-  const resetForm = () => {
-    setFeedbackType("suggestion");
-    setSatisfaction("3");
-    setFeatures([]);
-    setFeedbackText("");
-  };
-
-  // This handler safely converts the string to our union type
-  const handleFeedbackTypeChange = (value: string) => {
-    if (value === "suggestion" || value === "bug" || value === "compliment" || value === "question") {
-      setFeedbackType(value);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!feedbackText.trim()) {
-      toast.error("Bitte geben Sie Ihr Feedback ein.");
+  const handleSubmit = () => {
+    if (rating === null) {
+      alert(t('feedback.rating_required'));
       return;
     }
-
-    const feedbackData: FeedbackData = {
-      feedbackType,
-      satisfaction,
-      features,
-      content: feedbackText,
-      title: `Feedback von ${user?.email || 'Benutzer'}`,
-      email: user?.email
-    };
-
-    try {
-      const success = await submitFeedback(feedbackData);
-      
-      if (success) {
-        resetForm();
-        onSubmit?.(feedbackData);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const getFeedbackTypeIcon = () => {
-    switch (feedbackType) {
-      case "suggestion": return <MessageSquare className="h-5 w-5" />;
-      case "bug": return <Bug className="h-5 w-5" />;
-      case "compliment": return <Star className="h-5 w-5" />;
-      case "question": return <HelpCircle className="h-5 w-5" />;
-      default: return <MessageSquare className="h-5 w-5" />;
-    }
+    onSubmit(rating, comment);
   };
 
   return (
     <Card>
-      <form onSubmit={handleSubmit}>
-        <CardHeader>
-          <CardTitle>Feedback-Formular</CardTitle>
-          <CardDescription>
-            Ihr Feedback hilft uns, die Plattform zu verbessern
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <FeedbackTypes 
-            selectedType={feedbackType} 
-            onTypeChange={handleFeedbackTypeChange} 
-          />
-
-          <div className="space-y-2">
-            <Label>Wie zufrieden sind Sie?</Label>
-            <RadioGroup
-              value={satisfaction}
-              onValueChange={setSatisfaction}
-              className="flex flex-col space-y-1"
-            >
+      <CardHeader>
+        <CardTitle>{t('feedback.title')}</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <div className="flex items-center space-x-2">
+          <Label>{t('feedback.rating')}</Label>
+          <RadioGroup defaultValue={rating?.toString() || ''} onValueChange={(value) => setRating(parseInt(value, 10))}>
+            <div className="flex items-center space-x-1">
               {[1, 2, 3, 4, 5].map((value) => (
-                <div key={value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={String(value)} id={`satisfaction-${value}`} />
-                  <Label htmlFor={`satisfaction-${value}`}>{value} Sterne</Label>
+                <div key={value} className="flex items-center space-x-1">
+                  <RadioGroupItem value={value.toString()} id={`rating-${value}`} className="peer sr-only" />
+                  <Label
+                    htmlFor={`rating-${value}`}
+                    className="cursor-pointer peer-checked:bg-accent peer-checked:text-accent-foreground p-1 rounded-md"
+                  >
+                    <Star className="h-5 w-5" />
+                  </Label>
                 </div>
               ))}
-            </RadioGroup>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Welche Features haben Sie genutzt?</Label>
-            <ToggleGroup
-              type="multiple"
-              variant="outline"
-              className="flex flex-wrap gap-2"
-              value={features}
-              onValueChange={setFeatures}
-            >
-              <ToggleGroupItem value="find-transport">Transport finden</ToggleGroupItem>
-              <ToggleGroupItem value="offer-transport">Transport anbieten</ToggleGroupItem>
-              <ToggleGroupItem value="messaging">Messaging</ToggleGroupItem>
-              <ToggleGroupItem value="tracking">Tracking</ToggleGroupItem>
-              <ToggleGroupItem value="payments">Zahlungen</ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="feedback">Ihr Feedback</Label>
-            <Textarea
-              id="feedback"
-              placeholder="Teilen Sie uns Ihre Gedanken, Ideen oder Probleme mit..."
-              value={feedbackText}
-              onChange={(e) => setFeedbackText(e.target.value)}
-              rows={5}
-              required
-            />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? (
-              <>
-                Wird gesendet...
-                <Loader2 className="animate-spin ml-2" />
-              </>
-            ) : (
-              <>
-                Feedback absenden
-                <Send className="ml-2" />
-              </>
-            )}
+            </div>
+          </RadioGroup>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="comment">{t('feedback.comment')}</Label>
+          <Textarea
+            id="comment"
+            placeholder={t('feedback.comment_placeholder')}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+        </div>
+        <div className="flex justify-end space-x-2">
+          <Button variant="ghost" onClick={onCancel}>
+            {t('cancel')}
           </Button>
-        </CardFooter>
-      </form>
+          <Button onClick={handleSubmit}>{t('submit')}</Button>
+        </div>
+      </CardContent>
     </Card>
   );
 };

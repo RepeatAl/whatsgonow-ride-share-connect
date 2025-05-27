@@ -1,190 +1,90 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Package, Plus, Trash2 } from 'lucide-react';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
-import React, { useState, useCallback } from "react";
-import { ItemDetailsSectionProps } from "./types";
-import { ItemDetailsForm } from "./ItemDetailsForm";
-import { ItemSuggestionBox } from "./ItemSuggestionBox";
-import { MultiItemSuggestionBox } from "./MultiItemSuggestionBox";
-import { ItemList } from "./ItemList";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useAuth } from "@/contexts/AuthContext";
-import { useItemAnalysis, Suggestion } from "@/hooks/useItemAnalysis";
-import { supabase } from "@/lib/supabaseClient";
-import { toast } from "sonner";
-import { BulkUploadProvider } from "@/contexts/BulkUploadContext";
+interface Item {
+  id: string;
+  name: string;
+  quantity: number;
+  weight: number;
+  dimensions: {
+    length: number;
+    width: number;
+    height: number;
+  };
+}
 
-export function ItemDetailsSection({ 
-  form, 
-  insuranceEnabled, 
-  orderId, 
-  items = [],
-  onAddItem,
-  onRemoveItem
-}: ItemDetailsSectionProps) {
-  const { user } = useAuth();
-  const [activeAccordion, setActiveAccordion] = useState<string | undefined>("basic-info");
-  const [tempImage, setTempImage] = useState<string | null>(null);
-  const [tempImageFile, setTempImageFile] = useState<File | null>(null);
-  const [analysisInProgress, setAnalysisInProgress] = useState(false);
-  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
-  
-  // Neue Zustandsvariablen für Artikelvorschläge
-  const [multiSuggestions, setMultiSuggestions] = useState<Record<string, Suggestion>>({});
-  
-  const { 
-    analyzeItemPhoto, 
-    createSuggestionFromAnalysis, 
-    applySuggestionToForm, 
-    ignoreSuggestion,
-    createSuggestionsFromMultiAnalysis 
-  } = useItemAnalysis();
+interface Props {
+  items: Item[];
+  onItemsChange: (items: Item[]) => void;
+}
 
-  // Handler für Bild-Upload vom ItemPhotoSection Component
-  const handleImageUpload = useCallback(async (file: File) => {
-    if (!file) return;
-    
-    // Generieren einer temporären URL für die Vorschau
-    const preview = URL.createObjectURL(file);
-    setTempImage(preview);
-    setTempImageFile(file);
-    setSuggestion(null);
-  }, []);
+const ItemDetailsSection: React.FC<Props> = ({ items, onItemsChange }) => {
+  const { user } = useSimpleAuth();
+  const [localItems, setLocalItems] = useState<Item[]>([]);
 
-  // Handler für manuelle Bildanalyse
-  const handleRequestAnalysis = useCallback(async () => {
-    if (!tempImage || !tempImageFile) {
-      toast.error("Kein Bild zum Analysieren vorhanden");
-      return;
-    }
-    
-    try {
-      setAnalysisInProgress(true);
-      
-      // Hochladen des Bildes zu Storage für Analyse
-      const tempId = crypto.randomUUID();
-      const filePath = `temp/${tempId}-${tempImageFile.name}`;
-      
-      const { error: uploadError, data } = await supabase.storage
-        .from('order-images')
-        .upload(filePath, tempImageFile);
-      
-      if (uploadError) {
-        throw uploadError;
-      }
-      
-      const { data: urlData } = supabase.storage
-        .from('order-images')
-        .getPublicUrl(filePath);
-      
-      // API-Aufruf zur Analyse
-      const result = await analyzeItemPhoto({
-        item_id: tempId,
-        photo_url: urlData.publicUrl
-      });
-      
-      if (result) {
-        const newSuggestion = createSuggestionFromAnalysis(result);
-        if (newSuggestion) {
-          setSuggestion(newSuggestion);
-        }
-      }
-    } catch (err) {
-      console.error("Analyse-Fehler:", err);
-      toast.error("Fehler bei der Bildanalyse");
-    } finally {
-      setAnalysisInProgress(false);
-    }
-  }, [tempImage, tempImageFile, analyzeItemPhoto, createSuggestionFromAnalysis]);
+  useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
 
-  const handleAcceptSuggestion = () => {
-    if (suggestion) {
-      applySuggestionToForm(suggestion, form);
-      setSuggestion(null);
-    }
+  const handleAddItem = () => {
+    const newItem: Item = {
+      id: Math.random().toString(36).substring(7),
+      name: `Item ${localItems.length + 1}`,
+      quantity: 1,
+      weight: 1,
+      dimensions: { length: 1, width: 1, height: 1 },
+    };
+    const updatedItems = [...localItems, newItem];
+    setLocalItems(updatedItems);
+    onItemsChange(updatedItems);
   };
 
-  const handleIgnoreSuggestion = () => {
-    ignoreSuggestion();
-    setSuggestion(null);
-  };
-  
-  // Handler für Mehrfachanalyse
-  const handleAcceptMultiSuggestion = (imageUrl: string) => {
-    const suggestion = multiSuggestions[imageUrl];
-    if (suggestion) {
-      // Entferne den Vorschlag aus der Liste der offenen Vorschläge
-      const newSuggestions = { ...multiSuggestions };
-      delete newSuggestions[imageUrl];
-      setMultiSuggestions(newSuggestions);
-      
-      toast.success("Artikel wurde übernommen");
-    }
-  };
-  
-  const handleIgnoreMultiSuggestion = (imageUrl: string) => {
-    // Entferne den Vorschlag aus der Liste
-    const newSuggestions = { ...multiSuggestions };
-    delete newSuggestions[imageUrl];
-    setMultiSuggestions(newSuggestions);
-    
-    toast.info("Vorschlag wurde ignoriert");
+  const handleRemoveItem = (id: string) => {
+    const updatedItems = localItems.filter((item) => item.id !== id);
+    setLocalItems(updatedItems);
+    onItemsChange(updatedItems);
   };
 
   return (
-    <BulkUploadProvider>
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Artikeldetails</h3>
-        
-        <Accordion 
-          type="single" 
-          collapsible
-          value={activeAccordion}
-          onValueChange={setActiveAccordion}
-          className="w-full"
-        >
-          <AccordionItem value="basic-info">
-            <AccordionTrigger>Basis-Informationen</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-6 pt-2">
-                <ItemDetailsForm form={form} insuranceEnabled={insuranceEnabled} />
-                
-                {suggestion && (
-                  <ItemSuggestionBox 
-                    suggestion={suggestion}
-                    onAccept={handleAcceptSuggestion}
-                    onIgnore={handleIgnoreSuggestion}
-                    form={form}
-                  />
-                )}
-                
-                {Object.keys(multiSuggestions).length > 0 && (
-                  <MultiItemSuggestionBox
-                    suggestions={multiSuggestions}
-                    onAccept={handleAcceptMultiSuggestion}
-                    onIgnore={handleIgnoreMultiSuggestion}
-                    form={form}
-                  />
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-        
-        {/* Liste der bereits hinzugefügten Artikel */}
-        {items.length > 0 && (
-          <div className="mt-6">
-            <ItemList items={items} onRemoveItem={onRemoveItem || (() => {})} />
-          </div>
-        )}
-      </div>
-    </BulkUploadProvider>
-  );
-}
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Artikeldetails</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-4">
+          <Badge variant="secondary">
+            <Package className="h-4 w-4 mr-2" />
+            {localItems.length} Artikel
+          </Badge>
+        </div>
 
-// Exportiere die Subkomponenten für die Wiederverwendung in anderen Bereichen
-export { ItemForm } from "./ItemForm";
-export { ItemList } from "./ItemList";
-export { ItemPreviewCard } from "./ItemPreviewCard";
-export { ItemDetailsForm } from "./ItemDetailsForm";
-export { ItemPhotoSection } from "./ItemPhotoSection";
-export { ItemSuggestionBox } from "./ItemSuggestionBox";
-export type { ItemDetails, ItemDetailsSectionProps } from "./types";
+        {localItems.map((item) => (
+          <div key={item.id} className="mb-4 p-4 border rounded-md">
+            <div className="flex justify-between items-center">
+              <h4 className="text-sm font-medium">
+                {item.name}
+              </h4>
+              <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Menge: {item.quantity}, Gewicht: {item.weight} kg, Maße: {item.dimensions.length}x{item.dimensions.width}x{item.dimensions.height} cm
+            </p>
+          </div>
+        ))}
+
+        <Button variant="outline" className="w-full justify-center" onClick={handleAddItem}>
+          <Plus className="h-4 w-4 mr-2" />
+          Artikel hinzufügen
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default ItemDetailsSection;

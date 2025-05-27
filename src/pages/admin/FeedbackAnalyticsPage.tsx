@@ -1,16 +1,6 @@
-
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useFeedbackAnalyticsDashboard, TimeRange } from '@/hooks/use-feedback-analytics-dashboard';
-import { SentimentAnalysisComingSoonCard } from '@/components/feedback/admin/SentimentAnalysisComingSoonCard';
-import { ArrowLeft, BarChart3, Download, LineChart as LineChartIcon, RefreshCw } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { formatCurrency } from '@/lib/utils';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 // Recharts Components
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -19,7 +9,7 @@ import { ChartTooltipContent } from '@/components/ui/chart/ChartTooltip';
 import { ChartLegendContent } from '@/components/ui/chart/ChartLegend';
 
 const FeedbackAnalyticsPage = () => {
-  const { user, profile } = useAuth();
+  const { user, profile } = useSimpleAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   

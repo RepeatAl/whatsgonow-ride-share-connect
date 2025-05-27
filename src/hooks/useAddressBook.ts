@@ -1,12 +1,10 @@
-
-import { useState, useCallback } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-import type { AddressBookEntry } from "@/types/address";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 export function useAddressBook() {
-  const { user, profile } = useAuth();
+  const { user, profile } = useSimpleAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   /**

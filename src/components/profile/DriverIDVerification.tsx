@@ -1,6 +1,5 @@
-
-import React, { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useState } from 'react';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,7 +28,7 @@ interface VerificationResponse {
 }
 
 export function DriverIDVerification() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useSimpleAuth();
   const [uploading, setUploading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);

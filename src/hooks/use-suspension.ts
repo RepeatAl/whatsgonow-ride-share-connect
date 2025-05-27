@@ -1,14 +1,12 @@
-
-import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import type { SuspendUserOptions, UserSuspension, SuspendedUserInfo, SuspensionStatus } from '@/types/suspension';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 export function useSuspension() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { profile } = useAuth();
+  const { profile } = useSimpleAuth();
   
   // Role-based permissions
   const canViewSuspensions = profile?.role && ['cm', 'admin', 'super_admin'].includes(profile.role);
