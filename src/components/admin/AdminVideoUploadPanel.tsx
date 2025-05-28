@@ -76,7 +76,7 @@ const AdminVideoUploadPanel = () => {
         // Continue anyway, mark as inactive
       }
 
-      // Mark as inactive in database (soft delete für Konsistenz)
+      // Mark as inactive in database
       const { error: dbError } = await supabase
         .from('admin_videos')
         .update({ active: false })
@@ -110,7 +110,7 @@ const AdminVideoUploadPanel = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Video className="h-5 w-5" />
-            Admin Video Management
+            Video Management
           </CardTitle>
           {canManageVideos && (
             <Button onClick={() => setIsUploadOpen(true)}>
@@ -122,18 +122,6 @@ const AdminVideoUploadPanel = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {isAdmin && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-medium text-blue-800 mb-2">📹 Video-Management System</h3>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• <strong>Sichere Uploads:</strong> Videos werden im 'videos' Bucket gespeichert</li>
-                <li>• <strong>RLS-Schutz:</strong> Nur Admins können Videos hochladen und verwalten</li>
-                <li>• <strong>Metadaten:</strong> Vollständige Verwaltung mit Beschreibungen und Tags</li>
-                <li>• <strong>Soft Delete:</strong> Videos werden als inaktiv markiert für Audit-Zwecke</li>
-              </ul>
-            </div>
-          )}
-
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
               <AlertCircle className="h-4 w-4 text-red-500" />

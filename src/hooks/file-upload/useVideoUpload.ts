@@ -41,7 +41,7 @@ export function useVideoUpload() {
         });
       }, 300);
 
-      // Upload to videos bucket with improved error handling
+      // Upload to videos bucket
       const { data, error } = await supabase.storage
         .from('videos')
         .upload(filePath, file, {
@@ -59,24 +59,14 @@ export function useVideoUpload() {
 
       if (error) {
         console.error('Storage upload error:', error);
-        
-        // Specific error handling
-        if (error.message.includes('does not exist')) {
-          throw new Error('Videos-Bucket nicht gefunden. Bitte kontaktieren Sie den Administrator.');
-        } else if (error.message.includes('policy')) {
-          throw new Error('Keine Berechtigung für Video-Upload. Überprüfen Sie Ihre Rolle.');
-        } else if (error.message.includes('size')) {
-          throw new Error('Video ist zu groß. Maximale Größe: 50MB.');
-        } else {
-          throw new Error(`Upload fehlgeschlagen: ${error.message}`);
-        }
+        throw new Error('Upload fehlgeschlagen. Bitte versuchen Sie es erneut.');
       }
 
       const { data: urlData } = supabase.storage
         .from('videos')
         .getPublicUrl(data.path);
 
-      // Store metadata in admin_videos table with better error handling
+      // Store metadata in admin_videos table
       const { error: dbError } = await supabase
         .from('admin_videos')
         .insert({
