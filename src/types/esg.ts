@@ -6,6 +6,8 @@ export interface ESGMetric {
   unit?: string;
   color: string;
   progress?: number;
+  title: string;
+  description: string;
 }
 
 export interface ESGGoal {

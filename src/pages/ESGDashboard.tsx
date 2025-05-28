@@ -9,12 +9,7 @@ import { useESGDashboardMetrics, useESGGoals } from "@/utils/esg-utils";
 import { getMockESGData } from "@/types/esg";
 import type { ESGMetric } from "@/types/esg";
 
-interface MetricCardProps extends ESGMetric {
-  title: string;
-  description: string;
-}
-
-const MetricCard: React.FC<MetricCardProps> = ({ 
+const MetricCard: React.FC<ESGMetric> = ({ 
   icon: IconComponent, 
   title, 
   value, 
