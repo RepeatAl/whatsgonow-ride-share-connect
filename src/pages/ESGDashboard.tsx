@@ -4,16 +4,14 @@ import { useTranslation } from "react-i18next";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Leaf, TrendingUp, Award, Users, Route, Recycle } from "lucide-react";
+import { Leaf } from "lucide-react";
+import { useESGDashboardMetrics, useESGGoals } from "@/utils/esg-utils";
+import { getMockESGData } from "@/types/esg";
+import type { ESGMetric } from "@/types/esg";
 
-interface MetricCardProps {
-  icon: React.ComponentType<{ className?: string }>;
+interface MetricCardProps extends ESGMetric {
   title: string;
-  value: string | number;
-  unit?: string;
   description: string;
-  progress?: number;
-  color: string;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ 
@@ -43,71 +41,40 @@ const MetricCard: React.FC<MetricCardProps> = ({
 );
 
 const ESGDashboard = () => {
-  const { t } = useTranslation(["common", "landing"]);
+  const { t, ready } = useTranslation(["common", "landing"]);
 
-  // Mock ESG data - in real implementation this would come from API
-  const esgMetrics = [
-    {
-      icon: Leaf,
-      title: "CO₂-Einsparung",
-      value: 1247,
-      unit: "kg",
-      description: "Durch geteilte Fahrten eingespart",
-      progress: 78,
-      color: "green"
-    },
-    {
-      icon: Route,
-      title: "Leerfahrten vermieden",
-      value: 892,
-      unit: "Fahrten",
-      description: "Diesen Monat optimiert",
-      progress: 65,
-      color: "blue"
-    },
-    {
-      icon: Users,
-      title: "Aktive Community",
-      value: 2543,
-      unit: "Nutzer",
-      description: "Registrierte Mitglieder",
-      progress: 85,
-      color: "purple"
-    },
-    {
-      icon: TrendingUp,
-      title: "Effizienz-Steigerung",
-      value: 34,
-      unit: "%",
-      description: "Verbesserung der Routenoptimierung",
-      progress: 34,
-      color: "orange"
-    },
-    {
-      icon: Recycle,
-      title: "Wiederverwendungsrate",
-      value: 89,
-      unit: "%",
-      description: "Erfolgreich vermittelte Gegenstände",
-      progress: 89,
-      color: "teal"
-    },
-    {
-      icon: Award,
-      title: "ESG-Score",
-      value: "A-",
-      unit: "",
-      description: "Nachhaltigkeitsbewertung 2024",
-      progress: 87,
-      color: "amber"
-    }
-  ];
+  // Get ESG data using the new utility system
+  const esgData = getMockESGData();
+  const esgMetrics = useESGDashboardMetrics(esgData);
+  const esgGoals = useESGGoals(esgData);
 
-  const environmentalGoals = [
-    { goal: "CO₂-Neutralität bis 2030", progress: 45, description: "Auf gutem Weg" },
-    { goal: "100% Elektrofahrzeuge bis 2028", progress: 23, description: "Planung läuft" },
-    { goal: "Zero Waste Büros bis 2025", progress: 78, description: "Fast erreicht" }
-  ];
+  if (!ready) {
+    return (
+      <Layout pageType="public">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-8 animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-3/4 mb-4" />
+              <div className="h-4 bg-gray-200 rounded w-2/3" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-6 bg-gray-200 rounded w-1/2 mb-2" />
+                    <div className="h-3 bg-gray-200 rounded w-2/3" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout pageType="public">
@@ -115,17 +82,17 @@ const ESGDashboard = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-4">
-              ESG Dashboard - Nachhaltigkeit & Verantwortung
+              {t('esg.title', 'ESG Dashboard - Nachhaltigkeit & Verantwortung')}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              Transparente Einblicke in unsere Umwelt-, Sozial- und Governance-Leistung
+              {t('esg.description', 'Transparente Einblicke in unsere Umwelt-, Sozial- und Governance-Leistung')}
             </p>
           </div>
           
           {/* Key Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {esgMetrics.map((metric, index) => (
-              <MetricCard key={index} {...metric} />
+            {esgMetrics.map((metric) => (
+              <MetricCard key={metric.key} {...metric} />
             ))}
           </div>
 
@@ -134,19 +101,23 @@ const ESGDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Leaf className="h-5 w-5 text-green-600" />
-                Umweltziele 2024-2030
+                {t('esg.goals.title', 'Umweltziele 2024-2030')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {environmentalGoals.map((goal, index) => (
-                  <div key={index} className="space-y-2">
+                {esgGoals.map((goal, index) => (
+                  <div key={goal.key} className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="font-medium">{goal.goal}</span>
+                      <span className="font-medium">
+                        {t(`esg.goals.${goal.key}.title`, `Goal ${goal.key}`)}
+                      </span>
                       <span className="text-sm text-gray-600">{goal.progress}%</span>
                     </div>
                     <Progress value={goal.progress} className="h-2" />
-                    <p className="text-sm text-gray-600">{goal.description}</p>
+                    <p className="text-sm text-gray-600">
+                      {t(`esg.goals.${goal.key}.description`, `Description for ${goal.key}`)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -156,26 +127,26 @@ const ESGDashboard = () => {
           {/* Impact Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Unser Impact in Zahlen</CardTitle>
+              <CardTitle>{t('common.impact_summary', 'Unser Impact in Zahlen')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-semibold mb-4">Umweltauswirkungen</h3>
+                  <h3 className="font-semibold mb-4">{t('common.environmental_impact', 'Umweltauswirkungen')}</h3>
                   <ul className="space-y-2 text-sm">
-                    <li>• 1.247 kg CO₂ durch Fahrtenteilung eingespart</li>
-                    <li>• 892 Leerfahrten verhindert</li>
-                    <li>• 15% weniger Verkehr in Städten</li>
-                    <li>• 67% Reduzierung der Transportkosten</li>
+                    <li>• {esgData.metrics.co2Saved} kg CO₂ {t('common.saved_by_sharing', 'durch Fahrtenteilung eingespart')}</li>
+                    <li>• {esgData.metrics.emptyRidesAvoided} {t('common.empty_rides_prevented', 'Leerfahrten verhindert')}</li>
+                    <li>• 15% {t('common.less_traffic', 'weniger Verkehr in Städten')}</li>
+                    <li>• 67% {t('common.cost_reduction', 'Reduzierung der Transportkosten')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-4">Soziale Auswirkungen</h3>
+                  <h3 className="font-semibold mb-4">{t('common.social_impact', 'Soziale Auswirkungen')}</h3>
                   <ul className="space-y-2 text-sm">
-                    <li>• 2.543 aktive Community-Mitglieder</li>
-                    <li>• 156 neue Einkommensmöglichkeiten für Fahrer</li>
-                    <li>• 98% Zufriedenheitsrate bei Nutzern</li>
-                    <li>• 45 Städte und Regionen erreicht</li>
+                    <li>• {esgData.metrics.activeUsers} {t('common.active_members', 'aktive Community-Mitglieder')}</li>
+                    <li>• 156 {t('common.income_opportunities', 'neue Einkommensmöglichkeiten für Fahrer')}</li>
+                    <li>• {esgData.metrics.reuseRate}% {t('common.satisfaction_rate', 'Zufriedenheitsrate bei Nutzern')}</li>
+                    <li>• 45 {t('common.cities_reached', 'Städte und Regionen erreicht')}</li>
                   </ul>
                 </div>
               </div>

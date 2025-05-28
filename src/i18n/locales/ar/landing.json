@@ -77,6 +77,46 @@
       "title": "تقييم ESG",
       "description": "تقييم الاستدامة"
     },
+    "dashboard": {
+      "dashboard_metric1": {
+        "title": "توفير ثاني أكسيد الكربون",
+        "description": "تم توفيرها من خلال الرحلات المشتركة"
+      },
+      "dashboard_metric2": {
+        "title": "الرحلات الفارغة المتجنبة",
+        "description": "تم تحسينها هذا الشهر"
+      },
+      "dashboard_metric3": {
+        "title": "المجتمع النشط",
+        "description": "الأعضاء المسجلون"
+      },
+      "dashboard_metric4": {
+        "title": "تحسين الكفاءة",
+        "description": "تحسين تحسين المسار"
+      },
+      "dashboard_metric5": {
+        "title": "معدل إعادة الاستخدام",
+        "description": "العناصر المطابقة بنجاح"
+      },
+      "dashboard_metric6": {
+        "title": "نقاط ESG",
+        "description": "تقييم الاستدامة 2024"
+      }
+    },
+    "goals": {
+      "goal1": {
+        "title": "الحياد الكربوني بحلول 2030",
+        "description": "على المسار الصحيح"
+      },
+      "goal2": {
+        "title": "100% مركبات كهربائية بحلول 2028",
+        "description": "التخطيط جاري"
+      },
+      "goal3": {
+        "title": "مكاتب خالية من النفايات بحلول 2025",
+        "description": "تم تحقيقها تقريباً"
+      }
+    },
     "cta_button": "عرض لوحة ESG"
   },
   "cta": {

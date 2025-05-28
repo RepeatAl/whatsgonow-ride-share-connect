@@ -77,6 +77,46 @@
       "title": "ESG-Rating",
       "description": "Nachhaltigkeitsbewertung"
     },
+    "dashboard": {
+      "dashboard_metric1": {
+        "title": "CO₂-Einsparung",
+        "description": "Durch geteilte Fahrten eingespart"
+      },
+      "dashboard_metric2": {
+        "title": "Leerfahrten vermieden", 
+        "description": "Diesen Monat optimiert"
+      },
+      "dashboard_metric3": {
+        "title": "Aktive Community",
+        "description": "Registrierte Mitglieder"
+      },
+      "dashboard_metric4": {
+        "title": "Effizienz-Steigerung",
+        "description": "Verbesserung der Routenoptimierung"
+      },
+      "dashboard_metric5": {
+        "title": "Wiederverwendungsrate",
+        "description": "Erfolgreich vermittelte Gegenstände"
+      },
+      "dashboard_metric6": {
+        "title": "ESG-Score",
+        "description": "Nachhaltigkeitsbewertung 2024"
+      }
+    },
+    "goals": {
+      "goal1": {
+        "title": "CO₂-Neutralität bis 2030",
+        "description": "Auf gutem Weg"
+      },
+      "goal2": {
+        "title": "100% Elektrofahrzeuge bis 2028", 
+        "description": "Planung läuft"
+      },
+      "goal3": {
+        "title": "Zero Waste Büros bis 2025",
+        "description": "Fast erreicht"
+      }
+    },
     "cta_button": "ESG-Dashboard anzeigen"
   },
   "cta": {

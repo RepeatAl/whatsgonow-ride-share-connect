@@ -77,6 +77,46 @@
       "title": "ESG Rating",
       "description": "Sustainability assessment"
     },
+    "dashboard": {
+      "dashboard_metric1": {
+        "title": "CO₂ Savings",
+        "description": "Saved through shared rides"
+      },
+      "dashboard_metric2": {
+        "title": "Empty Rides Avoided",
+        "description": "Optimized this month"
+      },
+      "dashboard_metric3": {
+        "title": "Active Community",
+        "description": "Registered members"
+      },
+      "dashboard_metric4": {
+        "title": "Efficiency Improvement",
+        "description": "Route optimization enhancement"
+      },
+      "dashboard_metric5": {
+        "title": "Reuse Rate",
+        "description": "Successfully matched items"
+      },
+      "dashboard_metric6": {
+        "title": "ESG Score",
+        "description": "Sustainability rating 2024"
+      }
+    },
+    "goals": {
+      "goal1": {
+        "title": "Carbon neutrality by 2030",
+        "description": "On track"
+      },
+      "goal2": {
+        "title": "100% electric vehicles by 2028",
+        "description": "Planning underway"
+      },
+      "goal3": {
+        "title": "Zero waste offices by 2025",
+        "description": "Nearly achieved"
+      }
+    },
     "cta_button": "View ESG Dashboard"
   },
   "cta": {
