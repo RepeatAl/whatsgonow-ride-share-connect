@@ -1,137 +1,97 @@
 
-import { useState } from 'react';
-import { supabase } from "@/lib/supabaseClient";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/use-toast";
-import { UserRole } from "@/types/auth";
-import { Loader2 } from "lucide-react";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { ChevronDown } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
 
-// This component follows the conventions from /docs/conventions/roles_and_ids.md
 interface RoleManagerProps {
   userId: string;
   currentRole: string;
-  onRoleChanged: () => void;
   userEmail: string;
+  onRoleChanged: () => void;
 }
 
-export function RoleManager({ userId, currentRole, onRoleChanged, userEmail }: RoleManagerProps) {
-  const [selectedRole, setSelectedRole] = useState<string>(currentRole);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const availableRoles: UserRole[] = [
-    "sender_private",
-    "sender_business", 
-    "driver", 
-    "cm", 
-    "admin", 
-    "super_admin"
-  ];
+const AVAILABLE_ROLES = [
+  { value: 'super_admin', label: 'Super Admin', color: 'destructive' },
+  { value: 'admin', label: 'Admin', color: 'default' },
+  { value: 'cm', label: 'Community Manager', color: 'secondary' },
+  { value: 'sender_private', label: 'Sender (Privat)', color: 'outline' },
+  { value: 'sender_business', label: 'Sender (Business)', color: 'outline' },
+  { value: 'driver', label: 'Driver', color: 'outline' }
+] as const;
 
-  const handleRoleChange = async () => {
-    if (selectedRole === currentRole) {
-      setIsConfirmOpen(false);
-      return;
-    }
+export const RoleManager: React.FC<RoleManagerProps> = ({
+  userId,
+  currentRole,
+  userEmail,
+  onRoleChanged
+}) => {
+  const [isChanging, setIsChanging] = useState(false);
+
+  const changeRole = async (newRole: string) => {
+    if (newRole === currentRole) return;
     
-    setIsLoading(true);
+    setIsChanging(true);
     try {
-      // Call the assign_role function
+      // Use the assign_role function for secure role changes
       const { data, error } = await supabase.rpc('assign_role', {
         target_user_id: userId,
-        new_role: selectedRole
+        new_role: newRole
       });
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Rolle geändert",
-        description: `Benutzer ${userEmail} ist jetzt ${selectedRole}`,
+        description: `${userEmail} ist jetzt ${newRole}`,
       });
       
       onRoleChanged();
     } catch (error) {
-      console.error("Error changing role:", error);
+      console.error('Error changing role:', error);
       toast({
         title: "Fehler",
-        description: `Konnte Rolle nicht ändern: ${(error as Error).message}`,
+        description: "Rolle konnte nicht geändert werden.",
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
-      setIsConfirmOpen(false);
+      setIsChanging(false);
     }
   };
-  
-  const roleChanged = selectedRole !== currentRole;
-  
+
+  const currentRoleInfo = AVAILABLE_ROLES.find(role => role.value === currentRole);
+
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <Select
-          value={selectedRole}
-          onValueChange={setSelectedRole}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder={currentRole} />
-          </SelectTrigger>
-          <SelectContent>
-            {availableRoles.map(role => (
-              <SelectItem key={role} value={role}>
-                {role}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        <Button 
-          size="sm" 
-          variant={roleChanged ? "default" : "ghost"}
-          onClick={() => setIsConfirmOpen(true)}
-          disabled={!roleChanged || isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Speichern...
-            </>
-          ) : (
-            'Speichern'
-          )}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" disabled={isChanging}>
+          <Badge variant={currentRoleInfo?.color || 'outline'} className="mr-2">
+            {currentRoleInfo?.label || currentRole}
+          </Badge>
+          <ChevronDown className="h-3 w-3" />
         </Button>
-      </div>
-      
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Rolle ändern</AlertDialogTitle>
-            <AlertDialogDescription>
-              Möchtest du die Rolle von <strong>{userEmail}</strong> wirklich von <strong>{currentRole}</strong> zu <strong>{selectedRole}</strong> ändern?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRoleChange}>Bestätigen</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {AVAILABLE_ROLES.map((role) => (
+          <DropdownMenuItem
+            key={role.value}
+            onClick={() => changeRole(role.value)}
+            disabled={role.value === currentRole || isChanging}
+          >
+            <Badge variant={role.color} className="mr-2">
+              {role.label}
+            </Badge>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-}
+};

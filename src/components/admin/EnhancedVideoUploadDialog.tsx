@@ -6,14 +6,15 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, Play, X, CheckCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabaseClient";
+import { v4 as uuidv4 } from "uuid";
+import type { VideoUploadProps } from "@/types/admin";
 
-interface EnhancedVideoUploadDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onVideoUploaded: (url: string) => void;
-}
-
-const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: EnhancedVideoUploadDialogProps) => {
+const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({ 
+  open, 
+  onOpenChange, 
+  onVideoUploaded 
+}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -98,36 +99,65 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
     setUploadProgress(0);
     
     try {
-      // Simuliere Upload-Progress (in echtem System würde das über die Supabase Upload API kommen)
+      const fileName = `admin-${uuidv4()}.${selectedFile.name.split('.').pop()}`;
+      const filePath = `videos/${fileName}`;
+
+      // Ensure videos bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const videoBucketExists = buckets?.some(bucket => bucket.name === 'videos');
+      
+      if (!videoBucketExists) {
+        await supabase.storage.createBucket('videos', {
+          public: true,
+          allowedMimeTypes: ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'],
+          fileSizeLimit: 52428800 // 50MB
+        });
+      }
+
+      // Simulate progress for better UX
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
           }
-          return prev + 10;
+          return prev + 15;
         });
-      }, 200);
+      }, 300);
 
-      // Simuliere Upload (hier würde der echte Supabase Upload stattfinden)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const { data, error } = await supabase.storage
+        .from('videos')
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: selectedFile.type,
+          metadata: { 
+            type: 'admin-video',
+            originalName: selectedFile.name
+          }
+        });
+
       clearInterval(progressInterval);
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from('videos')
+        .getPublicUrl(data.path);
+
       setUploadProgress(100);
       setUploadStatus('success');
-      
-      // Simuliere URL (echte URL würde von Supabase kommen)
-      const mockUrl = `https://example.com/videos/${selectedFile.name}`;
       
       toast({
         title: "Upload erfolgreich",
         description: `Video "${selectedFile.name}" wurde hochgeladen`,
       });
       
+      // Auto-close after 1.5 seconds
       setTimeout(() => {
-        onVideoUploaded(mockUrl);
+        onVideoUploaded(urlData.publicUrl);
         handleClose();
-      }, 1000);
+      }, 1500);
       
     } catch (error) {
       console.error('Upload error:', error);
@@ -177,23 +207,26 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
             className="hidden"
           />
           
-          {/* Drag & Drop Area */}
+          {/* Enhanced Drag & Drop Area */}
           <div
             ref={dropRef}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer",
-              isDragging ? "border-primary bg-primary/5" : "border-gray-300 hover:border-primary/50",
+              "border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer",
+              isDragging 
+                ? "border-primary bg-primary/10 scale-105" 
+                : "border-gray-300 hover:border-primary/50 hover:bg-gray-50",
               uploadStatus === 'error' && "border-red-300 bg-red-50"
             )}
             onClick={handleSelectClick}
           >
             {uploadStatus === 'success' ? (
               <div className="space-y-2">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto animate-pulse" />
                 <p className="text-green-600 font-medium">Upload erfolgreich!</p>
+                <p className="text-sm text-green-500">Dialog schließt automatisch...</p>
               </div>
             ) : uploadStatus === 'error' ? (
               <div className="space-y-2">
@@ -211,8 +244,11 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
               </div>
             ) : (
               <div className="space-y-2">
-                <Upload className="h-12 w-12 text-gray-400 mx-auto" />
-                <p className="text-gray-600">
+                <Upload className={cn(
+                  "h-12 w-12 mx-auto transition-colors",
+                  isDragging ? "text-primary animate-bounce" : "text-gray-400"
+                )} />
+                <p className="text-gray-600 font-medium">
                   {isDragging ? 'Video hier ablegen...' : 'Video hierhin ziehen oder klicken'}
                 </p>
                 <p className="text-sm text-gray-400">
@@ -255,14 +291,12 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
             )}
           </div>
           
-          {/* Preview Mode Warning */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-              <p className="text-yellow-800">
-                <strong>Preview-Modus:</strong> Echte Uploads funktionieren nur in der Live-Version.
-              </p>
-            </div>
-          )}
+          {/* Info Notice */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm">
+            <p className="text-blue-800">
+              <strong>Info:</strong> Videos werden in Supabase Storage gespeichert und sind öffentlich zugänglich.
+            </p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

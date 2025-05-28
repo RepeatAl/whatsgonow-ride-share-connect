@@ -1,30 +1,39 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
-
-export interface AdminUser {
-  user_id: string;
-  name: string;
-  email: string;
-  role: string;
-  region: string;
-  active: boolean;
-  banned_until?: string;
-}
+import type { AdminUser } from "@/types/admin";
 
 export const useAdminUsers = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Lade alle Nutzer aus der Tabelle "profiles"
   const fetchUsers = async (): Promise<void> => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, name, email, role, region, active, banned_until');
+        .select(`
+          user_id,
+          first_name,
+          last_name,
+          email,
+          role,
+          region,
+          active,
+          banned_until
+        `)
+        .order('first_name');
+
       if (error) throw error;
-      setUsers(data || []);
+      
+      // Combine first_name and last_name to create name field
+      const transformedData = (data || []).map(user => ({
+        ...user,
+        name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'
+      }));
+      
+      setUsers(transformedData);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -37,7 +46,6 @@ export const useAdminUsers = () => {
     }
   };
 
-  // Nutzerrolle ändern
   const updateUserRole = async (userId: string, newRole: string): Promise<void> => {
     try {
       const { error } = await supabase
@@ -67,7 +75,6 @@ export const useAdminUsers = () => {
     }
   };
 
-  // Nutzerkonto aktivieren/deaktivieren
   const toggleUserActive = async (userId: string, activeStatus: boolean): Promise<void> => {
     try {
       const { error } = await supabase
@@ -99,7 +106,6 @@ export const useAdminUsers = () => {
     }
   };
 
-  // Nutzer löschen
   const deleteUser = async (userId: string): Promise<void> => {
     try {
       const { error } = await supabase

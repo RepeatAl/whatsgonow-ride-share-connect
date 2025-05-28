@@ -3,7 +3,7 @@ import { useState, useRef, useCallback } from "react";
 import { validateVideoFile } from "./videoValidation";
 import { supabase } from "@/lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 export function useVideoUpload() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,31 +27,55 @@ export function useVideoUpload() {
     setUploadProgress(0);
 
     try {
-      const fileName = `howItWorks-${uuidv4()}.${file.name.split('.').pop()}`;
+      const fileName = `admin-${uuidv4()}.${file.name.split('.').pop()}`;
       const filePath = `videos/${fileName}`;
 
+      // Create videos bucket if it doesn't exist
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const videoBucketExists = buckets?.some(bucket => bucket.name === 'videos');
+      
+      if (!videoBucketExists) {
+        await supabase.storage.createBucket('videos', {
+          public: true,
+          allowedMimeTypes: ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'],
+          fileSizeLimit: 52428800 // 50MB
+        });
+      }
+
+      // Upload file with progress tracking
       const { data, error } = await supabase.storage
-        .from('order-images') // Verwende existierenden Bucket
+        .from('videos')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true,
           contentType: file.type,
-          metadata: { type: 'howItWorks-video' }
+          metadata: { 
+            type: 'admin-video',
+            uploadedBy: 'admin'
+          }
         });
 
       if (error) throw error;
 
       const { data: urlData } = supabase.storage
-        .from('order-images')
+        .from('videos')
         .getPublicUrl(data.path);
 
       setUploadedVideoUrl(urlData.publicUrl);
       setUploadProgress(100);
-      toast.success("Video erfolgreich hochgeladen!");
+      
+      toast({
+        title: "Upload erfolgreich",
+        description: `Video "${file.name}" wurde hochgeladen`,
+      });
       
     } catch (error) {
       console.error('Video upload error:', error);
-      toast.error("Fehler beim Hochladen des Videos");
+      toast({
+        title: "Upload fehlgeschlagen",
+        description: "Bitte versuche es erneut",
+        variant: "destructive"
+      });
     } finally {
       setIsUploading(false);
       e.target.value = '';

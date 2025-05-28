@@ -1,27 +1,12 @@
 
+import React from 'react';
 import { Users, Package, BadgeCheck, Banknote, Shield } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { StatsSkeleton } from "@/components/dashboard/StatsSkeleton";
+import type { DashboardStatsProps, StatsData } from "@/types/admin";
 
-interface StatsData {
-  totalUsers: number;
-  activeUsers: number;
-  pendingKyc: number;
-  totalOrders: number;
-  completedOrders: number;
-  totalCommission: number;
-  verifiedUsers?: number;
-}
-
-interface DashboardStatsProps {
-  role?: string;
-  stats?: StatsData;
-  isLoading?: boolean;
-  timeRange?: number;
-}
-
-export const DashboardStats = ({ 
+export const DashboardStats: React.FC<DashboardStatsProps> = ({ 
   role = 'sender', 
   stats = {
     totalUsers: 0,
@@ -33,7 +18,7 @@ export const DashboardStats = ({
     verifiedUsers: 0
   }, 
   isLoading = false 
-}: DashboardStatsProps) => {
+}) => {
   if (isLoading) {
     return <StatsSkeleton />;
   }
@@ -92,5 +77,4 @@ export const DashboardStats = ({
   );
 };
 
-// Create a default export that re-exports the named export
 export default DashboardStats;

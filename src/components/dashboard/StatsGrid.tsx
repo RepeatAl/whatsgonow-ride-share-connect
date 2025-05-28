@@ -1,17 +1,16 @@
 
-import { ReactNode } from "react";
+import React from 'react';
 
 interface StatsGridProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-export const StatsGrid = ({ children }: StatsGridProps) => {
+export const StatsGrid: React.FC<StatsGridProps> = ({ children }) => {
   return (
-    <div 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" 
-      aria-label="Dashboard statistics"
-    >
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {children}
     </div>
   );
 };
+
+export default StatsGrid;

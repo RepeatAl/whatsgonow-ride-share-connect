@@ -8,11 +8,14 @@ import { EnhancedSuspendedUsersTab } from "@/components/suspension/EnhancedSuspe
 import UnsuspendExpiredUsersButton from "@/components/admin/UnsuspendExpiredUsersButton";
 import { AdminVideoUploadPanel } from "@/components/admin/AdminVideoUploadPanel";
 import { EscalationsTab } from "@/components/escalation";
+import { UsersTable } from "@/components/admin/users/UsersTable";
+import { useAdminUsers } from "@/hooks/use-admin-users";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 
 const DashboardAdminEnhanced = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const { profile } = useSimpleAuth();
+  const { users, loading, fetchUsers, updateUserRole, toggleUserActive, deleteUser } = useAdminUsers();
   
   // Nur Admins und Super-Admins können auf diese Seite zugreifen
   if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
@@ -155,11 +158,22 @@ const DashboardAdminEnhanced = () => {
                 <p className="text-muted-foreground mb-4">
                   Erweiterte Nutzerverwaltung mit verbesserter Audit-Funktionalität und intelligenter Status-Prüfung.
                 </p>
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
                   <p className="text-sm text-blue-700">
                     <strong>Berechtigung:</strong> Als {profile.role} können Sie Nutzerinformationen verwalten und Aktionen durchführen.
                   </p>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Gefunden: {users.length} Nutzer
+                  </p>
                 </div>
+                
+                <UsersTable 
+                  users={users}
+                  isLoading={loading}
+                  onToggleActive={toggleUserActive}
+                  onDeleteUser={deleteUser}
+                  onUserUpdated={fetchUsers}
+                />
               </CardContent>
             </Card>
           </TabsContent>

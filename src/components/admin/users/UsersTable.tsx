@@ -11,11 +11,10 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import type { AdminUser } from "@/hooks/use-admin-users";
 import { RoleManager } from '@/components/admin/users/RoleManager';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import type { AdminUser } from "@/types/admin";
 
-// This component follows the conventions from /docs/conventions/roles_and_ids.md
 interface UsersTableProps {
   users: AdminUser[];
   isLoading: boolean;
