@@ -23,14 +23,14 @@ export const useAdminUsers = () => {
           active,
           banned_until
         `)
-        .order('first_name');
+        .order('first_name', { nullsFirst: false });
 
       if (error) throw error;
       
-      // Combine first_name and last_name to create name field
+      // Combine first_name and last_name to create name field with fallback
       const transformedData = (data || []).map(user => ({
         ...user,
-        name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'
+        name: [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email || 'Unbekannter Nutzer'
       }));
       
       setUsers(transformedData);
@@ -38,7 +38,7 @@ export const useAdminUsers = () => {
       console.error('Error fetching users:', error);
       toast({
         title: "Fehler",
-        description: "Nutzer konnten nicht geladen werden.",
+        description: "Nutzer konnten nicht geladen werden. Bitte versuche es erneut.",
         variant: "destructive"
       });
     } finally {

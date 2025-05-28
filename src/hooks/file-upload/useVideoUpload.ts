@@ -28,38 +28,59 @@ export function useVideoUpload() {
 
     try {
       const fileName = `admin-${uuidv4()}.${file.name.split('.').pop()}`;
-      const filePath = `videos/${fileName}`;
+      const filePath = `admin/${fileName}`;
 
-      // Create videos bucket if it doesn't exist
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const videoBucketExists = buckets?.some(bucket => bucket.name === 'videos');
-      
-      if (!videoBucketExists) {
-        await supabase.storage.createBucket('videos', {
-          public: true,
-          allowedMimeTypes: ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'],
-          fileSizeLimit: 52428800 // 50MB
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 15;
         });
-      }
+      }, 300);
 
-      // Upload file with progress tracking
+      // Upload to videos bucket
       const { data, error } = await supabase.storage
         .from('videos')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: true,
+          upsert: false,
           contentType: file.type,
           metadata: { 
             type: 'admin-video',
-            uploadedBy: 'admin'
+            uploadedBy: 'admin',
+            originalName: file.name
           }
         });
+
+      clearInterval(progressInterval);
 
       if (error) throw error;
 
       const { data: urlData } = supabase.storage
         .from('videos')
         .getPublicUrl(data.path);
+
+      // Store metadata in admin_videos table
+      const { error: dbError } = await supabase
+        .from('admin_videos')
+        .insert({
+          filename: fileName,
+          original_name: file.name,
+          file_path: data.path,
+          file_size: file.size,
+          mime_type: file.type,
+          public_url: urlData.publicUrl,
+          description: `Admin-Upload: ${file.name}`,
+          tags: ['admin', 'howto']
+        });
+
+      if (dbError) {
+        console.error('Metadata storage error:', dbError);
+        // Continue anyway - video is uploaded
+      }
 
       setUploadedVideoUrl(urlData.publicUrl);
       setUploadProgress(100);
@@ -73,7 +94,7 @@ export function useVideoUpload() {
       console.error('Video upload error:', error);
       toast({
         title: "Upload fehlgeschlagen",
-        description: "Bitte versuche es erneut",
+        description: "Bitte versuche es erneut. Stelle sicher, dass der videos-Bucket existiert.",
         variant: "destructive"
       });
     } finally {

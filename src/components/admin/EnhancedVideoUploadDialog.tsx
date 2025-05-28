@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
+import { validateVideoFile } from "@/hooks/file-upload/videoValidation";
 import type { VideoUploadProps } from "@/types/admin";
 
 const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({ 
@@ -34,25 +35,9 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
     setIsDragging(false);
   }, []);
 
-  const validateFile = useCallback((file: File): boolean => {
-    const maxSize = 50 * 1024 * 1024; // 50MB
-    const allowedTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'];
-    
-    if (!allowedTypes.includes(file.type)) {
-      setErrorMessage('Nur MP4, WebM und MOV Dateien sind erlaubt');
-      return false;
-    }
-    
-    if (file.size > maxSize) {
-      setErrorMessage('Datei ist zu groß. Maximum: 50MB');
-      return false;
-    }
-    
-    return true;
-  }, []);
-
   const handleFileSelect = useCallback((file: File) => {
-    if (!validateFile(file)) {
+    if (!validateVideoFile(file)) {
+      setErrorMessage('Ungültiges Videoformat oder Datei zu groß (max. 50MB)');
       setUploadStatus('error');
       return;
     }
@@ -60,7 +45,7 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
     setSelectedFile(file);
     setUploadStatus('idle');
     setErrorMessage('');
-  }, [validateFile]);
+  }, []);
 
   const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,19 +85,7 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
     
     try {
       const fileName = `admin-${uuidv4()}.${selectedFile.name.split('.').pop()}`;
-      const filePath = `videos/${fileName}`;
-
-      // Ensure videos bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const videoBucketExists = buckets?.some(bucket => bucket.name === 'videos');
-      
-      if (!videoBucketExists) {
-        await supabase.storage.createBucket('videos', {
-          public: true,
-          allowedMimeTypes: ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'],
-          fileSizeLimit: 52428800 // 50MB
-        });
-      }
+      const filePath = `admin/${fileName}`;
 
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
@@ -129,7 +102,7 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
         .from('videos')
         .upload(filePath, selectedFile, {
           cacheControl: '3600',
-          upsert: true,
+          upsert: false,
           contentType: selectedFile.type,
           metadata: { 
             type: 'admin-video',
@@ -144,6 +117,25 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
       const { data: urlData } = supabase.storage
         .from('videos')
         .getPublicUrl(data.path);
+
+      // Store metadata in admin_videos table
+      const { error: dbError } = await supabase
+        .from('admin_videos')
+        .insert({
+          filename: fileName,
+          original_name: selectedFile.name,
+          file_path: data.path,
+          file_size: selectedFile.size,
+          mime_type: selectedFile.type,
+          public_url: urlData.publicUrl,
+          description: `Admin-Upload: ${selectedFile.name}`,
+          tags: ['admin', 'howto']
+        });
+
+      if (dbError) {
+        console.error('Metadata storage error:', dbError);
+        // Continue anyway - video is uploaded
+      }
 
       setUploadProgress(100);
       setUploadStatus('success');
@@ -162,7 +154,7 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
     } catch (error) {
       console.error('Upload error:', error);
       setUploadStatus('error');
-      setErrorMessage('Upload fehlgeschlagen. Bitte versuche es erneut.');
+      setErrorMessage('Upload fehlgeschlagen. Stelle sicher, dass der videos-Bucket existiert.');
       toast({
         title: "Upload fehlgeschlagen",
         description: "Bitte versuche es erneut",
@@ -207,7 +199,6 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
             className="hidden"
           />
           
-          {/* Enhanced Drag & Drop Area */}
           <div
             ref={dropRef}
             onDragOver={handleDragOver}
@@ -258,7 +249,6 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
             )}
           </div>
           
-          {/* Upload Progress */}
           {isUploading && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -269,7 +259,6 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
             </div>
           )}
           
-          {/* Action Buttons */}
           <div className="flex justify-between gap-2">
             <Button 
               variant="outline" 
@@ -291,10 +280,9 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
             )}
           </div>
           
-          {/* Info Notice */}
           <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm">
             <p className="text-blue-800">
-              <strong>Info:</strong> Videos werden in Supabase Storage gespeichert und sind öffentlich zugänglich.
+              <strong>Info:</strong> Videos werden im 'videos' Bucket gespeichert und sind nur für Admins zugänglich.
             </p>
           </div>
         </div>
