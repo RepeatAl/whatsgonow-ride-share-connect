@@ -27,11 +27,11 @@ const LogoutButton = ({
     try {
       setLoading(true);
       
-      // Verwende signOut von SimpleAuth
+      // PHASE 1 FIX: Nutze lokalen signOut von SimpleAuth (nicht global!)
       await signOut();
       
       toast({
-        description: "Erfolgreich abgemeldet",
+        description: "Erfolgreich abgemeldet (nur auf diesem Gerät)",
       });
       
       // Navigiere zur lokalisierten Startseite

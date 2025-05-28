@@ -113,8 +113,8 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("🔐 Attempting sign in for:", email);
       setLoading(true);
 
-      // Clean up any existing auth state
-      cleanupAuthState();
+      // Clean up any existing auth state - but only locally
+      cleanupLocalAuthState();
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -190,23 +190,25 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Sign out - improved
+  // Local logout function - no more global sign out!
   const signOut = async () => {
     try {
-      console.log("🚪 Signing out...");
+      console.log("🚪 Signing out locally...");
       setLoading(true);
 
-      // Clean up auth state first
-      cleanupAuthState();
+      // Clean up local auth state first
+      cleanupLocalAuthState();
 
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      // PHASE 1 FIX: Only local session logout - no global scope!
+      // This prevents logging out users on other devices/tabs
+      const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("❌ Sign out error:", error);
         // Don't throw error for sign out - still proceed with cleanup
       }
 
-      console.log("✅ Sign out successful");
+      console.log("✅ Local sign out successful");
       
       // Clear state
       setUser(null);
@@ -217,9 +219,9 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         description: "Auf Wiedersehen!",
       });
 
-      // Force page reload for clean state
+      // Navigate to home page
       setTimeout(() => {
-        window.location.href = '/de';
+        navigate(`/${currentLanguage}`, { replace: true });
       }, 100);
       
     } catch (error: any) {
@@ -229,10 +231,43 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(null);
       
       setTimeout(() => {
-        window.location.href = '/de';
+        navigate(`/${currentLanguage}`, { replace: true });
       }, 100);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Local auth state cleanup function (no global cleanup)
+  const cleanupLocalAuthState = () => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      // Environment-specific storage key isolation
+      const environment = process.env.NODE_ENV || 'development';
+      const storagePrefix = `supabase.auth-${environment}`;
+      
+      console.log("🧹 Cleaning up local auth state for environment:", environment);
+      
+      // Remove environment-specific auth tokens
+      localStorage.removeItem(`${storagePrefix}.token`);
+      
+      // Remove all Supabase auth keys from localStorage (but only current environment)
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith(storagePrefix) || key.includes(`sb-${environment}`)) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Clean sessionStorage if used
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith(storagePrefix) || key.includes(`sb-${environment}`)) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.error("Error cleaning up local auth state:", e);
+      // Non-critical error, continue execution
     }
   };
 
@@ -253,7 +288,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentSession?.user ?? null);
 
         if (event === 'SIGNED_OUT') {
-          console.log("👋 User signed out");
+          console.log("👋 User signed out locally");
         }
 
         if (mounted) {

@@ -123,8 +123,8 @@ export const authService = {
 
   async signIn(email: string, password: string) {
     try {
-      // Clean up existing state before sign in
-      this.cleanupAuthState();
+      // Clean up existing state before sign in - but only locally
+      this.cleanupLocalAuthState();
       
       console.log("🔐 Attempting sign in for:", email);
       
@@ -195,18 +195,17 @@ export const authService = {
 
   async signOut() {
     try {
-      console.log("🚪 Signing out...");
+      console.log("🚪 Signing out locally...");
       
       // Bereinigung des lokalen Speicherzustands
-      this.cleanupAuthState();
+      this.cleanupLocalAuthState();
 
-      // Global signOut für alle Geräte/Sitzungen
-      const { error } = await supabase.auth.signOut({
-        scope: 'global' 
-      });
+      // PHASE 1 FIX: Lokaler signOut - KEIN globaler Logout mehr!
+      // Das verhindert, dass Nutzer auf anderen Geräten/Tabs ausgeloggt werden
+      const { error } = await supabase.auth.signOut();
       
       if (error) throw error;
-      console.log("✅ Sign out successful");
+      console.log("✅ Local sign out successful");
       
       // Force page reload for clean state
       setTimeout(() => {
@@ -219,29 +218,35 @@ export const authService = {
     }
   },
 
-  // Hilfsfunktion zum Bereinigen aller Auth-related Items aus localStorage/sessionStorage
-  cleanupAuthState() {
+  // Hilfsfunktion zum Bereinigen lokaler Auth-State (nicht global!)
+  cleanupLocalAuthState() {
     if (typeof window === 'undefined') return; // Skip in non-browser environment
 
     try {
-      // Entferne standard auth tokens
-      localStorage.removeItem('supabase.auth.token');
+      // Environment-specific storage key isolation
+      const environment = process.env.NODE_ENV || 'development';
+      const storagePrefix = `supabase.auth-${environment}`;
       
-      // Entferne alle Supabase auth keys aus localStorage
+      console.log("🧹 Cleaning up local auth state for environment:", environment);
+      
+      // Entferne umgebungsspezifische auth tokens
+      localStorage.removeItem(`${storagePrefix}.token`);
+      
+      // Entferne alle Supabase auth keys aus localStorage (nur aktuelle Umgebung)
       Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        if (key.startsWith(storagePrefix) || key.includes(`sb-${environment}`)) {
           localStorage.removeItem(key);
         }
       });
       
       // Entferne aus sessionStorage falls verwendet
       Object.keys(sessionStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        if (key.startsWith(storagePrefix) || key.includes(`sb-${environment}`)) {
           sessionStorage.removeItem(key);
         }
       });
     } catch (e) {
-      console.error("Error cleaning up auth state:", e);
+      console.error("Error cleaning up local auth state:", e);
       // Non-critical error, continue execution
     }
   }
