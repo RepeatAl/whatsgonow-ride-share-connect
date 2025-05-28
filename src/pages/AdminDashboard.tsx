@@ -64,7 +64,7 @@ const AdminDashboard = () => {
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">{t('admin.dashboard.title', 'Admin Dashboard')}</h1>
         
-        <DashboardStats stats={stats} timeRange={parseInt(timeRange)} />
+        <DashboardStats stats={stats} isLoading={dataLoading} />
         
         <AdminToolsGrid>
           <KYCValidationTool />
