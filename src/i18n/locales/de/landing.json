@@ -8,6 +8,11 @@
   },
   "how_it_works": {
     "title": "So funktioniert's",
+    "description": "Eine einfache 3-Schritte-Anleitung für den optimalen Transport",
+    "video": {
+      "title": "Video-Anleitung",
+      "description": "In diesem Video siehst du alle Schritte im Überblick"
+    },
     "step1": {
       "title": "Gegenstand einstellen",
       "description": "Lade Details und Fotos deines Gegenstands hoch"

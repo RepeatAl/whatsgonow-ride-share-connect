@@ -8,6 +8,11 @@
   },
   "how_it_works": {
     "title": "How it works",
+    "description": "A simple 3-step guide for optimal transport",
+    "video": {
+      "title": "Video Guide",
+      "description": "Watch this video to see all steps at a glance"
+    },
     "step1": {
       "title": "List your item",
       "description": "Upload details and photos of your item"
