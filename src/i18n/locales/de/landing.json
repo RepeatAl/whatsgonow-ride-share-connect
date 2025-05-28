@@ -1,119 +1,87 @@
 
 {
-  "nav": {
-    "login": "Anmelden",
-    "register": "Registrieren",
-    "profile": "Profil",
-    "dashboard": "Dashboard"
-  },
   "hero": {
-    "title": "Teile deine Fahrt, <span class=\"text-brand-orange\">verbinde</span> Menschen",
-    "subtitle": "Nachhaltiger Transport durch intelligente Vermittlung zwischen Fahrern und Sendern",
-    "cta_learn_more": "Mehr erfahren",
-    "cta_early_access": "Early Access sichern"
+    "title": "Verbinde Versender mit Fahrern",
+    "subtitle": "Die Crowdlogistik-Plattform für spontane und planbare Transporte zwischen Privatpersonen und Kleinunternehmen",
+    "cta_primary": "Jetzt registrieren",
+    "cta_secondary": "Mehr erfahren"
   },
   "how_it_works": {
-    "title": "So funktioniert whatsgonow",
-    "description": "Einfach, sicher und nachhaltig - in nur drei Schritten zum erfolgreichen Transport",
+    "title": "So funktioniert's",
     "step1": {
-      "title": "Registrieren",
-      "description": "Erstelle dein Profil als Sender oder Fahrer"
+      "title": "Gegenstand einstellen",
+      "description": "Lade Details und Fotos deines Gegenstands hoch"
     },
     "step2": {
-      "title": "Matchen", 
-      "description": "Finde passende Transportpartner für deine Route"
+      "title": "Fahrer finden",
+      "description": "Wir verbinden dich mit Fahrern in deiner Nähe"
     },
     "step3": {
-      "title": "Transportieren",
-      "description": "Sicher und nachhaltig von A nach B"
-    },
-    "video": {
-      "title": "Sieh dir an, wie einfach es funktioniert",
-      "description": "In diesem Video erklären wir dir Schritt für Schritt, wie du whatsgonow nutzen kannst."
+      "title": "Sicher transportieren",
+      "description": "Dein Gegenstand wird sicher und schnell geliefert"
     }
   },
   "benefits": {
-    "title": "Warum whatsgonow?",
-    "time_saving": {
-      "title": "Zeitersparnis",
-      "description": "Spare Zeit durch effiziente Routenplanung und direkten Kontakt"
+    "title": "Warum Whatsgonow?",
+    "benefit1": {
+      "title": "Kostengünstig",
+      "description": "Spare bis zu 70% gegenüber herkömmlichen Lieferdiensten"
     },
-    "cost_saving": {
-      "title": "Kostenersparnis",
-      "description": "Günstigere Transporte durch geteilte Fahrtkosten"
-    },
-    "environmentally_friendly": {
+    "benefit2": {
       "title": "Umweltfreundlich",
-      "description": "Reduziere CO2-Emissionen durch optimierte Auslastung"
+      "description": "Reduziere Leerfahrten und CO₂-Emissionen"
     },
-    "security": {
-      "title": "Sicherheit",
-      "description": "Verifizierte Nutzer und sichere Zahlungsabwicklung"
+    "benefit3": {
+      "title": "Flexibel",
+      "description": "Spontane oder geplante Lieferungen möglich"
     },
-    "flexibility": {
-      "title": "Flexibilität",
-      "description": "Spontane oder geplante Transporte nach deinen Bedürfnissen"
-    },
-    "sustainability": {
-      "title": "Nachhaltigkeit",
-      "description": "Reduziere CO2 durch geteilte Fahrten"
-    },
-    "efficiency": {
-      "title": "Effizienz", 
-      "description": "Nutze vorhandene Transportkapazitäten optimal"
-    },
-    "community": {
-      "title": "Community",
-      "description": "Verbinde dich mit Menschen in deiner Region"
+    "benefit4": {
+      "title": "Sicher",
+      "description": "Alle Fahrer sind verifiziert und versichert"
     }
   },
   "user_groups": {
-    "title": "Für wen ist whatsgonow?",
-    "description": "Unsere Plattform verbindet verschiedene Nutzergruppen für effiziente Transporte",
-    "private": {
-      "title": "Private Sender",
-      "description": "Versende Gegenstände günstig und umweltfreundlich",
-      "learn_more": "Mehr erfahren",
-      "early_access": "Early Access"
-    },
-    "business": {
-      "title": "Geschäftskunden", 
-      "description": "Flexible Logistiklösungen für dein Unternehmen",
-      "learn_more": "Mehr erfahren",
-      "early_access": "Early Access"
+    "title": "Für jeden etwas dabei",
+    "sender": {
+      "title": "Versender",
+      "description": "Stelle deine Gegenstände ein und finde den passenden Fahrer"
     },
     "driver": {
       "title": "Fahrer",
-      "description": "Verdiene Geld mit deinen geplanten Fahrten",
-      "learn_more": "Mehr erfahren", 
-      "early_access": "Early Access"
-    },
-    "cm": {
-      "title": "Community Manager",
-      "description": "Unterstütze whatsgonow in deiner Region",
-      "learn_more": "Mehr erfahren",
-      "early_access": "Early Access"
+      "description": "Verdiene Geld mit deinen täglichen Fahrten"
     }
   },
   "testimonials": {
-    "title": "Was unsere Community sagt",
-    "user1": {
-      "quote": "Endlich eine Plattform, die Nachhaltigkeit und Effizienz vereint!",
-      "name": "Maria, Private Senderin"
+    "title": "Was unsere Nutzer sagen",
+    "testimonial1": {
+      "text": "Whatsgonow hat mir geholfen, meine alten Möbel günstig zu transportieren.",
+      "author": "Maria Schmidt"
     },
-    "user2": {
-      "quote": "Ich verdiene jetzt Geld mit Fahrten, die ich sowieso mache.",
-      "name": "Thomas, Fahrer"
+    "testimonial2": {
+      "text": "Als Fahrer verdiene ich nebenbei Geld auf meinen täglichen Wegen.",
+      "author": "Tom Mueller"
     }
   },
-  "cta": {
-    "title": "Sei dabei, wenn whatsgonow startet!",
-    "description": "Melde dich jetzt für den Early Access an und sei einer der Ersten.",
-    "button_login": "Anmelden",
-    "button_register": "Jetzt dabei sein"
+  "esg": {
+    "title": "Nachhaltigkeit & Verantwortung",
+    "description": "Unser Beitrag zu einer besseren Welt durch verantwortungsvolle Logistik",
+    "metric1": {
+      "title": "CO₂ eingespart",
+      "description": "Durch geteilte Fahrten"
+    },
+    "metric2": {
+      "title": "Leerfahrten vermieden",
+      "description": "Diesen Monat"
+    },
+    "metric3": {
+      "title": "ESG-Rating",
+      "description": "Nachhaltigkeitsbewertung"
+    },
+    "cta_button": "ESG-Dashboard anzeigen"
   },
-  "faq": {
-    "title": "Häufige Fragen",
-    "button": "Alle FAQs ansehen"
+  "cta": {
+    "title": "Bereit loszulegen?",
+    "description": "Melde dich heute an und werde Teil der Whatsgonow-Community",
+    "button": "Kostenlos registrieren"
   }
 }
