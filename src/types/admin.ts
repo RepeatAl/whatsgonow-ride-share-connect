@@ -20,3 +20,31 @@ export interface VideoUploadMetadata {
   tags?: string[];
   isPublic?: boolean;
 }
+
+export interface StatsData {
+  totalUsers: number;
+  activeUsers: number;
+  pendingKyc: number;
+  totalOrders: number;
+  completedOrders: number;
+  totalCommission: number;
+  verifiedUsers?: number;
+}
+
+export interface DashboardStatsProps {
+  role?: string;
+  stats?: StatsData;
+  isLoading?: boolean;
+}
+
+export interface AdminUser {
+  user_id: string;
+  name: string;
+  email: string;
+  role: string;
+  region: string;
+  active: boolean;
+  first_name?: string;
+  last_name?: string;
+  banned_until?: string;
+}
