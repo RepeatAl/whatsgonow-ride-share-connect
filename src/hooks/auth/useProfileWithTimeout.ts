@@ -11,13 +11,22 @@ export function useProfileWithTimeout(user: User | null) {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
+  // PHASE 2 FIX: Debounced and stabilized profile fetching
   const fetchUserProfile = useCallback(async () => {
     if (!user) {
       setProfile(null);
       setIsProfileLoading(false);
       setProfileError(null);
       setHasTimedOut(false);
+      setProfileLoaded(false);
+      return;
+    }
+
+    // PHASE 2 FIX: Don't fetch if already loaded for this user
+    if (profileLoaded && profile?.user_id === user.id) {
+      console.debug("🔄 Profile already loaded for user:", user.id);
       return;
     }
     
@@ -26,7 +35,7 @@ export function useProfileWithTimeout(user: User | null) {
       setProfileError(null);
       setHasTimedOut(false);
       
-      console.log("🔄 Fetching profile for user:", user.id);
+      console.debug("🔄 Fetching profile for user:", user.id);
       
       // Set up timeout
       const timeoutId = setTimeout(() => {
@@ -82,29 +91,51 @@ export function useProfileWithTimeout(user: User | null) {
         };
         
         setProfile(transformedProfile);
-        console.log("✅ Profile loaded successfully:", transformedProfile.role);
+        setProfileLoaded(true);
+        console.debug("✅ Profile loaded successfully:", transformedProfile.role);
       } else {
         console.warn("⚠️ No profile found for user", user.id);
         setProfile(null);
         setProfileError("No profile found - please contact support");
+        setProfileLoaded(false);
       }
       
     } catch (error) {
       console.error("❌ Error loading profile:", error);
       setProfileError((error as Error).message || "Failed to load profile");
+      setProfileLoaded(false);
     } finally {
       setIsProfileLoading(false);
     }
-  }, [user]);
+  }, [user, profile?.user_id, profileLoaded]);
 
   const refreshProfile = useCallback(async () => {
-    console.log("🔄 Refreshing profile...");
+    console.debug("🔄 Refreshing profile...");
+    setProfileLoaded(false); // Force reload
     await fetchUserProfile();
   }, [fetchUserProfile]);
 
+  // PHASE 2 FIX: Only fetch profile when user changes and auth is stable
   useEffect(() => {
-    fetchUserProfile();
-  }, [fetchUserProfile]);
+    // Reset profile state when user changes
+    if (!user) {
+      setProfile(null);
+      setProfileLoaded(false);
+      setProfileError(null);
+      setHasTimedOut(false);
+      return;
+    }
+
+    // Only fetch if we don't have a profile for this specific user
+    if (!profileLoaded || profile?.user_id !== user.id) {
+      console.debug("🔄 User changed or profile not loaded, fetching...", { 
+        userId: user.id, 
+        profileLoaded, 
+        currentProfileUserId: profile?.user_id 
+      });
+      fetchUserProfile();
+    }
+  }, [user?.id, fetchUserProfile, profileLoaded, profile?.user_id]);
 
   return {
     profile,

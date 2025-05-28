@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
@@ -29,6 +29,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasInitialRedirectRun, setHasInitialRedirectRun] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { currentLanguage } = useLanguageMCP();
@@ -42,13 +43,24 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     hasTimedOut: hasProfileTimedOut 
   } = useProfileWithTimeout(user);
 
-  // Centralized redirect logic
+  // PHASE 2 FIX: Centralized redirect logic - only triggers once after auth is loaded
   useEffect(() => {
-    // Don't redirect while loading
-    if (loading || isProfileLoading) {
-      console.log("🔄 Auth redirect waiting for loading to complete...", { loading, isProfileLoading });
+    // Don't redirect while loading or if we already ran the initial redirect
+    if (loading || isProfileLoading || hasInitialRedirectRun) {
+      console.debug("🔄 Redirect logic waiting...", { 
+        loading, 
+        isProfileLoading, 
+        hasInitialRedirectRun,
+        currentPath: location.pathname 
+      });
       return;
     }
+
+    console.debug("🎯 Running redirect logic", { 
+      user: !!user, 
+      profile: !!profile, 
+      currentPath: location.pathname 
+    });
 
     const currentPath = location.pathname;
     const isAuthPage = currentPath.includes('/login') || 
@@ -57,7 +69,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
 
     // If user is authenticated and on auth page, redirect to role-specific dashboard
     if (user && profile && isAuthPage) {
-      console.log("✅ User authenticated with profile, redirecting from auth page", { 
+      console.debug("✅ User authenticated with profile, redirecting from auth page", { 
         role: profile.role,
         currentPath 
       });
@@ -84,33 +96,44 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
           dashboardPath = `/${currentLanguage}/dashboard`;
       }
       
-      console.log("🎯 Redirecting to:", dashboardPath);
+      console.debug("🎯 Redirecting to:", dashboardPath);
       navigate(dashboardPath, { replace: true });
+      setHasInitialRedirectRun(true);
       return;
     }
 
     // If user is authenticated but no profile, redirect to complete profile
     if (user && !profile && !isAuthPage) {
-      console.log("⚠️ User authenticated but no profile, redirecting to profile");
+      console.debug("⚠️ User authenticated but no profile, redirecting to profile");
       const profilePath = `/${currentLanguage}/profile`;
       navigate(profilePath, { replace: true });
+      setHasInitialRedirectRun(true);
       return;
     }
 
     // If not authenticated and trying to access protected route
     if (!user && !isAuthPage && !currentPath.includes('/about') && !currentPath.includes('/faq') && currentPath !== `/${currentLanguage}`) {
-      console.log("🔒 Not authenticated, redirecting to login");
+      console.debug("🔒 Not authenticated, redirecting to login");
       const loginPath = `/${currentLanguage}/login`;
       navigate(loginPath, { replace: true });
+      setHasInitialRedirectRun(true);
       return;
     }
 
-  }, [user, profile, loading, isProfileLoading, location.pathname, navigate, currentLanguage]);
+    // Mark initial redirect as complete
+    setHasInitialRedirectRun(true);
 
-  // Sign in with email and password - with enhanced error handling
-  const signIn = async (email: string, password: string) => {
+  }, [user, profile, loading, isProfileLoading, location.pathname, navigate, currentLanguage, hasInitialRedirectRun]);
+
+  // Reset redirect flag when user changes (login/logout)
+  useEffect(() => {
+    setHasInitialRedirectRun(false);
+  }, [user?.id]);
+
+  // PHASE 2 FIX: Optimized sign in with better error handling
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
-      console.log("🔐 Attempting sign in for:", email);
+      console.debug("🔐 Attempting sign in for:", email);
       setLoading(true);
 
       // Clean up any existing auth state - but only locally
@@ -135,7 +158,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      console.log("✅ Sign in successful:", data.user?.email);
+      console.debug("✅ Sign in successful:", data.user?.email);
       toast({
         title: "Anmeldung erfolgreich",
         description: "Willkommen zurück!",
@@ -146,12 +169,12 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Sign up with email, password and metadata
-  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+  // PHASE 2 FIX: Optimized sign up with better error handling
+  const signUp = useCallback(async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
-      console.log("📝 Attempting sign up for:", email);
+      console.debug("📝 Attempting sign up for:", email);
       setLoading(true);
 
       const { data, error } = await supabase.auth.signUp({
@@ -169,7 +192,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      console.log("✅ Sign up successful:", data);
+      console.debug("✅ Sign up successful:", data);
       
       if (data.user && !data.session) {
         toast({
@@ -188,12 +211,12 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Local logout function - no more global sign out!
-  const signOut = async () => {
+  // PHASE 2 FIX: Local logout function - no more global sign out!
+  const signOut = useCallback(async () => {
     try {
-      console.log("🚪 Signing out locally...");
+      console.debug("🚪 Signing out locally...");
       setLoading(true);
 
       // Clean up local auth state first
@@ -208,11 +231,12 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         // Don't throw error for sign out - still proceed with cleanup
       }
 
-      console.log("✅ Local sign out successful");
+      console.debug("✅ Local sign out successful");
       
       // Clear state
       setUser(null);
       setSession(null);
+      setHasInitialRedirectRun(false);
       
       toast({
         title: "Abmeldung erfolgreich",
@@ -229,6 +253,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       // Still try to clear state even if sign out failed
       setUser(null);
       setSession(null);
+      setHasInitialRedirectRun(false);
       
       setTimeout(() => {
         navigate(`/${currentLanguage}`, { replace: true });
@@ -236,10 +261,10 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, currentLanguage]);
 
-  // Local auth state cleanup function (no global cleanup)
-  const cleanupLocalAuthState = () => {
+  // PHASE 1 FIX: Local auth state cleanup function (no global cleanup)
+  const cleanupLocalAuthState = useCallback(() => {
     if (typeof window === 'undefined') return;
 
     try {
@@ -247,7 +272,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       const environment = process.env.NODE_ENV || 'development';
       const storagePrefix = `supabase.auth-${environment}`;
       
-      console.log("🧹 Cleaning up local auth state for environment:", environment);
+      console.debug("🧹 Cleaning up local auth state for environment:", environment);
       
       // Remove environment-specific auth tokens
       localStorage.removeItem(`${storagePrefix}.token`);
@@ -269,18 +294,18 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error cleaning up local auth state:", e);
       // Non-critical error, continue execution
     }
-  };
+  }, []);
 
-  // Initialize auth state and listeners
+  // PHASE 2 FIX: Initialize auth state and listeners - optimized with better error handling
   useEffect(() => {
-    console.log("🚀 Initializing SimpleAuthContext...");
+    console.debug("🚀 Initializing SimpleAuthContext...");
     let mounted = true;
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        console.log("🔄 Auth state changed:", event);
-        console.log("🔄 Session:", currentSession ? "Active" : "None");
+        console.debug("🔄 Auth state changed:", event);
+        console.debug("🔄 Session:", currentSession ? "Active" : "None");
         
         if (!mounted) return;
 
@@ -288,7 +313,8 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentSession?.user ?? null);
 
         if (event === 'SIGNED_OUT') {
-          console.log("👋 User signed out locally");
+          console.debug("👋 User signed out locally");
+          setHasInitialRedirectRun(false);
         }
 
         if (mounted) {
@@ -305,7 +331,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      console.log("📋 Initial session:", session ? "Found" : "None");
+      console.debug("📋 Initial session:", session ? "Found" : "None");
       
       if (mounted) {
         setSession(session);
@@ -320,7 +346,8 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const value = {
+  // PHASE 2 FIX: Memoized context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
     user,
     session,
     profile,
@@ -332,10 +359,22 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     signUp,
     signOut,
     refreshProfile,
-  };
+  }), [
+    user,
+    session,
+    profile,
+    loading,
+    isProfileLoading,
+    profileError,
+    hasProfileTimedOut,
+    signIn,
+    signUp,
+    signOut,
+    refreshProfile,
+  ]);
 
   return (
-    <SimpleAuthContext.Provider value={value}>
+    <SimpleAuthContext.Provider value={contextValue}>
       {children}
     </SimpleAuthContext.Provider>
   );
