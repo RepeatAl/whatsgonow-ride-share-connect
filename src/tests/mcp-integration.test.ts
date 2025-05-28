@@ -38,7 +38,6 @@ describe('MCP Integration Tests', () => {
       render(
         React.createElement(BrowserRouter, null,
           React.createElement(MCPOrchestrator, { 
-            initialLanguage: 'de',
             children: React.createElement(TestChild)
           })
         )
@@ -53,7 +52,6 @@ describe('MCP Integration Tests', () => {
       render(
         React.createElement(BrowserRouter, null,
           React.createElement(MCPOrchestrator, { 
-            initialLanguage: 'en', 
             enabledMCPs: ['language'],
             children: React.createElement(TestChild)
           })
@@ -69,7 +67,6 @@ describe('MCP Integration Tests', () => {
       render(
         React.createElement(BrowserRouter, null,
           React.createElement(MCPOrchestrator, { 
-            initialLanguage: 'de', 
             enabledMCPs: [],
             children: React.createElement(TestChild)
           })
@@ -91,7 +88,6 @@ describe('MCP Integration Tests', () => {
       render(
         React.createElement(BrowserRouter, null,
           React.createElement(MCPOrchestrator, { 
-            initialLanguage: 'de',
             children: React.createElement(ErrorChild)
           })
         )
@@ -113,7 +109,6 @@ describe('MCP Integration Tests', () => {
       render(
         React.createElement(BrowserRouter, null,
           React.createElement(MCPOrchestrator, { 
-            initialLanguage: 'de',
             children: React.createElement(TestChild)
           })
         )
@@ -122,10 +117,6 @@ describe('MCP Integration Tests', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         '[MCP-ORCHESTRATOR] Enabled MCPs:', 
         ['language']
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[MCP-ORCHESTRATOR] Initial language:', 
-        'de'
       );
       
       consoleSpy.mockRestore();
@@ -143,7 +134,7 @@ describe('MCP vs Legacy Provider Compatibility', () => {
         'getLocalizedUrl',
         'languageLoading',
         'supportedLanguages',
-        'isRtl'
+        'isRTL'
       ];
 
       // This would be tested with actual component rendering
@@ -154,7 +145,7 @@ describe('MCP vs Legacy Provider Compatibility', () => {
         'getLocalizedUrl',
         'languageLoading',
         'supportedLanguages',
-        'isRtl'
+        'isRTL'
       ]));
     });
   });
