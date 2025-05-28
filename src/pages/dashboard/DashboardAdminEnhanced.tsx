@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UsersIcon, Shield, Ban, Video } from "lucide-react";
 import { EnhancedSuspendedUsersTab } from "@/components/suspension/EnhancedSuspendedUsersTab";
 import UnsuspendExpiredUsersButton from "@/components/admin/UnsuspendExpiredUsersButton";
-import { AdminVideoUploadPanel } from "@/components/admin/AdminVideoUploadPanel";
+import AdminVideoUploadPanel from "@/components/admin/AdminVideoUploadPanel";
 import { EscalationsTab } from "@/components/escalation";
 import { UsersTable } from "@/components/admin/users/UsersTable";
 import { useAdminUsers } from "@/hooks/use-admin-users";
