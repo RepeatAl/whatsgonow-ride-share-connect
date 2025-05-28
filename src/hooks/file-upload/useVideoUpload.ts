@@ -25,6 +25,7 @@ export function useVideoUpload() {
 
     setIsUploading(true);
     setUploadProgress(0);
+    setUploadedVideoUrl(null);
 
     try {
       const fileName = `admin-${uuidv4()}.${file.name.split('.').pop()}`;
@@ -78,7 +79,9 @@ export function useVideoUpload() {
           public_url: urlData.publicUrl,
           description: `Admin-Upload: ${file.name}`,
           tags: ['admin', 'howto'],
-          uploaded_by: (await supabase.auth.getUser()).data.user?.id
+          uploaded_by: (await supabase.auth.getUser()).data.user?.id,
+          active: true,
+          public: false
         });
 
       if (dbError) {
@@ -109,7 +112,9 @@ export function useVideoUpload() {
       });
     } finally {
       setIsUploading(false);
-      e.target.value = '';
+      if (e.target) {
+        e.target.value = '';
+      }
     }
   }, []);
 

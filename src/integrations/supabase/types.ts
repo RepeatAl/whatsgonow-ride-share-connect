@@ -66,6 +66,54 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_videos: {
+        Row: {
+          active: boolean | null
+          description: string | null
+          file_path: string
+          file_size: number
+          filename: string
+          id: string
+          mime_type: string
+          original_name: string
+          public: boolean | null
+          public_url: string | null
+          tags: string[] | null
+          uploaded_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          description?: string | null
+          file_path: string
+          file_size: number
+          filename: string
+          id?: string
+          mime_type: string
+          original_name: string
+          public?: boolean | null
+          public_url?: string | null
+          tags?: string[] | null
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          description?: string | null
+          file_path?: string
+          file_size?: number
+          filename?: string
+          id?: string
+          mime_type?: string
+          original_name?: string
+          public?: boolean | null
+          public_url?: string | null
+          tags?: string[] | null
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       analytics: {
         Row: {
           id: string
