@@ -53,4 +53,18 @@ export interface AdminVideo {
   description?: string;
   tags?: string[];
   active: boolean;
+  // Zukünftige Erweiterung für mehrsprachige Metadaten
+  metadata_i18n?: {
+    [language: string]: {
+      title?: string;
+      description?: string;
+      tags?: string[];
+    };
+  };
+}
+
+export interface VideoUploadError {
+  type: 'bucket_not_found' | 'permission_denied' | 'file_too_large' | 'invalid_format' | 'network_error' | 'unknown';
+  message: string;
+  originalError?: any;
 }

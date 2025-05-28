@@ -3,7 +3,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Upload, Play, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, Play, X, CheckCircle, AlertCircle, FileVideo } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
@@ -98,6 +98,9 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
         });
       }, 300);
 
+      // Get current user for metadata
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { data, error } = await supabase.storage
         .from('videos')
         .upload(filePath, selectedFile, {
@@ -106,13 +109,27 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
           contentType: selectedFile.type,
           metadata: { 
             type: 'admin-video',
-            originalName: selectedFile.name
+            originalName: selectedFile.name,
+            uploadedBy: user?.id || 'unknown'
           }
         });
 
       clearInterval(progressInterval);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        
+        // Specific error handling
+        if (error.message.includes('does not exist')) {
+          throw new Error('Videos-Bucket existiert nicht. Kontaktieren Sie den Administrator.');
+        } else if (error.message.includes('policy')) {
+          throw new Error('Keine Upload-Berechtigung. Überprüfen Sie Ihre Rolle.');
+        } else if (error.message.includes('size')) {
+          throw new Error('Video zu groß. Maximale Größe: 50MB.');
+        } else {
+          throw new Error(`Upload fehlgeschlagen: ${error.message}`);
+        }
+      }
 
       const { data: urlData } = supabase.storage
         .from('videos')
@@ -129,12 +146,18 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
           mime_type: selectedFile.type,
           public_url: urlData.publicUrl,
           description: `Admin-Upload: ${selectedFile.name}`,
-          tags: ['admin', 'howto']
+          tags: ['admin', 'howto'],
+          uploaded_by: user?.id
         });
 
       if (dbError) {
         console.error('Metadata storage error:', dbError);
         // Continue anyway - video is uploaded
+        toast({
+          title: "Warnung",
+          description: "Video hochgeladen, aber Metadaten konnten nicht gespeichert werden.",
+          variant: "destructive"
+        });
       }
 
       setUploadProgress(100);
@@ -154,10 +177,12 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
     } catch (error) {
       console.error('Upload error:', error);
       setUploadStatus('error');
-      setErrorMessage('Upload fehlgeschlagen. Stelle sicher, dass der videos-Bucket existiert.');
+      const message = error instanceof Error ? error.message : 'Unbekannter Fehler beim Upload';
+      setErrorMessage(message);
+      
       toast({
         title: "Upload fehlgeschlagen",
-        description: "Bitte versuche es erneut",
+        description: message,
         variant: "destructive"
       });
     } finally {
@@ -176,12 +201,21 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
     fileInputRef.current?.click();
   }, []);
 
+  const getFileIcon = () => {
+    if (uploadStatus === 'success') return CheckCircle;
+    if (uploadStatus === 'error') return AlertCircle;
+    if (selectedFile) return FileVideo;
+    return Upload;
+  };
+
+  const FileIcon = getFileIcon();
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Video hochladen</DialogTitle>
+            <DialogTitle>Admin Video Upload</DialogTitle>
             {!isUploading && (
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 <X className="h-4 w-4" />
@@ -209,7 +243,8 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
               isDragging 
                 ? "border-primary bg-primary/10 scale-105" 
                 : "border-gray-300 hover:border-primary/50 hover:bg-gray-50",
-              uploadStatus === 'error' && "border-red-300 bg-red-50"
+              uploadStatus === 'error' && "border-red-300 bg-red-50",
+              uploadStatus === 'success' && "border-green-300 bg-green-50"
             )}
             onClick={handleSelectClick}
           >
@@ -227,10 +262,13 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
               </div>
             ) : selectedFile ? (
               <div className="space-y-2">
-                <Play className="h-12 w-12 text-blue-500 mx-auto" />
+                <FileVideo className="h-12 w-12 text-blue-500 mx-auto" />
                 <p className="font-medium">{selectedFile.name}</p>
                 <p className="text-sm text-gray-500">
                   {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
+                </p>
+                <p className="text-xs text-blue-600">
+                  Bereit zum Upload
                 </p>
               </div>
             ) : (
@@ -282,7 +320,7 @@ const EnhancedVideoUploadDialog: React.FC<VideoUploadProps> = ({
           
           <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm">
             <p className="text-blue-800">
-              <strong>Info:</strong> Videos werden im 'videos' Bucket gespeichert und sind nur für Admins zugänglich.
+              <strong>Info:</strong> Videos werden sicher im Admin-Bereich gespeichert und sind nur für berechtigte Nutzer zugänglich.
             </p>
           </div>
         </div>

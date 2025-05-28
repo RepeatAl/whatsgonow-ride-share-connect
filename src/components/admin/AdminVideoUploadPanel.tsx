@@ -2,35 +2,46 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Video, Upload, Trash2, Eye } from "lucide-react";
+import { Video, Upload, Trash2, Eye, AlertCircle } from "lucide-react";
 import EnhancedVideoUploadDialog from "./EnhancedVideoUploadDialog";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
+import { useAdminGuard } from "@/hooks/useAdminGuard";
 import type { AdminVideo } from "@/types/admin";
 
 const AdminVideoUploadPanel = () => {
+  const { canManageVideos, canViewVideos, isAdmin } = useAdminGuard();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [videos, setVideos] = useState<AdminVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Early return if no access
+  if (!canViewVideos) {
+    return null;
+  }
 
   const fetchVideos = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('admin_videos')
         .select('*')
         .eq('active', true)
         .order('uploaded_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching videos:', error);
+        setError('Videos konnten nicht geladen werden');
+        return;
+      }
+      
       setVideos(data || []);
     } catch (error) {
       console.error('Error fetching videos:', error);
-      toast({
-        title: "Fehler",
-        description: "Videos konnten nicht geladen werden.",
-        variant: "destructive"
-      });
+      setError('Unerwarteter Fehler beim Laden der Videos');
     } finally {
       setLoading(false);
     }
@@ -41,19 +52,31 @@ const AdminVideoUploadPanel = () => {
       title: "Video hochgeladen",
       description: "Das Video wurde erfolgreich hochgeladen.",
     });
-    fetchVideos(); // Refresh the list
+    fetchVideos();
   };
 
   const handleDeleteVideo = async (videoId: string, filePath: string) => {
+    if (!canManageVideos) {
+      toast({
+        title: "Keine Berechtigung",
+        description: "Sie haben keine Berechtigung, Videos zu löschen.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       // Delete from storage
       const { error: storageError } = await supabase.storage
         .from('videos')
         .remove([filePath]);
 
-      if (storageError) throw storageError;
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+        // Continue anyway, mark as inactive
+      }
 
-      // Mark as inactive in database
+      // Mark as inactive in database (soft delete für Konsistenz)
       const { error: dbError } = await supabase
         .from('admin_videos')
         .update({ active: false })
@@ -66,7 +89,7 @@ const AdminVideoUploadPanel = () => {
         description: "Das Video wurde erfolgreich entfernt.",
       });
       
-      fetchVideos(); // Refresh the list
+      fetchVideos();
     } catch (error) {
       console.error('Error deleting video:', error);
       toast({
@@ -87,25 +110,36 @@ const AdminVideoUploadPanel = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Video className="h-5 w-5" />
-            Admin Video Upload
+            Admin Video Management
           </CardTitle>
-          <Button onClick={() => setIsUploadOpen(true)}>
-            <Upload className="h-4 w-4 mr-2" />
-            Video hochladen
-          </Button>
+          {canManageVideos && (
+            <Button onClick={() => setIsUploadOpen(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Video hochladen
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-800 mb-2">📹 Video-Upload Funktionalität</h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• <strong>Sichere Uploads:</strong> Videos werden im 'videos' Bucket gespeichert</li>
-              <li>• <strong>RLS-Schutz:</strong> Nur Admins können Videos hochladen und verwalten</li>
-              <li>• <strong>Metadaten:</strong> Vollständige Verwaltung mit Beschreibungen und Tags</li>
-              <li>• <strong>Drag & Drop:</strong> Einfaches Upload-Interface mit Fortschrittsanzeige</li>
-            </ul>
-          </div>
+          {isAdmin && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="font-medium text-blue-800 mb-2">📹 Video-Management System</h3>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• <strong>Sichere Uploads:</strong> Videos werden im 'videos' Bucket gespeichert</li>
+                <li>• <strong>RLS-Schutz:</strong> Nur Admins können Videos hochladen und verwalten</li>
+                <li>• <strong>Metadaten:</strong> Vollständige Verwaltung mit Beschreibungen und Tags</li>
+                <li>• <strong>Soft Delete:</strong> Videos werden als inaktiv markiert für Audit-Zwecke</li>
+              </ul>
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
 
           {loading ? (
             <div className="text-center py-8">
@@ -116,11 +150,13 @@ const AdminVideoUploadPanel = () => {
             <div className="text-center py-8 text-gray-500">
               <Video className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>Noch keine Videos hochgeladen</p>
-              <p className="text-sm">Klicke auf "Video hochladen" um zu beginnen</p>
+              {canManageVideos && (
+                <p className="text-sm">Klicke auf "Video hochladen" um zu beginnen</p>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
-              <h4 className="font-medium">Hochgeladene Videos ({videos.length})</h4>
+              <h4 className="font-medium">Videos ({videos.length})</h4>
               {videos.map((video) => (
                 <div key={video.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
@@ -142,13 +178,15 @@ const AdminVideoUploadPanel = () => {
                         <Eye className="h-4 w-4" />
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDeleteVideo(video.id, video.file_path)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {canManageVideos && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteVideo(video.id, video.file_path)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -157,11 +195,13 @@ const AdminVideoUploadPanel = () => {
         </div>
       </CardContent>
 
-      <EnhancedVideoUploadDialog
-        open={isUploadOpen}
-        onOpenChange={setIsUploadOpen}
-        onVideoUploaded={handleVideoUploaded}
-      />
+      {canManageVideos && (
+        <EnhancedVideoUploadDialog
+          open={isUploadOpen}
+          onOpenChange={setIsUploadOpen}
+          onVideoUploaded={handleVideoUploaded}
+        />
+      )}
     </Card>
   );
 };

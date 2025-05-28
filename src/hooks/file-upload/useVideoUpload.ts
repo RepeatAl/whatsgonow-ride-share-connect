@@ -41,7 +41,7 @@ export function useVideoUpload() {
         });
       }, 300);
 
-      // Upload to videos bucket
+      // Upload to videos bucket with improved error handling
       const { data, error } = await supabase.storage
         .from('videos')
         .upload(filePath, file, {
@@ -57,13 +57,26 @@ export function useVideoUpload() {
 
       clearInterval(progressInterval);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        
+        // Specific error handling
+        if (error.message.includes('does not exist')) {
+          throw new Error('Videos-Bucket nicht gefunden. Bitte kontaktieren Sie den Administrator.');
+        } else if (error.message.includes('policy')) {
+          throw new Error('Keine Berechtigung für Video-Upload. Überprüfen Sie Ihre Rolle.');
+        } else if (error.message.includes('size')) {
+          throw new Error('Video ist zu groß. Maximale Größe: 50MB.');
+        } else {
+          throw new Error(`Upload fehlgeschlagen: ${error.message}`);
+        }
+      }
 
       const { data: urlData } = supabase.storage
         .from('videos')
         .getPublicUrl(data.path);
 
-      // Store metadata in admin_videos table
+      // Store metadata in admin_videos table with better error handling
       const { error: dbError } = await supabase
         .from('admin_videos')
         .insert({
@@ -74,12 +87,17 @@ export function useVideoUpload() {
           mime_type: file.type,
           public_url: urlData.publicUrl,
           description: `Admin-Upload: ${file.name}`,
-          tags: ['admin', 'howto']
+          tags: ['admin', 'howto'],
+          uploaded_by: (await supabase.auth.getUser()).data.user?.id
         });
 
       if (dbError) {
         console.error('Metadata storage error:', dbError);
-        // Continue anyway - video is uploaded
+        toast({
+          title: "Warnung",
+          description: "Video hochgeladen, aber Metadaten konnten nicht gespeichert werden.",
+          variant: "destructive"
+        });
       }
 
       setUploadedVideoUrl(urlData.publicUrl);
@@ -92,9 +110,11 @@ export function useVideoUpload() {
       
     } catch (error) {
       console.error('Video upload error:', error);
+      const message = error instanceof Error ? error.message : 'Unbekannter Fehler beim Upload';
+      
       toast({
         title: "Upload fehlgeschlagen",
-        description: "Bitte versuche es erneut. Stelle sicher, dass der videos-Bucket existiert.",
+        description: message,
         variant: "destructive"
       });
     } finally {
