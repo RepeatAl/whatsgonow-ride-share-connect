@@ -28,21 +28,30 @@
   },
   "benefits": {
     "title": "Why Whatsgonow?",
-    "benefit1": {
+    "description": "Our platform offers numerous benefits for senders and drivers",
+    "time_saving": {
+      "title": "Time-saving",
+      "description": "Quick matching between senders and drivers for efficient transports"
+    },
+    "cost_saving": {
       "title": "Cost-effective",
       "description": "Save up to 70% compared to traditional delivery services"
     },
-    "benefit2": {
+    "environmentally_friendly": {
       "title": "Eco-friendly",
-      "description": "Reduce empty rides and CO₂ emissions"
+      "description": "Reduce empty rides and CO₂ emissions through shared transports"
     },
-    "benefit3": {
-      "title": "Flexible",
-      "description": "Spontaneous or planned deliveries possible"
-    },
-    "benefit4": {
+    "security": {
       "title": "Secure",
-      "description": "All drivers are verified and insured"
+      "description": "All drivers are verified and all transports are insured"
+    },
+    "flexibility": {
+      "title": "Flexible",
+      "description": "Spontaneous or planned deliveries possible anytime"
+    },
+    "community": {
+      "title": "Community",
+      "description": "Become part of a growing community of senders and drivers"
     }
   },
   "user_groups": {

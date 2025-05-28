@@ -28,21 +28,30 @@
   },
   "benefits": {
     "title": "Warum Whatsgonow?",
-    "benefit1": {
-      "title": "Kostengünstig",
+    "description": "Unsere Plattform bietet zahlreiche Vorteile für Versender und Fahrer",
+    "time_saving": {
+      "title": "Zeitsparend",
+      "description": "Schnelle Vermittlung zwischen Versender und Fahrer für effiziente Transporte"
+    },
+    "cost_saving": {
+      "title": "Kostengünstig", 
       "description": "Spare bis zu 70% gegenüber herkömmlichen Lieferdiensten"
     },
-    "benefit2": {
+    "environmentally_friendly": {
       "title": "Umweltfreundlich",
-      "description": "Reduziere Leerfahrten und CO₂-Emissionen"
+      "description": "Reduziere Leerfahrten und CO₂-Emissionen durch geteilte Transporte"
     },
-    "benefit3": {
-      "title": "Flexibel",
-      "description": "Spontane oder geplante Lieferungen möglich"
-    },
-    "benefit4": {
+    "security": {
       "title": "Sicher",
-      "description": "Alle Fahrer sind verifiziert und versichert"
+      "description": "Alle Fahrer sind verifiziert und alle Transporte sind versichert"
+    },
+    "flexibility": {
+      "title": "Flexibel",
+      "description": "Spontane oder geplante Lieferungen jederzeit möglich"
+    },
+    "community": {
+      "title": "Community",
+      "description": "Werde Teil einer wachsenden Gemeinschaft von Versendern und Fahrern"
     }
   },
   "user_groups": {

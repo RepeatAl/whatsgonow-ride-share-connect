@@ -42,8 +42,9 @@ export const EnhancedLanguageSEO: React.FC<EnhancedLanguageSEOProps> = ({
   const path = canonicalPath || location.pathname;
   const canonicalUrl = `${baseUrl}${path}`;
   
-  // Default Open Graph image
+  // Enhanced Open Graph image with fallback
   const defaultOgImage = `${baseUrl}/logo.png`;
+  const ogImageUrl = ogImage || defaultOgImage;
   
   // Language and country mapping
   const languageCountryMap: Record<string, string> = {
@@ -52,12 +53,31 @@ export const EnhancedLanguageSEO: React.FC<EnhancedLanguageSEOProps> = ({
     'ar': 'ar-SA'
   };
   
+  // Enhanced fallback content based on page type
+  const getPageTypeDefaults = () => {
+    const defaults = {
+      landing: {
+        title: currentLanguage === 'de' ? 'Whatsgonow - Crowdlogistik Plattform' : 
+               currentLanguage === 'ar' ? 'Whatsgonow - منصة اللوجستيات الجماعية' :
+               'Whatsgonow - Crowd Logistics Platform',
+        description: currentLanguage === 'de' ? 'Verbinde Auftraggeber und Fahrer für effiziente Transporte' :
+                    currentLanguage === 'ar' ? 'اربط بين المقاولين والسائقين للنقل الفعال' :
+                    'Connect contractors and drivers for efficient transport'
+      }
+    };
+    return defaults[pageType] || defaults.landing;
+  };
+  
+  const pageDefaults = getPageTypeDefaults();
+  const finalTitle = title || pageDefaults.title;
+  const finalDescription = description || pageDefaults.description;
+  
   return (
     <Helmet>
       {/* Basic Meta Tags */}
       <html lang={currentLanguage} />
-      {title && <title>{title}</title>}
-      {description && <meta name="description" content={description} />}
+      <title>{finalTitle}</title>
+      <meta name="description" content={finalDescription} />
       {keywords && <meta name="keywords" content={keywords} />}
       <meta name="robots" content="index, follow" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -92,39 +112,56 @@ export const EnhancedLanguageSEO: React.FC<EnhancedLanguageSEOProps> = ({
       {/* x-default for search engines (German as default) */}
       <link rel="alternate" href={`${baseUrl}/de${path === '/' ? '' : path}`} hrefLang="x-default" />
       
-      {/* Open Graph Tags */}
+      {/* Enhanced Open Graph Tags */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:title" content={ogTitle || title || 'Whatsgonow - Crowdlogistik Plattform'} />
-      <meta property="og:description" content={ogDescription || description || 'Verbinde Auftraggeber und Fahrer für effiziente Transporte'} />
-      <meta property="og:image" content={ogImage || defaultOgImage} />
+      <meta property="og:title" content={ogTitle || finalTitle} />
+      <meta property="og:description" content={ogDescription || finalDescription} />
+      <meta property="og:image" content={ogImageUrl} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={ogTitle || finalTitle} />
       <meta property="og:locale" content={languageCountryMap[currentLanguage] || currentLanguage} />
       <meta property="og:site_name" content="Whatsgonow" />
       
-      {/* Twitter Card Tags */}
+      {/* Enhanced Twitter Card Tags */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={ogTitle || title || 'Whatsgonow'} />
-      <meta name="twitter:description" content={ogDescription || description || 'Crowdlogistik Plattform'} />
-      <meta name="twitter:image" content={ogImage || defaultOgImage} />
+      <meta name="twitter:title" content={ogTitle || finalTitle} />
+      <meta name="twitter:description" content={ogDescription || finalDescription} />
+      <meta name="twitter:image" content={ogImageUrl} />
+      <meta name="twitter:image:alt" content={ogTitle || finalTitle} />
       
       {/* Additional SEO Meta Tags */}
       <meta name="author" content="Whatsgonow" />
       <meta name="copyright" content="© 2024 Whatsgonow" />
       <meta name="theme-color" content="#FF6B35" />
       
-      {/* JSON-LD Structured Data */}
+      {/* Enhanced JSON-LD Structured Data */}
       <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
           "name": "Whatsgonow",
           "url": baseUrl,
-          "description": description || "Crowdlogistik-Plattform für effiziente Transporte",
+          "description": finalDescription,
           "inLanguage": currentLanguage,
+          "image": ogImageUrl,
+          "sameAs": [
+            "https://facebook.com/whatsgonow",
+            "https://twitter.com/whatsgonow"
+          ],
           "potentialAction": {
             "@type": "SearchAction",
             "target": `${baseUrl}/search?q={search_term_string}`,
             "query-input": "required name=search_term_string"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Whatsgonow",
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${baseUrl}/logo.png`
+            }
           }
         })}
       </script>

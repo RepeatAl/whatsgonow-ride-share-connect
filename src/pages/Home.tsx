@@ -15,7 +15,12 @@ const Home = () => {
   const isRTL = i18n.language === 'ar';
 
   return (
-    <Layout pageType="landing" hideNavigation={true}>
+    <Layout 
+      pageType="landing" 
+      hideNavigation={true}
+      hideFooter={false}
+      minimal={false}
+    >
       <div className="min-h-screen" dir={isRTL ? 'rtl' : 'ltr'}>
         <Hero />
         <HowItWorks />
