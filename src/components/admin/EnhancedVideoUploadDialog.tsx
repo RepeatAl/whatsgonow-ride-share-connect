@@ -22,21 +22,23 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
   const {
     fileInputRef,
     handleVideoSelect,
-    handleVideoChange,
     isUploading,
-    uploadProgress,
-    uploadedVideoUrl
+    uploadProgress
   } = useVideoUpload();
 
   const [description, setDescription] = useState("");
-  const [tags, setTags] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
+  const [tags, setTags] = useState("howto");
+  const [isPublic, setIsPublic] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      if (!description) {
+        setDescription(`Admin-Upload: ${file.name}`);
+      }
     }
   };
 
@@ -51,56 +53,75 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
     }
 
     try {
-      // Create a mock event for the existing upload handler
-      const mockEvent = {
-        target: {
-          files: [selectedFile],
-          value: ''
-        }
-      } as any;
+      const fileName = `admin-${Date.now()}.${selectedFile.name.split('.').pop()}`;
+      const filePath = `admin/${fileName}`;
 
-      await handleVideoChange(mockEvent);
+      // Upload to videos bucket
+      const { data, error } = await supabase.storage
+        .from('videos')
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: selectedFile.type
+        });
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from('videos')
+        .getPublicUrl(data.path);
+
+      // Store metadata in admin_videos table
+      const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
       
-      // If upload was successful, save metadata
-      if (uploadedVideoUrl) {
-        const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-        
-        const { error } = await supabase
-          .from('admin_videos')
-          .update({
-            description: description || `Admin-Upload: ${selectedFile.name}`,
-            tags: tagsArray,
-            public: isPublic
-          })
-          .eq('original_name', selectedFile.name)
-          .eq('active', true);
+      const { error: dbError } = await supabase
+        .from('admin_videos')
+        .insert({
+          filename: fileName,
+          original_name: selectedFile.name,
+          file_path: data.path,
+          file_size: selectedFile.size,
+          mime_type: selectedFile.type,
+          public_url: urlData.publicUrl,
+          description: description || `Admin-Upload: ${selectedFile.name}`,
+          tags: tagsArray,
+          uploaded_by: (await supabase.auth.getUser()).data.user?.id,
+          active: true,
+          public: isPublic
+        });
 
-        if (error) {
-          console.error('Error updating video metadata:', error);
-        }
+      if (dbError) throw dbError;
 
-        onVideoUploaded(uploadedVideoUrl);
-        handleClose();
-      }
+      setUploadedVideoUrl(urlData.publicUrl);
+      
+      toast({
+        title: "Upload erfolgreich",
+        description: `Video "${selectedFile.name}" wurde ${isPublic ? 'öffentlich' : 'privat'} hochgeladen`,
+      });
+
+      onVideoUploaded(urlData.publicUrl);
+      handleClose();
+      
     } catch (error) {
       console.error('Upload error:', error);
+      const message = error instanceof Error ? error.message : 'Unbekannter Fehler beim Upload';
+      
+      toast({
+        title: "Upload fehlgeschlagen",
+        description: message,
+        variant: "destructive"
+      });
     }
   };
 
   const handleClose = () => {
     setDescription("");
-    setTags("");
-    setIsPublic(false);
+    setTags("howto");
+    setIsPublic(true);
     setSelectedFile(null);
+    setUploadedVideoUrl(null);
     onOpenChange(false);
   };
-
-  React.useEffect(() => {
-    if (uploadedVideoUrl) {
-      onVideoUploaded(uploadedVideoUrl);
-      handleClose();
-    }
-  }, [uploadedVideoUrl, onVideoUploaded]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -150,8 +171,11 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
                   id="tags"
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
-                  placeholder="Optional: Tags durch Kommas getrennt"
+                  placeholder="Tags durch Kommas getrennt"
                 />
+                <p className="text-xs text-gray-500">
+                  Tipp: "howto" für Homepage-Video verwenden
+                </p>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -191,7 +215,8 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
           )}
           
           <div className="text-xs text-gray-500">
-            Unterstützte Formate: MP4, WebM, MOV
+            Unterstützte Formate: MP4, WebM, MOV<br/>
+            Videos mit "howto" Tag werden auf der Homepage angezeigt
           </div>
         </div>
       </DialogContent>

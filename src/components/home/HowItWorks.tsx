@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Users, CheckCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Upload, Users, CheckCircle, Play } from "lucide-react";
 import VideoPlayer from "./VideoPlayer";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -65,44 +65,43 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Video Section */}
-          <div className="order-2 lg:order-1">
-            <div className="bg-white rounded-lg p-6 shadow-lg">
-              <h3 className="text-xl font-semibold mb-4 text-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Video Card */}
+          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center pb-4">
+              <div className="w-12 h-12 bg-brand-orange rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Play className="h-6 w-6 text-white" />
+              </div>
+              <CardTitle className="text-lg font-semibold text-gray-900">
                 {t('how_it_works.video.title')}
-              </h3>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
               <VideoPlayer src={videoUrl} />
               <p className="text-sm text-gray-600 mt-3 text-center">
                 {t('how_it_works.video.description')}
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Steps Section */}
-          <div className="order-1 lg:order-2 space-y-6">
-            {steps.map((step, index) => (
-              <Card key={index} className="border-l-4 border-l-brand-primary">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-brand-primary rounded-lg flex items-center justify-center">
-                        <step.icon className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {step.title}
-                      </h3>
-                      <p className="text-gray-600">
-                        {step.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Steps Cards */}
+          {steps.map((step, index) => (
+            <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardHeader className="text-center pb-4">
+                <div className="w-12 h-12 bg-brand-orange rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <step.icon className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-lg font-semibold text-gray-900">
+                  {step.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-gray-600 text-center">
+                  {step.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>

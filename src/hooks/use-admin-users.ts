@@ -20,17 +20,19 @@ export const useAdminUsers = () => {
           email,
           role,
           region,
-          active,
-          banned_until
+          is_suspended,
+          suspended_until
         `)
         .order('first_name', { nullsFirst: false });
 
       if (error) throw error;
       
-      // Combine first_name and last_name to create name field with fallback
+      // Transform data to match AdminUser interface
       const transformedData = (data || []).map(user => ({
         ...user,
-        name: [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email || 'Unbekannter Nutzer'
+        name: [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email || 'Unbekannter Nutzer',
+        active: !user.is_suspended, // Active is the inverse of suspended
+        banned_until: user.suspended_until
       }));
       
       setUsers(transformedData);
@@ -77,16 +79,21 @@ export const useAdminUsers = () => {
 
   const toggleUserActive = async (userId: string, activeStatus: boolean): Promise<void> => {
     try {
+      // Active status maps to suspension - if active=false, user is suspended
+      const suspensionData = activeStatus 
+        ? { is_suspended: false, suspended_until: null, suspension_reason: null }
+        : { is_suspended: true, suspended_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), suspension_reason: 'Administrativ deaktiviert' };
+
       const { error } = await supabase
         .from('profiles')
-        .update({ active: activeStatus })
+        .update(suspensionData)
         .eq('user_id', userId);
       if (error) throw error;
 
       setUsers(prevUsers =>
         prevUsers.map(user =>
           user.user_id === userId
-            ? { ...user, active: activeStatus }
+            ? { ...user, active: activeStatus, banned_until: suspensionData.suspended_until }
             : user
         )
       );
