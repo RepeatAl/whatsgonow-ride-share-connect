@@ -16,7 +16,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // URL-Validierung und Logging
+  // URL validation
   useEffect(() => {
     console.log('🎬 VideoPlayer received src:', src);
     
@@ -27,8 +27,8 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       return;
     }
 
-    // URL-Format validieren
-    const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('.ogg'));
+    // Simple URL validation
+    const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('.ogg') || src.includes('supabase'));
     console.log('🔍 URL validation:', { src, isValidUrl });
     
     if (!isValidUrl) {
@@ -102,7 +102,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setIsLoading(true);
   };
 
-  // Fallback für fehlende oder fehlerhafte URLs
+  // Fallback for missing or error URLs
   if (!src || hasError) {
     return placeholder || (
       <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-brand-primary to-brand-orange rounded-lg">
@@ -128,7 +128,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
     >
-      {/* Haupt-Video Element */}
+      {/* Main Video Element */}
       <video
         ref={videoRef}
         src={src}

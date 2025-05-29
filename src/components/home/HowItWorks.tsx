@@ -18,14 +18,12 @@ const HowItWorks = () => {
   useEffect(() => {
     const fetchHowItWorksVideo = async () => {
       try {
-        console.log('🎥 Fetching howto video for landing page...');
+        console.log('🎥 Fetching howto video with clean RLS policy...');
         setIsLoading(true);
         setError(null);
         
-        // Strategy 1: Einfache Query ohne Profile-Zugriff
-        console.log('📊 Attempting simple video query without profile access...');
-        
-        let { data, error } = await supabase
+        // Simple, direct query now that RLS policies are clean
+        const { data, error } = await supabase
           .from('admin_videos')
           .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
           .eq('public', true)
@@ -34,33 +32,7 @@ const HowItWorks = () => {
           .order('uploaded_at', { ascending: false })
           .limit(1);
 
-        // Strategy 2: Fallback mit overlaps
-        if (error || !data || data.length === 0) {
-          console.log('⚠️ Contains query failed, trying overlaps...', error);
-          ({ data, error } = await supabase
-            .from('admin_videos')
-            .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
-            .eq('public', true)
-            .eq('active', true)
-            .overlaps('tags', ['howto'])
-            .order('uploaded_at', { ascending: false })
-            .limit(1));
-        }
-
-        // Strategy 3: Fallback mit filter
-        if (error || !data || data.length === 0) {
-          console.log('⚠️ Overlaps query failed, trying filter...', error);
-          ({ data, error } = await supabase
-            .from('admin_videos')
-            .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
-            .eq('public', true)
-            .eq('active', true)
-            .filter('tags', 'cs', '{howto}')
-            .order('uploaded_at', { ascending: false })
-            .limit(1));
-        }
-
-        console.log('📊 Final video query result:', { 
+        console.log('📊 Video query result:', { 
           data, 
           error, 
           queryCount: data?.length || 0,
@@ -68,7 +40,7 @@ const HowItWorks = () => {
         });
 
         if (error) {
-          console.error('❌ All video query strategies failed:', error);
+          console.error('❌ Video query failed:', error);
           setError('Video aktuell nicht verfügbar. Bitte später versuchen.');
           return;
         }
@@ -85,7 +57,7 @@ const HowItWorks = () => {
             active: video.active
           });
           
-          // URL direkt validieren
+          // Set video URL
           if (video.public_url) {
             console.log('🔗 Setting video URL:', video.public_url);
             setVideoUrl(video.public_url);
@@ -95,7 +67,7 @@ const HowItWorks = () => {
             return;
           }
           
-          // Admin-Titel und -Beschreibung haben absolute Priorität
+          // Set title and description based on language
           const langKey = currentLanguage?.split('-')[0] || 'de';
           const isGerman = langKey === 'de';
           
@@ -161,7 +133,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video-Sektion mit robuster Admin-Feld-Priorisierung */}
+        {/* Video-Sektion mit bereinigter RLS-Policy */}
         <div className="mb-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-6">
