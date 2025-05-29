@@ -8,47 +8,78 @@ import { Link } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Mail, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, AlertCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 
 const ForgotPassword = () => {
   const { t } = useTranslation(["auth", "common"]);
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     
     if (!email) {
-      toast({
-        title: "Fehler",
-        description: "Bitte gib eine E-Mail-Adresse ein",
-        variant: "destructive"
-      });
+      setError("Bitte geben Sie eine E-Mail-Adresse ein");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Bitte geben Sie eine gültige E-Mail-Adresse ein");
       return;
     }
 
     setLoading(true);
+    
     try {
+      console.log("📧 Sending password reset email to:", email);
+      
+      // Important: Set the correct redirect URL for password reset
+      const resetUrl = `${window.location.origin}${getLocalizedUrl("/reset-password")}`;
+      console.log("🔗 Reset URL:", resetUrl);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/de/reset-password`,
+        redirectTo: resetUrl,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Password reset error:", error);
+        
+        // Handle specific error cases
+        if (error.message.includes("rate_limit")) {
+          setError("Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.");
+        } else if (error.message.includes("invalid_email")) {
+          setError("Die eingegebene E-Mail-Adresse ist ungültig.");
+        } else if (error.message.includes("user_not_found")) {
+          // For security reasons, we don't reveal if user exists or not
+          // So we still show success message
+          setEmailSent(true);
+        } else {
+          setError(error.message || "Es gab ein Problem beim Senden der E-Mail.");
+        }
+        return;
+      }
 
+      console.log("✅ Password reset email sent successfully");
       setEmailSent(true);
+      
       toast({
         title: "E-Mail gesendet",
-        description: "Überprüfe dein Postfach für den Passwort-Reset Link.",
+        description: "Überprüfen Sie Ihr Postfach für den Passwort-Reset Link.",
       });
+      
     } catch (error: any) {
-      toast({
-        title: "Fehler",
-        description: error.message || "Es gab ein Problem beim Senden der E-Mail.",
-        variant: "destructive"
-      });
+      console.error("❌ Unexpected error:", error);
+      setError("Unerwarteter Fehler beim Senden der E-Mail. Bitte versuchen Sie es später erneut.");
     } finally {
       setLoading(false);
     }
@@ -67,9 +98,11 @@ const ForgotPassword = () => {
               <p className="text-gray-600">
                 Wir haben einen Passwort-Reset Link an <strong>{email}</strong> gesendet.
               </p>
-              <p className="text-sm text-gray-500">
-                Überprüfe auch deinen Spam-Ordner, falls die E-Mail nicht ankommt.
-              </p>
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-blue-700 text-sm">
+                  <strong>Wichtig:</strong> Überprüfen Sie auch Ihren Spam-Ordner, falls die E-Mail nicht in den nächsten Minuten ankommt.
+                </p>
+              </div>
               <div className="space-y-2">
                 <Link to={getLocalizedUrl("/login")}>
                   <Button className="w-full">
@@ -79,7 +112,11 @@ const ForgotPassword = () => {
                 </Link>
                 <Button 
                   variant="outline" 
-                  onClick={() => setEmailSent(false)}
+                  onClick={() => {
+                    setEmailSent(false);
+                    setEmail("");
+                    setError("");
+                  }}
                   className="w-full"
                 >
                   Andere E-Mail verwenden
@@ -101,10 +138,19 @@ const ForgotPassword = () => {
               {t("auth:forgot_password", "Passwort vergessen")}
             </CardTitle>
             <p className="text-center text-gray-600 text-sm">
-              Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.
+              Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="flex">
+                  <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -113,14 +159,18 @@ const ForgotPassword = () => {
                 <Input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError(""); // Clear error when user types
+                  }}
                   placeholder={t("auth:email_placeholder", "ihre@email.com")}
                   disabled={loading}
                   required
                   autoComplete="email"
+                  className={error ? "border-red-500" : ""}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading || !email}>
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,6 +1,7 @@
 
 import { toast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 
 /**
  * Handle authentication errors and display appropriate toast messages
@@ -14,23 +15,29 @@ export const handleAuthError = (error: Error, context: string = "Aktion") => {
   
   // Übersetzte und benutzerfreundliche Fehlermeldungen
   if (error.message.includes("Email not confirmed")) {
-    errorMessage = "Bitte bestätige deine E-Mail-Adresse, um fortzufahren.";
+    errorMessage = "Bitte bestätigen Sie Ihre E-Mail-Adresse, um fortzufahren.";
   } else if (error.message.includes("Invalid login credentials")) {
-    errorMessage = "Ungültige Anmeldedaten. Bitte überprüfe deine E-Mail und dein Passwort.";
+    errorMessage = "E-Mail oder Passwort ist falsch. Bitte überprüfen Sie Ihre Eingaben.";
   } else if (error.message.includes("User already registered")) {
-    errorMessage = "Diese E-Mail-Adresse ist bereits registriert. Bitte nutze die Anmeldung.";
+    errorMessage = "Diese E-Mail-Adresse ist bereits registriert. Bitte nutzen Sie die Anmeldung.";
   } else if (error.message.includes("Email link is invalid or has expired")) {
-    errorMessage = "Der E-Mail-Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.";
-  } else if (error.message.includes("Rate limit exceeded")) {
-    errorMessage = "Zu viele Versuche. Bitte warte einen Moment und versuche es später erneut.";
+    errorMessage = "Der E-Mail-Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.";
+  } else if (error.message.includes("Rate limit exceeded") || error.message.includes("Too many requests")) {
+    errorMessage = "Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es später erneut.";
   } else if (error.message.includes("Password should be at least 6 characters")) {
     errorMessage = "Das Passwort muss mindestens 6 Zeichen lang sein.";
   } else if (error.message.includes("Signup")) {
-    errorMessage = "Fehler bei der Registrierung. Bitte versuche es später noch einmal.";
+    errorMessage = "Fehler bei der Registrierung. Bitte versuchen Sie es später noch einmal.";
   } else if (error.message.includes("infinite recursion")) {
-    errorMessage = "Es gab ein temporäres Problem. Bitte versuche es noch einmal.";
+    errorMessage = "Es gab ein temporäres Problem. Bitte versuchen Sie es noch einmal.";
     // Clear auth state to prevent stuck states
     cleanupAuthState();
+  } else if (error.message.includes("session_not_found")) {
+    errorMessage = "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.";
+  } else if (error.message.includes("same_password")) {
+    errorMessage = "Das neue Passwort muss sich vom aktuellen unterscheiden.";
+  } else if (error.message.includes("fetch") || error.message.includes("network")) {
+    errorMessage = "Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung.";
   }
   
   toast({
@@ -107,13 +114,20 @@ export const logAuthActivity = async (
 };
 
 /**
- * Clean up authentication state completely - improved version
+ * Enhanced auth state cleanup with recovery safety
  */
-export const cleanupAuthState = () => {
+export const cleanupAuthState = async () => {
   if (typeof window === 'undefined') return;
 
   try {
     console.log("🧹 Cleaning up auth state...");
+    
+    // First, try to sign out gracefully
+    try {
+      await supabase.auth.signOut();
+    } catch (signOutError) {
+      console.log("Sign out failed, continuing with cleanup...");
+    }
     
     // Remove standard auth tokens
     localStorage.removeItem('supabase.auth.token');
@@ -127,12 +141,16 @@ export const cleanupAuthState = () => {
     });
     
     // Remove from sessionStorage if used
-    Object.keys(sessionStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('orgcruwmxqiwnjnkxpjb')) {
-        console.log(`🧹 Removing sessionStorage key: ${key}`);
-        sessionStorage.removeItem(key);
-      }
-    });
+    try {
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('orgcruwmxqiwnjnkxpjb')) {
+          console.log(`🧹 Removing sessionStorage key: ${key}`);
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      // Ignore sessionStorage errors in environments where it's not available
+    }
     
     console.log("✅ Auth state cleanup completed");
   } catch (e) {
@@ -141,10 +159,13 @@ export const cleanupAuthState = () => {
 };
 
 /**
- * Enhanced profile validation
+ * Enhanced profile validation with better error messages
  */
 export const isValidProfile = (profile: any): boolean => {
-  if (!profile) return false;
+  if (!profile) {
+    console.log("❌ Profile is null or undefined");
+    return false;
+  }
   
   // Basic required fields
   const hasBasicFields = profile.user_id && profile.email && profile.role;
@@ -159,4 +180,67 @@ export const isValidProfile = (profile: any): boolean => {
   }
   
   return true;
+};
+
+/**
+ * Check if current session is a recovery session (password reset)
+ */
+export const isRecoverySession = async (): Promise<boolean> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Check if this is a recovery session
+    // Recovery sessions typically have different token types or metadata
+    if (session && session.user) {
+      // You can check session metadata or user app_metadata for recovery indicators
+      return session.user.app_metadata?.provider === 'recovery' || 
+             session.access_token?.includes('recovery') || false;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error checking recovery session:", error);
+    return false;
+  }
+};
+
+/**
+ * Validate email format
+ */
+export const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+/**
+ * Check password strength
+ */
+export const checkPasswordStrength = (password: string): {
+  isValid: boolean;
+  score: number;
+  feedback: string[];
+} => {
+  const feedback: string[] = [];
+  let score = 0;
+  
+  if (password.length >= 8) score += 1;
+  else feedback.push("Mindestens 8 Zeichen verwenden");
+  
+  if (/[a-z]/.test(password)) score += 1;
+  else feedback.push("Kleinbuchstaben hinzufügen");
+  
+  if (/[A-Z]/.test(password)) score += 1;
+  else feedback.push("Großbuchstaben hinzufügen");
+  
+  if (/[0-9]/.test(password)) score += 1;
+  else feedback.push("Zahlen hinzufügen");
+  
+  if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+  else feedback.push("Sonderzeichen hinzufügen");
+  
+  return {
+    isValid: score >= 3 && password.length >= 6,
+    score,
+    feedback
+  };
 };
