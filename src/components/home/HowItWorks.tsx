@@ -18,12 +18,12 @@ const HowItWorks = () => {
       try {
         console.log('🎥 Fetching how-it-works video...');
         
-        // FIX: Verwende PostgreSQL Array-Operatoren statt .contains
+        // FIX: Verwende korrekte PostgreSQL Array-Syntax
         const { data, error } = await supabase
           .from('admin_videos')
           .select('*')
           .eq('public', true)
-          .or(`tags.cs.{howto}, tags.cs.{how-it-works}`) // cs = contains (array operator)
+          .contains('tags', ['howto'])
           .order('uploaded_at', { ascending: false })
           .limit(1);
 
@@ -85,7 +85,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* FIX: Zeige Video prominenter an, nicht in Card-Grid */}
+        {/* Video-Sektion prominenter anzeigen */}
         {videoUrl && (
           <div className="mb-16">
             <div className="max-w-4xl mx-auto">
