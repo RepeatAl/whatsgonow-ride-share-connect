@@ -5,8 +5,15 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 const supabaseUrl = "https://orgcruwmxqiwnjnkxpjb.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ2NydXdteHFpd25qbmt4cGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzQ1ODYsImV4cCI6MjA2MDExMDU4Nn0.M90DOOmOg2E58oSWnX49wbRqnO6Od9RrfcUvgJpzGMI";
 
+// Singleton Supabase Client - nur einmal erstellen
+let supabaseInstance: SupabaseClient | null = null;
+
 // Funktion, die den Supabase-Client "lazy" erstellt
 export function getSupabaseClient(): SupabaseClient {
+  if (supabaseInstance) {
+    return supabaseInstance;
+  }
+
   const isBrowser = typeof window !== "undefined";
   
   // Storage-Objekt für Node.js-Umgebungen (für Tests)
@@ -19,7 +26,7 @@ export function getSupabaseClient(): SupabaseClient {
     key: (index: number) => null
   };
 
-  return createClient(
+  supabaseInstance = createClient(
     supabaseUrl,
     supabaseAnonKey,
     {
@@ -27,10 +34,13 @@ export function getSupabaseClient(): SupabaseClient {
         persistSession: true,
         autoRefreshToken: true,
         storage: isBrowser ? localStorage : nodeStorage,
-        debug: true,
+        debug: false, // Reduziere Auth-Logs
       },
     }
   );
+
+  console.log('Supabase client created (singleton)');
+  return supabaseInstance;
 }
 
 // Convenience: Exportiere einen sofortigen Client (wird im Browser verwendet)

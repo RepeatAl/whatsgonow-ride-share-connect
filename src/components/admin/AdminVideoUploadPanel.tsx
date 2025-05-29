@@ -26,10 +26,12 @@ const AdminVideoUploadPanel = () => {
       setLoading(true);
       setError(null);
       
+      console.log('Fetching admin videos...');
+      
+      // Vereinfachte Query ohne 'active' falls es Probleme gibt
       const { data, error } = await supabase
         .from('admin_videos')
         .select('*')
-        .eq('active', true)
         .order('uploaded_at', { ascending: false });
 
       if (error) {
@@ -38,7 +40,13 @@ const AdminVideoUploadPanel = () => {
         return;
       }
       
-      setVideos(data || []);
+      // Filter nur aktive Videos falls 'active' Feld existiert
+      const filteredVideos = data?.filter(video => 
+        typeof video.active === 'boolean' ? video.active : true
+      ) || [];
+      
+      console.log('Videos loaded:', filteredVideos);
+      setVideos(filteredVideos);
     } catch (error) {
       console.error('Error fetching videos:', error);
       setError('Unerwarteter Fehler beim Laden der Videos');
@@ -48,6 +56,7 @@ const AdminVideoUploadPanel = () => {
   };
 
   const handleVideoUploaded = (url: string) => {
+    console.log('Video uploaded successfully:', url);
     toast({
       title: "Video hochgeladen",
       description: "Das Video wurde erfolgreich hochgeladen.",
@@ -66,6 +75,8 @@ const AdminVideoUploadPanel = () => {
     }
 
     try {
+      console.log('Deleting video:', videoId, filePath);
+      
       // Delete from storage
       const { error: storageError } = await supabase.storage
         .from('videos')
@@ -76,13 +87,16 @@ const AdminVideoUploadPanel = () => {
         // Continue anyway, mark as inactive
       }
 
-      // Mark as inactive in database
+      // Mark as inactive in database (or delete completely)
       const { error: dbError } = await supabase
         .from('admin_videos')
         .update({ active: false })
         .eq('id', videoId);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Database deletion error:', dbError);
+        throw dbError;
+      }
 
       toast({
         title: "Video gelöscht",
@@ -155,6 +169,11 @@ const AdminVideoUploadPanel = () => {
                     <p className="text-xs text-gray-400">
                       {new Date(video.uploaded_at).toLocaleDateString('de-DE')}
                     </p>
+                    {video.tags && video.tags.length > 0 && (
+                      <p className="text-xs text-blue-600">
+                        Tags: {video.tags.join(', ')}
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     {video.public_url && (

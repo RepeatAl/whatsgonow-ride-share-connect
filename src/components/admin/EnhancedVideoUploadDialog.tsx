@@ -53,6 +53,8 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
     }
 
     try {
+      console.log('Starting video upload...');
+      
       const fileName = `admin-${Date.now()}.${selectedFile.name.split('.').pop()}`;
       const filePath = `admin/${fileName}`;
 
@@ -65,7 +67,10 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
           contentType: selectedFile.type
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw error;
+      }
 
       const { data: urlData } = supabase.storage
         .from('videos')
@@ -90,9 +95,14 @@ const EnhancedVideoUploadDialog = ({ open, onOpenChange, onVideoUploaded }: Enha
           public: isPublic
         });
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Database insert error:', dbError);
+        throw dbError;
+      }
 
       setUploadedVideoUrl(urlData.publicUrl);
+      
+      console.log('Video uploaded successfully:', urlData.publicUrl);
       
       toast({
         title: "Upload erfolgreich",

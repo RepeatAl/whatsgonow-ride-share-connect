@@ -11,6 +11,8 @@ export const useAdminUsers = () => {
   const fetchUsers = async (): Promise<void> => {
     setLoading(true);
     try {
+      console.log('Fetching admin users...');
+      
       const { data, error } = await supabase
         .from('profiles')
         .select(`
@@ -25,7 +27,12 @@ export const useAdminUsers = () => {
         `)
         .order('first_name', { nullsFirst: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+      
+      console.log('Raw user data:', data);
       
       // Transform data to match AdminUser interface
       const transformedData = (data || []).map(user => ({
@@ -35,6 +42,7 @@ export const useAdminUsers = () => {
         banned_until: user.suspended_until
       }));
       
+      console.log('Transformed user data:', transformedData);
       setUsers(transformedData);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -50,10 +58,13 @@ export const useAdminUsers = () => {
 
   const updateUserRole = async (userId: string, newRole: string): Promise<void> => {
     try {
+      console.log('Updating user role:', userId, newRole);
+      
       const { error } = await supabase
         .from('profiles')
         .update({ role: newRole })
         .eq('user_id', userId);
+      
       if (error) throw error;
 
       setUsers(prevUsers =>
@@ -63,6 +74,7 @@ export const useAdminUsers = () => {
             : user
         )
       );
+      
       toast({
         title: "Erfolg",
         description: "Nutzerrolle wurde aktualisiert.",
@@ -79,6 +91,8 @@ export const useAdminUsers = () => {
 
   const toggleUserActive = async (userId: string, activeStatus: boolean): Promise<void> => {
     try {
+      console.log('Toggling user active status:', userId, activeStatus);
+      
       // Active status maps to suspension - if active=false, user is suspended
       const suspensionData = activeStatus 
         ? { is_suspended: false, suspended_until: null, suspension_reason: null }
@@ -88,6 +102,7 @@ export const useAdminUsers = () => {
         .from('profiles')
         .update(suspensionData)
         .eq('user_id', userId);
+      
       if (error) throw error;
 
       setUsers(prevUsers =>
@@ -97,6 +112,7 @@ export const useAdminUsers = () => {
             : user
         )
       );
+      
       toast({
         title: "Erfolg",
         description: activeStatus
@@ -115,13 +131,17 @@ export const useAdminUsers = () => {
 
   const deleteUser = async (userId: string): Promise<void> => {
     try {
+      console.log('Deleting user:', userId);
+      
       const { error } = await supabase
         .from('profiles')
         .delete()
         .eq('user_id', userId);
+      
       if (error) throw error;
 
       setUsers(prevUsers => prevUsers.filter(user => user.user_id !== userId));
+      
       toast({
         title: "Erfolg",
         description: "Nutzer wurde gelöscht.",

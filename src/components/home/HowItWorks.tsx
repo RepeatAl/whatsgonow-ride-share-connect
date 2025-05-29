@@ -13,22 +13,31 @@ const HowItWorks = () => {
   useEffect(() => {
     const fetchHowItWorksVideo = async () => {
       try {
-        // Fetch the most recent public video with 'howto' tag
+        console.log('Fetching how-it-works video...');
+        
+        // Vereinfachte Query ohne 'active' Feld falls es nicht existiert
         const { data, error } = await supabase
           .from('admin_videos')
           .select('public_url, tags')
           .eq('public', true)
-          .eq('active', true)
           .contains('tags', ['howto'])
           .order('uploaded_at', { ascending: false })
           .limit(1)
           .single();
 
-        if (data && !error) {
+        if (error) {
+          console.error('Error fetching video:', error);
+          return;
+        }
+
+        if (data && data.public_url) {
+          console.log('Video found:', data.public_url);
           setVideoUrl(data.public_url);
+        } else {
+          console.log('No public how-it-works video found');
         }
       } catch (error) {
-        console.log('No public how-it-works video found');
+        console.error('Unexpected error fetching video:', error);
       }
     };
 
