@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface VideoPlayerProps {
@@ -14,9 +14,11 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
   const [showControls, setShowControls] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorDetails, setErrorDetails] = useState<string>('');
+  const [cacheBustedSrc, setCacheBustedSrc] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // URL validation
+  // Cache busting and URL validation
   useEffect(() => {
     console.log('🎬 VideoPlayer received src:', src);
     
@@ -24,8 +26,18 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       console.log('❌ No src provided to VideoPlayer');
       setHasError(true);
       setIsLoading(false);
+      setErrorDetails('No video URL provided');
       return;
     }
+
+    // Add cache busting parameter to force fresh load
+    const timestamp = Date.now();
+    const cacheBustedUrl = src.includes('?') 
+      ? `${src}&t=${timestamp}` 
+      : `${src}?t=${timestamp}`;
+    
+    setCacheBustedSrc(cacheBustedUrl);
+    console.log('🔄 Cache-busted video URL:', cacheBustedUrl);
 
     // Simple URL validation
     const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('.ogg') || src.includes('supabase'));
@@ -35,12 +47,30 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       console.warn('⚠️ Invalid video URL format:', src);
       setHasError(true);
       setIsLoading(false);
+      setErrorDetails(`Invalid video URL format: ${src}`);
       return;
     }
 
     setHasError(false);
     setIsLoading(true);
+    setErrorDetails('');
   }, [src]);
+
+  const handleRefresh = () => {
+    console.log('🔄 Manual refresh triggered');
+    setHasError(false);
+    setIsLoading(true);
+    setErrorDetails('');
+    
+    if (src) {
+      const timestamp = Date.now();
+      const newCacheBustedUrl = src.includes('?') 
+        ? `${src}&refresh=${timestamp}` 
+        : `${src}?refresh=${timestamp}`;
+      setCacheBustedSrc(newCacheBustedUrl);
+      console.log('🔄 New cache-busted URL:', newCacheBustedUrl);
+    }
+  };
 
   const togglePlay = () => {
     if (videoRef.current && !hasError) {
@@ -50,6 +80,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         videoRef.current.play().catch(error => {
           console.error('❌ Video play failed:', error);
           setHasError(true);
+          setErrorDetails(`Play failed: ${error.message}`);
         });
       }
       setIsPlaying(!isPlaying);
@@ -80,42 +111,85 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
   };
 
   const handleCanPlay = () => {
-    console.log('✅ Video can play:', src);
+    console.log('✅ Video can play:', cacheBustedSrc);
     setIsLoading(false);
     setHasError(false);
+    setErrorDetails('');
   };
 
   const handleError = (error: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.error('❌ Video error:', error);
-    console.error('❌ Video error details:', {
-      src,
-      error: videoRef.current?.error,
-      networkState: videoRef.current?.networkState,
-      readyState: videoRef.current?.readyState
-    });
+    const videoElement = videoRef.current;
+    let errorMessage = 'Unknown video error';
+    
+    if (videoElement?.error) {
+      const { code, message } = videoElement.error;
+      errorMessage = `Video Error ${code}: ${message}`;
+      console.error('❌ Video error details:', {
+        code,
+        message,
+        src: cacheBustedSrc,
+        networkState: videoElement.networkState,
+        readyState: videoElement.readyState
+      });
+    }
+    
     setHasError(true);
     setIsLoading(false);
+    setErrorDetails(errorMessage);
   };
 
   const handleLoadStart = () => {
-    console.log('🔄 Video load start:', src);
+    console.log('🔄 Video load start:', cacheBustedSrc);
     setIsLoading(true);
+    setErrorDetails('');
+  };
+
+  // Test direct URL access
+  const testDirectAccess = () => {
+    if (src) {
+      console.log('🔗 Testing direct video access:', src);
+      window.open(src, '_blank');
+    }
   };
 
   // Fallback for missing or error URLs
   if (!src || hasError) {
     return placeholder || (
       <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-brand-primary to-brand-orange rounded-lg">
-        <div className="text-center text-white">
+        <div className="text-center text-white p-6">
           <Play className="h-16 w-16 mx-auto mb-4" />
-          <p className="text-lg font-medium">Video wird bald verfügbar sein</p>
-          <p className="text-sm opacity-80 mt-2">
+          <p className="text-lg font-medium mb-2">Video wird bald verfügbar sein</p>
+          <p className="text-sm opacity-80 mb-4">
             Hier wird das Erklärvideo zu whatsgonow eingebettet
           </p>
           {hasError && (
-            <p className="text-xs opacity-60 mt-1">
-              Fehler beim Laden des Videos
-            </p>
+            <>
+              <p className="text-xs opacity-75 mb-3 font-mono bg-black bg-opacity-20 p-2 rounded">
+                Error: {errorDetails}
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleRefresh}
+                  className="text-white border-white hover:bg-white hover:text-brand-orange"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
+                {src && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={testDirectAccess}
+                    className="text-white border-white hover:bg-white hover:text-brand-orange"
+                  >
+                    Test URL
+                  </Button>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -128,10 +202,10 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
     >
-      {/* Main Video Element */}
+      {/* Main Video Element with cache-busted URL */}
       <video
         ref={videoRef}
-        src={src}
+        src={cacheBustedSrc}
         className="w-full aspect-video cursor-pointer"
         onClick={handleVideoClick}
         onPlay={() => setIsPlaying(true)}
@@ -141,6 +215,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         onLoadStart={handleLoadStart}
         preload="metadata"
         playsInline
+        crossOrigin="anonymous"
       />
       
       {/* Loading Indicator */}
@@ -149,6 +224,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
           <div className="text-center text-white">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
             <p className="text-sm">Video lädt...</p>
+            <p className="text-xs opacity-75 mt-1">Cache wird umgangen...</p>
           </div>
         </div>
       )}
@@ -209,6 +285,16 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
                 ) : (
                   <Volume2 className="h-4 w-4" />
                 )}
+              </Button>
+
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleRefresh}
+                className="text-white hover:bg-white hover:bg-opacity-20"
+                title="Video neu laden"
+              >
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
             
