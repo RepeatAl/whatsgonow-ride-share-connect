@@ -18,17 +18,18 @@ const HowItWorks = () => {
   useEffect(() => {
     const fetchHowItWorksVideo = async () => {
       try {
-        console.log('🎥 Fetching whatsgonow intro video...');
+        console.log('🎥 Fetching howto video for landing page...');
         setIsLoading(true);
         setError(null);
         
-        // Optimierte Query für öffentliche Videos mit korrektem Tag
+        // Explizite Feldauswahl um Permission-Probleme zu vermeiden
+        // Tag 'howto' entspricht dem Video in der Datenbank
         const { data, error } = await supabase
           .from('admin_videos')
-          .select('*')
+          .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
           .eq('public', true)
           .eq('active', true)
-          .contains('tags', ['whatsgonow'])
+          .contains('tags', ['howto'])
           .order('uploaded_at', { ascending: false })
           .limit(1);
 
@@ -36,7 +37,8 @@ const HowItWorks = () => {
 
         if (error) {
           console.error('❌ Error fetching video:', error);
-          setError(`Video-Abfrage fehlgeschlagen: ${error.message}`);
+          // Keine aggressive Fehlermeldung - verwende Fallback
+          console.log('📺 Will show fallback placeholder');
           return;
         }
 
@@ -45,20 +47,29 @@ const HowItWorks = () => {
           console.log('✅ Video found:', video.public_url);
           setVideoUrl(video.public_url);
           
-          // Setze den Titel basierend auf der aktuellen Sprache
+          // ADMIN-EINGABEN HABEN ABSOLUTE PRIORITÄT
+          // Verwende nur die Admin-Eingaben aus dem Bearbeitungsformular
           const langKey = currentLanguage?.split('-')[0] || 'de';
           const titleKey = `display_title_${langKey}` as keyof typeof video;
           const descKey = `display_description_${langKey}` as keyof typeof video;
           
-          setVideoTitle(video[titleKey] as string || video.display_title_en || video.original_name || '');
-          setVideoDescription(video[descKey] as string || video.display_description_en || video.description || '');
+          // Priorisierung: Admin-Titel > Fallback zu EN > Original-Name
+          const adminTitle = video[titleKey] as string || video.display_title_en || video.original_name || '';
+          const adminDescription = video[descKey] as string || video.display_description_en || video.description || '';
+          
+          setVideoTitle(adminTitle);
+          setVideoDescription(adminDescription);
+          
+          console.log('📝 Using admin-provided title:', adminTitle);
+          console.log('📝 Using admin-provided description:', adminDescription);
         } else {
-          console.log('ℹ️ No public whatsgonow video found');
-          // Keine Fehlermeldung mehr setzen - zeige einfach den Placeholder
+          console.log('ℹ️ No public howto video found - will show placeholder');
+          // Kein Error setzen - zeige einfach den freundlichen Placeholder
         }
       } catch (error) {
         console.error('❌ Unexpected error fetching video:', error);
-        setError(`Unerwarteter Fehler: ${(error as Error).message}`);
+        // Auch hier kein aggressiver Error - verwende Fallback
+        console.log('📺 Will show fallback due to unexpected error');
       } finally {
         setIsLoading(false);
       }
@@ -97,15 +108,17 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video-Sektion */}
+        {/* Video-Sektion - Multi-Video Support bereit */}
         <div className="mb-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                {videoTitle || t('how_it_works.video.title')}
+                {/* ABSOLUT NUR ADMIN-EINGABEN verwenden, Fallback nur bei leerem Admin-Titel */}
+                {videoTitle || "Was ist Whatsgonow?"}
               </h3>
               <p className="text-gray-600">
-                {videoDescription || t('how_it_works.video.description')}
+                {/* ABSOLUT NUR ADMIN-EINGABEN verwenden, Fallback nur bei leerer Admin-Beschreibung */}
+                {videoDescription || "Erfahre in diesem Video alles über whatsgonow und wie wir Crowdlogistik revolutionieren"}
               </p>
             </div>
             
@@ -118,21 +131,9 @@ const HowItWorks = () => {
               </div>
             )}
             
-            {error && (
-              <div className="aspect-video flex items-center justify-center bg-red-50 border border-red-200 rounded-lg">
-                <div className="text-center text-red-700">
-                  <p className="mb-2">Video konnte nicht geladen werden</p>
-                  <p className="text-sm opacity-80">{error}</p>
-                </div>
-              </div>
-            )}
-            
-            {!isLoading && !error && videoUrl && (
-              <VideoPlayer src={videoUrl} />
-            )}
-            
-            {!isLoading && !error && !videoUrl && (
-              <VideoPlayer />
+            {/* Kein roter Error-Block mehr - freundlicher Fallback wird von VideoPlayer gehandhabt */}
+            {!isLoading && (
+              <VideoPlayer src={videoUrl || undefined} />
             )}
           </div>
         </div>
