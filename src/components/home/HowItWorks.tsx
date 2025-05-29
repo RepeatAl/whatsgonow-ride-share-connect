@@ -22,54 +22,95 @@ const HowItWorks = () => {
         setIsLoading(true);
         setError(null);
         
-        // Explizite Feldauswahl um Permission-Probleme zu vermeiden
-        // Tag 'howto' entspricht dem Video in der Datenbank
-        const { data, error } = await supabase
+        // Robust query approach with multiple fallback strategies
+        console.log('📊 Attempting video query with robust array syntax...');
+        
+        // Strategy 1: Use overlaps for more reliable array matching
+        let { data, error } = await supabase
           .from('admin_videos')
           .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
           .eq('public', true)
           .eq('active', true)
-          .contains('tags', ['howto'])
+          .overlaps('tags', ['howto'])
           .order('uploaded_at', { ascending: false })
           .limit(1);
 
-        console.log('📊 Video query result:', { data, error });
+        // Strategy 2: Fallback to contains if overlaps fails
+        if (error || !data || data.length === 0) {
+          console.log('⚠️ Overlaps query failed, trying contains...', error);
+          ({ data, error } = await supabase
+            .from('admin_videos')
+            .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
+            .eq('public', true)
+            .eq('active', true)
+            .contains('tags', ['howto'])
+            .order('uploaded_at', { ascending: false })
+            .limit(1));
+        }
+
+        // Strategy 3: Final fallback with filter syntax
+        if (error || !data || data.length === 0) {
+          console.log('⚠️ Contains query failed, trying filter syntax...', error);
+          ({ data, error } = await supabase
+            .from('admin_videos')
+            .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
+            .eq('public', true)
+            .eq('active', true)
+            .filter('tags', 'cs', '{howto}')
+            .order('uploaded_at', { ascending: false })
+            .limit(1));
+        }
+
+        console.log('📊 Final video query result:', { data, error, queryCount: data?.length || 0 });
 
         if (error) {
-          console.error('❌ Error fetching video:', error);
-          // Keine aggressive Fehlermeldung - verwende Fallback
-          console.log('📺 Will show fallback placeholder');
+          console.error('❌ All video query strategies failed:', error);
+          setError('Video aktuell nicht verfügbar. Bitte später versuchen.');
           return;
         }
 
         if (data && data.length > 0) {
           const video = data[0];
-          console.log('✅ Video found:', video.public_url);
+          console.log('✅ Video found:', {
+            url: video.public_url,
+            title_de: video.display_title_de,
+            description_de: video.display_description_de,
+            tags: video.tags
+          });
+          
           setVideoUrl(video.public_url);
           
           // ADMIN-EINGABEN HABEN ABSOLUTE PRIORITÄT
-          // Verwende nur die Admin-Eingaben aus dem Bearbeitungsformular
+          // Priorisierung nach Sprache, dann Admin-Eingaben
           const langKey = currentLanguage?.split('-')[0] || 'de';
-          const titleKey = `display_title_${langKey}` as keyof typeof video;
-          const descKey = `display_description_${langKey}` as keyof typeof video;
+          const isGerman = langKey === 'de';
           
-          // Priorisierung: Admin-Titel > Fallback zu EN > Original-Name
-          const adminTitle = video[titleKey] as string || video.display_title_en || video.original_name || '';
-          const adminDescription = video[descKey] as string || video.display_description_en || video.description || '';
+          // Titel: Admin-Eingabe für aktuelle Sprache > Admin-Eingabe EN > Original-Name
+          const adminTitle = isGerman 
+            ? (video.display_title_de || video.display_title_en || video.original_name || '')
+            : (video.display_title_en || video.display_title_de || video.original_name || '');
+          
+          // Beschreibung: Admin-Eingabe für aktuelle Sprache > Admin-Eingabe EN > Standard-Beschreibung
+          const adminDescription = isGerman 
+            ? (video.display_description_de || video.display_description_en || video.description || '')
+            : (video.display_description_en || video.display_description_de || video.description || '');
           
           setVideoTitle(adminTitle);
           setVideoDescription(adminDescription);
           
-          console.log('📝 Using admin-provided title:', adminTitle);
-          console.log('📝 Using admin-provided description:', adminDescription);
+          console.log('📝 Using admin-provided content:', {
+            title: adminTitle,
+            description: adminDescription,
+            language: langKey,
+            isGerman
+          });
         } else {
-          console.log('ℹ️ No public howto video found - will show placeholder');
-          // Kein Error setzen - zeige einfach den freundlichen Placeholder
+          console.log('ℹ️ No public howto video found');
+          setError('Video aktuell nicht verfügbar. Bitte später versuchen.');
         }
       } catch (error) {
         console.error('❌ Unexpected error fetching video:', error);
-        // Auch hier kein aggressiver Error - verwende Fallback
-        console.log('📺 Will show fallback due to unexpected error');
+        setError('Video aktuell nicht verfügbar. Bitte später versuchen.');
       } finally {
         setIsLoading(false);
       }
@@ -108,16 +149,16 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video-Sektion - Multi-Video Support bereit */}
+        {/* Video-Sektion mit robuster Admin-Feld-Priorisierung */}
         <div className="mb-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                {/* ABSOLUT NUR ADMIN-EINGABEN verwenden, Fallback nur bei leerem Admin-Titel */}
+                {/* Admin-Titel hat absolute Priorität, nur bei leerem Feld Fallback */}
                 {videoTitle || "Was ist Whatsgonow?"}
               </h3>
               <p className="text-gray-600">
-                {/* ABSOLUT NUR ADMIN-EINGABEN verwenden, Fallback nur bei leerer Admin-Beschreibung */}
+                {/* Admin-Beschreibung hat absolute Priorität, nur bei leerem Feld Fallback */}
                 {videoDescription || "Erfahre in diesem Video alles über whatsgonow und wie wir Crowdlogistik revolutionieren"}
               </p>
             </div>
@@ -131,8 +172,21 @@ const HowItWorks = () => {
               </div>
             )}
             
-            {/* Kein roter Error-Block mehr - freundlicher Fallback wird von VideoPlayer gehandhabt */}
-            {!isLoading && (
+            {/* Freundliche Fehlermeldung ohne rote Farbe */}
+            {error && !isLoading && (
+              <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
+                <div className="text-center text-gray-600">
+                  <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">{error}</p>
+                  <p className="text-sm mt-2 opacity-75">
+                    Wir arbeiten daran, das Video schnellstmöglich wieder verfügbar zu machen.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {/* Video Player nur anzeigen wenn kein Error und nicht loading */}
+            {!isLoading && !error && (
               <VideoPlayer src={videoUrl || undefined} />
             )}
           </div>
