@@ -22,35 +22,34 @@ const HowItWorks = () => {
         setIsLoading(true);
         setError(null);
         
-        // Robust query approach with multiple fallback strategies
-        console.log('📊 Attempting video query with robust array syntax...');
+        // Strategy 1: Einfache Query ohne Profile-Zugriff
+        console.log('📊 Attempting simple video query without profile access...');
         
-        // Strategy 1: Use overlaps for more reliable array matching
         let { data, error } = await supabase
           .from('admin_videos')
           .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
           .eq('public', true)
           .eq('active', true)
-          .overlaps('tags', ['howto'])
+          .contains('tags', ['howto'])
           .order('uploaded_at', { ascending: false })
           .limit(1);
 
-        // Strategy 2: Fallback to contains if overlaps fails
+        // Strategy 2: Fallback mit overlaps
         if (error || !data || data.length === 0) {
-          console.log('⚠️ Overlaps query failed, trying contains...', error);
+          console.log('⚠️ Contains query failed, trying overlaps...', error);
           ({ data, error } = await supabase
             .from('admin_videos')
             .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
             .eq('public', true)
             .eq('active', true)
-            .contains('tags', ['howto'])
+            .overlaps('tags', ['howto'])
             .order('uploaded_at', { ascending: false })
             .limit(1));
         }
 
-        // Strategy 3: Final fallback with filter syntax
+        // Strategy 3: Fallback mit filter
         if (error || !data || data.length === 0) {
-          console.log('⚠️ Contains query failed, trying filter syntax...', error);
+          console.log('⚠️ Overlaps query failed, trying filter...', error);
           ({ data, error } = await supabase
             .from('admin_videos')
             .select('id, public_url, display_title_de, display_title_en, display_description_de, display_description_en, original_name, description, tags, active, public, uploaded_at')
@@ -61,7 +60,12 @@ const HowItWorks = () => {
             .limit(1));
         }
 
-        console.log('📊 Final video query result:', { data, error, queryCount: data?.length || 0 });
+        console.log('📊 Final video query result:', { 
+          data, 
+          error, 
+          queryCount: data?.length || 0,
+          errorMessage: error?.message 
+        });
 
         if (error) {
           console.error('❌ All video query strategies failed:', error);
@@ -72,25 +76,33 @@ const HowItWorks = () => {
         if (data && data.length > 0) {
           const video = data[0];
           console.log('✅ Video found:', {
+            id: video.id,
             url: video.public_url,
             title_de: video.display_title_de,
             description_de: video.display_description_de,
-            tags: video.tags
+            tags: video.tags,
+            public: video.public,
+            active: video.active
           });
           
-          setVideoUrl(video.public_url);
+          // URL direkt validieren
+          if (video.public_url) {
+            console.log('🔗 Setting video URL:', video.public_url);
+            setVideoUrl(video.public_url);
+          } else {
+            console.warn('⚠️ Video found but no public_url available');
+            setError('Video aktuell nicht verfügbar. Bitte später versuchen.');
+            return;
+          }
           
-          // ADMIN-EINGABEN HABEN ABSOLUTE PRIORITÄT
-          // Priorisierung nach Sprache, dann Admin-Eingaben
+          // Admin-Titel und -Beschreibung haben absolute Priorität
           const langKey = currentLanguage?.split('-')[0] || 'de';
           const isGerman = langKey === 'de';
           
-          // Titel: Admin-Eingabe für aktuelle Sprache > Admin-Eingabe EN > Original-Name
           const adminTitle = isGerman 
             ? (video.display_title_de || video.display_title_en || video.original_name || '')
             : (video.display_title_en || video.display_title_de || video.original_name || '');
           
-          // Beschreibung: Admin-Eingabe für aktuelle Sprache > Admin-Eingabe EN > Standard-Beschreibung
           const adminDescription = isGerman 
             ? (video.display_description_de || video.display_description_en || video.description || '')
             : (video.display_description_en || video.display_description_de || video.description || '');
@@ -154,11 +166,9 @@ const HowItWorks = () => {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                {/* Admin-Titel hat absolute Priorität, nur bei leerem Feld Fallback */}
                 {videoTitle || "Was ist Whatsgonow?"}
               </h3>
               <p className="text-gray-600">
-                {/* Admin-Beschreibung hat absolute Priorität, nur bei leerem Feld Fallback */}
                 {videoDescription || "Erfahre in diesem Video alles über whatsgonow und wie wir Crowdlogistik revolutionieren"}
               </p>
             </div>
@@ -172,7 +182,6 @@ const HowItWorks = () => {
               </div>
             )}
             
-            {/* Freundliche Fehlermeldung ohne rote Farbe */}
             {error && !isLoading && (
               <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
                 <div className="text-center text-gray-600">
@@ -185,9 +194,8 @@ const HowItWorks = () => {
               </div>
             )}
             
-            {/* Video Player nur anzeigen wenn kein Error und nicht loading */}
-            {!isLoading && !error && (
-              <VideoPlayer src={videoUrl || undefined} />
+            {!isLoading && !error && videoUrl && (
+              <VideoPlayer src={videoUrl} />
             )}
           </div>
         </div>
