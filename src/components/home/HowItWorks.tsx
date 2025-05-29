@@ -7,8 +7,11 @@ import VideoPlayer from "./VideoPlayer";
 import { supabase } from "@/lib/supabaseClient";
 
 const HowItWorks = () => {
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoTitle, setVideoTitle] = useState<string>('');
+  const [videoDescription, setVideoDescription] = useState<string>('');
+  const currentLanguage = i18n.language;
 
   useEffect(() => {
     const fetchHowItWorksVideo = async () => {
@@ -18,7 +21,7 @@ const HowItWorks = () => {
         // Vereinfachte Query ohne 'active' Feld falls es nicht existiert
         const { data, error } = await supabase
           .from('admin_videos')
-          .select('public_url, tags')
+          .select('*')
           .eq('public', true)
           .contains('tags', ['howto'])
           .order('uploaded_at', { ascending: false })
@@ -33,6 +36,15 @@ const HowItWorks = () => {
         if (data && data.public_url) {
           console.log('Video found:', data.public_url);
           setVideoUrl(data.public_url);
+          
+          // Setze den Titel basierend auf der aktuellen Sprache
+          // Versuche zuerst die sprachspezifische Version, dann Fallback
+          const langKey = currentLanguage?.split('-')[0] || 'de'; // de, en, etc.
+          const titleKey = `display_title_${langKey}` as keyof typeof data;
+          const descKey = `display_description_${langKey}` as keyof typeof data;
+          
+          setVideoTitle(data[titleKey] as string || data.display_title_en || data.original_name || '');
+          setVideoDescription(data[descKey] as string || data.display_description_en || data.description || '');
         } else {
           console.log('No public how-it-works video found');
         }
@@ -42,7 +54,7 @@ const HowItWorks = () => {
     };
 
     fetchHowItWorksVideo();
-  }, []);
+  }, [currentLanguage]);
 
   const steps = [
     {
@@ -82,13 +94,13 @@ const HowItWorks = () => {
                 <Play className="h-6 w-6 text-white" />
               </div>
               <CardTitle className="text-lg font-semibold text-gray-900">
-                {t('how_it_works.video.title')}
+                {videoTitle || t('how_it_works.video.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <VideoPlayer src={videoUrl} />
               <p className="text-sm text-gray-600 mt-3 text-center">
-                {t('how_it_works.video.description')}
+                {videoDescription || t('how_it_works.video.description')}
               </p>
             </CardContent>
           </Card>

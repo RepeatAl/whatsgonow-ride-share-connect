@@ -1,4 +1,3 @@
-
 export interface AdminVideo {
   id: string;
   filename: string;
@@ -13,6 +12,11 @@ export interface AdminVideo {
   tags?: string[];
   active: boolean;
   public: boolean;
+  // Neue mehrsprachige Felder
+  display_title_de?: string;
+  display_title_en?: string;
+  display_description_de?: string;
+  display_description_en?: string;
 }
 
 export interface VideoUploadMetadata {

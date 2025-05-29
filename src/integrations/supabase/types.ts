@@ -70,6 +70,10 @@ export type Database = {
         Row: {
           active: boolean | null
           description: string | null
+          display_description_de: string | null
+          display_description_en: string | null
+          display_title_de: string | null
+          display_title_en: string | null
           file_path: string
           file_size: number
           filename: string
@@ -85,6 +89,10 @@ export type Database = {
         Insert: {
           active?: boolean | null
           description?: string | null
+          display_description_de?: string | null
+          display_description_en?: string | null
+          display_title_de?: string | null
+          display_title_en?: string | null
           file_path: string
           file_size: number
           filename: string
@@ -100,6 +108,10 @@ export type Database = {
         Update: {
           active?: boolean | null
           description?: string | null
+          display_description_de?: string | null
+          display_description_en?: string | null
+          display_title_de?: string | null
+          display_title_en?: string | null
           file_path?: string
           file_size?: number
           filename?: string

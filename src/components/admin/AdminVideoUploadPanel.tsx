@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Video, Upload, Trash2, Eye, AlertCircle } from "lucide-react";
+import { Video, Upload, Trash2, Eye, AlertCircle, Edit } from "lucide-react";
 import EnhancedVideoUploadDialog from "./EnhancedVideoUploadDialog";
+import VideoEditDialog from "./VideoEditDialog";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
 import { useAdminGuard } from "@/hooks/useAdminGuard";
@@ -15,6 +16,7 @@ const AdminVideoUploadPanel = () => {
   const [videos, setVideos] = useState<AdminVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingVideo, setEditingVideo] = useState<AdminVideo | null>(null);
 
   // Early return if no access
   if (!canViewVideos) {
@@ -114,6 +116,54 @@ const AdminVideoUploadPanel = () => {
     }
   };
 
+  const handleUpdateVideo = async (videoId: string, data: {
+    display_title_de?: string;
+    display_title_en?: string;
+    display_description_de?: string;
+    display_description_en?: string;
+  }) => {
+    if (!canManageVideos) {
+      toast({
+        title: "Keine Berechtigung",
+        description: "Sie haben keine Berechtigung, Videos zu bearbeiten.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log('Updating video metadata:', videoId, data);
+      
+      const { error } = await supabase
+        .from('admin_videos')
+        .update(data)
+        .eq('id', videoId);
+
+      if (error) {
+        console.error('Error updating video:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Video aktualisiert",
+        description: "Die Video-Informationen wurden erfolgreich aktualisiert.",
+      });
+      
+      // Update local state
+      setVideos(videos.map(video => 
+        video.id === videoId ? { ...video, ...data } : video
+      ));
+    } catch (error) {
+      console.error('Error updating video:', error);
+      toast({
+        title: "Fehler",
+        description: "Video konnte nicht aktualisiert werden.",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchVideos();
   }, []);
@@ -162,7 +212,9 @@ const AdminVideoUploadPanel = () => {
               {videos.map((video) => (
                 <div key={video.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
-                    <p className="font-medium">{video.original_name}</p>
+                    <p className="font-medium">
+                      {video.display_title_de || video.original_name}
+                    </p>
                     <p className="text-sm text-gray-500">
                       {(video.file_size / 1024 / 1024).toFixed(1)} MB • {video.mime_type}
                     </p>
@@ -172,6 +224,13 @@ const AdminVideoUploadPanel = () => {
                     {video.tags && video.tags.length > 0 && (
                       <p className="text-xs text-blue-600">
                         Tags: {video.tags.join(', ')}
+                      </p>
+                    )}
+                    {video.display_description_de && (
+                      <p className="text-sm text-gray-600">
+                        {video.display_description_de.length > 50
+                          ? `${video.display_description_de.substring(0, 50)}...`
+                          : video.display_description_de}
                       </p>
                     )}
                   </div>
@@ -186,13 +245,22 @@ const AdminVideoUploadPanel = () => {
                       </Button>
                     )}
                     {canManageVideos && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteVideo(video.id, video.file_path)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingVideo(video)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteVideo(video.id, video.file_path)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -203,11 +271,22 @@ const AdminVideoUploadPanel = () => {
       </CardContent>
 
       {canManageVideos && (
-        <EnhancedVideoUploadDialog
-          open={isUploadOpen}
-          onOpenChange={setIsUploadOpen}
-          onVideoUploaded={handleVideoUploaded}
-        />
+        <>
+          <EnhancedVideoUploadDialog
+            open={isUploadOpen}
+            onOpenChange={setIsUploadOpen}
+            onVideoUploaded={handleVideoUploaded}
+          />
+          
+          <VideoEditDialog
+            open={!!editingVideo}
+            onOpenChange={(open) => {
+              if (!open) setEditingVideo(null);
+            }}
+            video={editingVideo}
+            onSave={handleUpdateVideo}
+          />
+        </>
       )}
     </Card>
   );

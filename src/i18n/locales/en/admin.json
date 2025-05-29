@@ -1,3 +1,4 @@
+
 {
   "dashboard": {
     "title": "Admin Dashboard",
@@ -80,5 +81,23 @@
     "unauthorized": "Unauthorized",
     "admin_required": "Only administrators can access this feature",
     "unknown": "An unknown error occurred"
+  },
+  "videos": {
+    "edit": "Edit",
+    "edit_title": "Edit Video",
+    "title_de": "Title (German)",
+    "title_en": "Title (English)",
+    "description_de": "Description (German)",
+    "description_en": "Description (English)",
+    "enter_description": "Enter description...",
+    "save_success": "Video updated successfully",
+    "save_error": "Error saving video"
+  },
+  "common": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
   }
 }
