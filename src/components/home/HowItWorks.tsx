@@ -11,24 +11,32 @@ const HowItWorks = () => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoTitle, setVideoTitle] = useState<string>('');
   const [videoDescription, setVideoDescription] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const currentLanguage = i18n.language;
 
   useEffect(() => {
     const fetchHowItWorksVideo = async () => {
       try {
         console.log('🎥 Fetching how-it-works video...');
+        setIsLoading(true);
+        setError(null);
         
-        // FIX: Verwende korrekte PostgreSQL Array-Syntax
+        // Erweiterte Query mit besserer Fehlerbehandlung
         const { data, error } = await supabase
           .from('admin_videos')
           .select('*')
           .eq('public', true)
+          .eq('active', true)
           .contains('tags', ['howto'])
           .order('uploaded_at', { ascending: false })
           .limit(1);
 
+        console.log('📊 Video query result:', { data, error });
+
         if (error) {
           console.error('❌ Error fetching video:', error);
+          setError(`Video query failed: ${error.message}`);
           return;
         }
 
@@ -46,9 +54,13 @@ const HowItWorks = () => {
           setVideoDescription(video[descKey] as string || video.display_description_en || video.description || '');
         } else {
           console.log('ℹ️ No public how-it-works video found');
+          setError('No video found with howto tag');
         }
       } catch (error) {
         console.error('❌ Unexpected error fetching video:', error);
+        setError(`Unexpected error: ${(error as Error).message}`);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -85,22 +97,45 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video-Sektion prominenter anzeigen */}
-        {videoUrl && (
-          <div className="mb-16">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                  {videoTitle || t('how_it_works.video.title')}
-                </h3>
-                <p className="text-gray-600">
-                  {videoDescription || t('how_it_works.video.description')}
-                </p>
-              </div>
-              <VideoPlayer src={videoUrl} />
+        {/* Video-Sektion mit Debug-Informationen */}
+        <div className="mb-16">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                {videoTitle || t('how_it_works.video.title')}
+              </h3>
+              <p className="text-gray-600">
+                {videoDescription || t('how_it_works.video.description')}
+              </p>
             </div>
+            
+            {isLoading && (
+              <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange mx-auto mb-4"></div>
+                  <p className="text-gray-600">Video wird geladen...</p>
+                </div>
+              </div>
+            )}
+            
+            {error && (
+              <div className="aspect-video flex items-center justify-center bg-red-50 border border-red-200 rounded-lg">
+                <div className="text-center text-red-700">
+                  <p className="mb-2">Video konnte nicht geladen werden</p>
+                  <p className="text-sm opacity-80">{error}</p>
+                </div>
+              </div>
+            )}
+            
+            {!isLoading && !error && videoUrl && (
+              <VideoPlayer src={videoUrl} />
+            )}
+            
+            {!isLoading && !error && !videoUrl && (
+              <VideoPlayer />
+            )}
           </div>
-        )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
