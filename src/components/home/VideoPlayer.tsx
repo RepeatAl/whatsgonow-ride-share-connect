@@ -1,7 +1,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import VideoErrorDisplay from "./video/VideoErrorDisplay";
+import VideoLoadingState from "./video/VideoLoadingState";
+import VideoOverlay from "./video/VideoOverlay";
+import VideoControls from "./video/VideoControls";
 
 interface VideoPlayerProps {
   src?: string;
@@ -145,7 +147,6 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setErrorDetails('');
   };
 
-  // Test direct URL access
   const testDirectAccess = () => {
     if (src) {
       console.log('🔗 Testing direct video access:', src);
@@ -155,44 +156,13 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
 
   // Fallback for missing or error URLs
   if (!src || hasError) {
-    return placeholder || (
-      <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-brand-primary to-brand-orange rounded-lg">
-        <div className="text-center text-white p-6">
-          <Play className="h-16 w-16 mx-auto mb-4" />
-          <p className="text-lg font-medium mb-2">Video wird bald verfügbar sein</p>
-          <p className="text-sm opacity-80 mb-4">
-            Hier wird das Erklärvideo zu whatsgonow eingebettet
-          </p>
-          {hasError && (
-            <>
-              <p className="text-xs opacity-75 mb-3 font-mono bg-black bg-opacity-20 p-2 rounded">
-                Error: {errorDetails}
-              </p>
-              <div className="flex gap-2 justify-center">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={handleRefresh}
-                  className="text-white border-white hover:bg-white hover:text-brand-orange"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Retry
-                </Button>
-                {src && (
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={testDirectAccess}
-                    className="text-white border-white hover:bg-white hover:text-brand-orange"
-                  >
-                    Test URL
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+    return (
+      <VideoErrorDisplay 
+        error={errorDetails}
+        src={src}
+        onRefresh={handleRefresh}
+        onTestDirectAccess={testDirectAccess}
+      />
     );
   }
 
@@ -219,95 +189,28 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       />
       
       {/* Loading Indicator */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-sm">Video lädt...</p>
-            <p className="text-xs opacity-75 mt-1">Cache wird umgangen...</p>
-          </div>
-        </div>
-      )}
+      <VideoLoadingState isLoading={isLoading} />
       
       {/* Video Controls Overlay */}
       {!isLoading && (
-        <div 
-          className={`absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center transition-opacity ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {/* Center Play Button */}
-          <Button
-            size="lg"
-            variant="ghost"
-            onClick={togglePlay}
-            className="bg-white bg-opacity-20 text-white hover:bg-opacity-30 backdrop-blur-sm"
-          >
-            {isPlaying ? (
-              <Pause className="h-8 w-8" />
-            ) : (
-              <Play className="h-8 w-8" />
-            )}
-          </Button>
-        </div>
+        <VideoOverlay 
+          isPlaying={isPlaying}
+          showControls={showControls}
+          onTogglePlay={togglePlay}
+        />
       )}
       
       {/* Bottom Controls */}
       {!isLoading && (
-        <div 
-          className={`absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-4 transition-opacity ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={togglePlay}
-                className="text-white hover:bg-white hover:bg-opacity-20"
-              >
-                {isPlaying ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-              </Button>
-              
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={toggleMute}
-                className="text-white hover:bg-white hover:bg-opacity-20"
-              >
-                {isMuted ? (
-                  <VolumeX className="h-4 w-4" />
-                ) : (
-                  <Volume2 className="h-4 w-4" />
-                )}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleRefresh}
-                className="text-white hover:bg-white hover:bg-opacity-20"
-                title="Video neu laden"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={toggleFullscreen}
-              className="text-white hover:bg-white hover:bg-opacity-20"
-            >
-              <Maximize className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <VideoControls
+          isPlaying={isPlaying}
+          isMuted={isMuted}
+          showControls={showControls}
+          onTogglePlay={togglePlay}
+          onToggleMute={toggleMute}
+          onToggleFullscreen={toggleFullscreen}
+          onRefresh={handleRefresh}
+        />
       )}
     </div>
   );
