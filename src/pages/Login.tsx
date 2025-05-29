@@ -10,12 +10,11 @@ import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { ConnectionError } from "@/components/ui/connection-error";
 import { Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import Layout from "@/components/Layout";
-import { supabase } from "@/lib/supabaseClient";
 
 const Login = () => {
   const { t } = useTranslation(["auth", "common"]);
   const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
-  const { signIn, loading: authLoading } = useSimpleAuth();
+  const { signIn, loading: authLoading, user, profile } = useSimpleAuth();
   const navigate = useNavigate();
   
   const [email, setEmail] = useState("");
@@ -26,6 +25,33 @@ const Login = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
+
+  // FIX: Redirect authenticated users immediately
+  useEffect(() => {
+    if (user && profile && !authLoading) {
+      console.debug("🔄 User already authenticated, redirecting...");
+      let dashboardPath = `/${currentLanguage}/dashboard`;
+      
+      switch (profile.role) {
+        case "sender_private":
+        case "sender_business":
+          dashboardPath = `/${currentLanguage}/dashboard/sender`;
+          break;
+        case "driver":
+          dashboardPath = `/${currentLanguage}/dashboard/driver`;
+          break;
+        case "cm":
+          dashboardPath = `/${currentLanguage}/dashboard/cm`;
+          break;
+        case "admin":
+        case "super_admin":
+          dashboardPath = `/${currentLanguage}/dashboard/admin`;
+          break;
+      }
+      
+      navigate(dashboardPath, { replace: true });
+    }
+  }, [user, profile, authLoading, navigate, currentLanguage]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -67,22 +93,6 @@ const Login = () => {
     return true;
   };
 
-  const cleanupAuthState = async () => {
-    try {
-      // Clear any existing sessions
-      await supabase.auth.signOut();
-      
-      // Clear localStorage auth data
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch (error) {
-      console.log("Cleanup completed (some errors ignored)");
-    }
-  };
-
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -106,9 +116,6 @@ const Login = () => {
       setError("");
       
       console.log("🔐 Starting login process for:", email);
-      
-      // Clean up any existing auth state before login
-      await cleanupAuthState();
       
       await signIn(email, password);
       

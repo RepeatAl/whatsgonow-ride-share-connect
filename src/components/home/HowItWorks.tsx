@@ -16,40 +16,39 @@ const HowItWorks = () => {
   useEffect(() => {
     const fetchHowItWorksVideo = async () => {
       try {
-        console.log('Fetching how-it-works video...');
+        console.log('🎥 Fetching how-it-works video...');
         
-        // Vereinfachte Query ohne 'active' Feld falls es nicht existiert
+        // FIX: Verwende PostgreSQL Array-Operatoren statt .contains
         const { data, error } = await supabase
           .from('admin_videos')
           .select('*')
           .eq('public', true)
-          .contains('tags', ['howto'])
+          .or(`tags.cs.{howto}, tags.cs.{how-it-works}`) // cs = contains (array operator)
           .order('uploaded_at', { ascending: false })
-          .limit(1)
-          .single();
+          .limit(1);
 
         if (error) {
-          console.error('Error fetching video:', error);
+          console.error('❌ Error fetching video:', error);
           return;
         }
 
-        if (data && data.public_url) {
-          console.log('Video found:', data.public_url);
-          setVideoUrl(data.public_url);
+        if (data && data.length > 0) {
+          const video = data[0];
+          console.log('✅ Video found:', video.public_url);
+          setVideoUrl(video.public_url);
           
           // Setze den Titel basierend auf der aktuellen Sprache
-          // Versuche zuerst die sprachspezifische Version, dann Fallback
-          const langKey = currentLanguage?.split('-')[0] || 'de'; // de, en, etc.
-          const titleKey = `display_title_${langKey}` as keyof typeof data;
-          const descKey = `display_description_${langKey}` as keyof typeof data;
+          const langKey = currentLanguage?.split('-')[0] || 'de';
+          const titleKey = `display_title_${langKey}` as keyof typeof video;
+          const descKey = `display_description_${langKey}` as keyof typeof video;
           
-          setVideoTitle(data[titleKey] as string || data.display_title_en || data.original_name || '');
-          setVideoDescription(data[descKey] as string || data.display_description_en || data.description || '');
+          setVideoTitle(video[titleKey] as string || video.display_title_en || video.original_name || '');
+          setVideoDescription(video[descKey] as string || video.display_description_en || video.description || '');
         } else {
-          console.log('No public how-it-works video found');
+          console.log('ℹ️ No public how-it-works video found');
         }
       } catch (error) {
-        console.error('Unexpected error fetching video:', error);
+        console.error('❌ Unexpected error fetching video:', error);
       }
     };
 
@@ -86,26 +85,24 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Video Card */}
-          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="text-center pb-4">
-              <div className="w-12 h-12 bg-brand-orange rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Play className="h-6 w-6 text-white" />
+        {/* FIX: Zeige Video prominenter an, nicht in Card-Grid */}
+        {videoUrl && (
+          <div className="mb-16">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                  {videoTitle || t('how_it_works.video.title')}
+                </h3>
+                <p className="text-gray-600">
+                  {videoDescription || t('how_it_works.video.description')}
+                </p>
               </div>
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                {videoTitle || t('how_it_works.video.title')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
               <VideoPlayer src={videoUrl} />
-              <p className="text-sm text-gray-600 mt-3 text-center">
-                {videoDescription || t('how_it_works.video.description')}
-              </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        )}
 
-          {/* Steps Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="text-center pb-4">
