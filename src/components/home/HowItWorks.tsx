@@ -18,17 +18,17 @@ const HowItWorks = () => {
   useEffect(() => {
     const fetchHowItWorksVideo = async () => {
       try {
-        console.log('🎥 Fetching how-it-works video...');
+        console.log('🎥 Fetching whatsgonow intro video...');
         setIsLoading(true);
         setError(null);
         
-        // Erweiterte Query mit besserer Fehlerbehandlung
+        // Optimierte Query für öffentliche Videos mit korrektem Tag
         const { data, error } = await supabase
           .from('admin_videos')
           .select('*')
           .eq('public', true)
           .eq('active', true)
-          .contains('tags', ['howto'])
+          .contains('tags', ['whatsgonow'])
           .order('uploaded_at', { ascending: false })
           .limit(1);
 
@@ -36,7 +36,7 @@ const HowItWorks = () => {
 
         if (error) {
           console.error('❌ Error fetching video:', error);
-          setError(`Video query failed: ${error.message}`);
+          setError(`Video-Abfrage fehlgeschlagen: ${error.message}`);
           return;
         }
 
@@ -53,12 +53,12 @@ const HowItWorks = () => {
           setVideoTitle(video[titleKey] as string || video.display_title_en || video.original_name || '');
           setVideoDescription(video[descKey] as string || video.display_description_en || video.description || '');
         } else {
-          console.log('ℹ️ No public how-it-works video found');
-          setError('No video found with howto tag');
+          console.log('ℹ️ No public whatsgonow video found');
+          // Keine Fehlermeldung mehr setzen - zeige einfach den Placeholder
         }
       } catch (error) {
         console.error('❌ Unexpected error fetching video:', error);
-        setError(`Unexpected error: ${(error as Error).message}`);
+        setError(`Unerwarteter Fehler: ${(error as Error).message}`);
       } finally {
         setIsLoading(false);
       }
@@ -97,7 +97,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video-Sektion mit Debug-Informationen */}
+        {/* Video-Sektion */}
         <div className="mb-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-6">
