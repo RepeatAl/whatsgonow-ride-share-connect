@@ -39,3 +39,29 @@ export interface VideoUploadData {
   display_description_ar?: string;
   tags?: string[];
 }
+
+export interface AdminUser {
+  user_id: string;
+  name: string;
+  email: string;
+  role: string;
+  region: string;
+  active: boolean;
+  banned_until?: string;
+}
+
+export interface StatsData {
+  totalUsers: number;
+  activeUsers: number;
+  pendingKyc: number;
+  totalOrders: number;
+  completedOrders: number;
+  totalCommission: number;
+  verifiedUsers?: number;
+}
+
+export interface DashboardStatsProps {
+  role?: string;
+  stats?: StatsData;
+  isLoading?: boolean;
+}

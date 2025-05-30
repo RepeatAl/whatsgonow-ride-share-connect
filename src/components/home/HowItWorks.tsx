@@ -22,10 +22,30 @@ const HowItWorks = () => {
       setIsLoading(true);
       setError(null);
       
-      // Hole alle öffentlichen howto Videos (nicht nur das erste)
+      // Hole alle öffentlichen howto Videos mit allen benötigten Feldern
       const { data, error } = await supabase
         .from('admin_videos')
-        .select('id, public_url, display_title_de, display_title_en, display_title_ar, display_description_de, display_description_en, display_description_ar, original_name, description, tags, active, public, uploaded_at')
+        .select(`
+          id, 
+          filename,
+          original_name,
+          file_path,
+          file_size,
+          mime_type,
+          public_url, 
+          display_title_de, 
+          display_title_en, 
+          display_title_ar, 
+          display_description_de, 
+          display_description_en, 
+          display_description_ar, 
+          description, 
+          tags, 
+          active, 
+          public, 
+          uploaded_at,
+          uploaded_by
+        `)
         .eq('public', true)
         .eq('active', true)
         .contains('tags', ['howto'])
