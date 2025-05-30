@@ -12,8 +12,14 @@ interface VideoGalleryProps {
 }
 
 const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
-  // Show all videos equally - no featured priority
+  // Always show all videos - no filtering by featured status
   const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(videos[0] || null);
+
+  console.log('🎥 VideoGallery rendering with videos:', {
+    count: videos.length,
+    currentVideo: currentVideo?.id,
+    videosWithUrls: videos.map(v => ({ id: v.id, hasUrl: !!v.public_url }))
+  });
 
   // Funktion um den lokalisierten Titel zu bekommen mit Fallback-Logik
   const getLocalizedTitle = (video: AdminVideo): string => {
@@ -58,6 +64,7 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   };
 
   const handleVideoSelect = (video: AdminVideo) => {
+    console.log('🎯 Video selected:', video.id, video.public_url);
     setCurrentVideo(video);
   };
 
@@ -93,29 +100,38 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
         </div>
       )}
 
-      {/* Video Gallery - Show all videos with thumbnails */}
+      {/* Video Gallery - Show ALL videos, no exceptions */}
       <div className="space-y-4">
         <h4 className="text-lg font-medium text-gray-900">
           Alle Videos ({videos.length})
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {videos.map((video) => (
-            <div
-              key={video.id}
-              className={`${
-                currentVideo?.id === video.id 
-                  ? 'ring-2 ring-brand-orange ring-offset-2' 
-                  : ''
-              }`}
-            >
-              <VideoThumbnail
-                video={video}
-                onVideoSelect={handleVideoSelect}
-                getLocalizedTitle={getLocalizedTitle}
-                getLocalizedDescription={getLocalizedDescription}
-              />
-            </div>
-          ))}
+          {videos.map((video) => {
+            console.log('🔍 Rendering video card:', { 
+              id: video.id, 
+              hasUrl: !!video.public_url, 
+              url: video.public_url,
+              isSelected: currentVideo?.id === video.id 
+            });
+            
+            return (
+              <div
+                key={video.id}
+                className={`${
+                  currentVideo?.id === video.id 
+                    ? 'ring-2 ring-brand-orange ring-offset-2' 
+                    : ''
+                }`}
+              >
+                <VideoThumbnail
+                  video={video}
+                  onVideoSelect={handleVideoSelect}
+                  getLocalizedTitle={getLocalizedTitle}
+                  getLocalizedDescription={getLocalizedDescription}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -17,11 +17,11 @@ const HowItWorks = () => {
 
   const fetchHowItWorksVideos = async () => {
     try {
-      console.log('🎥 Fetching all howto videos for gallery...');
+      console.log('🎥 [PUBLIC] Fetching public howto videos...');
       setIsLoading(true);
       setError(null);
       
-      // Hole alle öffentlichen howto Videos - simplified query
+      // Query public howto videos
       const { data, error } = await supabase
         .from('admin_videos')
         .select(`
@@ -50,7 +50,7 @@ const HowItWorks = () => {
         .contains('tags', ['howto'])
         .order('uploaded_at', { ascending: false });
 
-      console.log('📊 Video gallery query result:', { 
+      console.log('📊 [PUBLIC] Video query result:', { 
         data, 
         error, 
         queryCount: data?.length || 0,
@@ -59,46 +59,65 @@ const HowItWorks = () => {
       });
 
       if (error) {
-        console.error('❌ Video query failed:', error);
-        setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
+        console.error('❌ [PUBLIC] Video query failed:', error);
+        if (error.code === '42501') {
+          setError('Videos sind momentan nicht verfügbar. Dies ist ein bekanntes Problem mit den Datenbankberechtigungen.');
+        } else {
+          setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
+        }
         return;
       }
 
       if (data && data.length > 0) {
-        console.log('✅ Videos found for gallery:', {
+        console.log('✅ [PUBLIC] Videos found:', {
           count: data.length,
-          featuredVideos: data.filter(v => v.tags?.includes('featured')).length,
-          refreshKey
+          refreshKey,
+          videosWithUrls: data.map(v => ({ 
+            id: v.id, 
+            hasPublicUrl: !!v.public_url, 
+            hasFilePath: !!v.file_path,
+            url: v.public_url || v.file_path 
+          }))
         });
         
-        // Process videos to ensure they have a usable URL
+        // Process videos to ensure they have a usable URL (public_url or file_path fallback)
         const processedVideos = data.map(video => ({
           ...video,
-          // Use public_url if available, otherwise construct from file_path
+          // Use public_url if available, otherwise use file_path as fallback
           public_url: video.public_url || video.file_path || null
         })).filter(video => video.public_url); // Only keep videos with a URL
         
+        console.log('🔧 [PUBLIC] Processed videos:', {
+          originalCount: data.length,
+          processedCount: processedVideos.length,
+          filteredOut: data.length - processedVideos.length
+        });
+        
         if (processedVideos.length === 0) {
-          console.warn('⚠️ Videos found but no valid URLs (public_url or file_path)');
-          setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
+          console.warn('⚠️ [PUBLIC] Videos found but no valid URLs');
+          setError('Videos sind konfiguriert, aber URLs fehlen. Bitte kontaktieren Sie den Support.');
           return;
         }
         
         setVideos(processedVideos);
         
-        console.log('📝 Using gallery videos:', {
+        console.log('📝 [PUBLIC] Final video list:', {
           totalVideos: processedVideos.length,
           language: currentLanguage,
-          videosWithUrls: processedVideos.map(v => ({ id: v.id, url: v.public_url })),
+          videosReady: processedVideos.map(v => ({ 
+            id: v.id, 
+            url: v.public_url,
+            title: v.display_title_de || v.original_name
+          })),
           refreshKey
         });
       } else {
-        console.log('ℹ️ No public howto videos found');
-        setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
+        console.log('ℹ️ [PUBLIC] No public howto videos found in database');
+        setError('Aktuell sind keine Videos verfügbar.');
       }
     } catch (error) {
-      console.error('❌ Unexpected error fetching videos:', error);
-      setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
+      console.error('❌ [PUBLIC] Unexpected error fetching videos:', error);
+      setError('Unerwarteter Fehler beim Laden der Videos.');
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +128,7 @@ const HowItWorks = () => {
   }, [currentLanguage, refreshKey]);
 
   const handleRefresh = () => {
-    console.log('🔄 Manual refresh triggered from HowItWorks');
+    console.log('🔄 [PUBLIC] Manual refresh triggered');
     setRefreshKey(prev => prev + 1);
   };
 
@@ -143,7 +162,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video Gallery Sektion */}
+        {/* Video Gallery Section - NOW WITH ROBUST ERROR HANDLING */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -177,7 +196,10 @@ const HowItWorks = () => {
                   <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <p className="text-lg">{error}</p>
                   <p className="text-sm mt-2 opacity-75">
-                    Wir arbeiten daran, die Videos schnellstmöglich wieder verfügbar zu machen.
+                    {error.includes('Datenbankberechtigungen') 
+                      ? 'Technisches Problem - wird behoben.'
+                      : 'Wir arbeiten daran, die Videos schnellstmöglich wieder verfügbar zu machen.'
+                    }
                   </p>
                   <Button
                     variant="outline"
@@ -194,9 +216,22 @@ const HowItWorks = () => {
             {!isLoading && !error && videos.length > 0 && (
               <VideoGallery videos={videos} currentLanguage={currentLanguage} />
             )}
+            
+            {!isLoading && !error && videos.length === 0 && (
+              <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
+                <div className="text-center text-gray-600">
+                  <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">Noch keine Videos verfügbar</p>
+                  <p className="text-sm mt-2 opacity-75">
+                    Videos werden in Kürze hinzugefügt.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
+        {/* Steps Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
