@@ -23,8 +23,12 @@ const VideoThumbnail = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    // Use the processed public_url which is either the original public_url or file_path
     if (video.public_url) {
       generateThumbnail();
+    } else {
+      console.warn('No URL available for video:', video.id);
+      setIsLoading(false);
     }
   }, [video.public_url]);
 

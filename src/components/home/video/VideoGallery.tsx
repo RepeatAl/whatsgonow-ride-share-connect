@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +12,8 @@ interface VideoGalleryProps {
 }
 
 const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
-  // Bestimme das initiale Video (erstes mit 'featured' Tag oder erstes Video)
-  const initialVideo = videos.find(video => video.tags?.includes('featured')) || videos[0];
-  const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(initialVideo || null);
+  // Show all videos equally - no featured priority
+  const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(videos[0] || null);
 
   // Funktion um den lokalisierten Titel zu bekommen mit Fallback-Logik
   const getLocalizedTitle = (video: AdminVideo): string => {
@@ -96,32 +94,30 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
       )}
 
       {/* Video Gallery - Show all videos with thumbnails */}
-      {videos.length > 1 && (
-        <div className="space-y-4">
-          <h4 className="text-lg font-medium text-gray-900">
-            Video Auswahl ({videos.length})
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {videos.map((video) => (
-              <div
-                key={video.id}
-                className={`${
-                  currentVideo?.id === video.id 
-                    ? 'ring-2 ring-brand-orange ring-offset-2' 
-                    : ''
-                }`}
-              >
-                <VideoThumbnail
-                  video={video}
-                  onVideoSelect={handleVideoSelect}
-                  getLocalizedTitle={getLocalizedTitle}
-                  getLocalizedDescription={getLocalizedDescription}
-                />
-              </div>
-            ))}
-          </div>
+      <div className="space-y-4">
+        <h4 className="text-lg font-medium text-gray-900">
+          Alle Videos ({videos.length})
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {videos.map((video) => (
+            <div
+              key={video.id}
+              className={`${
+                currentVideo?.id === video.id 
+                  ? 'ring-2 ring-brand-orange ring-offset-2' 
+                  : ''
+              }`}
+            >
+              <VideoThumbnail
+                video={video}
+                onVideoSelect={handleVideoSelect}
+                getLocalizedTitle={getLocalizedTitle}
+                getLocalizedDescription={getLocalizedDescription}
+              />
+            </div>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 };

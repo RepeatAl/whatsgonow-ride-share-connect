@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +21,7 @@ const HowItWorks = () => {
       setIsLoading(true);
       setError(null);
       
-      // Hole alle öffentlichen howto Videos mit allen benötigten Feldern
+      // Hole alle öffentlichen howto Videos - simplified query
       const { data, error } = await supabase
         .from('admin_videos')
         .select(`
@@ -72,20 +71,25 @@ const HowItWorks = () => {
           refreshKey
         });
         
-        // Filtere Videos mit gültigen URLs
-        const validVideos = data.filter(video => video.public_url);
+        // Process videos to ensure they have a usable URL
+        const processedVideos = data.map(video => ({
+          ...video,
+          // Use public_url if available, otherwise construct from file_path
+          public_url: video.public_url || video.file_path || null
+        })).filter(video => video.public_url); // Only keep videos with a URL
         
-        if (validVideos.length === 0) {
-          console.warn('⚠️ Videos found but no valid public URLs');
+        if (processedVideos.length === 0) {
+          console.warn('⚠️ Videos found but no valid URLs (public_url or file_path)');
           setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
           return;
         }
         
-        setVideos(validVideos);
+        setVideos(processedVideos);
         
         console.log('📝 Using gallery videos:', {
-          totalVideos: validVideos.length,
+          totalVideos: processedVideos.length,
           language: currentLanguage,
+          videosWithUrls: processedVideos.map(v => ({ id: v.id, url: v.public_url })),
           refreshKey
         });
       } else {
