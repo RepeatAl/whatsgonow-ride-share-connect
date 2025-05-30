@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { X, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { AdminVideo } from "@/types/admin";
 
@@ -18,8 +18,10 @@ interface VideoEditDialogProps {
   onSave: (videoId: string, data: {
     display_title_de?: string;
     display_title_en?: string;
+    display_title_ar?: string;
     display_description_de?: string;
     display_description_en?: string;
+    display_description_ar?: string;
     tags?: string[];
   }) => Promise<void>;
 }
@@ -30,8 +32,10 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
   
   const [titleDe, setTitleDe] = useState(video?.display_title_de || "");
   const [titleEn, setTitleEn] = useState(video?.display_title_en || "");
+  const [titleAr, setTitleAr] = useState(video?.display_title_ar || "");
   const [descriptionDe, setDescriptionDe] = useState(video?.display_description_de || "");
   const [descriptionEn, setDescriptionEn] = useState(video?.display_description_en || "");
+  const [descriptionAr, setDescriptionAr] = useState(video?.display_description_ar || "");
   const [tags, setTags] = useState<string[]>(video?.tags || []);
   const [newTag, setNewTag] = useState("");
 
@@ -40,8 +44,10 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
     if (video) {
       setTitleDe(video.display_title_de || "");
       setTitleEn(video.display_title_en || "");
+      setTitleAr(video.display_title_ar || "");
       setDescriptionDe(video.display_description_de || "");
       setDescriptionEn(video.display_description_en || "");
+      setDescriptionAr(video.display_description_ar || "");
       setTags(video.tags || []);
     }
   }, [video]);
@@ -69,6 +75,18 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
     }
   };
 
+  const handleFeaturedToggle = (checked: boolean) => {
+    if (checked) {
+      // Add 'featured' tag if not present
+      if (!tags.includes('featured')) {
+        setTags([...tags, 'featured']);
+      }
+    } else {
+      // Remove 'featured' tag
+      setTags(tags.filter(tag => tag !== 'featured'));
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -84,8 +102,10 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
       await onSave(video.id, {
         display_title_de: titleDe,
         display_title_en: titleEn,
+        display_title_ar: titleAr,
         display_description_de: descriptionDe,
         display_description_en: descriptionEn,
+        display_description_ar: descriptionAr,
         tags: tags
       });
       onOpenChange(false);
@@ -99,33 +119,51 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
   if (!video) return null;
 
   const isOnLandingPage = tags.includes('howto');
+  const isFeatured = tags.includes('featured');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('videos.edit_title', 'Video bearbeiten')}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
-          {/* Landing Page Selection */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">Landing Page</Label>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="landing-page"
-                checked={isOnLandingPage}
-                onCheckedChange={handleLandingPageToggle}
-              />
-              <Label htmlFor="landing-page" className="text-sm">
-                Auf der Landing Page als "Wie funktioniert es" Video anzeigen
-              </Label>
+          {/* Landing Page und Featured Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Landing Page</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="landing-page"
+                  checked={isOnLandingPage}
+                  onCheckedChange={handleLandingPageToggle}
+                />
+                <Label htmlFor="landing-page" className="text-sm">
+                  Auf der Landing Page anzeigen
+                </Label>
+              </div>
             </div>
-            {isOnLandingPage && (
-              <p className="text-xs text-muted-foreground">
-                Dieses Video wird automatisch im "Wie funktioniert es" Bereich der Landing Page angezeigt.
-              </p>
-            )}
+
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Featured Video</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="featured"
+                  checked={isFeatured}
+                  onCheckedChange={handleFeaturedToggle}
+                />
+                <Label htmlFor="featured" className="text-sm flex items-center gap-1">
+                  <Star className="h-4 w-4" />
+                  Als Featured Video markieren
+                </Label>
+              </div>
+              {isFeatured && (
+                <p className="text-xs text-muted-foreground">
+                  Dieses Video wird prominente in der Galerie angezeigt.
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Tags Section */}
@@ -136,6 +174,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                  {tag === 'featured' && <Star className="h-3 w-3" />}
                   {tag}
                   <Button
                     variant="ghost"
@@ -167,10 +206,10 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
             </div>
           </div>
 
-          {/* Title Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Title Fields - Drei Sprachen */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="title-de">{t('videos.title_de', 'Titel (DE)')}</Label>
+              <Label htmlFor="title-de">Titel (Deutsch)</Label>
               <Input 
                 id="title-de"
                 value={titleDe} 
@@ -180,7 +219,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="title-en">{t('videos.title_en', 'Titel (EN)')}</Label>
+              <Label htmlFor="title-en">Title (English)</Label>
               <Input 
                 id="title-en"
                 value={titleEn} 
@@ -188,29 +227,52 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
                 placeholder={video.original_name}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="title-ar">العنوان (العربية)</Label>
+              <Input 
+                id="title-ar"
+                value={titleAr} 
+                onChange={(e) => setTitleAr(e.target.value)}
+                placeholder={video.original_name}
+                dir="rtl"
+              />
+            </div>
           </div>
 
-          {/* Description Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Description Fields - Drei Sprachen */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="description-de">{t('videos.description_de', 'Beschreibung (DE)')}</Label>
+              <Label htmlFor="description-de">Beschreibung (Deutsch)</Label>
               <Textarea 
                 id="description-de"
                 value={descriptionDe} 
                 onChange={(e) => setDescriptionDe(e.target.value)}
                 rows={4}
-                placeholder={video.description || t('videos.enter_description', 'Beschreibung eingeben...')}
+                placeholder="Beschreibung auf Deutsch..."
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="description-en">{t('videos.description_en', 'Beschreibung (EN)')}</Label>
+              <Label htmlFor="description-en">Description (English)</Label>
               <Textarea 
                 id="description-en"
                 value={descriptionEn} 
                 onChange={(e) => setDescriptionEn(e.target.value)}
                 rows={4}
-                placeholder={video.description || t('videos.enter_description', 'Description in English...')}
+                placeholder="Description in English..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description-ar">الوصف (العربية)</Label>
+              <Textarea 
+                id="description-ar"
+                value={descriptionAr} 
+                onChange={(e) => setDescriptionAr(e.target.value)}
+                rows={4}
+                placeholder="الوصف باللغة العربية..."
+                dir="rtl"
               />
             </div>
           </div>

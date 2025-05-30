@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Video, Upload, Trash2, Eye, AlertCircle, Edit, Star } from "lucide-react";
+import { Video, Upload, Trash2, Eye, AlertCircle, Edit, Star, Play } from "lucide-react";
 import EnhancedVideoUploadDialog from "./EnhancedVideoUploadDialog";
 import VideoEditDialog from "./VideoEditDialog";
 import { supabase } from "@/lib/supabaseClient";
@@ -115,8 +115,10 @@ const AdminVideoUploadPanel = () => {
   const handleUpdateVideo = async (videoId: string, data: {
     display_title_de?: string;
     display_title_en?: string;
+    display_title_ar?: string;
     display_description_de?: string;
     display_description_en?: string;
+    display_description_ar?: string;
     tags?: string[];
   }) => {
     if (!canManageVideos) {
@@ -167,12 +169,14 @@ const AdminVideoUploadPanel = () => {
 
   const getVideoStatus = (video: AdminVideo) => {
     const isOnLandingPage = video.tags?.includes('howto');
+    const isFeatured = video.tags?.includes('featured');
     const isPublic = video.public;
     
     return {
       isOnLandingPage,
+      isFeatured,
       isPublic,
-      statusText: isOnLandingPage ? 'Auf Landing Page' : isPublic ? 'Öffentlich' : 'Privat'
+      statusText: isFeatured ? 'Featured' : isOnLandingPage ? 'Auf Landing Page' : isPublic ? 'Öffentlich' : 'Privat'
     };
   };
 
@@ -226,9 +230,15 @@ const AdminVideoUploadPanel = () => {
                         <p className="font-medium truncate">
                           {video.display_title_de || video.original_name}
                         </p>
-                        {status.isOnLandingPage && (
-                          <Badge variant="default" className="bg-orange-100 text-orange-800 border-orange-200">
+                        {status.isFeatured && (
+                          <Badge variant="default" className="bg-yellow-100 text-yellow-800 border-yellow-200">
                             <Star className="h-3 w-3 mr-1" />
+                            Featured
+                          </Badge>
+                        )}
+                        {status.isOnLandingPage && !status.isFeatured && (
+                          <Badge variant="default" className="bg-orange-100 text-orange-800 border-orange-200">
+                            <Play className="h-3 w-3 mr-1" />
                             Landing Page
                           </Badge>
                         )}
