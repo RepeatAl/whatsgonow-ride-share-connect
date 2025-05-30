@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Video, Upload, Trash2, Eye, AlertCircle, Edit } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Video, Upload, Trash2, Eye, AlertCircle, Edit, Star } from "lucide-react";
 import EnhancedVideoUploadDialog from "./EnhancedVideoUploadDialog";
 import VideoEditDialog from "./VideoEditDialog";
 import { supabase } from "@/lib/supabaseClient";
@@ -30,7 +31,6 @@ const AdminVideoUploadPanel = () => {
       
       console.log('Fetching admin videos...');
       
-      // Vereinfachte Query ohne 'active' falls es Probleme gibt
       const { data, error } = await supabase
         .from('admin_videos')
         .select('*')
@@ -42,7 +42,6 @@ const AdminVideoUploadPanel = () => {
         return;
       }
       
-      // Filter nur aktive Videos falls 'active' Feld existiert
       const filteredVideos = data?.filter(video => 
         typeof video.active === 'boolean' ? video.active : true
       ) || [];
@@ -79,17 +78,14 @@ const AdminVideoUploadPanel = () => {
     try {
       console.log('Deleting video:', videoId, filePath);
       
-      // Delete from storage
       const { error: storageError } = await supabase.storage
         .from('videos')
         .remove([filePath]);
 
       if (storageError) {
         console.error('Storage deletion error:', storageError);
-        // Continue anyway, mark as inactive
       }
 
-      // Mark as inactive in database (or delete completely)
       const { error: dbError } = await supabase
         .from('admin_videos')
         .update({ active: false })
@@ -121,6 +117,7 @@ const AdminVideoUploadPanel = () => {
     display_title_en?: string;
     display_description_de?: string;
     display_description_en?: string;
+    tags?: string[];
   }) => {
     if (!canManageVideos) {
       toast({
@@ -168,6 +165,17 @@ const AdminVideoUploadPanel = () => {
     fetchVideos();
   }, []);
 
+  const getVideoStatus = (video: AdminVideo) => {
+    const isOnLandingPage = video.tags?.includes('howto');
+    const isPublic = video.public;
+    
+    return {
+      isOnLandingPage,
+      isPublic,
+      statusText: isOnLandingPage ? 'Auf Landing Page' : isPublic ? 'Öffentlich' : 'Privat'
+    };
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -209,62 +217,88 @@ const AdminVideoUploadPanel = () => {
           ) : (
             <div className="space-y-3">
               <h4 className="font-medium">Videos ({videos.length})</h4>
-              {videos.map((video) => (
-                <div key={video.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium">
-                      {video.display_title_de || video.original_name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {(video.file_size / 1024 / 1024).toFixed(1)} MB • {video.mime_type}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(video.uploaded_at).toLocaleDateString('de-DE')}
-                    </p>
-                    {video.tags && video.tags.length > 0 && (
-                      <p className="text-xs text-blue-600">
-                        Tags: {video.tags.join(', ')}
-                      </p>
-                    )}
-                    {video.display_description_de && (
-                      <p className="text-sm text-gray-600">
-                        {video.display_description_de.length > 50
-                          ? `${video.display_description_de.substring(0, 50)}...`
-                          : video.display_description_de}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {video.public_url && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => window.open(video.public_url, '_blank')}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {canManageVideos && (
-                      <>
+              {videos.map((video) => {
+                const status = getVideoStatus(video);
+                return (
+                  <div key={video.id} className="flex items-start justify-between p-4 border rounded-lg bg-white">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="font-medium truncate">
+                          {video.display_title_de || video.original_name}
+                        </p>
+                        {status.isOnLandingPage && (
+                          <Badge variant="default" className="bg-orange-100 text-orange-800 border-orange-200">
+                            <Star className="h-3 w-3 mr-1" />
+                            Landing Page
+                          </Badge>
+                        )}
+                        {status.isPublic && !status.isOnLandingPage && (
+                          <Badge variant="secondary">
+                            Öffentlich
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">
+                          {(video.file_size / 1024 / 1024).toFixed(1)} MB • {video.mime_type}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(video.uploaded_at).toLocaleDateString('de-DE')}
+                        </p>
+                        
+                        {video.tags && video.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {video.tags.map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {video.display_description_de && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            {video.display_description_de.length > 80
+                              ? `${video.display_description_de.substring(0, 80)}...`
+                              : video.display_description_de}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 ml-4">
+                      {video.public_url && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setEditingVideo(video)}
+                          onClick={() => window.open(video.public_url, '_blank')}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteVideo(video.id, video.file_path)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
+                      )}
+                      {canManageVideos && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingVideo(video)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteVideo(video.id, video.file_path)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
