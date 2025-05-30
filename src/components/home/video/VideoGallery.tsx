@@ -18,10 +18,17 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   
   const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(featuredVideo || null);
 
-  // Funktion um den lokalisierten Titel zu bekommen
+  // Funktion um den lokalisierten Titel zu bekommen mit Fallback-Logik
   const getLocalizedTitle = (video: AdminVideo): string => {
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
+    // Versuche zuerst JSON-Struktur, dann Fallback auf einzelne Spalten
+    if (video.display_titles && typeof video.display_titles === 'object') {
+      const titles = video.display_titles as Record<string, string>;
+      return titles[langKey] || titles.de || titles.en || titles.ar || video.original_name;
+    }
+    
+    // Fallback auf alte Spaltenstruktur
     switch (langKey) {
       case 'en':
         return video.display_title_en || video.display_title_de || video.original_name;
@@ -32,10 +39,17 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
     }
   };
 
-  // Funktion um die lokalisierte Beschreibung zu bekommen
+  // Funktion um die lokalisierte Beschreibung zu bekommen mit Fallback-Logik
   const getLocalizedDescription = (video: AdminVideo): string => {
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
+    // Versuche zuerst JSON-Struktur, dann Fallback auf einzelne Spalten
+    if (video.display_descriptions && typeof video.display_descriptions === 'object') {
+      const descriptions = video.display_descriptions as Record<string, string>;
+      return descriptions[langKey] || descriptions.de || descriptions.en || descriptions.ar || video.description || '';
+    }
+    
+    // Fallback auf alte Spaltenstruktur
     switch (langKey) {
       case 'en':
         return video.display_description_en || video.display_description_de || video.description || '';

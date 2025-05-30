@@ -1,4 +1,5 @@
 
+
 export interface AdminVideo {
   id: string;
   filename: string;
@@ -18,6 +19,8 @@ export interface AdminVideo {
   display_description_de?: string;
   display_description_en?: string;
   display_description_ar?: string;
+  display_titles?: Record<string, string>;
+  display_descriptions?: Record<string, string>;
   tags?: string[];
 }
 

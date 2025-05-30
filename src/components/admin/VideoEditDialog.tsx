@@ -30,25 +30,57 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
   const { t } = useTranslation('admin');
   const [isLoading, setIsLoading] = useState(false);
   
-  const [titleDe, setTitleDe] = useState(video?.display_title_de || "");
-  const [titleEn, setTitleEn] = useState(video?.display_title_en || "");
-  const [titleAr, setTitleAr] = useState(video?.display_title_ar || "");
-  const [descriptionDe, setDescriptionDe] = useState(video?.display_description_de || "");
-  const [descriptionEn, setDescriptionEn] = useState(video?.display_description_en || "");
-  const [descriptionAr, setDescriptionAr] = useState(video?.display_description_ar || "");
-  const [tags, setTags] = useState<string[]>(video?.tags || []);
+  const [titleDe, setTitleDe] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [titleAr, setTitleAr] = useState("");
+  const [descriptionDe, setDescriptionDe] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
+  const [descriptionAr, setDescriptionAr] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
-  // Reset form values when video changes
+  // Helper-Funktion für sichere String-Extraktion
+  const safeGetString = (value: any): string => {
+    if (typeof value === 'string') return value;
+    return '';
+  };
+
+  // Reset form values when video changes mit sicherer Fallback-Logik
   React.useEffect(() => {
     if (video) {
-      setTitleDe(video.display_title_de || "");
-      setTitleEn(video.display_title_en || "");
-      setTitleAr(video.display_title_ar || "");
-      setDescriptionDe(video.display_description_de || "");
-      setDescriptionEn(video.display_description_en || "");
-      setDescriptionAr(video.display_description_ar || "");
+      // Versuche zuerst JSON-Struktur, dann Fallback auf einzelne Spalten
+      if (video.display_titles && typeof video.display_titles === 'object') {
+        const titles = video.display_titles as Record<string, string>;
+        setTitleDe(titles.de || '');
+        setTitleEn(titles.en || '');
+        setTitleAr(titles.ar || '');
+      } else {
+        setTitleDe(safeGetString(video.display_title_de));
+        setTitleEn(safeGetString(video.display_title_en));
+        setTitleAr(safeGetString(video.display_title_ar));
+      }
+      
+      if (video.display_descriptions && typeof video.display_descriptions === 'object') {
+        const descriptions = video.display_descriptions as Record<string, string>;
+        setDescriptionDe(descriptions.de || '');
+        setDescriptionEn(descriptions.en || '');
+        setDescriptionAr(descriptions.ar || '');
+      } else {
+        setDescriptionDe(safeGetString(video.display_description_de));
+        setDescriptionEn(safeGetString(video.display_description_en));
+        setDescriptionAr(safeGetString(video.display_description_ar));
+      }
+      
       setTags(video.tags || []);
+    } else {
+      // Reset zu leeren Werten wenn kein Video
+      setTitleDe("");
+      setTitleEn("");
+      setTitleAr("");
+      setDescriptionDe("");
+      setDescriptionEn("");
+      setDescriptionAr("");
+      setTags([]);
     }
   }, [video]);
 
