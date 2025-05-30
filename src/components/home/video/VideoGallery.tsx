@@ -4,6 +4,7 @@ import { Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import VideoPlayer from "../VideoPlayer";
+import VideoThumbnail from "./VideoThumbnail";
 import type { AdminVideo } from "@/types/admin";
 
 interface VideoGalleryProps {
@@ -12,11 +13,9 @@ interface VideoGalleryProps {
 }
 
 const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
-  // Bestimme das Featured Video (erstes mit 'featured' Tag oder erstes Video)
-  const featuredVideo = videos.find(video => video.tags?.includes('featured')) || videos[0];
-  const galleryVideos = videos.filter(video => video.id !== featuredVideo?.id);
-  
-  const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(featuredVideo || null);
+  // Bestimme das initiale Video (erstes mit 'featured' Tag oder erstes Video)
+  const initialVideo = videos.find(video => video.tags?.includes('featured')) || videos[0];
+  const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(initialVideo || null);
 
   // Funktion um den lokalisierten Titel zu bekommen mit Fallback-Logik
   const getLocalizedTitle = (video: AdminVideo): string => {
@@ -75,7 +74,7 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Featured Video Player */}
+      {/* Current Video Player */}
       {currentVideo && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-2">
@@ -96,58 +95,28 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
         </div>
       )}
 
-      {/* Video Gallery Thumbnails */}
-      {galleryVideos.length > 0 && (
+      {/* Video Gallery - Show all videos with thumbnails */}
+      {videos.length > 1 && (
         <div className="space-y-4">
           <h4 className="text-lg font-medium text-gray-900">
-            Weitere Videos ({galleryVideos.length})
+            Video Auswahl ({videos.length})
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {galleryVideos.map((video) => (
+            {videos.map((video) => (
               <div
                 key={video.id}
-                className="group cursor-pointer bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                onClick={() => handleVideoSelect(video)}
+                className={`${
+                  currentVideo?.id === video.id 
+                    ? 'ring-2 ring-brand-orange ring-offset-2' 
+                    : ''
+                }`}
               >
-                {/* Video Thumbnail */}
-                <div className="aspect-video bg-gradient-to-br from-brand-primary to-brand-orange flex items-center justify-center relative">
-                  <Play className="h-12 w-12 text-white group-hover:scale-110 transition-transform" />
-                  {video.tags?.includes('featured') && (
-                    <Badge 
-                      variant="default" 
-                      className="absolute top-2 right-2 bg-orange-100 text-orange-800 border-orange-200"
-                    >
-                      <Star className="h-3 w-3 mr-1" />
-                      Featured
-                    </Badge>
-                  )}
-                </div>
-                
-                {/* Video Info */}
-                <div className="p-4">
-                  <h5 className="font-semibold text-gray-900 mb-2 group-hover:text-brand-orange transition-colors">
-                    {getLocalizedTitle(video)}
-                  </h5>
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {getLocalizedDescription(video)}
-                  </p>
-                  
-                  {/* Tags */}
-                  {video.tags && video.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {video.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {video.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{video.tags.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <VideoThumbnail
+                  video={video}
+                  onVideoSelect={handleVideoSelect}
+                  getLocalizedTitle={getLocalizedTitle}
+                  getLocalizedDescription={getLocalizedDescription}
+                />
               </div>
             ))}
           </div>
