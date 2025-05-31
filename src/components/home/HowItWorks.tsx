@@ -21,7 +21,7 @@ const HowItWorks = () => {
       setIsLoading(true);
       setError(null);
       
-      // Query public howto videos
+      // Simplified query for public access - removed uploaded_by to avoid profile table access
       const { data, error } = await supabase
         .from('admin_videos')
         .select(`
@@ -42,8 +42,7 @@ const HowItWorks = () => {
           tags, 
           active, 
           public, 
-          uploaded_at,
-          uploaded_by
+          uploaded_at
         `)
         .eq('public', true)
         .eq('active', true)
@@ -61,7 +60,7 @@ const HowItWorks = () => {
       if (error) {
         console.error('❌ [PUBLIC] Video query failed:', error);
         if (error.code === '42501') {
-          setError('Videos sind momentan nicht verfügbar. Dies ist ein bekanntes Problem mit den Datenbankberechtigungen.');
+          setError('Videos sind momentan nicht verfügbar. Berechtigung wird konfiguriert.');
         } else {
           setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
         }
@@ -80,12 +79,11 @@ const HowItWorks = () => {
           }))
         });
         
-        // Process videos to ensure they have a usable URL (public_url or file_path fallback)
+        // Process videos to ensure they have a usable URL
         const processedVideos = data.map(video => ({
           ...video,
-          // Use public_url if available, otherwise use file_path as fallback
           public_url: video.public_url || video.file_path || null
-        })).filter(video => video.public_url); // Only keep videos with a URL
+        })).filter(video => video.public_url);
         
         console.log('🔧 [PUBLIC] Processed videos:', {
           originalCount: data.length,
@@ -95,7 +93,7 @@ const HowItWorks = () => {
         
         if (processedVideos.length === 0) {
           console.warn('⚠️ [PUBLIC] Videos found but no valid URLs');
-          setError('Videos sind konfiguriert, aber URLs fehlen. Bitte kontaktieren Sie den Support.');
+          setError('Videos sind konfiguriert, aber URLs fehlen.');
           return;
         }
         
@@ -162,7 +160,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video Gallery Section - NOW WITH ROBUST ERROR HANDLING */}
+        {/* Video Gallery Section */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -185,7 +183,6 @@ const HowItWorks = () => {
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange mx-auto mb-4"></div>
                   <p className="text-gray-600">Videos werden geladen...</p>
-                  <p className="text-xs text-gray-500 mt-2">Refresh #{refreshKey}</p>
                 </div>
               </div>
             )}
@@ -195,12 +192,6 @@ const HowItWorks = () => {
                 <div className="text-center text-gray-600">
                   <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <p className="text-lg">{error}</p>
-                  <p className="text-sm mt-2 opacity-75">
-                    {error.includes('Datenbankberechtigungen') 
-                      ? 'Technisches Problem - wird behoben.'
-                      : 'Wir arbeiten daran, die Videos schnellstmöglich wieder verfügbar zu machen.'
-                    }
-                  </p>
                   <Button
                     variant="outline"
                     onClick={handleRefresh}
