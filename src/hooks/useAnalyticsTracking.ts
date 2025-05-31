@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/lib/supabaseClient';
@@ -10,7 +9,7 @@ import {
   AnalyticsValidator
 } from '@/types/analytics';
 import AnalyticsErrorLogger from '@/utils/analytics-error-logger';
-import { useAnalyticsFeatureFlags } from './useFeatureFlags';
+import { useAnalyticsFeatureFlags } from './useAnalyticsFeatureFlags';
 
 const getOrCreateSessionId = (): string => {
   let sessionId = sessionStorage.getItem('analytics_session_id');
@@ -97,7 +96,6 @@ export const useAnalyticsTracking = () => {
     }
   }, [featureFlags.eventsV2, featureFlags.errorMonitoring]);
 
-  // Convenience methods for specific event types with feature gates
   const trackVideoEvent = useCallback((
     eventType: VideoAnalyticsEvent['event_type'],
     videoId: string,
