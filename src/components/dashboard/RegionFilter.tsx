@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { 
   Select, 
   SelectContent, 
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin } from "lucide-react";
+import { fetchAllRegions, getRegionDisplayName, type CMRegion } from "@/utils/regionUtils";
 
 interface RegionFilterProps {
   selectedRegion: string;
@@ -15,13 +17,30 @@ interface RegionFilterProps {
 }
 
 export const RegionFilter = ({ selectedRegion, onRegionChange }: RegionFilterProps) => {
-  const regions = [
+  const [regions, setRegions] = useState<CMRegion[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadRegions = async () => {
+      try {
+        const allRegions = await fetchAllRegions();
+        setRegions(allRegions);
+      } catch (error) {
+        console.error("Failed to load regions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRegions();
+  }, []);
+
+  const regionOptions = [
     { value: "all", label: "All Regions" },
-    { value: "North", label: "North" },
-    { value: "South", label: "South" },
-    { value: "East", label: "East" },
-    { value: "West", label: "West" },
-    { value: "Central", label: "Central" },
+    ...regions.map(region => ({
+      value: region.region_id,
+      label: getRegionDisplayName(region)
+    }))
   ];
 
   return (
@@ -41,12 +60,13 @@ export const RegionFilter = ({ selectedRegion, onRegionChange }: RegionFilterPro
         value={selectedRegion} 
         onValueChange={onRegionChange}
         aria-label="Select region"
+        disabled={loading}
       >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select region" />
+        <SelectTrigger className="w-[240px]">
+          <SelectValue placeholder={loading ? "Loading regions..." : "Select region"} />
         </SelectTrigger>
         <SelectContent>
-          {regions.map((region) => (
+          {regionOptions.map((region) => (
             <SelectItem key={region.value} value={region.value}>
               {region.label}
             </SelectItem>

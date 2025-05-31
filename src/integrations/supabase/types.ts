@@ -168,6 +168,73 @@ export type Database = {
         }
         Relationships: []
       }
+      cm_regions: {
+        Row: {
+          active: boolean | null
+          city_name: string | null
+          cm_user_id: string | null
+          country_code: string | null
+          created_at: string | null
+          plz_range_max: string | null
+          plz_range_min: string | null
+          region_id: string
+          region_name: string
+          region_polygon: Json | null
+          state_province: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          city_name?: string | null
+          cm_user_id?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          plz_range_max?: string | null
+          plz_range_min?: string | null
+          region_id?: string
+          region_name: string
+          region_polygon?: Json | null
+          state_province?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          city_name?: string | null
+          cm_user_id?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          plz_range_max?: string | null
+          plz_range_min?: string | null
+          region_id?: string
+          region_name?: string
+          region_polygon?: Json | null
+          state_province?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cm_regions_cm_user_id_fkey"
+            columns: ["cm_user_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "cm_regions_cm_user_id_fkey"
+            columns: ["cm_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "cm_regions_cm_user_id_fkey"
+            columns: ["cm_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_managers: {
         Row: {
           commission_rate: number | null
@@ -1407,6 +1474,7 @@ export type Database = {
           pre_suspend_reason: string | null
           profile_complete: boolean
           region: string
+          region_id: string | null
           role: string
           street: string | null
           suspended_until: string | null
@@ -1441,6 +1509,7 @@ export type Database = {
           pre_suspend_reason?: string | null
           profile_complete?: boolean
           region: string
+          region_id?: string | null
           role: string
           street?: string | null
           suspended_until?: string | null
@@ -1475,6 +1544,7 @@ export type Database = {
           pre_suspend_reason?: string | null
           profile_complete?: boolean
           region?: string
+          region_id?: string | null
           role?: string
           street?: string | null
           suspended_until?: string | null
@@ -1484,7 +1554,15 @@ export type Database = {
           verified?: boolean | null
           wants_to_upload_items?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "cm_regions"
+            referencedColumns: ["region_id"]
+          },
+        ]
       }
       ratings: {
         Row: {

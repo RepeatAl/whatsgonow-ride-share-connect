@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import type { UserProfile } from "@/types/auth";
-import { fetchUserRegion } from "@/utils/regionUtils";
 
 /**
  * Hook to handle user profile fetching and management
+ * Updated to work with new cm_regions structure
  * 
  * SECURITY NOTE: This hook implements a critical security check that ensures 
  * authenticated users without profiles cannot access protected routes.
@@ -21,10 +21,10 @@ export function useProfile(user: User | null) {
   const [error, setError] = useState<Error | null>(null);
 
   // Function to check if a region is a test region
-  const isTestRegion = (region: string | null | undefined): boolean => {
+  const isTestRegion = (regionName: string | null | undefined): boolean => {
     const TEST_REGION_PREFIXES = ["test", "us-ca", "us-ny", "uk-ldn"];
-    return region ? TEST_REGION_PREFIXES.some(prefix => 
-      region.toLowerCase().startsWith(prefix)
+    return regionName ? TEST_REGION_PREFIXES.some(prefix => 
+      regionName.toLowerCase().startsWith(prefix)
     ) : false;
   };
 
@@ -40,7 +40,7 @@ export function useProfile(user: User | null) {
       setLoading(true);
       setError(null);
       
-      // Fetch profile data
+      // Fetch profile data with region information
       const { data: userProfile, error: profileError } = await supabase
         .from("profiles")
         .select(`
@@ -64,7 +64,14 @@ export function useProfile(user: User | null) {
           verified,
           can_become_driver,
           dashboard_access_enabled,
-          wants_to_upload_items
+          wants_to_upload_items,
+          region_id,
+          cm_regions(
+            region_name,
+            country_code,
+            state_province,
+            city_name
+          )
         `)
         .eq("user_id", user.id)
         .maybeSingle();
@@ -80,19 +87,19 @@ export function useProfile(user: User | null) {
         };
         
         setProfile(transformedProfile);
-        setRegion(transformedProfile.region || null);
-        console.log("✅ Profile loaded successfully");
+        
+        // Set region from new cm_regions structure
+        const regionName = userProfile.cm_regions?.region_name || userProfile.region || null;
+        setRegion(regionName);
+        setIsTest(isTestRegion(regionName));
+        
+        console.log("✅ Profile loaded successfully with region:", regionName);
       } else {
         // SECURITY NOTE: Critical to set profile to null when no profile exists
         // This triggers the security redirect in ProfileCheck.tsx
         console.warn("⚠️ Kein Profil gefunden für User", user.id);
         setProfile(null);
       }
-
-      // Check if region is a test region
-      const userRegion = await fetchUserRegion(supabase, user.id);
-      setRegion(userRegion);
-      setIsTest(isTestRegion(userRegion));
       
     } catch (error) {
       console.error("❌ Error loading profile:", error);
