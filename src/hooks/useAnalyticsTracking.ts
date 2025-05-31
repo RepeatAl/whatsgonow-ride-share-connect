@@ -1,8 +1,14 @@
-
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/lib/supabaseClient';
-import type { AnalyticsEvent, VideoAnalyticsEvent, LanguageAnalyticsEvent, UserJourneyEvent } from '@/types/analytics';
+import { 
+  AnalyticsEvent, 
+  VideoAnalyticsEvent, 
+  LanguageAnalyticsEvent, 
+  UserJourneyEvent,
+  AnalyticsValidator
+} from '@/types/analytics';
+import AnalyticsErrorLogger from '@/utils/analytics-error-logger';
 
 const getOrCreateSessionId = (): string => {
   let sessionId = sessionStorage.getItem('analytics_session_id');
@@ -16,17 +22,31 @@ const getOrCreateSessionId = (): string => {
 export const useAnalyticsTracking = () => {
   const [isTracking, setIsTracking] = useState(false);
 
-  const trackEvent = useCallback(async (event: AnalyticsEvent) => {
+  const trackEvent = useCallback(async (event: unknown) => {
     try {
       setIsTracking(true);
-      
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
       const sessionId = getOrCreateSessionId();
       
-      // Enrich event with session data
+      // Validate event using Zod schema
+      const validationResult = AnalyticsValidator.validateEvent(event);
+      
+      if (!validationResult.success) {
+        // Log validation failure with new error logger
+        AnalyticsErrorLogger.logValidationError(
+          event,
+          validationResult.errors || ['Unknown validation error'],
+          sessionId
+        );
+        
+        return; // Don't save invalid events
+      }
+
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Enrich validated event with session data
       const enrichedEvent = {
-        ...event,
+        ...validationResult.data,
         session_id: sessionId,
         user_id: session?.user?.id || null,
         timestamp: new Date().toISOString()
@@ -38,19 +58,31 @@ export const useAnalyticsTracking = () => {
         .insert(enrichedEvent);
 
       if (error) {
-        console.warn('Analytics tracking failed:', error);
+        // Log database failure with new error logger
+        AnalyticsErrorLogger.logDatabaseError(
+          enrichedEvent,
+          error.message,
+          sessionId
+        );
       } else {
-        console.log('✅ Analytics event tracked:', event.event_type, enrichedEvent);
+        console.log('✅ Analytics event tracked successfully:', validationResult.data?.event_type, enrichedEvent);
       }
       
     } catch (error) {
-      console.warn('Analytics tracking error:', error);
+      const sessionId = getOrCreateSessionId();
+      
+      // Log system errors with new error logger
+      AnalyticsErrorLogger.logSystemError(
+        event,
+        error instanceof Error ? error.message : 'Unknown error',
+        sessionId
+      );
     } finally {
       setIsTracking(false);
     }
   }, []);
 
-  // Convenience methods for specific event types
+  // Convenience methods for specific event types with validation
   const trackVideoEvent = useCallback((
     eventType: VideoAnalyticsEvent['event_type'],
     videoId: string,
@@ -59,7 +91,7 @@ export const useAnalyticsTracking = () => {
     const currentLanguage = localStorage.getItem('language') || 'de';
     const currentRegion = localStorage.getItem('selected_region') || 'unknown';
     
-    trackEvent({
+    const event = {
       event_type: eventType,
       video_id: videoId,
       language: currentLanguage,
@@ -67,7 +99,9 @@ export const useAnalyticsTracking = () => {
       metadata,
       session_id: getOrCreateSessionId(),
       timestamp: new Date().toISOString()
-    } as VideoAnalyticsEvent);
+    };
+
+    trackEvent(event);
   }, [trackEvent]);
 
   const trackLanguageEvent = useCallback((
@@ -75,30 +109,35 @@ export const useAnalyticsTracking = () => {
     fromValue?: string,
     toValue?: string
   ) => {
-    trackEvent({
+    const event = {
       event_type: eventType,
       from_language: eventType === 'language_switched' ? fromValue : undefined,
       to_language: eventType === 'language_switched' ? toValue || 'de' : 'de',
       from_region: eventType === 'region_changed' ? fromValue : undefined,
       to_region: eventType === 'region_changed' ? toValue : undefined,
       session_id: getOrCreateSessionId(),
-      timestamp: new Date().toISOString()
-    } as LanguageAnalyticsEvent);
+      timestamp: new Date().toISOString(),
+      language: localStorage.getItem('language') || 'de',
+    };
+
+    trackEvent(event);
   }, [trackEvent]);
 
   const trackPageView = useCallback((pagePath: string, metadata?: Record<string, any>) => {
     const currentLanguage = localStorage.getItem('language') || 'de';
     const currentRegion = localStorage.getItem('selected_region') || 'unknown';
     
-    trackEvent({
-      event_type: 'page_view',
+    const event = {
+      event_type: 'page_view' as const,
       page_path: pagePath,
       language: currentLanguage,
       region: currentRegion,
       metadata,
       session_id: getOrCreateSessionId(),
       timestamp: new Date().toISOString()
-    } as UserJourneyEvent);
+    };
+
+    trackEvent(event);
   }, [trackEvent]);
 
   return {

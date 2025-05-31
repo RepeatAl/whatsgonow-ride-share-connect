@@ -2,6 +2,7 @@
 import { useRef, useCallback } from 'react';
 import { useAnalyticsTracking } from './useAnalyticsTracking';
 import type { AdminVideo } from '@/types/admin';
+import type { VideoAnalyticsEvent } from '@/types/analytics';
 
 interface VideoAnalyticsState {
   startTime: number | null;
