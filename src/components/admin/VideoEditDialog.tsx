@@ -23,7 +23,7 @@ interface VideoEditDialogProps {
     display_description_de?: string;
     display_description_en?: string;
     display_description_ar?: string;
-    thumbnail_url?: string;
+    thumbnail_url?: string | null;
     thumbnail_titles?: Record<string, string>;
     tags?: string[];
   }) => Promise<void>;
@@ -55,43 +55,64 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
     return '';
   };
 
-  // Reset form values when video changes
+  // Reset form values when video changes with enhanced error handling
   React.useEffect(() => {
     if (video) {
-      // ... keep existing code for setting video data
-      if (video.display_titles && typeof video.display_titles === 'object') {
-        const titles = video.display_titles as Record<string, string>;
-        setTitleDe(titles.de || '');
-        setTitleEn(titles.en || '');
-        setTitleAr(titles.ar || '');
-      } else {
-        setTitleDe(safeGetString(video.display_title_de));
-        setTitleEn(safeGetString(video.display_title_en));
-        setTitleAr(safeGetString(video.display_title_ar));
-      }
-      
-      if (video.display_descriptions && typeof video.display_descriptions === 'object') {
-        const descriptions = video.display_descriptions as Record<string, string>;
-        setDescriptionDe(descriptions.de || '');
-        setDescriptionEn(descriptions.en || '');
-        setDescriptionAr(descriptions.ar || '');
-      } else {
-        setDescriptionDe(safeGetString(video.display_description_de));
-        setDescriptionEn(safeGetString(video.display_description_en));
-        setDescriptionAr(safeGetString(video.display_description_ar));
-      }
+      try {
+        // Handle display titles with graceful fallback
+        if (video.display_titles && typeof video.display_titles === 'object') {
+          const titles = video.display_titles as Record<string, string>;
+          setTitleDe(titles.de || '');
+          setTitleEn(titles.en || '');
+          setTitleAr(titles.ar || '');
+        } else {
+          setTitleDe(safeGetString(video.display_title_de));
+          setTitleEn(safeGetString(video.display_title_en));
+          setTitleAr(safeGetString(video.display_title_ar));
+        }
+        
+        // Handle display descriptions with graceful fallback
+        if (video.display_descriptions && typeof video.display_descriptions === 'object') {
+          const descriptions = video.display_descriptions as Record<string, string>;
+          setDescriptionDe(descriptions.de || '');
+          setDescriptionEn(descriptions.en || '');
+          setDescriptionAr(descriptions.ar || '');
+        } else {
+          setDescriptionDe(safeGetString(video.display_description_de));
+          setDescriptionEn(safeGetString(video.display_description_en));
+          setDescriptionAr(safeGetString(video.display_description_ar));
+        }
 
-      // Handle thumbnail data
-      setThumbnailUrl(video.thumbnail_url || '');
-      
-      if (video.thumbnail_titles && typeof video.thumbnail_titles === 'object') {
-        const thumbTitles = video.thumbnail_titles as Record<string, string>;
-        setThumbnailAltDe(thumbTitles.de || '');
-        setThumbnailAltEn(thumbTitles.en || '');
-        setThumbnailAltAr(thumbTitles.ar || '');
+        // Handle thumbnail data with safe access
+        setThumbnailUrl(video.thumbnail_url || '');
+        
+        if (video.thumbnail_titles && typeof video.thumbnail_titles === 'object') {
+          const thumbTitles = video.thumbnail_titles as Record<string, string>;
+          setThumbnailAltDe(thumbTitles.de || '');
+          setThumbnailAltEn(thumbTitles.en || '');
+          setThumbnailAltAr(thumbTitles.ar || '');
+        } else {
+          setThumbnailAltDe('');
+          setThumbnailAltEn('');
+          setThumbnailAltAr('');
+        }
+        
+        setTags(video.tags || []);
+      } catch (error) {
+        console.warn('Error setting video data, using fallbacks:', error);
+        // Set safe defaults on error
+        setTitleDe(video.original_name || '');
+        setTitleEn('');
+        setTitleAr('');
+        setDescriptionDe('');
+        setDescriptionEn('');
+        setDescriptionAr('');
+        setThumbnailUrl('');
+        setThumbnailAltDe('');
+        setThumbnailAltEn('');
+        setThumbnailAltAr('');
+        setTags([]);
       }
-      
-      setTags(video.tags || []);
     } else {
       // Reset to empty values when no video
       setTitleDe("");

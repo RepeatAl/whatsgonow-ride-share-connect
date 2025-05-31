@@ -22,7 +22,7 @@ const HowItWorks = () => {
       setIsLoading(true);
       setError(null);
       
-      // Enhanced query including new thumbnail fields
+      // Enhanced query with graceful handling of new columns
       const { data, error } = await supabase
         .from('admin_videos')
         .select(`
@@ -64,8 +64,12 @@ const HowItWorks = () => {
 
       if (error) {
         console.error('❌ [PUBLIC] Video query failed:', error);
+        
+        // Enhanced error handling
         if (error.code === '42501') {
           setError('Videos sind momentan nicht verfügbar. Berechtigung wird konfiguriert.');
+        } else if (error.code === '42703') {
+          setError('Datenbank wird aktualisiert. Videos sind gleich verfügbar.');
         } else {
           setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
         }
@@ -84,11 +88,17 @@ const HowItWorks = () => {
           }))
         });
         
-        // Process videos to ensure they have a usable URL
-        const processedVideos = data.map(video => ({
-          ...video,
-          public_url: video.public_url || video.file_path || null
-        })).filter(video => video.public_url);
+        // Process videos to ensure they have a usable URL and valid structure
+        const processedVideos = data
+          .filter(video => video && video.id) // Filter out null/invalid videos
+          .map(video => ({
+            ...video,
+            public_url: video.public_url || video.file_path || null,
+            // Ensure thumbnail_url is properly handled even if column is new
+            thumbnail_url: video.thumbnail_url || null,
+            thumbnail_titles: video.thumbnail_titles || {}
+          }))
+          .filter(video => video.public_url); // Only keep videos with valid URLs
         
         console.log('🔧 [PUBLIC] Processed videos:', {
           originalCount: data.length,
@@ -166,7 +176,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video Gallery Section with enhanced thumbnail support */}
+        {/* Video Gallery Section with enhanced error handling */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6">

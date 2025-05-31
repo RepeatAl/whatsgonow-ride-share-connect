@@ -22,6 +22,12 @@ const VideoThumbnailOptimized = ({
 }: VideoThumbnailOptimizedProps) => {
   const { thumbnailUrl, isLoading, hasCustomThumbnail, altText } = useVideoThumbnail(video, currentLanguage);
 
+  // Safety check for video object
+  if (!video) {
+    console.warn('🔍 VideoThumbnailOptimized: No video provided');
+    return null;
+  }
+
   console.log('🔍 VideoThumbnailOptimized rendering:', { 
     id: video.id, 
     thumbnailUrl,
@@ -30,10 +36,18 @@ const VideoThumbnailOptimized = ({
     altText
   });
 
+  const handleVideoClick = () => {
+    try {
+      onVideoSelect(video);
+    } catch (error) {
+      console.error('Error selecting video:', error);
+    }
+  };
+
   return (
     <div
       className="group cursor-pointer bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-      onClick={() => onVideoSelect(video)}
+      onClick={handleVideoClick}
     >
       {/* Thumbnail Display */}
       <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
@@ -48,9 +62,12 @@ const VideoThumbnailOptimized = ({
             className="w-full h-full object-cover"
             loading="lazy"
             onError={(e) => {
-              // Fallback to brand placeholder if custom thumbnail fails
+              // Fallback to brand placeholder if any thumbnail fails
               console.warn('🔄 Thumbnail failed, using fallback:', thumbnailUrl);
-              (e.target as HTMLImageElement).src = '/placeholders/video-placeholder.svg';
+              const target = e.target as HTMLImageElement;
+              if (target.src !== '/placeholders/video-placeholder.svg') {
+                target.src = '/placeholders/video-placeholder.svg';
+              }
             }}
           />
         )}

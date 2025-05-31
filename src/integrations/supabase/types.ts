@@ -87,6 +87,8 @@ export type Database = {
           public: boolean | null
           public_url: string | null
           tags: string[] | null
+          thumbnail_titles: Json | null
+          thumbnail_url: string | null
           uploaded_at: string | null
           uploaded_by: string | null
         }
@@ -110,6 +112,8 @@ export type Database = {
           public?: boolean | null
           public_url?: string | null
           tags?: string[] | null
+          thumbnail_titles?: Json | null
+          thumbnail_url?: string | null
           uploaded_at?: string | null
           uploaded_by?: string | null
         }
@@ -133,6 +137,8 @@ export type Database = {
           public?: boolean | null
           public_url?: string | null
           tags?: string[] | null
+          thumbnail_titles?: Json | null
+          thumbnail_url?: string | null
           uploaded_at?: string | null
           uploaded_by?: string | null
         }

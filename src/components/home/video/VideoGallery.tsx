@@ -21,50 +21,75 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
     language: currentLanguage
   });
 
-  // Function to get localized title with fallback logic
+  // Function to get localized title with enhanced fallback logic
   const getLocalizedTitle = (video: AdminVideo): string => {
+    if (!video) return 'Untitled Video';
+    
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
+    // Try new structure first
     if (video.display_titles && typeof video.display_titles === 'object') {
       const titles = video.display_titles as Record<string, string>;
-      return titles[langKey] || titles.de || titles.en || titles.ar || video.original_name;
+      const title = titles[langKey] || titles.de || titles.en || titles.ar;
+      if (title) return title;
     }
     
-    switch (langKey) {
-      case 'en':
-        return video.display_title_en || video.display_title_de || video.original_name;
-      case 'ar':
-        return video.display_title_ar || video.display_title_en || video.display_title_de || video.original_name;
-      default:
-        return video.display_title_de || video.display_title_en || video.original_name;
+    // Fallback to legacy structure
+    try {
+      switch (langKey) {
+        case 'en':
+          return video.display_title_en || video.display_title_de || video.original_name || video.filename;
+        case 'ar':
+          return video.display_title_ar || video.display_title_en || video.display_title_de || video.original_name || video.filename;
+        default:
+          return video.display_title_de || video.display_title_en || video.original_name || video.filename;
+      }
+    } catch (error) {
+      console.warn('Error getting localized title:', error);
+      return video.original_name || video.filename || 'Video';
     }
   };
 
-  // Function to get localized description with fallback logic
+  // Function to get localized description with enhanced fallback logic
   const getLocalizedDescription = (video: AdminVideo): string => {
+    if (!video) return '';
+    
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
+    // Try new structure first
     if (video.display_descriptions && typeof video.display_descriptions === 'object') {
       const descriptions = video.display_descriptions as Record<string, string>;
-      return descriptions[langKey] || descriptions.de || descriptions.en || descriptions.ar || video.description || '';
+      const description = descriptions[langKey] || descriptions.de || descriptions.en || descriptions.ar;
+      if (description) return description;
     }
     
-    switch (langKey) {
-      case 'en':
-        return video.display_description_en || video.display_description_de || video.description || '';
-      case 'ar':
-        return video.display_description_ar || video.display_description_en || video.display_description_de || video.description || '';
-      default:
-        return video.display_description_de || video.display_description_en || video.description || '';
+    // Fallback to legacy structure
+    try {
+      switch (langKey) {
+        case 'en':
+          return video.display_description_en || video.display_description_de || video.description || '';
+        case 'ar':
+          return video.display_description_ar || video.display_description_en || video.display_description_de || video.description || '';
+        default:
+          return video.display_description_de || video.display_description_en || video.description || '';
+      }
+    } catch (error) {
+      console.warn('Error getting localized description:', error);
+      return video.description || '';
     }
   };
 
   const handleVideoSelect = (video: AdminVideo) => {
+    if (!video) {
+      console.warn('🎯 Invalid video selected');
+      return;
+    }
+    
     console.log('🎯 Video selected:', video.id, video.public_url);
     setCurrentVideo(video);
   };
 
-  if (!videos.length) {
+  if (!videos || videos.length === 0) {
     return (
       <div className="text-center py-8">
         <img 
@@ -93,21 +118,32 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
               </Badge>
             )}
           </div>
-          <p className="text-gray-600">
-            {getLocalizedDescription(currentVideo)}
-          </p>
-          <VideoPlayer src={currentVideo.public_url} />
+          
+          {getLocalizedDescription(currentVideo) && (
+            <p className="text-gray-600">
+              {getLocalizedDescription(currentVideo)}
+            </p>
+          )}
+          
+          {currentVideo.public_url && (
+            <VideoPlayer src={currentVideo.public_url} />
+          )}
         </div>
       )}
 
-      {/* Video Gallery - Professional Thumbnails */}
+      {/* Video Gallery - Enhanced Thumbnails */}
       <div className="space-y-4">
         <h4 className="text-lg font-medium text-gray-900">
           Alle Videos ({videos.length})
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {videos.map((video) => {
-            console.log('🔍 Rendering optimized video card:', { 
+            if (!video || !video.id) {
+              console.warn('🔍 Skipping invalid video:', video);
+              return null;
+            }
+            
+            console.log('🔍 Rendering video card:', { 
               id: video.id, 
               hasUrl: !!video.public_url, 
               url: video.public_url,
