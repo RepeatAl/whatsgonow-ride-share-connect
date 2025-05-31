@@ -88,10 +88,22 @@ export function useProfile(user: User | null) {
         
         setProfile(transformedProfile);
         
-        // Set region from new cm_regions structure - fix the array access
-        const regionName = userProfile.cm_regions && Array.isArray(userProfile.cm_regions) 
-          ? userProfile.cm_regions[0]?.region_name 
-          : userProfile.cm_regions?.region_name || userProfile.region || null;
+        // Set region from new cm_regions structure - properly handle array access
+        let regionName: string | null = null;
+        
+        if (userProfile.cm_regions) {
+          if (Array.isArray(userProfile.cm_regions) && userProfile.cm_regions.length > 0) {
+            regionName = userProfile.cm_regions[0]?.region_name || null;
+          } else if (!Array.isArray(userProfile.cm_regions)) {
+            regionName = userProfile.cm_regions.region_name || null;
+          }
+        }
+        
+        // Fallback to legacy region field
+        if (!regionName) {
+          regionName = userProfile.region || null;
+        }
+        
         setRegion(regionName);
         setIsTest(isTestRegion(regionName));
         
