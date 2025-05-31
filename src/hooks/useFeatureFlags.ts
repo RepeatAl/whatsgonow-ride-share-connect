@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { 
@@ -102,7 +101,6 @@ export const useFeatureFlags = () => {
     if (state.loading) {
       return getFeatureFlagDefault(flagName);
     }
-    
     return state.flags[flagName] ?? getFeatureFlagDefault(flagName);
   }, [state.flags, state.loading]);
 
@@ -113,11 +111,13 @@ export const useFeatureFlags = () => {
     reason?: string
   ): Promise<boolean> => {
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const updated_by = userData?.user?.id ?? null;
       const { error } = await supabase
         .from('feature_flags')
         .update({ 
           enabled,
-          updated_by: (await supabase.auth.getUser()).data.user?.id,
+          updated_by,
         })
         .eq('flag_name', flagName)
         .eq('environment', getCurrentEnvironment());
@@ -144,7 +144,6 @@ export const useFeatureFlags = () => {
 
       // Reload flags to get updated state
       await loadFlags();
-      
       return true;
     } catch (err) {
       console.error('Feature flag toggle failed:', err);
@@ -156,12 +155,10 @@ export const useFeatureFlags = () => {
   const loadHealth = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('check_feature_flag_health');
-      
       if (error) {
         console.warn('Failed to load feature flag health:', error);
         return;
       }
-
       if (data && data.length > 0) {
         setHealth(data[0]);
       }
