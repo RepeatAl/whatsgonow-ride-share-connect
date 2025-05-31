@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
-import type { UserProfile } from "@/types/auth";
+import type { UserProfile, RegionType } from "@/types/auth";
 
 /**
  * Hook to handle user profile fetching and management
@@ -88,23 +88,11 @@ export function useProfile(user: User | null) {
         
         setProfile(transformedProfile);
         
-        // Set region from new cm_regions structure - properly handle array access
-        let regionName: string | null = null;
-        
-        if (userProfile.cm_regions) {
-          // Handle cm_regions as array or single object
-          const cmRegionsData = userProfile.cm_regions as any;
-          if (Array.isArray(cmRegionsData) && cmRegionsData.length > 0) {
-            regionName = cmRegionsData[0]?.region_name || null;
-          } else if (cmRegionsData && typeof cmRegionsData === 'object') {
-            regionName = cmRegionsData.region_name || null;
-          }
-        }
-        
-        // Fallback to legacy region field
-        if (!regionName) {
-          regionName = userProfile.region || null;
-        }
+        // Set region from new cm_regions structure with proper typing
+        const regionName = 
+          Array.isArray(userProfile.cm_regions) && userProfile.cm_regions.length > 0
+            ? userProfile.cm_regions[0]?.region_name
+            : userProfile.region || "Unassigned";
         
         setRegion(regionName);
         setIsTest(isTestRegion(regionName));

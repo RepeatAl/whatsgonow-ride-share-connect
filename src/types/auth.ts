@@ -1,5 +1,13 @@
 import { User, Session } from "@supabase/supabase-js";
 
+// Interface for CM Region structure
+export interface RegionType {
+  region_name: string;
+  country_code?: string;
+  state_province?: string;
+  city_name?: string;
+}
+
 export interface UserProfile {
   user_id: string;
   name?: string; // Dieses Feld ist jetzt optional
@@ -32,6 +40,9 @@ export interface UserProfile {
   is_suspended?: boolean;
   suspended_until?: string | null;
   suspension_reason?: string | null;
+  // New cm_regions field with proper typing
+  cm_regions?: RegionType[];
+  region_id?: string;
 }
 
 export interface AuthContextProps {
