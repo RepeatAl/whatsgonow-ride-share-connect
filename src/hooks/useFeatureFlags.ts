@@ -38,7 +38,6 @@ export const useFeatureFlags = () => {
 
   const [health, setHealth] = useState<FeatureFlagHealth | null>(null);
 
-  // Load flags from database with fallback to defaults
   const loadFlags = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
@@ -61,7 +60,6 @@ export const useFeatureFlags = () => {
         return;
       }
 
-      // Merge database flags with defaults
       const flagsMap: Record<FeatureFlagName, boolean> = { ...FEATURE_FLAG_DEFAULTS };
 
       flags?.forEach((flag: FeatureFlag) => {
@@ -70,7 +68,6 @@ export const useFeatureFlags = () => {
         }
       });
 
-      // Apply environment-specific overrides for any missing flags
       Object.keys(FEATURE_FLAG_DEFAULTS).forEach(flagName => {
         const name = flagName as FeatureFlagName;
         if (!(flags?.some(f => f.flag_name === name))) {
@@ -95,7 +92,6 @@ export const useFeatureFlags = () => {
     }
   }, []);
 
-  // Check individual flag with fallback
   const isFeatureEnabled = useCallback((flagName: FeatureFlagName): boolean => {
     if (state.loading) {
       return getFeatureFlagDefault(flagName);
@@ -103,7 +99,6 @@ export const useFeatureFlags = () => {
     return state.flags[flagName] ?? getFeatureFlagDefault(flagName);
   }, [state.flags, state.loading]);
 
-  // Admin function: Toggle feature flag
   const toggleFeatureFlag = useCallback(
     async (flagName: FeatureFlagName, enabled: boolean, reason?: string): Promise<boolean> => {
       try {
@@ -123,7 +118,6 @@ export const useFeatureFlags = () => {
           return false;
         }
 
-        // If reason provided, add it to audit metadata
         if (reason) {
           const { error: auditError } = await supabase
             .from('feature_flag_audit')
@@ -138,9 +132,7 @@ export const useFeatureFlags = () => {
           }
         }
 
-        // Reload flags to get updated state
         await loadFlags();
-
         return true;
       } catch (err) {
         console.error('Feature flag toggle failed:', err);
@@ -150,7 +142,6 @@ export const useFeatureFlags = () => {
     [loadFlags]
   );
 
-  // Load health status
   const loadHealth = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('check_feature_flag_health');
@@ -168,7 +159,6 @@ export const useFeatureFlags = () => {
     }
   }, []);
 
-  // Get audit history for a flag
   const getAuditHistory = useCallback(
     async (flagName?: FeatureFlagName, limit = 50): Promise<FeatureFlagAudit[]> => {
       try {
@@ -198,7 +188,6 @@ export const useFeatureFlags = () => {
     []
   );
 
-  // Set up real-time subscriptions for flag changes
   useEffect(() => {
     loadFlags();
     loadHealth();
@@ -211,12 +200,11 @@ export const useFeatureFlags = () => {
           event: '*',
           schema: 'public',
           table: 'feature_flags',
-          // Filter-BUGFIX: Kein Template-Literal, sondern String-Konkatenation!
           filter: 'environment=eq.' + getCurrentEnvironment(),
         },
         (payload) => {
           console.log('Feature flag changed:', payload);
-          loadFlags(); // Reload flags when changes occur
+          loadFlags();
         }
       )
       .subscribe();
@@ -227,26 +215,20 @@ export const useFeatureFlags = () => {
   }, [loadFlags, loadHealth]);
 
   return {
-    // State
     flags: state.flags,
     loading: state.loading,
     error: state.error,
     lastUpdated: state.lastUpdated,
     health,
-
-    // Actions
     isFeatureEnabled,
     toggleFeatureFlag,
     loadFlags,
     loadHealth,
     getAuditHistory,
-
-    // Utilities
     environment: getCurrentEnvironment(),
   };
 };
 
-// Feature Gate Component
 export interface FeatureGateProps {
   flag: FeatureFlagName;
   children: React.ReactNode;
@@ -269,7 +251,6 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   return isFeatureEnabled(flag) ? <>{children}</> : <>{fallback}</>;
 };
 
-// Hook for checking specific analytics features
 export const useAnalyticsFeatureFlags = () => {
   const { isFeatureEnabled } = useFeatureFlags();
 
