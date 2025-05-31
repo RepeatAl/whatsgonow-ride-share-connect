@@ -59,7 +59,7 @@ export const useAnalyticsDashboard = (dateRange?: { from: Date; to: Date }) => {
         const videoCompletions = events?.filter(e => e.event_type === 'video_completed').length || 0;
         const videoErrors = events?.filter(e => e.event_type === 'video_error').length || 0;
 
-        // Calculate regions and languages
+        // Calculate regions and languages with proper typing
         const regionCounts = events?.reduce((acc: Record<string, number>, event) => {
           if (event.region) {
             acc[event.region] = (acc[event.region] || 0) + 1;
@@ -89,11 +89,11 @@ export const useAnalyticsDashboard = (dateRange?: { from: Date; to: Date }) => {
           completionRate: videoViews > 0 ? (videoCompletions / videoViews) * 100 : 0,
           averageWatchTime: Math.round(averageWatchTime / 1000), // Convert to seconds
           topRegions: Object.entries(regionCounts)
-            .map(([region, count]) => ({ region, count }))
+            .map(([region, count]) => ({ region, count: count as number }))
             .sort((a, b) => b.count - a.count)
             .slice(0, 5),
           languageDistribution: Object.entries(languageCounts)
-            .map(([language, count]) => ({ language, count }))
+            .map(([language, count]) => ({ language, count: count as number }))
             .sort((a, b) => b.count - a.count),
           errorRate: videoViews > 0 ? (videoErrors / videoViews) * 100 : 0
         });

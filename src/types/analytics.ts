@@ -16,6 +16,8 @@ export interface VideoAnalyticsEvent {
     video_url?: string;
     completion_percentage?: number;
     quality?: string;
+    watch_duration?: number;
+    from_time?: number;
   };
 }
 
