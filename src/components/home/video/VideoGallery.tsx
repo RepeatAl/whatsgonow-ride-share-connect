@@ -1,9 +1,10 @@
+
 import React, { useState } from "react";
 import { Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import VideoPlayer from "../VideoPlayer";
-import VideoThumbnail from "./VideoThumbnail";
+import VideoThumbnailOptimized from "./VideoThumbnailOptimized";
 import type { AdminVideo } from "@/types/admin";
 
 interface VideoGalleryProps {
@@ -12,7 +13,6 @@ interface VideoGalleryProps {
 }
 
 const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
-  // Always show all videos - no filtering by featured status
   const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(videos[0] || null);
 
   console.log('🎥 VideoGallery rendering with videos:', {
@@ -25,13 +25,11 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   const getLocalizedTitle = (video: AdminVideo): string => {
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
-    // Versuche zuerst JSON-Struktur, dann Fallback auf einzelne Spalten
     if (video.display_titles && typeof video.display_titles === 'object') {
       const titles = video.display_titles as Record<string, string>;
       return titles[langKey] || titles.de || titles.en || titles.ar || video.original_name;
     }
     
-    // Fallback auf alte Spaltenstruktur
     switch (langKey) {
       case 'en':
         return video.display_title_en || video.display_title_de || video.original_name;
@@ -46,13 +44,11 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   const getLocalizedDescription = (video: AdminVideo): string => {
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
-    // Versuche zuerst JSON-Struktur, dann Fallback auf einzelne Spalten
     if (video.display_descriptions && typeof video.display_descriptions === 'object') {
       const descriptions = video.display_descriptions as Record<string, string>;
       return descriptions[langKey] || descriptions.de || descriptions.en || descriptions.ar || video.description || '';
     }
     
-    // Fallback auf alte Spaltenstruktur
     switch (langKey) {
       case 'en':
         return video.display_description_en || video.display_description_de || video.description || '';
@@ -71,7 +67,11 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   if (!videos.length) {
     return (
       <div className="text-center py-8">
-        <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
+        <img 
+          src="/placeholders/video-placeholder.svg" 
+          alt="Keine Videos verfügbar"
+          className="h-32 w-48 mx-auto mb-4 opacity-50"
+        />
         <p className="text-gray-600">Keine Videos verfügbar</p>
       </div>
     );
@@ -100,14 +100,14 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
         </div>
       )}
 
-      {/* Video Gallery - Show ALL videos, no exceptions */}
+      {/* Video Gallery - Professional Thumbnails */}
       <div className="space-y-4">
         <h4 className="text-lg font-medium text-gray-900">
           Alle Videos ({videos.length})
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {videos.map((video) => {
-            console.log('🔍 Rendering video card:', { 
+            console.log('🔍 Rendering optimized video card:', { 
               id: video.id, 
               hasUrl: !!video.public_url, 
               url: video.public_url,
@@ -123,7 +123,7 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
                     : ''
                 }`}
               >
-                <VideoThumbnail
+                <VideoThumbnailOptimized
                   video={video}
                   onVideoSelect={handleVideoSelect}
                   getLocalizedTitle={getLocalizedTitle}

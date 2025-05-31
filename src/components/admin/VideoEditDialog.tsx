@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { X, Star } from "lucide-react";
+import { X, Star, Upload, Image } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { AdminVideo } from "@/types/admin";
 
@@ -22,6 +21,8 @@ interface VideoEditDialogProps {
     display_description_de?: string;
     display_description_en?: string;
     display_description_ar?: string;
+    thumbnail_url?: string;
+    thumbnail_titles?: Record<string, string>;
     tags?: string[];
   }) => Promise<void>;
 }
@@ -29,6 +30,7 @@ interface VideoEditDialogProps {
 const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogProps) => {
   const { t } = useTranslation('admin');
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [titleDe, setTitleDe] = useState("");
   const [titleEn, setTitleEn] = useState("");
@@ -36,6 +38,10 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
   const [descriptionDe, setDescriptionDe] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
   const [descriptionAr, setDescriptionAr] = useState("");
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [thumbnailAltDe, setThumbnailAltDe] = useState("");
+  const [thumbnailAltEn, setThumbnailAltEn] = useState("");
+  const [thumbnailAltAr, setThumbnailAltAr] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
@@ -70,6 +76,16 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
         setDescriptionEn(safeGetString(video.display_description_en));
         setDescriptionAr(safeGetString(video.display_description_ar));
       }
+
+      // Handle thumbnail data
+      setThumbnailUrl(video.thumbnail_url || '');
+      
+      if (video.thumbnail_titles && typeof video.thumbnail_titles === 'object') {
+        const thumbTitles = video.thumbnail_titles as Record<string, string>;
+        setThumbnailAltDe(thumbTitles.de || '');
+        setThumbnailAltEn(thumbTitles.en || '');
+        setThumbnailAltAr(thumbTitles.ar || '');
+      }
       
       setTags(video.tags || []);
     } else {
@@ -80,6 +96,10 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
       setDescriptionDe("");
       setDescriptionEn("");
       setDescriptionAr("");
+      setThumbnailUrl("");
+      setThumbnailAltDe("");
+      setThumbnailAltEn("");
+      setThumbnailAltAr("");
       setTags([]);
     }
   }, [video]);
@@ -126,6 +146,22 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
     }
   };
 
+  const handleThumbnailUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // In a real implementation, you would upload this to Supabase Storage
+      // For now, we'll create a local URL as demonstration
+      const url = URL.createObjectURL(file);
+      setThumbnailUrl(url);
+      console.log('📁 Thumbnail file selected:', file.name, file.size);
+      // TODO: Implement actual upload to Supabase Storage
+    }
+  };
+
   const handleSave = async () => {
     if (!video) return;
     
@@ -138,6 +174,12 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
         display_description_de: descriptionDe,
         display_description_en: descriptionEn,
         display_description_ar: descriptionAr,
+        thumbnail_url: thumbnailUrl,
+        thumbnail_titles: {
+          de: thumbnailAltDe,
+          en: thumbnailAltEn,
+          ar: thumbnailAltAr
+        },
         tags: tags
       });
       onOpenChange(false);
@@ -155,12 +197,100 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('videos.edit_title', 'Video bearbeiten')}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
+          {/* Thumbnail Upload Section */}
+          <div className="space-y-3 border rounded-lg p-4 bg-gray-50">
+            <div className="flex items-center gap-2">
+              <Image className="h-5 w-5" />
+              <Label className="text-base font-medium">Custom Thumbnail</Label>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              {thumbnailUrl ? (
+                <div className="relative">
+                  <img 
+                    src={thumbnailUrl} 
+                    alt="Thumbnail Preview" 
+                    className="w-32 h-18 object-cover rounded border"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute -top-2 -right-2 h-6 w-6 p-0 bg-red-500 text-white hover:bg-red-600 rounded-full"
+                    onClick={() => setThumbnailUrl('')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-32 h-18 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                  <Upload className="h-8 w-8 text-gray-400" />
+                </div>
+              )}
+              
+              <div className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={handleThumbnailUpload}
+                  className="mb-2"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Thumbnail hochladen
+                </Button>
+                <p className="text-xs text-gray-600">
+                  Empfohlen: 320x180px (16:9), max. 2MB, JPG/PNG/WebP
+                </p>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {/* Thumbnail Alt Text */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="thumb-alt-de">Alt-Text (Deutsch)</Label>
+                <Input 
+                  id="thumb-alt-de"
+                  value={thumbnailAltDe} 
+                  onChange={(e) => setThumbnailAltDe(e.target.value)}
+                  placeholder="Beschreibung für Screenreader..."
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="thumb-alt-en">Alt-Text (English)</Label>
+                <Input 
+                  id="thumb-alt-en"
+                  value={thumbnailAltEn} 
+                  onChange={(e) => setThumbnailAltEn(e.target.value)}
+                  placeholder="Description for screenreaders..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="thumb-alt-ar">Alt-Text (العربية)</Label>
+                <Input 
+                  id="thumb-alt-ar"
+                  value={thumbnailAltAr} 
+                  onChange={(e) => setThumbnailAltAr(e.target.value)}
+                  placeholder="وصف لقارئات الشاشة..."
+                  dir="rtl"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Landing Page und Featured Controls */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
