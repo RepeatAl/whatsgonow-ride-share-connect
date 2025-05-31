@@ -10,22 +10,24 @@ interface VideoThumbnailOptimizedProps {
   onVideoSelect: (video: AdminVideo) => void;
   getLocalizedTitle: (video: AdminVideo) => string;
   getLocalizedDescription: (video: AdminVideo) => string;
+  currentLanguage: string;
 }
 
 const VideoThumbnailOptimized = ({ 
   video, 
   onVideoSelect, 
   getLocalizedTitle, 
-  getLocalizedDescription 
+  getLocalizedDescription,
+  currentLanguage 
 }: VideoThumbnailOptimizedProps) => {
-  const { thumbnailUrl, isLoading, hasCustomThumbnail } = useVideoThumbnail(video);
+  const { thumbnailUrl, isLoading, hasCustomThumbnail, altText } = useVideoThumbnail(video, currentLanguage);
 
   console.log('🔍 VideoThumbnailOptimized rendering:', { 
     id: video.id, 
     thumbnailUrl,
     isLoading,
     hasCustomThumbnail,
-    hasUrl: !!video.public_url 
+    altText
   });
 
   return (
@@ -42,9 +44,14 @@ const VideoThumbnailOptimized = ({
         ) : (
           <img 
             src={thumbnailUrl}
-            alt={getLocalizedTitle(video)}
+            alt={altText}
             className="w-full h-full object-cover"
             loading="lazy"
+            onError={(e) => {
+              // Fallback to brand placeholder if custom thumbnail fails
+              console.warn('🔄 Thumbnail failed, using fallback:', thumbnailUrl);
+              (e.target as HTMLImageElement).src = '/placeholders/video-placeholder.svg';
+            }}
           />
         )}
         

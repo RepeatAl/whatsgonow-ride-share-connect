@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { X, Star, Upload, Image } from "lucide-react";
+import { X, Star, Upload, Image, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/lib/supabaseClient";
+import { useToast } from "@/hooks/use-toast";
 import type { AdminVideo } from "@/types/admin";
 
 interface VideoEditDialogProps {
@@ -29,7 +31,9 @@ interface VideoEditDialogProps {
 
 const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogProps) => {
   const { t } = useTranslation('admin');
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [titleDe, setTitleDe] = useState("");
@@ -45,16 +49,16 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
-  // Helper-Funktion für sichere String-Extraktion
+  // Helper function for safe string extraction
   const safeGetString = (value: any): string => {
     if (typeof value === 'string') return value;
     return '';
   };
 
-  // Reset form values when video changes mit sicherer Fallback-Logik
+  // Reset form values when video changes
   React.useEffect(() => {
     if (video) {
-      // Versuche zuerst JSON-Struktur, dann Fallback auf einzelne Spalten
+      // ... keep existing code for setting video data
       if (video.display_titles && typeof video.display_titles === 'object') {
         const titles = video.display_titles as Record<string, string>;
         setTitleDe(titles.de || '');
@@ -89,7 +93,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
       
       setTags(video.tags || []);
     } else {
-      // Reset zu leeren Werten wenn kein Video
+      // Reset to empty values when no video
       setTitleDe("");
       setTitleEn("");
       setTitleAr("");
@@ -104,6 +108,108 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
     }
   }, [video]);
 
+  const handleThumbnailUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !video) return;
+
+    // Validate file
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    
+    if (file.size > maxSize) {
+      toast({
+        title: "Fehler",
+        description: "Datei zu groß. Maximal 2MB erlaubt.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Fehler", 
+        description: "Ungültiges Dateiformat. Nur JPEG, PNG und WebP erlaubt.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsThumbnailUploading(true);
+    
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${video.id}_${Date.now()}.${fileExt}`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('video-thumbnails')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('video-thumbnails')
+        .getPublicUrl(fileName);
+
+      console.log('📁 Thumbnail uploaded successfully:', fileName);
+      setThumbnailUrl(urlData.publicUrl);
+      
+      toast({
+        title: "Erfolg",
+        description: "Thumbnail erfolgreich hochgeladen.",
+      });
+    } catch (error) {
+      console.error('❌ Thumbnail upload error:', error);
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Hochladen des Thumbnails.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsThumbnailUploading(false);
+    }
+  };
+
+  const handleThumbnailDelete = async () => {
+    if (!thumbnailUrl || !video) return;
+
+    try {
+      // Extract filename from URL
+      const fileName = thumbnailUrl.split('/').pop();
+      if (fileName) {
+        await supabase.storage
+          .from('video-thumbnails')
+          .remove([fileName]);
+      }
+      
+      setThumbnailUrl('');
+      setThumbnailAltDe('');
+      setThumbnailAltEn('');
+      setThumbnailAltAr('');
+      
+      toast({
+        title: "Erfolg",
+        description: "Thumbnail erfolgreich gelöscht.",
+      });
+    } catch (error) {
+      console.error('❌ Thumbnail delete error:', error);
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Löschen des Thumbnails.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleAddTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
       setTags([...tags, newTag.trim()]);
@@ -117,24 +223,20 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
 
   const handleLandingPageToggle = (checked: boolean) => {
     if (checked) {
-      // Add 'howto' tag if not present
       if (!tags.includes('howto')) {
         setTags([...tags, 'howto']);
       }
     } else {
-      // Remove 'howto' tag
       setTags(tags.filter(tag => tag !== 'howto'));
     }
   };
 
   const handleFeaturedToggle = (checked: boolean) => {
     if (checked) {
-      // Add 'featured' tag if not present
       if (!tags.includes('featured')) {
         setTags([...tags, 'featured']);
       }
     } else {
-      // Remove 'featured' tag
       setTags(tags.filter(tag => tag !== 'featured'));
     }
   };
@@ -146,24 +248,18 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
     }
   };
 
-  const handleThumbnailUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // In a real implementation, you would upload this to Supabase Storage
-      // For now, we'll create a local URL as demonstration
-      const url = URL.createObjectURL(file);
-      setThumbnailUrl(url);
-      console.log('📁 Thumbnail file selected:', file.name, file.size);
-      // TODO: Implement actual upload to Supabase Storage
-    }
-  };
-
   const handleSave = async () => {
     if (!video) return;
+    
+    // Validate at least one alt text is provided if thumbnail exists
+    if (thumbnailUrl && !thumbnailAltDe && !thumbnailAltEn && !thumbnailAltAr) {
+      toast({
+        title: "Validierungsfehler",
+        description: "Bitte geben Sie mindestens einen Alt-Text für das Thumbnail an.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -174,7 +270,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
         display_description_de: descriptionDe,
         display_description_en: descriptionEn,
         display_description_ar: descriptionAr,
-        thumbnail_url: thumbnailUrl,
+        thumbnail_url: thumbnailUrl || null,
         thumbnail_titles: {
           de: thumbnailAltDe,
           en: thumbnailAltEn,
@@ -216,32 +312,57 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
                   <img 
                     src={thumbnailUrl} 
                     alt="Thumbnail Preview" 
-                    className="w-32 h-18 object-cover rounded border"
+                    className="w-40 h-24 object-cover rounded border"
                   />
                   <Button
                     variant="ghost"
                     size="sm"
                     className="absolute -top-2 -right-2 h-6 w-6 p-0 bg-red-500 text-white hover:bg-red-600 rounded-full"
-                    onClick={() => setThumbnailUrl('')}
+                    onClick={handleThumbnailDelete}
+                    disabled={isThumbnailUploading}
                   >
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
               ) : (
-                <div className="w-32 h-18 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                <div className="w-40 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
                   <Upload className="h-8 w-8 text-gray-400" />
                 </div>
               )}
               
               <div className="flex-1">
-                <Button
-                  variant="outline"
-                  onClick={handleThumbnailUpload}
-                  className="mb-2"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Thumbnail hochladen
-                </Button>
+                <div className="flex gap-2 mb-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleThumbnailUpload}
+                    disabled={isThumbnailUploading}
+                  >
+                    {isThumbnailUploading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                        Hochladen...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        {thumbnailUrl ? 'Ersetzen' : 'Hochladen'}
+                      </>
+                    )}
+                  </Button>
+                  
+                  {thumbnailUrl && (
+                    <Button
+                      variant="outline"
+                      onClick={handleThumbnailDelete}
+                      disabled={isThumbnailUploading}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Löschen
+                    </Button>
+                  )}
+                </div>
+                
                 <p className="text-xs text-gray-600">
                   Empfohlen: 320x180px (16:9), max. 2MB, JPG/PNG/WebP
                 </p>
@@ -257,41 +378,43 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
             </div>
 
             {/* Thumbnail Alt Text */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="thumb-alt-de">Alt-Text (Deutsch)</Label>
-                <Input 
-                  id="thumb-alt-de"
-                  value={thumbnailAltDe} 
-                  onChange={(e) => setThumbnailAltDe(e.target.value)}
-                  placeholder="Beschreibung für Screenreader..."
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="thumb-alt-en">Alt-Text (English)</Label>
-                <Input 
-                  id="thumb-alt-en"
-                  value={thumbnailAltEn} 
-                  onChange={(e) => setThumbnailAltEn(e.target.value)}
-                  placeholder="Description for screenreaders..."
-                />
-              </div>
+            {thumbnailUrl && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="thumb-alt-de">Alt-Text (Deutsch) *</Label>
+                  <Input 
+                    id="thumb-alt-de"
+                    value={thumbnailAltDe} 
+                    onChange={(e) => setThumbnailAltDe(e.target.value)}
+                    placeholder="Beschreibung für Screenreader..."
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="thumb-alt-en">Alt-Text (English)</Label>
+                  <Input 
+                    id="thumb-alt-en"
+                    value={thumbnailAltEn} 
+                    onChange={(e) => setThumbnailAltEn(e.target.value)}
+                    placeholder="Description for screenreaders..."
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="thumb-alt-ar">Alt-Text (العربية)</Label>
-                <Input 
-                  id="thumb-alt-ar"
-                  value={thumbnailAltAr} 
-                  onChange={(e) => setThumbnailAltAr(e.target.value)}
-                  placeholder="وصف لقارئات الشاشة..."
-                  dir="rtl"
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="thumb-alt-ar">Alt-Text (العربية)</Label>
+                  <Input 
+                    id="thumb-alt-ar"
+                    value={thumbnailAltAr} 
+                    onChange={(e) => setThumbnailAltAr(e.target.value)}
+                    placeholder="وصف لقارئات الشاشة..."
+                    dir="rtl"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Landing Page und Featured Controls */}
+          {/* Landing Page and Featured Controls */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <Label className="text-base font-medium">Landing Page</Label>
@@ -322,7 +445,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
               </div>
               {isFeatured && (
                 <p className="text-xs text-muted-foreground">
-                  Dieses Video wird prominente in der Galerie angezeigt.
+                  Dieses Video wird prominent in der Galerie angezeigt.
                 </p>
               )}
             </div>
@@ -332,7 +455,6 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
           <div className="space-y-3">
             <Label className="text-base font-medium">Tags</Label>
             
-            {/* Current Tags */}
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="flex items-center gap-1">
@@ -353,7 +475,6 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
               )}
             </div>
 
-            {/* Add New Tag */}
             <div className="flex gap-2">
               <Input
                 value={newTag}
@@ -368,7 +489,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
             </div>
           </div>
 
-          {/* Title Fields - Drei Sprachen */}
+          {/* Title Fields */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title-de">Titel (Deutsch)</Label>
@@ -402,7 +523,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
             </div>
           </div>
 
-          {/* Description Fields - Drei Sprachen */}
+          {/* Description Fields */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="description-de">Beschreibung (Deutsch)</Label>
@@ -450,7 +571,7 @@ const VideoEditDialog = ({ open, onOpenChange, video, onSave }: VideoEditDialogP
           </Button>
           <Button 
             onClick={handleSave}
-            disabled={isLoading}
+            disabled={isLoading || isThumbnailUploading}
           >
             {isLoading ? t('common.saving', 'Speichern...') : t('common.save', 'Speichern')}
           </Button>

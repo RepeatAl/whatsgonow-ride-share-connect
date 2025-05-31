@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +22,7 @@ const HowItWorks = () => {
       setIsLoading(true);
       setError(null);
       
-      // Simplified query for public access - removed uploaded_by to avoid profile table access
+      // Enhanced query including new thumbnail fields
       const { data, error } = await supabase
         .from('admin_videos')
         .select(`
@@ -31,13 +32,17 @@ const HowItWorks = () => {
           file_path,
           file_size,
           mime_type,
-          public_url, 
+          public_url,
+          thumbnail_url,
+          thumbnail_titles,
           display_title_de, 
           display_title_en, 
           display_title_ar, 
           display_description_de, 
           display_description_en, 
           display_description_ar, 
+          display_titles,
+          display_descriptions,
           description, 
           tags, 
           active, 
@@ -71,10 +76,10 @@ const HowItWorks = () => {
         console.log('✅ [PUBLIC] Videos found:', {
           count: data.length,
           refreshKey,
-          videosWithUrls: data.map(v => ({ 
+          videosWithThumbnails: data.map(v => ({ 
             id: v.id, 
             hasPublicUrl: !!v.public_url, 
-            hasFilePath: !!v.file_path,
+            hasCustomThumbnail: !!v.thumbnail_url,
             url: v.public_url || v.file_path 
           }))
         });
@@ -99,12 +104,13 @@ const HowItWorks = () => {
         
         setVideos(processedVideos);
         
-        console.log('📝 [PUBLIC] Final video list:', {
+        console.log('📝 [PUBLIC] Final video list with thumbnails:', {
           totalVideos: processedVideos.length,
           language: currentLanguage,
           videosReady: processedVideos.map(v => ({ 
             id: v.id, 
             url: v.public_url,
+            thumbnail: v.thumbnail_url,
             title: v.display_title_de || v.original_name
           })),
           refreshKey
@@ -160,7 +166,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video Gallery Section */}
+        {/* Video Gallery Section with enhanced thumbnail support */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -211,7 +217,11 @@ const HowItWorks = () => {
             {!isLoading && !error && videos.length === 0 && (
               <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
                 <div className="text-center text-gray-600">
-                  <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <img 
+                    src="/placeholders/video-placeholder.svg" 
+                    alt="Keine Videos verfügbar"
+                    className="h-32 w-48 mx-auto mb-4 opacity-50"
+                  />
                   <p className="text-lg">Noch keine Videos verfügbar</p>
                   <p className="text-sm mt-2 opacity-75">
                     Videos werden in Kürze hinzugefügt.

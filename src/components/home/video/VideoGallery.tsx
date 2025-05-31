@@ -18,10 +18,10 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   console.log('🎥 VideoGallery rendering with videos:', {
     count: videos.length,
     currentVideo: currentVideo?.id,
-    videosWithUrls: videos.map(v => ({ id: v.id, hasUrl: !!v.public_url }))
+    language: currentLanguage
   });
 
-  // Funktion um den lokalisierten Titel zu bekommen mit Fallback-Logik
+  // Function to get localized title with fallback logic
   const getLocalizedTitle = (video: AdminVideo): string => {
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
@@ -40,7 +40,7 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
     }
   };
 
-  // Funktion um die lokalisierte Beschreibung zu bekommen mit Fallback-Logik
+  // Function to get localized description with fallback logic
   const getLocalizedDescription = (video: AdminVideo): string => {
     const langKey = currentLanguage?.split('-')[0] || 'de';
     
@@ -111,6 +111,7 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
               id: video.id, 
               hasUrl: !!video.public_url, 
               url: video.public_url,
+              hasThumbnail: !!video.thumbnail_url,
               isSelected: currentVideo?.id === video.id 
             });
             
@@ -128,6 +129,7 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
                   onVideoSelect={handleVideoSelect}
                   getLocalizedTitle={getLocalizedTitle}
                   getLocalizedDescription={getLocalizedDescription}
+                  currentLanguage={currentLanguage}
                 />
               </div>
             );

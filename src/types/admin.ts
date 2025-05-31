@@ -1,3 +1,4 @@
+
 export interface AdminVideo {
   id: string;
   filename: string;
@@ -6,7 +7,7 @@ export interface AdminVideo {
   file_size: number;
   mime_type: string;
   public_url?: string;
-  thumbnail_url?: string; // New field for custom thumbnails
+  thumbnail_url?: string; // Custom uploaded thumbnail
   uploaded_by?: string;
   uploaded_at: string;
   active: boolean;
@@ -20,7 +21,7 @@ export interface AdminVideo {
   display_description_ar?: string;
   display_titles?: Record<string, string>;
   display_descriptions?: Record<string, string>;
-  thumbnail_titles?: Record<string, string>; // New field for multilingual thumbnail alt text
+  thumbnail_titles?: Record<string, string>; // Multilingual alt texts for thumbnails
   tags?: string[];
 }
 
@@ -31,7 +32,7 @@ export interface VideoUploadData {
   file_size: number;
   mime_type: string;
   public_url?: string;
-  thumbnail_url?: string; // New field
+  thumbnail_url?: string; // Custom uploaded thumbnail
   uploaded_by?: string;
   public: boolean;
   description?: string;
@@ -41,7 +42,7 @@ export interface VideoUploadData {
   display_description_de?: string;
   display_description_en?: string;
   display_description_ar?: string;
-  thumbnail_titles?: Record<string, string>; // New field
+  thumbnail_titles?: Record<string, string>; // Multilingual alt texts
   tags?: string[];
 }
 
