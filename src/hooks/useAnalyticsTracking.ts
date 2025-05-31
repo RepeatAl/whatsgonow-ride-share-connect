@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,6 +10,7 @@ import {
   AnalyticsValidator
 } from '@/types/analytics';
 import AnalyticsErrorLogger from '@/utils/analytics-error-logger';
+import { useAnalyticsFeatureFlags } from './useFeatureFlags';
 
 const getOrCreateSessionId = (): string => {
   let sessionId = sessionStorage.getItem('analytics_session_id');
@@ -21,8 +23,15 @@ const getOrCreateSessionId = (): string => {
 
 export const useAnalyticsTracking = () => {
   const [isTracking, setIsTracking] = useState(false);
+  const featureFlags = useAnalyticsFeatureFlags();
 
   const trackEvent = useCallback(async (event: unknown) => {
+    // Feature Gate: Check if analytics events v2 is enabled
+    if (!featureFlags.eventsV2) {
+      console.log('Analytics Events V2 disabled, skipping event:', event);
+      return;
+    }
+
     try {
       setIsTracking(true);
       const sessionId = getOrCreateSessionId();
@@ -31,12 +40,14 @@ export const useAnalyticsTracking = () => {
       const validationResult = AnalyticsValidator.validateEvent(event);
       
       if (!validationResult.success) {
-        // Log validation failure with new error logger
-        AnalyticsErrorLogger.logValidationError(
-          event,
-          validationResult.errors || ['Unknown validation error'],
-          sessionId
-        );
+        // Only log validation errors if error monitoring is enabled
+        if (featureFlags.errorMonitoring) {
+          AnalyticsErrorLogger.logValidationError(
+            event,
+            validationResult.errors || ['Unknown validation error'],
+            sessionId
+          );
+        }
         
         return; // Don't save invalid events
       }
@@ -58,12 +69,14 @@ export const useAnalyticsTracking = () => {
         .insert(enrichedEvent);
 
       if (error) {
-        // Log database failure with new error logger
-        AnalyticsErrorLogger.logDatabaseError(
-          enrichedEvent,
-          error.message,
-          sessionId
-        );
+        // Only log database errors if error monitoring is enabled
+        if (featureFlags.errorMonitoring) {
+          AnalyticsErrorLogger.logDatabaseError(
+            enrichedEvent,
+            error.message,
+            sessionId
+          );
+        }
       } else {
         console.log('✅ Analytics event tracked successfully:', validationResult.data?.event_type, enrichedEvent);
       }
@@ -71,23 +84,31 @@ export const useAnalyticsTracking = () => {
     } catch (error) {
       const sessionId = getOrCreateSessionId();
       
-      // Log system errors with new error logger
-      AnalyticsErrorLogger.logSystemError(
-        event,
-        error instanceof Error ? error.message : 'Unknown error',
-        sessionId
-      );
+      // Only log system errors if error monitoring is enabled
+      if (featureFlags.errorMonitoring) {
+        AnalyticsErrorLogger.logSystemError(
+          event,
+          error instanceof Error ? error.message : 'Unknown error',
+          sessionId
+        );
+      }
     } finally {
       setIsTracking(false);
     }
-  }, []);
+  }, [featureFlags.eventsV2, featureFlags.errorMonitoring]);
 
-  // Convenience methods for specific event types with validation
+  // Convenience methods for specific event types with feature gates
   const trackVideoEvent = useCallback((
     eventType: VideoAnalyticsEvent['event_type'],
     videoId: string,
     metadata?: VideoAnalyticsEvent['metadata']
   ) => {
+    // Feature Gate: Check if video tracking is enabled
+    if (!featureFlags.videoTracking) {
+      console.log('Video analytics tracking disabled, skipping event:', eventType);
+      return;
+    }
+
     const currentLanguage = localStorage.getItem('language') || 'de';
     const currentRegion = localStorage.getItem('selected_region') || 'unknown';
     
@@ -102,13 +123,19 @@ export const useAnalyticsTracking = () => {
     };
 
     trackEvent(event);
-  }, [trackEvent]);
+  }, [trackEvent, featureFlags.videoTracking]);
 
   const trackLanguageEvent = useCallback((
     eventType: LanguageAnalyticsEvent['event_type'],
     fromValue?: string,
     toValue?: string
   ) => {
+    // Feature Gate: Check if language tracking is enabled
+    if (!featureFlags.languageTracking) {
+      console.log('Language analytics tracking disabled, skipping event:', eventType);
+      return;
+    }
+
     const event = {
       event_type: eventType,
       from_language: eventType === 'language_switched' ? fromValue : undefined,
@@ -121,9 +148,15 @@ export const useAnalyticsTracking = () => {
     };
 
     trackEvent(event);
-  }, [trackEvent]);
+  }, [trackEvent, featureFlags.languageTracking]);
 
   const trackPageView = useCallback((pagePath: string, metadata?: Record<string, any>) => {
+    // Feature Gate: Page view tracking is part of events v2
+    if (!featureFlags.eventsV2) {
+      console.log('Analytics Events V2 disabled, skipping page view:', pagePath);
+      return;
+    }
+
     const currentLanguage = localStorage.getItem('language') || 'de';
     const currentRegion = localStorage.getItem('selected_region') || 'unknown';
     
@@ -138,13 +171,16 @@ export const useAnalyticsTracking = () => {
     };
 
     trackEvent(event);
-  }, [trackEvent]);
+  }, [trackEvent, featureFlags.eventsV2]);
 
   return {
     trackEvent,
     trackVideoEvent,
     trackLanguageEvent,
     trackPageView,
-    isTracking
+    isTracking,
+    
+    // Feature flag status for debugging
+    featureFlags,
   };
 };
