@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { 
-  FeatureFlag, 
-  FeatureFlagName, 
+import {
+  FeatureFlag,
+  FeatureFlagName,
   FeatureFlagAudit,
-  FEATURE_FLAG_DEFAULTS, 
+  FEATURE_FLAG_DEFAULTS,
   getCurrentEnvironment,
-  getFeatureFlagDefault
+  getFeatureFlagDefault,
 } from '@/config/featureFlags';
 
 interface FeatureFlagState {
@@ -42,9 +42,9 @@ export const useFeatureFlags = () => {
   const loadFlags = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      
+
       const environment = getCurrentEnvironment();
-      
+
       const { data: flags, error } = await supabase
         .from('active_feature_flags')
         .select('*')
@@ -63,7 +63,7 @@ export const useFeatureFlags = () => {
 
       // Merge database flags with defaults
       const flagsMap: Record<FeatureFlagName, boolean> = { ...FEATURE_FLAG_DEFAULTS };
-      
+
       flags?.forEach((flag: FeatureFlag) => {
         if (flag.flag_name in FEATURE_FLAG_DEFAULTS) {
           flagsMap[flag.flag_name] = flag.enabled;
@@ -84,7 +84,6 @@ export const useFeatureFlags = () => {
         error: null,
         lastUpdated: new Date(),
       });
-      
     } catch (err) {
       console.error('Feature flags loading failed:', err);
       setState(prev => ({
@@ -105,60 +104,62 @@ export const useFeatureFlags = () => {
   }, [state.flags, state.loading]);
 
   // Admin function: Toggle feature flag
-  const toggleFeatureFlag = useCallback(async (
-    flagName: FeatureFlagName, 
-    enabled: boolean,
-    reason?: string
-  ): Promise<boolean> => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const updated_by = userData?.user?.id ?? null;
-      const { error } = await supabase
-        .from('feature_flags')
-        .update({ 
-          enabled,
-          updated_by,
-        })
-        .eq('flag_name', flagName)
-        .eq('environment', getCurrentEnvironment());
+  const toggleFeatureFlag = useCallback(
+    async (flagName: FeatureFlagName, enabled: boolean, reason?: string): Promise<boolean> => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
 
-      if (error) {
-        console.error('Failed to update feature flag:', error);
+        const { error } = await supabase
+          .from('feature_flags')
+          .update({
+            enabled,
+            updated_by: userData?.user?.id,
+          })
+          .eq('flag_name', flagName)
+          .eq('environment', getCurrentEnvironment());
+
+        if (error) {
+          console.error('Failed to update feature flag:', error);
+          return false;
+        }
+
+        // If reason provided, add it to audit metadata
+        if (reason) {
+          const { error: auditError } = await supabase
+            .from('feature_flag_audit')
+            .update({ reason })
+            .eq('flag_name', flagName)
+            .eq('action', enabled ? 'enabled' : 'disabled')
+            .order('changed_at', { ascending: false })
+            .limit(1);
+
+          if (auditError) {
+            console.warn('Failed to update audit reason:', auditError);
+          }
+        }
+
+        // Reload flags to get updated state
+        await loadFlags();
+
+        return true;
+      } catch (err) {
+        console.error('Feature flag toggle failed:', err);
         return false;
       }
-
-      // If reason provided, add it to audit metadata
-      if (reason) {
-        const { error: auditError } = await supabase
-          .from('feature_flag_audit')
-          .update({ reason })
-          .eq('flag_name', flagName)
-          .eq('action', enabled ? 'enabled' : 'disabled')
-          .order('changed_at', { ascending: false })
-          .limit(1);
-
-        if (auditError) {
-          console.warn('Failed to update audit reason:', auditError);
-        }
-      }
-
-      // Reload flags to get updated state
-      await loadFlags();
-      return true;
-    } catch (err) {
-      console.error('Feature flag toggle failed:', err);
-      return false;
-    }
-  }, [loadFlags]);
+    },
+    [loadFlags]
+  );
 
   // Load health status
   const loadHealth = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('check_feature_flag_health');
+
       if (error) {
         console.warn('Failed to load feature flag health:', error);
         return;
       }
+
       if (data && data.length > 0) {
         setHealth(data[0]);
       }
@@ -168,34 +169,34 @@ export const useFeatureFlags = () => {
   }, []);
 
   // Get audit history for a flag
-  const getAuditHistory = useCallback(async (
-    flagName?: FeatureFlagName,
-    limit = 50
-  ): Promise<FeatureFlagAudit[]> => {
-    try {
-      let query = supabase
-        .from('feature_flag_audit')
-        .select('*')
-        .order('changed_at', { ascending: false })
-        .limit(limit);
+  const getAuditHistory = useCallback(
+    async (flagName?: FeatureFlagName, limit = 50): Promise<FeatureFlagAudit[]> => {
+      try {
+        let query = supabase
+          .from('feature_flag_audit')
+          .select('*')
+          .order('changed_at', { ascending: false })
+          .limit(limit);
 
-      if (flagName) {
-        query = query.eq('flag_name', flagName);
-      }
+        if (flagName) {
+          query = query.eq('flag_name', flagName);
+        }
 
-      const { data, error } = await query;
+        const { data, error } = await query;
 
-      if (error) {
-        console.error('Failed to load audit history:', error);
+        if (error) {
+          console.error('Failed to load audit history:', error);
+          return [];
+        }
+
+        return data || [];
+      } catch (err) {
+        console.error('Audit history loading failed:', err);
         return [];
       }
-
-      return data || [];
-    } catch (err) {
-      console.error('Audit history loading failed:', err);
-      return [];
-    }
-  }, []);
+    },
+    []
+  );
 
   // Set up real-time subscriptions for flag changes
   useEffect(() => {
@@ -210,7 +211,8 @@ export const useFeatureFlags = () => {
           event: '*',
           schema: 'public',
           table: 'feature_flags',
-          filter: `environment=eq.${getCurrentEnvironment()}`,
+          // Filter-BUGFIX: Kein Template-Literal, sondern String-Konkatenation!
+          filter: 'environment=eq.' + getCurrentEnvironment(),
         },
         (payload) => {
           console.log('Feature flag changed:', payload);
