@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +13,23 @@ interface VideoGalleryProps {
 }
 
 const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
-  const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(videos[0] || null);
+  const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(null);
+
+  // Set initial video: featured video first, then first video, then null
+  useEffect(() => {
+    if (videos.length > 0) {
+      const featuredVideo = videos.find(video => video.tags?.includes('featured'));
+      setCurrentVideo(featuredVideo || videos[0] || null);
+    } else {
+      setCurrentVideo(null);
+    }
+  }, [videos]);
 
   console.log('🎥 VideoGallery rendering with videos:', {
     count: videos.length,
     currentVideo: currentVideo?.id,
-    language: currentLanguage
+    language: currentLanguage,
+    featuredVideo: videos.find(video => video.tags?.includes('featured'))?.id || 'none'
   });
 
   // Function to get localized title with enhanced fallback logic
@@ -104,7 +115,7 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Current Video Player */}
+      {/* Current Video Player - only render when currentVideo exists */}
       {currentVideo && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-2">
