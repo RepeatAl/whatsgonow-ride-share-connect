@@ -92,10 +92,12 @@ export function useProfile(user: User | null) {
         let regionName: string | null = null;
         
         if (userProfile.cm_regions) {
-          if (Array.isArray(userProfile.cm_regions) && userProfile.cm_regions.length > 0) {
-            regionName = userProfile.cm_regions[0]?.region_name || null;
-          } else if (!Array.isArray(userProfile.cm_regions)) {
-            regionName = userProfile.cm_regions.region_name || null;
+          // Handle cm_regions as array or single object
+          const cmRegionsData = userProfile.cm_regions as any;
+          if (Array.isArray(cmRegionsData) && cmRegionsData.length > 0) {
+            regionName = cmRegionsData[0]?.region_name || null;
+          } else if (cmRegionsData && typeof cmRegionsData === 'object') {
+            regionName = cmRegionsData.region_name || null;
           }
         }
         
