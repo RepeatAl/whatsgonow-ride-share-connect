@@ -6,32 +6,18 @@ import { StatsSkeleton } from "./StatsSkeleton";
 
 interface StatsData {
   totalUsers: number;
-  activeUsers: number;
-  pendingKyc: number;
-  totalOrders: number;
-  completedOrders: number;
-  totalCommission: number;
+  activeOrders: number;
+  completedDeliveries: number;
+  avgRating: number;
 }
 
 interface DashboardStatsProps {
-  role?: string;
-  stats?: StatsData;
-  isLoading?: boolean;
+  stats: StatsData;
+  loading?: boolean;
 }
 
-export const DashboardStats = ({ 
-  role = 'sender', 
-  stats = {
-    totalUsers: 0,
-    activeUsers: 0,
-    pendingKyc: 0,
-    totalOrders: 0,
-    completedOrders: 0,
-    totalCommission: 0
-  }, 
-  isLoading = false 
-}: DashboardStatsProps) => {
-  if (isLoading) {
+export const DashboardStats = ({ stats, loading = false }: DashboardStatsProps) => {
+  if (loading) {
     return <StatsSkeleton />;
   }
 
@@ -40,29 +26,29 @@ export const DashboardStats = ({
       title: "Total Users",
       value: stats.totalUsers,
       icon: <Users className="h-5 w-5 text-blue-500" aria-hidden="true" />,
-      description: `${stats.activeUsers} active in last 30 days`,
+      description: `Platform users`,
       tooltip: "Total number of registered users on the platform",
     },
     {
-      title: "Total Orders",
-      value: stats.totalOrders,
+      title: "Active Orders",
+      value: stats.activeOrders,
       icon: <Package className="h-5 w-5 text-green-500" aria-hidden="true" />,
-      description: `${stats.completedOrders} completed`,
-      tooltip: "Total number of transport orders created",
+      description: "Currently active",
+      tooltip: "Number of currently active orders",
     },
     {
-      title: "Pending KYC",
-      value: stats.pendingKyc,
+      title: "Completed Deliveries", 
+      value: stats.completedDeliveries,
       icon: <BadgeCheck className="h-5 w-5 text-amber-500" aria-hidden="true" />,
-      description: "Users requiring verification",
-      tooltip: "Users waiting for KYC verification approval",
+      description: "Successfully delivered",
+      tooltip: "Total number of completed deliveries",
     },
     {
-      title: "Total Commission",
-      value: `$${stats.totalCommission.toFixed(2)}`,
+      title: "Average Rating",
+      value: stats.avgRating.toFixed(1),
       icon: <Banknote className="h-5 w-5 text-purple-500" aria-hidden="true" />,
-      description: "From completed orders",
-      tooltip: "Total commission earned from completed transport orders",
+      description: "Platform rating",
+      tooltip: "Average rating across all users",
     },
   ];
 

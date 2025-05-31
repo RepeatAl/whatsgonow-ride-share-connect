@@ -88,8 +88,10 @@ export function useProfile(user: User | null) {
         
         setProfile(transformedProfile);
         
-        // Set region from new cm_regions structure
-        const regionName = userProfile.cm_regions?.region_name || userProfile.region || null;
+        // Set region from new cm_regions structure - fix the array access
+        const regionName = userProfile.cm_regions && Array.isArray(userProfile.cm_regions) 
+          ? userProfile.cm_regions[0]?.region_name 
+          : userProfile.cm_regions?.region_name || userProfile.region || null;
         setRegion(regionName);
         setIsTest(isTestRegion(regionName));
         

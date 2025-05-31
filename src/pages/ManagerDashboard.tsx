@@ -12,7 +12,7 @@ import { useManagerDashboard } from "@/hooks/use-manager-dashboard";
 
 const ManagerDashboard = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
-  const { users, orders, stats } = useManagerDashboard(selectedRegion);
+  const { users, orders, stats, loading } = useManagerDashboard(selectedRegion);
 
   return (
     <Layout>
@@ -25,7 +25,7 @@ const ManagerDashboard = () => {
           />
         </div>
 
-        <DashboardStats stats={stats} />
+        <DashboardStats stats={stats} loading={loading} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <OrderActivityChart orders={orders} />
