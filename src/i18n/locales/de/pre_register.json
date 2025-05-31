@@ -2,27 +2,26 @@
 {
   "title": "Sei dabei, wenn whatsgonow startet!",
   "subtitle": "Sichere dir jetzt deinen Platz für den Early Access und sei einer der Ersten, die whatsgonow nutzen können.",
-  "form": {
-    "first_name": "Vorname",
-    "last_name": "Nachname", 
-    "email": "E-Mail-Adresse",
-    "postal_code": "Postleitzahl",
-    "language": "Bevorzugte Sprache",
-    "roles_title": "Ich möchte whatsgonow nutzen als:",
-    "wants_sender": "Sender (Gegenstände versenden)",
-    "wants_driver": "Fahrer (Gegenstände transportieren)",
-    "wants_cm": "Community Manager (whatsgonow in meiner Region unterstützen)",
-    "vehicle_types_title": "Welche Fahrzeugtypen stehen dir zur Verfügung?",
-    "vehicle_types": {
-      "car": "PKW",
-      "van": "Transporter/Van",
-      "truck": "LKW",
-      "motorcycle": "Motorrad/Roller"
-    },
-    "gdpr_consent": "Ich stimme der Datenverarbeitung gemäß Datenschutzerklärung zu",
-    "submit": "Early Access sichern",
-    "submitting": "Wird übertragen..."
+  "first_name": "Vorname",
+  "last_name": "Nachname", 
+  "email": "E-Mail-Adresse",
+  "postal_code": "Postleitzahl",
+  "language": "Bevorzugte Sprache",
+  "register_as": "Ich möchte mich registrieren als:",
+  "driver": "Fahrer (Gegenstände transportieren)",
+  "cm": "Community Manager (whatsgonow in meiner Region unterstützen)",
+  "sender": "Sender (Gegenstände versenden)",
+  "vehicle_types": {
+    "label": "Welche Fahrzeugtypen stehen dir zur Verfügung?",
+    "car_sizes": "Fahrzeuggrößen von S (Kleinwagen) bis XXL (LKW)",
+    "moped": "Motorroller/Moped",
+    "bike": "Fahrrad",
+    "boat": "Boot",
+    "plane": "Flugzeug"
   },
+  "gdpr_consent": "Ich stimme der Datenverarbeitung gemäß Datenschutzerklärung zu",
+  "submit": "Early Access sichern",
+  "processing": "Wird übertragen...",
   "success": {
     "title": "Willkommen im Early Access!",
     "description": "Perfekt! Du bist jetzt Teil unserer exklusiven Early Access Community. Wir haben dir eine Bestätigungs-E-Mail geschickt.",
