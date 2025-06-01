@@ -1,106 +1,82 @@
 
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useAnalyticsTracking } from './useAnalyticsTracking';
 import type { AdminVideo } from '@/types/admin';
-import type { VideoAnalyticsEvent } from '@/types/analytics';
-
-interface VideoAnalyticsState {
-  startTime: number | null;
-  lastProgressUpdate: number;
-  hasStarted: boolean;
-  hasCompleted: boolean;
-}
 
 export const useVideoAnalytics = (video: AdminVideo | null) => {
   const { trackVideoEvent } = useAnalyticsTracking();
-  const analyticsState = useRef<VideoAnalyticsState>({
-    startTime: null,
-    lastProgressUpdate: 0,
-    hasStarted: false,
-    hasCompleted: false
-  });
 
-  const resetAnalytics = useCallback(() => {
-    analyticsState.current = {
-      startTime: null,
-      lastProgressUpdate: 0,
-      hasStarted: false,
-      hasCompleted: false
-    };
-  }, []);
-
-  const trackVideoStart = useCallback((videoElement: HTMLVideoElement) => {
-    if (!video || analyticsState.current.hasStarted) return;
-    
-    analyticsState.current.startTime = Date.now();
-    analyticsState.current.hasStarted = true;
+  const trackVideoStart = useCallback((duration?: number) => {
+    if (!video) return;
     
     trackVideoEvent('video_started', video.id, {
-      video_url: video.public_url,
-      duration: videoElement.duration || 0,
-      current_time: videoElement.currentTime || 0
+      video_title: video.original_name,
+      video_duration: duration,
+      has_custom_thumbnail: !!video.thumbnail_url,
+      is_featured: video.tags?.includes('featured') || false,
+      file_size: video.file_size,
+      mime_type: video.mime_type
     });
   }, [video, trackVideoEvent]);
 
-  const trackVideoPause = useCallback((videoElement: HTMLVideoElement) => {
-    if (!video || !analyticsState.current.hasStarted) return;
+  const trackVideoEnd = useCallback((watchedDuration?: number, totalDuration?: number) => {
+    if (!video) return;
+    
+    const completionRate = watchedDuration && totalDuration ? 
+      Math.round((watchedDuration / totalDuration) * 100) : undefined;
+    
+    trackVideoEvent('video_ended', video.id, {
+      watched_duration: watchedDuration,
+      total_duration: totalDuration,
+      completion_rate: completionRate,
+      video_title: video.original_name
+    });
+  }, [video, trackVideoEvent]);
+
+  const trackVideoPause = useCallback((currentTime?: number) => {
+    if (!video) return;
     
     trackVideoEvent('video_paused', video.id, {
-      current_time: videoElement.currentTime || 0,
-      duration: videoElement.duration || 0,
-      completion_percentage: videoElement.duration ? 
-        Math.round((videoElement.currentTime / videoElement.duration) * 100) : 0
+      pause_time: currentTime,
+      video_title: video.original_name
     });
   }, [video, trackVideoEvent]);
 
-  const trackVideoCompleted = useCallback((videoElement: HTMLVideoElement) => {
-    if (!video || analyticsState.current.hasCompleted) return;
-    
-    analyticsState.current.hasCompleted = true;
-    const watchDuration = analyticsState.current.startTime ? 
-      Date.now() - analyticsState.current.startTime : 0;
-    
-    trackVideoEvent('video_completed', video.id, {
-      duration: videoElement.duration || 0,
-      watch_duration: watchDuration,
-      completion_percentage: 100
-    });
-  }, [video, trackVideoEvent]);
-
-  const trackVideoError = useCallback((error: string, errorCode?: string) => {
+  const trackVideoResume = useCallback((currentTime?: number) => {
     if (!video) return;
     
-    trackVideoEvent('video_error', video.id, {
-      error_message: error,
-      error_code: errorCode || 'unknown'
-    });
-  }, [video, trackVideoEvent]);
-
-  const trackVideoSeek = useCallback((videoElement: HTMLVideoElement, fromTime: number) => {
-    if (!video) return;
-    
-    trackVideoEvent('video_seek', video.id, {
-      current_time: videoElement.currentTime || 0,
-      from_time: fromTime,
-      duration: videoElement.duration || 0
+    trackVideoEvent('video_resumed', video.id, {
+      resume_time: currentTime,
+      video_title: video.original_name
     });
   }, [video, trackVideoEvent]);
 
   const trackThumbnailClick = useCallback(() => {
     if (!video) return;
     
-    trackVideoEvent('video_thumbnail_clicked', video.id, {
+    trackVideoEvent('thumbnail_clicked', video.id, {
+      video_title: video.original_name,
+      has_custom_thumbnail: !!video.thumbnail_url,
+      is_featured: video.tags?.includes('featured') || false
+    });
+  }, [video, trackVideoEvent]);
+
+  const trackVideoError = useCallback((error: string) => {
+    if (!video) return;
+    
+    trackVideoEvent('video_error', video.id, {
+      error_message: error,
+      video_title: video.original_name,
       video_url: video.public_url
     });
   }, [video, trackVideoEvent]);
 
   return {
     trackVideoStart,
+    trackVideoEnd,
     trackVideoPause,
-    trackVideoCompleted,
-    trackVideoError,
-    trackVideoSeek,
+    trackVideoResume,
     trackThumbnailClick,
-    resetAnalytics
+    trackVideoError
   };
 };

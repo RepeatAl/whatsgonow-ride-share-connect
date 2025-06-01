@@ -19,6 +19,9 @@ import ResetPassword from '@/pages/ResetPassword';
 import ESGDashboard from '@/pages/ESGDashboard';
 import Faq from '@/pages/Faq';
 import NotFound from '@/pages/NotFound';
+import Feedback from '@/pages/Feedback';
+import RlsTest from '@/pages/RLSTest';
+import SystemTests from '@/pages/SystemTests';
 
 // Import dashboard pages
 import DashboardDriver from '@/pages/dashboard/DashboardDriver';
@@ -77,14 +80,34 @@ const MCPRouter = () => {
         </ProtectedRoute>
       } />
       
+      {/* Admin Tools */}
+      <Route path="/:lang/system-tests" element={
+        <ProtectedRoute>
+          <AdminRoute>
+            <SystemTests />
+          </AdminRoute>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/:lang/rls-test" element={
+        <ProtectedRoute>
+          <AdminRoute>
+            <RlsTest />
+          </AdminRoute>
+        </ProtectedRoute>
+      } />
+      
       {/* Other protected routes */}
       <Route path="/:lang/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/:lang/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
       
       {/* Catch legacy routes without language prefix and redirect */}
       <Route path="/login" element={<Navigate to={`/${currentLanguage}/login`} replace />} />
       <Route path="/register" element={<Navigate to={`/${currentLanguage}/register`} replace />} />
       <Route path="/dashboard" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
       <Route path="/profile" element={<Navigate to={`/${currentLanguage}/profile`} replace />} />
+      <Route path="/system-tests" element={<Navigate to={`/${currentLanguage}/system-tests`} replace />} />
+      <Route path="/rls-test" element={<Navigate to={`/${currentLanguage}/rls-test`} replace />} />
       
       {/* 404 fallback - show proper NotFound page instead of redirecting */}
       <Route path="*" element={<NotFound />} />
