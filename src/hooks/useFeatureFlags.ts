@@ -1,3 +1,4 @@
+
 /* ============================================================================
    KNOWN ISSUE / WON'T FIX: TypeScript Phantom-Fehler durch alten Compiler-Cache
    ============================================================================
@@ -259,10 +260,10 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   const { isFeatureEnabled, loading: flagsLoading } = useFeatureFlags();
 
   if (flagsLoading && loading) {
-    return <>{loading}</>;
+    return React.createElement(React.Fragment, null, loading);
   }
 
-  return isFeatureEnabled(flag) ? <>{children}</> : <>{fallback}</>;
+  return isFeatureEnabled(flag) ? React.createElement(React.Fragment, null, children) : React.createElement(React.Fragment, null, fallback);
 };
 
 /* ============================================================================
