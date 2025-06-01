@@ -8,7 +8,10 @@ import type {
   ProfileAccessResponse,
   PrivacySettings,
   VisibilityLevel,
-  ProfileVisibilitySettings
+  ProfileVisibilitySettings,
+  PublicProfile,
+  TransactionProfile,
+  AdminProfile
 } from '@/types/profile-visibility';
 
 // API Base Class für Profile Visibility
@@ -51,15 +54,26 @@ export class ProfileVisibilityAPI {
         request.requested_fields
       );
 
+      if (!profileData) {
+        return {
+          granted: false,
+          accessible_fields: [],
+          access_limitations: ['Profile not found']
+        };
+      }
+
       // Protokolliere Zugriff
       await this.logAccess(user.id, request);
+
+      // Berechne Ablaufzeit für Transaktionen
+      const expiresAt = request.access_type === 'transaction' && request.order_id ? 
+        await this.calculateTransactionExpiry(request.order_id) : undefined;
 
       return {
         granted: true,
         profile_data: profileData,
         accessible_fields: this.getAccessibleFields(request.access_type),
-        expires_at: request.access_type === 'transaction' ? 
-          this.calculateTransactionExpiry(request.order_id!) : undefined
+        expires_at: expiresAt
       };
 
     } catch (error) {
@@ -111,7 +125,7 @@ export class ProfileVisibilityAPI {
     userId: string,
     accessType: VisibilityLevel,
     requestedFields?: string[]
-  ) {
+  ): Promise<PublicProfile | TransactionProfile | AdminProfile | null> {
     const fieldSelects = this.buildFieldSelect(accessType, requestedFields);
     
     const { data, error } = await supabase
@@ -120,8 +134,12 @@ export class ProfileVisibilityAPI {
       .eq('user_id', userId)
       .single();
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error('Error fetching profile data:', error);
+      return null;
+    }
+
+    return data as PublicProfile | TransactionProfile | AdminProfile;
   }
 
   private static buildFieldSelect(
