@@ -115,7 +115,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         loadAttempts={loadAttempts}
       />
       
-      {/* Main Video Element with mobile-optimized settings */}
+      {/* Main Video Element */}
       <video
         ref={videoRef}
         src={cacheBustedSrc}
@@ -124,11 +124,12 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onCanPlay={handleCanPlay}
+        onCanPlayThrough={handleCanPlay}
         onLoadedData={handleLoadedData}
         onError={handleError}
         onLoadStart={handleLoadStart}
         onLoadedMetadata={handleLoadedMetadata}
-        preload={isMobile ? "none" : "metadata"}
+        preload={isMobile ? "metadata" : "auto"}
         playsInline
         muted={isMuted}
         crossOrigin="anonymous"
@@ -140,7 +141,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       {/* Loading Indicator */}
       <VideoLoadingState isLoading={isLoading} />
       
-      {/* Video Controls Overlay - only show when video is loaded */}
+      {/* Video Controls Overlay */}
       {!isLoading && videoLoaded && (
         <VideoOverlay 
           isPlaying={isPlaying}
@@ -149,7 +150,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Bottom Controls - only show when video is loaded */}
+      {/* Bottom Controls */}
       {!isLoading && videoLoaded && (
         <VideoControls
           isPlaying={isPlaying}
@@ -162,7 +163,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Mobile-specific hint when video is loaded but not playing */}
+      {/* Mobile hint */}
       <VideoMobileHint
         isLoading={isLoading}
         videoLoaded={videoLoaded}

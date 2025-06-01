@@ -87,7 +87,7 @@ export const useVideoHandlers = ({
         } catch (error) {
           console.error('❌ Video play failed:', error);
           setHasError(true);
-          setErrorDetails(`Mobile play failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          setErrorDetails(`Play failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
           setDebugInfo(`Play failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
@@ -158,35 +158,30 @@ export const useVideoHandlers = ({
         loadAttempts
       });
       
-      // More descriptive error messages for mobile
-      if (isMobile) {
-        switch (code) {
-          case 1:
-            errorMessage = 'Video-Download abgebrochen (mobiles Netzwerk?)';
-            break;
-          case 2:
-            errorMessage = 'Netzwerkfehler beim Video-Laden';
-            break;
-          case 3:
-            errorMessage = 'Video-Format nicht unterstützt auf diesem Gerät';
-            break;
-          case 4:
-            errorMessage = 'Video-Datei nicht gefunden';
-            break;
-          default:
-            errorMessage = `Mobile Video Error ${code}: ${message}`;
-        }
-      } else {
-        errorMessage = `Video Error ${code}: ${message}`;
+      switch (code) {
+        case 1:
+          errorMessage = 'Video-Download abgebrochen';
+          break;
+        case 2:
+          errorMessage = 'Netzwerkfehler beim Video-Laden';
+          break;
+        case 3:
+          errorMessage = 'Video-Format nicht unterstützt';
+          break;
+        case 4:
+          errorMessage = 'Video-Datei nicht gefunden';
+          break;
+        default:
+          errorMessage = `Video Error ${code}: ${message}`;
       }
       
       setDebugInfo(`ERROR ${code}: ${message}`);
     }
     
-    // Auto-retry logic for mobile - only once
+    // Only auto-retry once for mobile
     if (isMobile && loadAttempts === 0) {
-      console.log('🔄 Auto-retry on mobile, attempt:', loadAttempts + 1);
-      setDebugInfo('Auto-retry attempt...');
+      console.log('🔄 Auto-retry on mobile');
+      setDebugInfo('Auto-retry in 2 seconds...');
       setTimeout(() => {
         handleRefresh();
       }, 2000);
@@ -200,22 +195,21 @@ export const useVideoHandlers = ({
   }, [videoRef, cacheBustedSrc, isMobile, loadAttempts, setDebugInfo, setHasError, setIsLoading, setVideoLoaded, setErrorDetails, handleRefresh]);
 
   const handleLoadStart = useCallback(() => {
-    console.log(`🔄 Video load start (${isMobile ? 'Mobile' : 'Desktop'}):`, cacheBustedSrc);
+    console.log(`🔄 Video load start:`, cacheBustedSrc);
     setIsLoading(true);
     setVideoLoaded(false);
     setErrorDetails('');
-    setDebugInfo(`Loading started (${isMobile ? 'Mobile' : 'Desktop'})`);
-  }, [isMobile, cacheBustedSrc, setIsLoading, setVideoLoaded, setErrorDetails, setDebugInfo]);
+    setDebugInfo(`Loading video...`);
+  }, [cacheBustedSrc, setIsLoading, setVideoLoaded, setErrorDetails, setDebugInfo]);
 
   const handleLoadedMetadata = useCallback(() => {
     console.log('📊 Video metadata loaded:', {
       duration: videoRef.current?.duration,
       videoWidth: videoRef.current?.videoWidth,
-      videoHeight: videoRef.current?.videoHeight,
-      isMobile
+      videoHeight: videoRef.current?.videoHeight
     });
     setDebugInfo(`Metadata loaded: ${videoRef.current?.duration}s`);
-  }, [videoRef, isMobile, setDebugInfo]);
+  }, [videoRef, setDebugInfo]);
 
   return {
     handleRefresh,

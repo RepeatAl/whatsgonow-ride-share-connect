@@ -25,11 +25,10 @@ export const useVideoUrl = ({
   setLoadAttempts
 }: UseVideoUrlProps) => {
   useEffect(() => {
-    console.log('🎬 VideoPlayer received src:', src);
-    setDebugInfo(`Received src: ${src || 'NO SRC'}`);
+    console.log('🎬 VideoPlayer processing src:', src);
     
     if (!src) {
-      console.log('❌ No src provided to VideoPlayer');
+      console.log('❌ No src provided');
       setHasError(true);
       setIsLoading(false);
       setErrorDetails('No video URL provided');
@@ -37,11 +36,40 @@ export const useVideoUrl = ({
       return;
     }
 
-    // Simple URL for mobile - no cache busting initially
+    // Reset states
+    setHasError(false);
+    setIsLoading(true);
+    setVideoLoaded(false);
+    setErrorDetails('');
+    setLoadAttempts(0);
+
+    // Simplified URL validation - just check if it's a valid URL
+    let isValidUrl = false;
+    try {
+      new URL(src);
+      isValidUrl = true;
+    } catch {
+      // If it's a relative path or doesn't start with http, still try it
+      isValidUrl = src.length > 0;
+    }
+
+    console.log('🔍 URL validation:', { src, isValidUrl });
+    setDebugInfo(`Processing: ${src}`);
+    
+    if (!isValidUrl) {
+      console.warn('⚠️ Invalid URL:', src);
+      setHasError(true);
+      setIsLoading(false);
+      setErrorDetails(`Invalid video URL: ${src}`);
+      setDebugInfo(`ERROR: Invalid URL: ${src}`);
+      return;
+    }
+
+    // Set the URL - no cache busting for mobile initially
     if (isMobile) {
       setCacheBustedSrc(src);
       console.log('📱 Mobile: Using direct URL:', src);
-      setDebugInfo(`Mobile: Direct URL: ${src}`);
+      setDebugInfo(`Mobile: Loading ${src}`);
     } else {
       const timestamp = Date.now();
       const cacheBustedUrl = src.includes('?') 
@@ -49,26 +77,8 @@ export const useVideoUrl = ({
         : `${src}?t=${timestamp}`;
       setCacheBustedSrc(cacheBustedUrl);
       console.log('🖥️ Desktop: Cache-busted URL:', cacheBustedUrl);
-      setDebugInfo(`Desktop: Cache-busted URL: ${cacheBustedUrl}`);
+      setDebugInfo(`Desktop: Loading ${cacheBustedUrl}`);
     }
 
-    // URL validation
-    const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('supabase'));
-    console.log('🔍 URL validation:', { src, isValidUrl, isMobile });
-    
-    if (!isValidUrl) {
-      console.warn('⚠️ Invalid video URL format:', src);
-      setHasError(true);
-      setIsLoading(false);
-      setErrorDetails(`Invalid video URL format: ${src}`);
-      setDebugInfo(`ERROR: Invalid URL format: ${src}`);
-      return;
-    }
-
-    setHasError(false);
-    setIsLoading(true);
-    setVideoLoaded(false);
-    setErrorDetails('');
-    setLoadAttempts(0);
   }, [src, isMobile, setCacheBustedSrc, setHasError, setIsLoading, setErrorDetails, setDebugInfo, setVideoLoaded, setLoadAttempts]);
 };
