@@ -1,4 +1,3 @@
-
 // API Utilities für Profile Visibility System
 // ================================================================
 
@@ -139,7 +138,13 @@ export class ProfileVisibilityAPI {
       return null;
     }
 
-    return data as PublicProfile | TransactionProfile | AdminProfile;
+    // Prüfe ob data existiert und gültig ist
+    if (!data || typeof data !== 'object') {
+      return null;
+    }
+
+    // Sichere Typenkonvertierung
+    return data as unknown as PublicProfile | TransactionProfile | AdminProfile;
   }
 
   private static buildFieldSelect(
