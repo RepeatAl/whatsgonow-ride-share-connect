@@ -18,7 +18,8 @@ const VideoDebugInfo = ({
   cacheBustedSrc, 
   loadAttempts 
 }: VideoDebugInfoProps) => {
-  if (!isMobile) return null;
+  // Only show debug info on mobile if there's an error or loading issue
+  if (!isMobile || (videoLoaded && !isLoading)) return null;
 
   return (
     <div className="absolute top-2 left-2 right-2 z-50 text-xs text-white bg-black bg-opacity-75 p-2 rounded">
