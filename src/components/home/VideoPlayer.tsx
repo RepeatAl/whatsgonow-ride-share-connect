@@ -92,7 +92,8 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     hasError,
     isLoading,
     videoLoaded,
-    cacheBustedSrc: !!cacheBustedSrc
+    cacheBustedSrc: !!cacheBustedSrc,
+    videoRef: !!videoRef.current
   });
 
   // Fallback for missing or error URLs
@@ -114,7 +115,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       onMouseLeave={() => !isMobile && setShowControls(false)}
       onTouchStart={() => isMobile && setShowControls(true)}
     >
-      {/* Debug Info - Always show for mobile */}
+      {/* Debug Info - Show only when needed */}
       <VideoDebugInfo
         isMobile={isMobile}
         isLoading={isLoading}
@@ -127,6 +128,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       {/* Main Video Element - Always render when we have a URL */}
       {cacheBustedSrc && (
         <video
+          key={cacheBustedSrc} // Force reload when URL changes
           ref={videoRef}
           src={cacheBustedSrc}
           className="w-full aspect-video cursor-pointer"

@@ -15,11 +15,19 @@ interface VideoGalleryProps {
 const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   const [currentVideo, setCurrentVideo] = useState<AdminVideo | null>(null);
 
-  // Set initial video: featured video first, then first video, then null
+  // Set initial video: first video in the list, regardless of featured status
   useEffect(() => {
     if (videos.length > 0) {
-      const featuredVideo = videos.find(video => video.tags?.includes('featured'));
-      setCurrentVideo(featuredVideo || videos[0] || null);
+      // Simply take the first valid video with a URL
+      const firstValidVideo = videos.find(video => video && video.id && video.public_url);
+      setCurrentVideo(firstValidVideo || null);
+      
+      console.log('🎥 VideoGallery initial video selection:', {
+        totalVideos: videos.length,
+        selectedVideo: firstValidVideo?.id,
+        selectedVideoTitle: firstValidVideo?.original_name,
+        selectedVideoUrl: firstValidVideo?.public_url
+      });
     } else {
       setCurrentVideo(null);
     }
@@ -28,8 +36,14 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
   console.log('🎥 VideoGallery rendering with videos:', {
     count: videos.length,
     currentVideo: currentVideo?.id,
+    currentVideoTitle: currentVideo?.original_name,
     language: currentLanguage,
-    featuredVideo: videos.find(video => video.tags?.includes('featured'))?.id || 'none'
+    allVideos: videos.map(v => ({ 
+      id: v.id, 
+      title: v.original_name, 
+      hasUrl: !!v.public_url,
+      isFeatured: v.tags?.includes('featured') 
+    }))
   });
 
   // Function to get localized title with enhanced fallback logic
@@ -96,7 +110,12 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
       return;
     }
     
-    console.log('🎯 Video selected:', video.id, video.public_url);
+    console.log('🎯 Video selected:', {
+      id: video.id, 
+      title: video.original_name,
+      url: video.public_url,
+      isFeatured: video.tags?.includes('featured')
+    });
     setCurrentVideo(video);
   };
 
@@ -137,7 +156,9 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
           )}
           
           {currentVideo.public_url && (
-            <VideoPlayer src={currentVideo.public_url} />
+            <div key={currentVideo.id}>
+              <VideoPlayer src={currentVideo.public_url} />
+            </div>
           )}
         </div>
       )}
@@ -156,10 +177,12 @@ const VideoGallery = ({ videos, currentLanguage }: VideoGalleryProps) => {
             
             console.log('🔍 Rendering video card:', { 
               id: video.id, 
+              title: video.original_name,
               hasUrl: !!video.public_url, 
               url: video.public_url,
               hasThumbnail: !!video.thumbnail_url,
-              isSelected: currentVideo?.id === video.id 
+              isSelected: currentVideo?.id === video.id,
+              isFeatured: video.tags?.includes('featured')
             });
             
             return (
