@@ -86,6 +86,15 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setLoadAttempts
   });
 
+  // Log current state for debugging
+  console.log('🎯 VideoPlayer render state:', {
+    src,
+    hasError,
+    isLoading,
+    videoLoaded,
+    cacheBustedSrc: !!cacheBustedSrc
+  });
+
   // Fallback for missing or error URLs
   if (!src || hasError) {
     return (
@@ -105,7 +114,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       onMouseLeave={() => !isMobile && setShowControls(false)}
       onTouchStart={() => isMobile && setShowControls(true)}
     >
-      {/* Debug Info for Mobile */}
+      {/* Debug Info - Always show for mobile */}
       <VideoDebugInfo
         isMobile={isMobile}
         isLoading={isLoading}
@@ -115,34 +124,42 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         loadAttempts={loadAttempts}
       />
       
-      {/* Main Video Element */}
-      <video
-        ref={videoRef}
-        src={cacheBustedSrc}
-        className="w-full aspect-video cursor-pointer"
-        onClick={togglePlay}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onCanPlay={handleCanPlay}
-        onCanPlayThrough={handleCanPlay}
-        onLoadedData={handleLoadedData}
-        onError={handleError}
-        onLoadStart={handleLoadStart}
-        onLoadedMetadata={handleLoadedMetadata}
-        preload={isMobile ? "metadata" : "auto"}
-        playsInline
-        muted={isMuted}
-        crossOrigin="anonymous"
-        controls={false}
-        poster=""
-        webkit-playsinline="true"
-      />
+      {/* Main Video Element - Always render when we have a URL */}
+      {cacheBustedSrc && (
+        <video
+          ref={videoRef}
+          src={cacheBustedSrc}
+          className="w-full aspect-video cursor-pointer"
+          onClick={togglePlay}
+          onPlay={() => {
+            console.log('📺 Video onPlay event triggered');
+            setIsPlaying(true);
+          }}
+          onPause={() => {
+            console.log('📺 Video onPause event triggered');
+            setIsPlaying(false);
+          }}
+          onCanPlay={handleCanPlay}
+          onCanPlayThrough={handleCanPlay}
+          onLoadedData={handleLoadedData}
+          onError={handleError}
+          onLoadStart={handleLoadStart}
+          onLoadedMetadata={handleLoadedMetadata}
+          preload={isMobile ? "metadata" : "auto"}
+          playsInline
+          muted={isMuted}
+          crossOrigin="anonymous"
+          controls={false}
+          poster=""
+          webkit-playsinline="true"
+        />
+      )}
       
-      {/* Loading Indicator */}
-      <VideoLoadingState isLoading={isLoading} />
+      {/* Loading Indicator - Only show when actually loading */}
+      {isLoading && <VideoLoadingState isLoading={isLoading} />}
       
-      {/* Video Controls Overlay */}
-      {!isLoading && videoLoaded && (
+      {/* Video Controls Overlay - Show when video is ready */}
+      {!isLoading && videoLoaded && cacheBustedSrc && (
         <VideoOverlay 
           isPlaying={isPlaying}
           showControls={showControls}
@@ -150,8 +167,8 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Bottom Controls */}
-      {!isLoading && videoLoaded && (
+      {/* Bottom Controls - Show when video is ready */}
+      {!isLoading && videoLoaded && cacheBustedSrc && (
         <VideoControls
           isPlaying={isPlaying}
           isMuted={isMuted}
@@ -163,13 +180,15 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Mobile hint */}
-      <VideoMobileHint
-        isLoading={isLoading}
-        videoLoaded={videoLoaded}
-        isPlaying={isPlaying}
-        isMobile={isMobile}
-      />
+      {/* Mobile hint - Show when video is ready but not playing */}
+      {!isLoading && videoLoaded && !isPlaying && isMobile && (
+        <VideoMobileHint
+          isLoading={isLoading}
+          videoLoaded={videoLoaded}
+          isPlaying={isPlaying}
+          isMobile={isMobile}
+        />
+      )}
     </div>
   );
 };

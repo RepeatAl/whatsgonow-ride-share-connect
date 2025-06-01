@@ -70,6 +70,7 @@ export const useVideoHandlers = ({
   }, [src, loadAttempts, setCacheBustedSrc, setHasError, setIsLoading, setVideoLoaded, setErrorDetails, setLoadAttempts, setDebugInfo, videoRef]);
 
   const togglePlay = useCallback(async () => {
+    console.log('🎮 Toggle play called - videoLoaded:', videoLoaded, 'hasError:', hasError);
     if (videoRef.current && !hasError && videoLoaded) {
       if (isPlaying) {
         videoRef.current.pause();
@@ -92,6 +93,7 @@ export const useVideoHandlers = ({
         }
       }
     } else {
+      console.log('🚫 Cannot play - conditions not met');
       setDebugInfo(`Cannot play: hasError=${hasError}, videoLoaded=${videoLoaded}`);
     }
   }, [videoRef, hasError, videoLoaded, isPlaying, setIsPlaying, setDebugInfo, setHasError, setErrorDetails]);
@@ -124,21 +126,24 @@ export const useVideoHandlers = ({
     }
   }, [src]);
 
+  // CRITICAL FIX: Ensure videoLoaded is set immediately when video can play
   const handleCanPlay = useCallback(() => {
-    console.log('✅ Video can play:', cacheBustedSrc);
+    console.log('✅ Video can play - setting videoLoaded to true:', cacheBustedSrc);
     setIsLoading(false);
     setHasError(false);
-    setVideoLoaded(true);
+    setVideoLoaded(true); // This is the critical line
     setErrorDetails('');
     setDebugInfo('Video ready to play');
+    console.log('📺 VIDEO STATE UPDATE: videoLoaded=true, isLoading=false');
   }, [cacheBustedSrc, setIsLoading, setHasError, setVideoLoaded, setErrorDetails, setDebugInfo]);
 
   const handleLoadedData = useCallback(() => {
-    console.log('📱 Video data loaded:', cacheBustedSrc);
+    console.log('📱 Video data loaded - ensuring videoLoaded is true:', cacheBustedSrc);
     setIsLoading(false);
-    setVideoLoaded(true);
+    setVideoLoaded(true); // Double ensure this is set
     setHasError(false);
     setDebugInfo('Video data loaded successfully');
+    console.log('📺 VIDEO STATE UPDATE: videoLoaded=true from loadedData');
   }, [cacheBustedSrc, setIsLoading, setVideoLoaded, setHasError, setDebugInfo]);
 
   const handleError = useCallback((error: React.SyntheticEvent<HTMLVideoElement, Event>) => {
@@ -209,7 +214,12 @@ export const useVideoHandlers = ({
       videoHeight: videoRef.current?.videoHeight
     });
     setDebugInfo(`Metadata loaded: ${videoRef.current?.duration}s`);
-  }, [videoRef, setDebugInfo]);
+    
+    // Also set videoLoaded here as backup
+    console.log('📺 Setting videoLoaded from metadata');
+    setVideoLoaded(true);
+    setIsLoading(false);
+  }, [videoRef, setDebugInfo, setVideoLoaded, setIsLoading]);
 
   return {
     handleRefresh,
