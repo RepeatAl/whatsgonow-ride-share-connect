@@ -12,13 +12,14 @@ interface VideoPlayerProps {
 
 const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // Start muted for mobile compatibility
   const [showControls, setShowControls] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorDetails, setErrorDetails] = useState<string>('');
   const [cacheBustedSrc, setCacheBustedSrc] = useState<string>('');
   const [loadAttempts, setLoadAttempts] = useState(0);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Detect mobile device
@@ -36,27 +37,26 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       return;
     }
 
-    // Different cache busting strategy for mobile
+    // Mobile-optimized cache busting
     const timestamp = Date.now();
     let cacheBustedUrl;
     
     if (isMobile) {
-      // For mobile: simpler cache busting without excessive parameters
+      // Simpler cache busting for mobile
       cacheBustedUrl = src.includes('?') 
-        ? `${src}&v=${timestamp}` 
-        : `${src}?v=${timestamp}`;
+        ? `${src}&m=${timestamp}` 
+        : `${src}?m=${timestamp}`;
     } else {
-      // For desktop: standard cache busting
       cacheBustedUrl = src.includes('?') 
         ? `${src}&t=${timestamp}` 
         : `${src}?t=${timestamp}`;
     }
     
     setCacheBustedSrc(cacheBustedUrl);
-    console.log(`🔄 ${isMobile ? 'Mobile' : 'Desktop'} cache-busted video URL:`, cacheBustedUrl);
+    console.log(`🔄 ${isMobile ? 'Mobile' : 'Desktop'} video URL:`, cacheBustedUrl);
 
-    // Simple URL validation
-    const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('.ogg') || src.includes('supabase'));
+    // URL validation
+    const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('supabase'));
     console.log('🔍 URL validation:', { src, isValidUrl, isMobile });
     
     if (!isValidUrl) {
@@ -69,6 +69,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
 
     setHasError(false);
     setIsLoading(true);
+    setVideoLoaded(false);
     setErrorDetails('');
     setLoadAttempts(0);
   }, [src, isMobile]);
@@ -77,6 +78,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     console.log('🔄 Manual refresh triggered');
     setHasError(false);
     setIsLoading(true);
+    setVideoLoaded(false);
     setErrorDetails('');
     setLoadAttempts(prev => prev + 1);
     
@@ -96,22 +98,26 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     }
   };
 
-  const togglePlay = () => {
-    if (videoRef.current && !hasError) {
+  const togglePlay = async () => {
+    if (videoRef.current && !hasError && videoLoaded) {
       if (isPlaying) {
         videoRef.current.pause();
+        setIsPlaying(false);
       } else {
-        // Mobile-specific play handling
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.error('❌ Video play failed:', error);
-            setHasError(true);
-            setErrorDetails(`Mobile play failed: ${error.message}`);
-          });
+        try {
+          // Mobile-specific play handling
+          const playPromise = videoRef.current.play();
+          if (playPromise !== undefined) {
+            await playPromise;
+            setIsPlaying(true);
+            console.log('✅ Video play successful');
+          }
+        } catch (error) {
+          console.error('❌ Video play failed:', error);
+          setHasError(true);
+          setErrorDetails(`Mobile play failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -142,17 +148,24 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     console.log('✅ Video can play:', cacheBustedSrc);
     setIsLoading(false);
     setHasError(false);
+    setVideoLoaded(true);
     setErrorDetails('');
+  };
+
+  const handleLoadedData = () => {
+    console.log('📱 Video data loaded for mobile:', cacheBustedSrc);
+    setIsLoading(false);
+    setVideoLoaded(true);
+    setHasError(false);
   };
 
   const handleError = (error: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.error('❌ Video error:', error);
     const videoElement = videoRef.current;
-    let errorMessage = 'Unknown video error';
+    let errorMessage = 'Video konnte nicht geladen werden';
     
     if (videoElement?.error) {
       const { code, message } = videoElement.error;
-      errorMessage = `Video Error ${code}: ${message}`;
       console.error('❌ Video error details:', {
         code,
         message,
@@ -162,25 +175,49 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         isMobile,
         loadAttempts
       });
+      
+      // More descriptive error messages for mobile
+      if (isMobile) {
+        switch (code) {
+          case 1:
+            errorMessage = 'Video-Download abgebrochen (mobiles Netzwerk?)';
+            break;
+          case 2:
+            errorMessage = 'Netzwerkfehler beim Video-Laden';
+            break;
+          case 3:
+            errorMessage = 'Video-Format nicht unterstützt auf diesem Gerät';
+            break;
+          case 4:
+            errorMessage = 'Video-Datei nicht gefunden';
+            break;
+          default:
+            errorMessage = `Mobile Video Error ${code}: ${message}`;
+        }
+      } else {
+        errorMessage = `Video Error ${code}: ${message}`;
+      }
     }
     
-    // Auto-retry on mobile for certain errors
+    // Auto-retry logic for mobile
     if (isMobile && loadAttempts < 2) {
       console.log('🔄 Auto-retry on mobile, attempt:', loadAttempts + 1);
       setTimeout(() => {
         handleRefresh();
-      }, 1000);
+      }, 1500);
       return;
     }
     
     setHasError(true);
     setIsLoading(false);
+    setVideoLoaded(false);
     setErrorDetails(errorMessage);
   };
 
   const handleLoadStart = () => {
     console.log(`🔄 Video load start (${isMobile ? 'Mobile' : 'Desktop'}):`, cacheBustedSrc);
     setIsLoading(true);
+    setVideoLoaded(false);
     setErrorDetails('');
   };
 
@@ -228,21 +265,23 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onCanPlay={handleCanPlay}
+        onLoadedData={handleLoadedData}
         onError={handleError}
         onLoadStart={handleLoadStart}
         onLoadedMetadata={handleLoadedMetadata}
-        preload={isMobile ? "none" : "metadata"}
+        preload={isMobile ? "metadata" : "metadata"}
         playsInline
-        muted={isMobile} // Start muted on mobile for autoplay policies
+        muted={isMuted}
         crossOrigin="anonymous"
         controls={false}
+        poster="" // Remove poster to avoid conflicts
       />
       
       {/* Loading Indicator */}
       <VideoLoadingState isLoading={isLoading} />
       
-      {/* Video Controls Overlay */}
-      {!isLoading && (
+      {/* Video Controls Overlay - only show when video is loaded */}
+      {!isLoading && videoLoaded && (
         <VideoOverlay 
           isPlaying={isPlaying}
           showControls={showControls}
@@ -250,17 +289,26 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Bottom Controls */}
-      {!isLoading && (
+      {/* Bottom Controls - only show when video is loaded */}
+      {!isLoading && videoLoaded && (
         <VideoControls
           isPlaying={isPlaying}
-          isMuted={isMobile ? true : isMuted} // Always show as muted on mobile initially
+          isMuted={isMuted}
           showControls={showControls}
           onTogglePlay={togglePlay}
           onToggleMute={toggleMute}
           onToggleFullscreen={toggleFullscreen}
           onRefresh={handleRefresh}
         />
+      )}
+      
+      {/* Mobile-specific hint when video is loaded but not playing */}
+      {!isLoading && videoLoaded && !isPlaying && isMobile && (
+        <div className="absolute bottom-16 left-4 right-4 text-center">
+          <p className="text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded">
+            Tippen zum Abspielen
+          </p>
+        </div>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
@@ -16,4 +17,20 @@ export function useIsMobile() {
   }, [])
 
   return !!isMobile
+}
+
+// Enhanced mobile detection for video compatibility
+export function useIsRealMobile() {
+  const [isRealMobile, setIsRealMobile] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    // More comprehensive mobile detection
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    setIsRealMobile(isMobileDevice || (isTouchDevice && window.innerWidth < MOBILE_BREAKPOINT));
+  }, [])
+
+  return isRealMobile
 }
