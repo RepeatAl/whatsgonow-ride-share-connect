@@ -20,6 +20,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
   const [cacheBustedSrc, setCacheBustedSrc] = useState<string>('');
   const [loadAttempts, setLoadAttempts] = useState(0);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Detect mobile device
@@ -28,32 +29,31 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
   // Cache busting and URL validation
   useEffect(() => {
     console.log('🎬 VideoPlayer received src:', src);
+    setDebugInfo(`Received src: ${src || 'NO SRC'}`);
     
     if (!src) {
       console.log('❌ No src provided to VideoPlayer');
       setHasError(true);
       setIsLoading(false);
       setErrorDetails('No video URL provided');
+      setDebugInfo('ERROR: No video URL provided');
       return;
     }
 
-    // Mobile-optimized cache busting
-    const timestamp = Date.now();
-    let cacheBustedUrl;
-    
+    // Simple URL for mobile - no cache busting initially
     if (isMobile) {
-      // Simpler cache busting for mobile
-      cacheBustedUrl = src.includes('?') 
-        ? `${src}&m=${timestamp}` 
-        : `${src}?m=${timestamp}`;
+      setCacheBustedSrc(src);
+      console.log('📱 Mobile: Using direct URL:', src);
+      setDebugInfo(`Mobile: Direct URL: ${src}`);
     } else {
-      cacheBustedUrl = src.includes('?') 
+      const timestamp = Date.now();
+      const cacheBustedUrl = src.includes('?') 
         ? `${src}&t=${timestamp}` 
         : `${src}?t=${timestamp}`;
+      setCacheBustedSrc(cacheBustedUrl);
+      console.log('🖥️ Desktop: Cache-busted URL:', cacheBustedUrl);
+      setDebugInfo(`Desktop: Cache-busted URL: ${cacheBustedUrl}`);
     }
-    
-    setCacheBustedSrc(cacheBustedUrl);
-    console.log(`🔄 ${isMobile ? 'Mobile' : 'Desktop'} video URL:`, cacheBustedUrl);
 
     // URL validation
     const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('supabase'));
@@ -64,6 +64,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       setHasError(true);
       setIsLoading(false);
       setErrorDetails(`Invalid video URL format: ${src}`);
+      setDebugInfo(`ERROR: Invalid URL format: ${src}`);
       return;
     }
 
@@ -81,6 +82,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setVideoLoaded(false);
     setErrorDetails('');
     setLoadAttempts(prev => prev + 1);
+    setDebugInfo(`Refresh attempt ${loadAttempts + 1}`);
     
     if (src) {
       const timestamp = Date.now();
@@ -90,6 +92,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         : `${src}?${refreshParam}`;
       setCacheBustedSrc(newCacheBustedUrl);
       console.log('🔄 New cache-busted URL:', newCacheBustedUrl);
+      setDebugInfo(`Refresh URL: ${newCacheBustedUrl}`);
       
       // Force video reload
       if (videoRef.current) {
@@ -103,21 +106,25 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       if (isPlaying) {
         videoRef.current.pause();
         setIsPlaying(false);
+        setDebugInfo('Video paused');
       } else {
         try {
-          // Mobile-specific play handling
           const playPromise = videoRef.current.play();
           if (playPromise !== undefined) {
             await playPromise;
             setIsPlaying(true);
+            setDebugInfo('Video playing successfully');
             console.log('✅ Video play successful');
           }
         } catch (error) {
           console.error('❌ Video play failed:', error);
           setHasError(true);
           setErrorDetails(`Mobile play failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          setDebugInfo(`Play failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
+    } else {
+      setDebugInfo(`Cannot play: hasError=${hasError}, videoLoaded=${videoLoaded}`);
     }
   };
 
@@ -125,6 +132,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     if (videoRef.current && !hasError) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
+      setDebugInfo(`Muted: ${!isMuted}`);
     }
   };
 
@@ -135,6 +143,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       } else {
         videoRef.current.requestFullscreen().catch(error => {
           console.error('❌ Fullscreen failed:', error);
+          setDebugInfo(`Fullscreen failed: ${error.message}`);
         });
       }
     }
@@ -150,13 +159,15 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setHasError(false);
     setVideoLoaded(true);
     setErrorDetails('');
+    setDebugInfo('Video ready to play');
   };
 
   const handleLoadedData = () => {
-    console.log('📱 Video data loaded for mobile:', cacheBustedSrc);
+    console.log('📱 Video data loaded:', cacheBustedSrc);
     setIsLoading(false);
     setVideoLoaded(true);
     setHasError(false);
+    setDebugInfo('Video data loaded successfully');
   };
 
   const handleError = (error: React.SyntheticEvent<HTMLVideoElement, Event>) => {
@@ -197,14 +208,17 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       } else {
         errorMessage = `Video Error ${code}: ${message}`;
       }
+      
+      setDebugInfo(`ERROR ${code}: ${message}`);
     }
     
-    // Auto-retry logic for mobile
-    if (isMobile && loadAttempts < 2) {
+    // Auto-retry logic for mobile - only once
+    if (isMobile && loadAttempts === 0) {
       console.log('🔄 Auto-retry on mobile, attempt:', loadAttempts + 1);
+      setDebugInfo('Auto-retry attempt...');
       setTimeout(() => {
         handleRefresh();
-      }, 1500);
+      }, 2000);
       return;
     }
     
@@ -219,6 +233,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setIsLoading(true);
     setVideoLoaded(false);
     setErrorDetails('');
+    setDebugInfo(`Loading started (${isMobile ? 'Mobile' : 'Desktop'})`);
   };
 
   const handleLoadedMetadata = () => {
@@ -228,6 +243,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       videoHeight: videoRef.current?.videoHeight,
       isMobile
     });
+    setDebugInfo(`Metadata loaded: ${videoRef.current?.duration}s`);
   };
 
   const testDirectAccess = () => {
@@ -256,6 +272,16 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       onMouseLeave={() => !isMobile && setShowControls(false)}
       onTouchStart={() => isMobile && setShowControls(true)}
     >
+      {/* Debug Info for Mobile */}
+      {isMobile && (
+        <div className="absolute top-2 left-2 right-2 z-50 text-xs text-white bg-black bg-opacity-75 p-2 rounded">
+          <div>Status: {isLoading ? 'Loading...' : videoLoaded ? 'Ready' : 'Not Ready'}</div>
+          <div>Debug: {debugInfo}</div>
+          <div>URL: {cacheBustedSrc ? 'Valid' : 'No URL'}</div>
+          <div>Attempts: {loadAttempts}</div>
+        </div>
+      )}
+      
       {/* Main Video Element with mobile-optimized settings */}
       <video
         ref={videoRef}
@@ -269,12 +295,13 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         onError={handleError}
         onLoadStart={handleLoadStart}
         onLoadedMetadata={handleLoadedMetadata}
-        preload={isMobile ? "metadata" : "metadata"}
+        preload={isMobile ? "none" : "metadata"}
         playsInline
         muted={isMuted}
         crossOrigin="anonymous"
         controls={false}
-        poster="" // Remove poster to avoid conflicts
+        poster=""
+        webkit-playsinline="true"
       />
       
       {/* Loading Indicator */}
