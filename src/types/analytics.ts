@@ -10,7 +10,7 @@ const BaseAnalyticsEventSchema = z.object({
   timestamp: z.string().datetime('Invalid timestamp format'),
 });
 
-// Video-specific metadata schema
+// Enhanced Video-specific metadata schema
 const VideoMetadataSchema = z.object({
   duration: z.number().min(0).optional(),
   current_time: z.number().min(0).optional(),
@@ -21,16 +21,30 @@ const VideoMetadataSchema = z.object({
   quality: z.string().optional(),
   watch_duration: z.number().min(0).optional(),
   from_time: z.number().min(0).optional(),
+  // Additional video metadata fields
+  video_title: z.string().optional(),
+  has_custom_thumbnail: z.boolean().optional(),
+  is_featured: z.boolean().optional(),
+  file_size: z.number().optional(),
+  mime_type: z.string().optional(),
+  watched_duration: z.number().min(0).optional(),
+  total_duration: z.number().min(0).optional(),
+  completion_rate: z.number().min(0).max(100).optional(),
+  pause_time: z.number().min(0).optional(),
+  resume_time: z.number().min(0).optional(),
 });
 
-// Video Analytics Event Schema
+// Enhanced Video Analytics Event Schema
 export const VideoAnalyticsEventSchema = BaseAnalyticsEventSchema.extend({
   event_type: z.enum([
     'video_started', 
     'video_paused', 
     'video_completed', 
+    'video_ended',
+    'video_resumed',
     'video_error', 
-    'video_thumbnail_clicked', 
+    'video_thumbnail_clicked',
+    'thumbnail_clicked',
     'video_seek', 
     'video_quality_changed'
   ]),

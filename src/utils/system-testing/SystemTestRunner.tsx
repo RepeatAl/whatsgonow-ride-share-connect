@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,9 +27,12 @@ const SystemTestRunner: React.FC = () => {
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const { user, profile } = useSimpleAuth();
-  const { currentLanguage, availableLanguages } = useLanguageMCP();
+  const { currentLanguage } = useLanguageMCP();
   const { flags, loading: ffLoading, health } = useFeatureFlags();
   const analyticsFlags = useAnalyticsFeatureFlags();
+
+  // Static available languages for testing
+  const availableLanguages = ['de', 'en', 'ar'];
 
   const updateTestSuite = useCallback((suiteName: string, tests: TestResult[], status?: TestSuite['status']) => {
     setTestSuites(prev => {
