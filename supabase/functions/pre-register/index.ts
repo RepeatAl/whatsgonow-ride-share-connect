@@ -1,217 +1,176 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { z } from "https://deno.land/x/zod@v3.24.2/mod.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.0.0";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, accept-language",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-// Schema aligned with frontend validation
-const preRegisterSchema = z.object({
-  first_name: z.string().min(2, "Vorname muss mindestens 2 Zeichen lang sein"),
-  last_name: z.string().min(2, "Nachname muss mindestens 2 Zeichen lang sein"),
-  email: z.string().email("Ungültige E-Mail-Adresse"),
-  postal_code: z.string().min(4, "Ungültige Postleitzahl"),
-  wants_driver: z.boolean().default(false),
-  wants_cm: z.boolean().default(false),
-  wants_sender: z.boolean().default(false),
-  vehicle_types: z.array(
-    z.enum(["S", "M", "L", "XL", "XXL", "MOPED", "BIKE", "BOAT", "PLANE"])
-  ).optional(),
-  gdpr_consent: z.boolean().refine((val) => val === true, {
-    message: "Bitte stimmen Sie den Datenschutzbestimmungen zu"
-  }),
-  language: z.string().optional().default("de")
-}).superRefine((data, ctx) => {
-  if (data.wants_driver) {
-    if (!data.vehicle_types || data.vehicle_types.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["vehicle_types"],
-        message: "Bitte wähle mindestens eine Fahrzeuggröße aus."
-      });
-    }
-  }
-});
-
-// Use service role key for database operations (no auth required)
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
-async function sendConfirmationEmail(email: string, firstName: string, language: string = "de") {
-  try {
-    console.log(`Attempting to send confirmation email to: ${email} in language: ${language}`);
-    
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendKey) {
-      console.error("RESEND_API_KEY environment variable is not set");
-      return { success: false, error: "Email service not configured" };
-    }
-    
-    const response = await fetch(
-      `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-confirmation`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-          "Accept-Language": language,
-        },
-        body: JSON.stringify({ 
-          email, 
-          firstName,
-          language 
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to send confirmation email. Status: ${response.status}, Error: ${errorText}`);
-      return { success: false, error: errorText };
-    }
-    
-    const result = await response.json();
-    console.log("Confirmation email sent successfully:", result);
-    return { success: true, result };
-  } catch (error) {
-    console.error("Error calling send-confirmation function:", error);
-    return { success: false, error: error.message };
-  }
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-serve(async (req: Request) => {
+serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    console.log(`[Pre-Register] Processing ${req.method} request`);
+    console.log('🔄 Pre-register function called');
     
-    const json = await req.json();
-    console.log("Received pre-registration data:", JSON.stringify(json, null, 2));
-    
-    const data = preRegisterSchema.parse(json);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    )
 
-    console.log(`Processing registration for email: ${data.email}, language: ${data.language}`);
-    
-    // Extract original email domain for tracking
-    const emailParts = data.email.split('@');
-    const originalDomain = emailParts.length > 1 ? emailParts[1] : null;
-    
-    // Extract UTM parameters from referer if available
-    const source = req.headers.get("referer");
-    const userAgent = req.headers.get("user-agent");
-    console.log(`Request source (referer): ${source}`);
-    console.log(`User agent: ${userAgent}`);
+    const { 
+      first_name, 
+      last_name, 
+      email, 
+      postal_code, 
+      wants_driver, 
+      wants_cm, 
+      wants_sender, 
+      vehicle_types,
+      gdpr_consent,
+      language = 'de',
+      source = 'website'
+    } = await req.json()
 
-    // Get the language from headers or request body
-    const acceptLanguage = req.headers.get("Accept-Language") || "de";
-    let language = data.language || acceptLanguage.split(',')[0].split('-')[0];
-    
-    // Only accept supported languages
-    if (!['de', 'en', 'ar'].includes(language)) {
-      language = 'de'; // Default to German if unsupported
-    }
-    
-    console.log(`Using language for registration: ${language}`);
-
-    // Insert into database (no auth required - public function)
-    console.log(`Inserting data into pre_registrations table...`);
-    const { data: insertedData, error: dbError } = await supabase
-      .from("pre_registrations")
-      .insert([{ 
-        ...data,
-        source,
-        language,
-        notification_sent: false,
-        notes: originalDomain !== 'gmail.com' && data.email.includes('gmail.com') 
-          ? `Original domain: ${originalDomain}` 
-          : null
-      }])
-      .select()
-      .single();
-
-    if (dbError) {
-      console.error("Database insertion error:", dbError);
-      throw new Error(`Database error: ${dbError.message}`);
-    }
-
-    console.log("Pre-registration data inserted successfully:", insertedData);
-    
-    // Send confirmation email (don't fail if email fails)
-    const emailResult = await sendConfirmationEmail(data.email, data.first_name, language);
-    
-    if (!emailResult.success) {
-      console.warn("Email sending failed, but registration was successful:", emailResult.error);
-      // Update notification_sent to false since email failed
-      await supabase
-        .from("pre_registrations")
-        .update({ notification_sent: false })
-        .eq("id", insertedData.id);
-    } else {
-      // Update notification_sent to true since email was successful
-      await supabase
-        .from("pre_registrations")
-        .update({ notification_sent: true })
-        .eq("id", insertedData.id);
-    }
-
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        email_sent: emailResult.success,
-        registration_id: insertedData.id
-      }),
-      { 
-        status: 201,
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders 
-        }
-      }
-    );
-  } catch (err) {
-    console.error("Pre-register error:", err);
-
-    if (err instanceof z.ZodError) {
-      // Format errors to match React Hook Form structure
-      const formattedErrors = {};
-      err.errors.forEach((error) => {
-        if (error.path) {
-          formattedErrors[error.path.join(".")] = error.message;
-        }
-      });
-
+    // Validation
+    if (!first_name || !last_name || !email || !postal_code) {
+      console.error('❌ Missing required fields');
       return new Response(
-        JSON.stringify({ errors: formattedErrors }),
+        JSON.stringify({ error: 'Missing required fields' }),
         { 
-          status: 400,
-          headers: { 
-            "Content-Type": "application/json",
-            ...corsHeaders 
-          }
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
-      );
+      )
+    }
+
+    if (!gdpr_consent) {
+      console.error('❌ GDPR consent required');
+      return new Response(
+        JSON.stringify({ error: 'GDPR consent is required' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // E-Mail-Format prüfen
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.error('❌ Invalid email format:', email);
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    console.log('📝 Inserting pre-registration:', { email, first_name, last_name });
+
+    // Pre-Registration in Datenbank einfügen
+    const { data: preRegData, error: insertError } = await supabaseClient
+      .from('pre_registrations')
+      .insert([
+        {
+          first_name,
+          last_name,
+          email,
+          postal_code,
+          wants_driver: !!wants_driver,
+          wants_cm: !!wants_cm,
+          wants_sender: !!wants_sender,
+          vehicle_types: vehicle_types || [],
+          gdpr_consent: true,
+          language,
+          source,
+          consent_version: '1.0'
+        }
+      ])
+      .select()
+      .single()
+
+    if (insertError) {
+      console.error('❌ Database insert error:', insertError);
+      
+      if (insertError.code === '23505') { // Unique violation
+        return new Response(
+          JSON.stringify({ error: 'This email address is already registered' }),
+          { 
+            status: 409, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+      
+      return new Response(
+        JSON.stringify({ error: 'Database error: ' + insertError.message }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    console.log('✅ Pre-registration inserted successfully:', preRegData.id);
+
+    // Bestätigungs-E-Mail senden
+    try {
+      console.log('📧 Sending confirmation email...');
+      
+      const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-confirmation', {
+        body: {
+          email,
+          first_name,
+          language,
+          type: 'pre_registration',
+          pre_registration_id: preRegData.id
+        }
+      })
+
+      if (emailError) {
+        console.error('⚠️ Email sending failed:', emailError);
+        // E-Mail-Fehler ist nicht kritisch - Pre-Registration war erfolgreich
+      } else {
+        console.log('✅ Confirmation email sent successfully');
+        
+        // Markiere als E-Mail versendet
+        await supabaseClient
+          .from('pre_registrations')
+          .update({ notification_sent: true })
+          .eq('id', preRegData.id)
+      }
+    } catch (emailError) {
+      console.error('⚠️ Email sending exception:', emailError);
+      // E-Mail-Fehler ist nicht kritisch
     }
 
     return new Response(
       JSON.stringify({ 
-        error: err instanceof Error ? err.message : "Ein unerwarteter Fehler ist aufgetreten" 
+        success: true, 
+        id: preRegData.id,
+        message: 'Pre-registration completed successfully' 
       }),
       { 
-        status: 500,
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders 
-        }
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
-    );
+    )
+
+  } catch (error) {
+    console.error('❌ Unexpected error in pre-register function:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
   }
-});
+})

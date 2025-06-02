@@ -16,8 +16,40 @@ export function getSupabaseClient(): SupabaseClient {
 
   const isBrowser = typeof window !== "undefined";
   
-  // Storage-Objekt für Node.js-Umgebungen (für Tests)
-  const nodeStorage = {
+  // FIXED: Mobile-Auth verbessert - explizite Storage-Konfiguration
+  const storage = isBrowser ? {
+    getItem: (key: string) => {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        console.warn('LocalStorage access failed:', e);
+        return null;
+      }
+    },
+    setItem: (key: string, value: string) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {
+        console.warn('LocalStorage write failed:', e);
+      }
+    },
+    removeItem: (key: string) => {
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.warn('LocalStorage remove failed:', e);
+      }
+    },
+    clear: () => {
+      try {
+        localStorage.clear();
+      } catch (e) {
+        console.warn('LocalStorage clear failed:', e);
+      }
+    },
+    length: 0,
+    key: (index: number) => null
+  } : {
     getItem: (key: string) => null,
     setItem: (key: string, value: string) => {},
     removeItem: (key: string) => {},
@@ -31,15 +63,26 @@ export function getSupabaseClient(): SupabaseClient {
     supabaseAnonKey,
     {
       auth: {
+        // FIXED: Mobile-Auth Verbesserungen
         persistSession: true,
         autoRefreshToken: true,
-        storage: isBrowser ? localStorage : nodeStorage,
-        debug: false, // Reduziere Auth-Logs
+        storage: storage,
+        storageKey: 'whatsgonow-auth',
+        debug: false,
+        // FIXED: Mobile-spezifische Einstellungen
+        detectSessionInUrl: true,
+        flowType: 'pkce'
       },
+      // FIXED: CORS-Headers für Mobile
+      global: {
+        headers: {
+          'X-Client-Info': 'whatsgonow-web'
+        }
+      }
     }
   );
 
-  console.log('Supabase client created (singleton)');
+  console.log('Supabase client created (singleton) - Mobile optimized');
   return supabaseInstance;
 }
 
@@ -65,7 +108,6 @@ export const initSupabase = async () => {
   }
 };
 
-// Verbindung prüfen: Nutzt jetzt immer den Lazy-Client!
 export const checkConnection = async () => {
   try {
     const supabase = getSupabaseClient();

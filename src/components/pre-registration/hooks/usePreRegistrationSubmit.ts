@@ -1,74 +1,97 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { useToast } from '@/hooks/use-toast';
-import { PreRegistrationFormData } from '@/lib/validators/pre-registration';
-
-export interface SubmitResult {
-  success: boolean;
-  fieldErrors?: Record<string, string>;
-}
+import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
+import type { PreRegistrationFormData } from '@/lib/validators/pre-registration';
 
 export const usePreRegistrationSubmit = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
-  const { getLocalizedUrl } = useLanguageMCP();
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (data: PreRegistrationFormData): Promise<SubmitResult> => {
-    setIsSubmitting(true);
+  const submitPreRegistration = async (data: PreRegistrationFormData) => {
+    console.log('🔄 Starting pre-registration submission...', { email: data.email });
+    setIsLoading(true);
     
     try {
-      // Simulate API call for now
-      console.log('Pre-registration data:', data);
+      // FIXED: Echter API-Call statt Mock
+      const { data: result, error } = await supabase.functions.invoke('pre-register', {
+        body: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          postal_code: data.postalCode,
+          wants_driver: data.wantsDriver,
+          wants_cm: data.wantsCM,
+          wants_sender: data.wantsSender,
+          vehicle_types: data.vehicleTypes,
+          gdpr_consent: data.gdprConsent,
+          language: data.language || 'de',
+          source: 'website'
+        }
+      });
+
+      if (error) {
+        console.error('❌ Pre-registration failed:', error);
+        
+        // Benutzerfreundliche Fehlermeldungen
+        let errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.';
+        
+        if (error.message?.includes('duplicate')) {
+          errorMessage = 'Diese E-Mail-Adresse ist bereits registriert.';
+        } else if (error.message?.includes('invalid email')) {
+          errorMessage = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+        } else if (error.message?.includes('network')) {
+          errorMessage = 'Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.';
+        }
+        
+        toast({
+          title: "Vorregistrierung fehlgeschlagen",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        
+        throw error;
+      }
+
+      // Erfolgreiche Verarbeitung
+      console.log('✅ Pre-registration successful:', result);
       
-      // Mock validation
-      const fieldErrors: Record<string, string> = {};
+      setIsSuccess(true);
       
-      if (!data.wants_driver && !data.wants_cm && !data.wants_sender) {
-        fieldErrors.wants_driver = 'Bitte wähle mindestens eine Rolle aus';
-        return { success: false, fieldErrors };
+      toast({
+        title: "Vorregistrierung erfolgreich!",
+        description: "Wir haben Ihnen eine Bestätigungs-E-Mail gesendet. Bitte prüfen Sie auch Ihren Spam-Ordner.",
+      });
+
+      return result;
+      
+    } catch (error: any) {
+      console.error('❌ Pre-registration submission error:', error);
+      
+      // Fallback für unerwartete Fehler
+      if (!error.message?.includes('duplicate') && !error.message?.includes('invalid')) {
+        toast({
+          title: "Vorregistrierung fehlgeschlagen",
+          description: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",
+          variant: "destructive",
+        });
       }
       
-      if (data.wants_driver && (!data.vehicle_types || data.vehicle_types.length === 0)) {
-        fieldErrors.vehicle_types = 'Bitte wähle mindestens einen Fahrzeugtyp aus';
-        return { success: false, fieldErrors };
-      }
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Show success toast
-      toast({
-        title: "Voranmeldung erfolgreich!",
-        description: "Wir haben deine Anmeldung erhalten. Du erhältst bald weitere Informationen per E-Mail.",
-        duration: 5000,
-      });
-      
-      // Navigate to success page
-      navigate(getLocalizedUrl('/pre-register/success'));
-      
-      return { success: true };
-      
-    } catch (error) {
-      console.error('Pre-registration submission error:', error);
-      
-      toast({
-        title: "Fehler bei der Anmeldung",
-        description: "Es ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
-        variant: "destructive",
-        duration: 5000,
-      });
-      
-      return { success: false };
+      throw error;
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
+  const resetForm = () => {
+    setIsSuccess(false);
+    setIsLoading(false);
+  };
+
   return {
-    handleSubmit,
-    isSubmitting
+    submitPreRegistration,
+    isLoading,
+    isSuccess,
+    resetForm
   };
 };
