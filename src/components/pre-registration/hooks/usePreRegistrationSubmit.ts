@@ -13,19 +13,19 @@ export const usePreRegistrationSubmit = () => {
     setIsLoading(true);
     
     try {
-      // FIXED: Echter API-Call statt Mock
+      // FIXED: Echter API-Call statt Mock - korrigierte Property-Namen
       const { data: result, error } = await supabase.functions.invoke('pre-register', {
         body: {
-          first_name: data.firstName,
-          last_name: data.lastName,
+          first_name: data.first_name,
+          last_name: data.last_name,
           email: data.email,
-          postal_code: data.postalCode,
-          wants_driver: data.wantsDriver,
-          wants_cm: data.wantsCM,
-          wants_sender: data.wantsSender,
-          vehicle_types: data.vehicleTypes,
-          gdpr_consent: data.gdprConsent,
-          language: data.language || 'de',
+          postal_code: data.postal_code,
+          wants_driver: data.wants_driver,
+          wants_cm: data.wants_cm,
+          wants_sender: data.wants_sender,
+          vehicle_types: data.vehicle_types,
+          gdpr_consent: data.gdpr_consent,
+          language: 'de', // Standard-Sprache
           source: 'website'
         }
       });
@@ -88,9 +88,12 @@ export const usePreRegistrationSubmit = () => {
     setIsLoading(false);
   };
 
+  // FIXED: Kompatible Interface für PreRegistrationForm
   return {
     submitPreRegistration,
     isLoading,
+    isSubmitting: isLoading, // Alias für Kompatibilität
+    handleSubmit: submitPreRegistration, // Alias für Kompatibilität
     isSuccess,
     resetForm
   };

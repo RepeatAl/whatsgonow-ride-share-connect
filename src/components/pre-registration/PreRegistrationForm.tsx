@@ -45,19 +45,12 @@ const PreRegistrationFormContent = () => {
     setSubmitError("");
     setSubmitSuccess(false);
     
-    const result = await submitRegistration(data);
-    
-    if (!result.success && result.fieldErrors) {
-      Object.entries(result.fieldErrors).forEach(([field, message]) => {
-        form.setError(field as any, {
-          message: message as string
-        });
-      });
-      setSubmitError(t("errors.form_validation", { ns: 'errors' }));
-    } else if (!result.success) {
-      setSubmitError(t("errors.registration_failed", { ns: 'errors' }));
-    } else {
+    try {
+      await submitRegistration(data);
       setSubmitSuccess(true);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmitError(t("errors.registration_failed", { ns: 'errors' }));
     }
   };
 
