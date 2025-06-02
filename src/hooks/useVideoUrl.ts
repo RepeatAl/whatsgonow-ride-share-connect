@@ -43,41 +43,79 @@ export const useVideoUrl = ({
     setErrorDetails('');
     setLoadAttempts(0);
 
-    // Simplified URL validation - just check if it's a valid URL
+    // Enhanced URL validation for Supabase storage
     let isValidUrl = false;
+    let validationInfo = '';
+    
     try {
-      new URL(src);
-      isValidUrl = true;
+      const url = new URL(src);
+      
+      // Check if it's a valid Supabase storage URL
+      if (url.hostname.includes('supabase.co') && url.pathname.includes('/storage/v1/object/public/')) {
+        isValidUrl = true;
+        validationInfo = 'Valid Supabase Storage URL';
+      } else if (url.protocol === 'https:' && (src.includes('.mp4') || src.includes('.webm') || src.includes('.ogg'))) {
+        isValidUrl = true;
+        validationInfo = 'Valid external video URL';
+      } else {
+        validationInfo = 'URL format not recognized as video';
+      }
     } catch {
-      // If it's a relative path or doesn't start with http, still try it
-      isValidUrl = src.length > 0;
+      // If it's a relative path, still try it
+      if (src.length > 0 && !src.startsWith('http')) {
+        isValidUrl = true;
+        validationInfo = 'Relative path - attempting to load';
+      } else {
+        validationInfo = 'Invalid URL format';
+      }
     }
 
-    console.log('🔍 URL validation:', { src, isValidUrl });
-    setDebugInfo(`Processing: ${src}`);
+    console.log('🔍 Enhanced URL validation:', { 
+      src, 
+      isValidUrl, 
+      validationInfo,
+      isSupabaseUrl: src.includes('supabase.co'),
+      hasVideoExtension: ['.mp4', '.webm', '.ogg'].some(ext => src.includes(ext))
+    });
+    
+    setDebugInfo(`Processing: ${validationInfo}`);
     
     if (!isValidUrl) {
       console.warn('⚠️ Invalid URL:', src);
       setHasError(true);
       setIsLoading(false);
-      setErrorDetails(`Invalid video URL: ${src}`);
-      setDebugInfo(`ERROR: Invalid URL: ${src}`);
+      setErrorDetails(`Invalid video URL: ${validationInfo}`);
+      setDebugInfo(`ERROR: ${validationInfo}`);
       return;
     }
 
-    // Set the URL - no cache busting for mobile initially
+    // FIXED: Better cache-busting strategy for different environments
     if (isMobile) {
+      // Mobile: Use direct URL first, add cache-buster only if needed
       setCacheBustedSrc(src);
       console.log('📱 Mobile: Using direct URL:', src);
       setDebugInfo(`Mobile: Loading ${src}`);
     } else {
+      // Desktop: Aggressive cache-busting for development
+      const separator = src.includes('?') ? '&' : '?';
       const timestamp = Date.now();
-      const cacheBustedUrl = src.includes('?') 
-        ? `${src}&t=${timestamp}` 
-        : `${src}?t=${timestamp}`;
+      const cacheBustedUrl = `${src}${separator}t=${timestamp}&cache_bust=1`;
       setCacheBustedSrc(cacheBustedUrl);
       console.log('🖥️ Desktop: Cache-busted URL:', cacheBustedUrl);
       setDebugInfo(`Desktop: Loading ${cacheBustedUrl}`);
+    }
+
+    // Test URL accessibility (optional ping)
+    if (src.startsWith('http')) {
+      fetch(src, { method: 'HEAD', mode: 'no-cors' })
+        .then(() => {
+          console.log('✅ URL accessibility check passed:', src);
+          setDebugInfo(prev => `${prev} - URL accessible`);
+        })
+        .catch(error => {
+          console.warn('⚠️ URL accessibility check failed:', error);
+          setDebugInfo(prev => `${prev} - URL check failed`);
+        });
     }
 
   }, [src, isMobile, setCacheBustedSrc, setHasError, setIsLoading, setErrorDetails, setDebugInfo, setVideoLoaded, setLoadAttempts]);

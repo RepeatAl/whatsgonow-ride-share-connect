@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Users, CheckCircle, Play, RefreshCw } from "lucide-react";
-import VideoGallery from "./video/VideoGallery";
+import VideoGalleryWithAnalytics from "./video/VideoGalleryWithAnalytics";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import type { AdminVideo } from "@/types/admin";
@@ -84,7 +84,8 @@ const HowItWorks = () => {
             id: v.id, 
             hasPublicUrl: !!v.public_url, 
             hasCustomThumbnail: !!v.thumbnail_url,
-            url: v.public_url || v.file_path 
+            url: v.public_url || v.file_path,
+            urlValid: v.public_url ? v.public_url.includes('supabase.co') : false
           }))
         });
         
@@ -103,7 +104,12 @@ const HowItWorks = () => {
         console.log('🔧 [PUBLIC] Processed videos:', {
           originalCount: data.length,
           processedCount: processedVideos.length,
-          filteredOut: data.length - processedVideos.length
+          filteredOut: data.length - processedVideos.length,
+          videosWithUrls: processedVideos.map(v => ({ 
+            id: v.id, 
+            url: v.public_url,
+            urlWorking: v.public_url?.includes('storage/v1/object/public/') || false
+          }))
         });
         
         if (processedVideos.length === 0) {
@@ -114,14 +120,15 @@ const HowItWorks = () => {
         
         setVideos(processedVideos);
         
-        console.log('📝 [PUBLIC] Final video list with thumbnails:', {
+        console.log('📝 [PUBLIC] Final video list ready for VideoGalleryWithAnalytics:', {
           totalVideos: processedVideos.length,
           language: currentLanguage,
           videosReady: processedVideos.map(v => ({ 
             id: v.id, 
             url: v.public_url,
             thumbnail: v.thumbnail_url,
-            title: v.display_title_de || v.original_name
+            title: v.display_title_de || v.original_name,
+            isFeatured: v.tags?.includes('featured') || false
           })),
           refreshKey
         });
@@ -176,7 +183,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video Gallery Section with enhanced error handling */}
+        {/* Video Gallery Section - FIXED: Using VideoGalleryWithAnalytics */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -221,7 +228,7 @@ const HowItWorks = () => {
             )}
             
             {!isLoading && !error && videos.length > 0 && (
-              <VideoGallery videos={videos} currentLanguage={currentLanguage} />
+              <VideoGalleryWithAnalytics videos={videos} currentLanguage={currentLanguage} />
             )}
             
             {!isLoading && !error && videos.length === 0 && (
