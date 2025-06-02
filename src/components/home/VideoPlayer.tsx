@@ -10,6 +10,7 @@ import { useMobileVideoDetection } from "@/hooks/useMobileVideoDetection";
 import { useVideoState } from "@/hooks/useVideoState";
 import { useVideoUrl } from "@/hooks/useVideoUrl";
 import { useVideoHandlers } from "@/hooks/useVideoHandlers";
+import { useVideoControls } from "@/hooks/useVideoControls";
 
 interface VideoPlayerProps {
   src?: string;
@@ -23,8 +24,6 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setIsPlaying,
     isMuted,
     setIsMuted,
-    showControls,
-    setShowControls,
     hasError,
     setHasError,
     isLoading,
@@ -41,6 +40,14 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setDebugInfo,
     videoRef
   } = useVideoState();
+
+  // Neue Controls-Logic mit Auto-Hide
+  const {
+    showControls,
+    handleMouseMove,
+    handleMouseLeave,
+    handleTouchStart
+  } = useVideoControls({ isMobile });
 
   useVideoUrl({
     src,
@@ -93,7 +100,8 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     isLoading,
     videoLoaded,
     cacheBustedSrc: !!cacheBustedSrc,
-    videoRef: !!videoRef.current
+    videoRef: !!videoRef.current,
+    showControls
   });
 
   // Fallback for missing or error URLs
@@ -111,9 +119,9 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
   return (
     <div 
       className="relative bg-black rounded-lg overflow-hidden group"
-      onMouseEnter={() => !isMobile && setShowControls(true)}
-      onMouseLeave={() => !isMobile && setShowControls(false)}
-      onTouchStart={() => isMobile && setShowControls(true)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
     >
       {/* Debug Info - Show only when needed */}
       <VideoDebugInfo
@@ -160,7 +168,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
       {/* Loading Indicator - Only show when actually loading */}
       {isLoading && <VideoLoadingState isLoading={isLoading} />}
       
-      {/* Video Controls Overlay - Show when video is ready */}
+      {/* Video Controls Overlay - Show when video is ready AND showControls is true */}
       {!isLoading && videoLoaded && cacheBustedSrc && (
         <VideoOverlay 
           isPlaying={isPlaying}
@@ -169,7 +177,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Bottom Controls - Show when video is ready */}
+      {/* Bottom Controls - Show when video is ready AND showControls is true */}
       {!isLoading && videoLoaded && cacheBustedSrc && (
         <VideoControls
           isPlaying={isPlaying}
@@ -182,8 +190,8 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Mobile hint - Show when video is ready but not playing */}
-      {!isLoading && videoLoaded && !isPlaying && isMobile && (
+      {/* Mobile hint - Show when video is ready but not playing and controls are not shown */}
+      {!isLoading && videoLoaded && !isPlaying && isMobile && !showControls && (
         <VideoMobileHint
           isLoading={isLoading}
           videoLoaded={videoLoaded}

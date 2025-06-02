@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 export const useVideoState = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const [showControls, setShowControls] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorDetails, setErrorDetails] = useState<string>('');
@@ -19,8 +18,6 @@ export const useVideoState = () => {
     setIsPlaying,
     isMuted,
     setIsMuted,
-    showControls,
-    setShowControls,
     hasError,
     setHasError,
     isLoading,
