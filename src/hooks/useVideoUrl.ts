@@ -110,11 +110,11 @@ export const useVideoUrl = ({
       fetch(src, { method: 'HEAD', mode: 'no-cors' })
         .then(() => {
           console.log('✅ URL accessibility check passed:', src);
-          setDebugInfo(prev => `${prev} - URL accessible`);
+          setDebugInfo(`Loading ${src} - URL accessible`);
         })
         .catch(error => {
           console.warn('⚠️ URL accessibility check failed:', error);
-          setDebugInfo(prev => `${prev} - URL check failed`);
+          setDebugInfo(`Loading ${src} - URL check failed`);
         });
     }
 
