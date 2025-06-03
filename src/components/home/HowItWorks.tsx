@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Users, CheckCircle, Play, RefreshCw } from "lucide-react";
+import { Upload, Users, CheckCircle, Play, RefreshCw, AlertTriangle } from "lucide-react";
 import VideoGalleryWithAnalytics from "./video/VideoGalleryWithAnalytics";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { AdminVideo } from "@/types/admin";
 
 const HowItWorks = () => {
@@ -14,15 +15,16 @@ const HowItWorks = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [systemHealth, setSystemHealth] = useState<'good' | 'warning' | 'error'>('good');
   const currentLanguage = i18n.language;
 
   const fetchHowItWorksVideos = async () => {
     try {
-      console.log('🎥 [PUBLIC] Fetching public howto videos...');
+      console.log('🎥 [PUBLIC] Fetching howto videos...');
       setIsLoading(true);
       setError(null);
       
-      // Enhanced query with graceful handling of new columns
+      // Enhanced query for active, public videos with proper error handling
       const { data, error } = await supabase
         .from('admin_videos')
         .select(`
@@ -58,14 +60,13 @@ const HowItWorks = () => {
         data, 
         error, 
         queryCount: data?.length || 0,
-        errorMessage: error?.message,
         refreshKey
       });
 
       if (error) {
         console.error('❌ [PUBLIC] Video query failed:', error);
+        setSystemHealth('error');
         
-        // Enhanced error handling
         if (error.code === '42501') {
           setError('Videos sind momentan nicht verfügbar. Berechtigung wird konfiguriert.');
         } else if (error.code === '42703') {
@@ -79,65 +80,50 @@ const HowItWorks = () => {
       if (data && data.length > 0) {
         console.log('✅ [PUBLIC] Videos found:', {
           count: data.length,
-          refreshKey,
-          videosWithThumbnails: data.map(v => ({ 
-            id: v.id, 
-            hasPublicUrl: !!v.public_url, 
-            hasCustomThumbnail: !!v.thumbnail_url,
-            url: v.public_url || v.file_path,
-            urlValid: v.public_url ? v.public_url.includes('supabase.co') : false
-          }))
+          refreshKey
         });
         
-        // Process videos to ensure they have a usable URL and valid structure
+        // Process videos and validate URLs
         const processedVideos = data
-          .filter(video => video && video.id) // Filter out null/invalid videos
+          .filter(video => video && video.id && video.public_url)
           .map(video => ({
             ...video,
-            public_url: video.public_url || video.file_path || null,
-            // Ensure thumbnail_url is properly handled even if column is new
+            // Ensure all required fields are present
             thumbnail_url: video.thumbnail_url || null,
-            thumbnail_titles: video.thumbnail_titles || {}
-          }))
-          .filter(video => video.public_url); // Only keep videos with valid URLs
+            thumbnail_titles: video.thumbnail_titles || {},
+            display_titles: video.display_titles || {},
+            display_descriptions: video.display_descriptions || {}
+          }));
         
         console.log('🔧 [PUBLIC] Processed videos:', {
           originalCount: data.length,
           processedCount: processedVideos.length,
-          filteredOut: data.length - processedVideos.length,
-          videosWithUrls: processedVideos.map(v => ({ 
-            id: v.id, 
-            url: v.public_url,
-            urlWorking: v.public_url?.includes('storage/v1/object/public/') || false
-          }))
+          validUrls: processedVideos.length
         });
         
         if (processedVideos.length === 0) {
           console.warn('⚠️ [PUBLIC] Videos found but no valid URLs');
-          setError('Videos sind konfiguriert, aber URLs fehlen.');
+          setSystemHealth('warning');
+          setError('Videos sind konfiguriert, aber URLs sind fehlerhaft.');
           return;
         }
         
         setVideos(processedVideos);
+        setSystemHealth('good');
         
-        console.log('📝 [PUBLIC] Final video list ready for VideoGalleryWithAnalytics:', {
+        console.log('📝 [PUBLIC] Final video list ready:', {
           totalVideos: processedVideos.length,
           language: currentLanguage,
-          videosReady: processedVideos.map(v => ({ 
-            id: v.id, 
-            url: v.public_url,
-            thumbnail: v.thumbnail_url,
-            title: v.display_title_de || v.original_name,
-            isFeatured: v.tags?.includes('featured') || false
-          })),
           refreshKey
         });
       } else {
         console.log('ℹ️ [PUBLIC] No public howto videos found in database');
+        setSystemHealth('warning');
         setError('Aktuell sind keine Videos verfügbar.');
       }
     } catch (error) {
       console.error('❌ [PUBLIC] Unexpected error fetching videos:', error);
+      setSystemHealth('error');
       setError('Unerwarteter Fehler beim Laden der Videos.');
     } finally {
       setIsLoading(false);
@@ -171,6 +157,24 @@ const HowItWorks = () => {
     },
   ];
 
+  const getHealthStatusColor = () => {
+    switch (systemHealth) {
+      case 'good': return 'text-green-600';
+      case 'warning': return 'text-amber-600';
+      case 'error': return 'text-red-600';
+      default: return 'text-gray-600';
+    }
+  };
+
+  const getHealthStatusIcon = () => {
+    switch (systemHealth) {
+      case 'good': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-amber-600" />;
+      case 'error': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      default: return <Play className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-6">
@@ -183,13 +187,25 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video Gallery Section - FIXED: Using VideoGalleryWithAnalytics */}
+        {/* Video Gallery Section */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6">
               <h3 className="text-2xl font-semibold text-gray-900">
                 Was ist Whatsgonow?
               </h3>
+              
+              <div className="flex items-center gap-2">
+                {getHealthStatusIcon()}
+                <Badge 
+                  variant={systemHealth === 'good' ? 'default' : systemHealth === 'warning' ? 'secondary' : 'destructive'}
+                  className="text-xs"
+                >
+                  {systemHealth === 'good' ? 'System OK' : 
+                   systemHealth === 'warning' ? 'Warnung' : 'Fehler'}
+                </Badge>
+              </div>
+              
               <Button
                 variant="outline"
                 size="sm"
@@ -213,8 +229,11 @@ const HowItWorks = () => {
             {error && !isLoading && (
               <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
                 <div className="text-center text-gray-600">
-                  <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">{error}</p>
+                  <div className="flex items-center justify-center mb-4">
+                    {getHealthStatusIcon()}
+                    <span className="ml-2 text-lg font-medium">Video-System Status</span>
+                  </div>
+                  <p className={`text-lg mb-4 ${getHealthStatusColor()}`}>{error}</p>
                   <Button
                     variant="outline"
                     onClick={handleRefresh}
