@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Play, Pause } from 'lucide-react';
+import { Loader2, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAdminVideos } from '@/hooks/useAdminVideos';
 import { useVideoAnalytics } from '@/hooks/useVideoAnalytics';
