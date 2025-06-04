@@ -50,8 +50,8 @@ export const fetchUserRegion = async (userId: string): Promise<string | null> =>
       return null;
     }
     
-    // Return the region name if available, otherwise null
-    return data?.cm_regions?.region_name || null;
+    // Return the region name from the first element of the array (fixed array access)
+    return data?.cm_regions?.[0]?.region_name || null;
   } catch (error) {
     console.error("Unexpected error loading region:", error);
     return null;
