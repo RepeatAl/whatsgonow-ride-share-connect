@@ -40,6 +40,14 @@ export interface FeatureFlagAudit {
   field_changed?: string;
 }
 
+export interface FeatureFlagHealth {
+  status: string;
+  total_flags: number;
+  enabled_flags: number;
+  audit_entries_today: number;
+  last_check: string;
+}
+
 // Default values for feature flags (fallback when DB unavailable)
 export const FEATURE_FLAG_DEFAULTS: Record<FeatureFlagName, boolean> = {
   video_gallery_public: true,

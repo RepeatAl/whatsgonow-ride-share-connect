@@ -8,6 +8,7 @@ import type {
   SuspensionType,
   SuspensionReasonCode 
 } from '@/types/suspension-enhanced';
+import type { SuspendedUserInfo } from '@/types/suspension';
 
 export const useSuspension = () => {
   const [loading, setLoading] = useState(false);
@@ -135,6 +136,101 @@ export const useSuspension = () => {
     }
   };
 
+  const reactivateUser = async (userId: string, reason?: string): Promise<boolean> => {
+    return unsuspendUser(userId, reason);
+  };
+
+  const fetchUserSuspensionStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_suspended, suspended_until, suspension_reason')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+      
+      return data || { is_suspended: false, suspended_until: null, suspension_reason: null };
+    } catch (err: any) {
+      console.error('❌ Failed to fetch suspension status:', err);
+      return { is_suspended: false, suspended_until: null, suspension_reason: null };
+    }
+  };
+
+  const fetchSuspendedUsers = async (filters?: { status?: string; type?: string }): Promise<SuspendedUserInfo[]> => {
+    try {
+      let query = supabase
+        .from('profiles')
+        .select(`
+          user_id,
+          first_name,
+          last_name,
+          email,
+          is_suspended,
+          suspended_until,
+          suspension_reason,
+          role,
+          created_at
+        `)
+        .eq('is_suspended', true)
+        .order('first_name');
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return (data || []).map(user => ({
+        user_id: user.user_id,
+        name: `${user.first_name} ${user.last_name}`,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        suspended_at: user.created_at,
+        suspended_until: user.suspended_until,
+        suspension_reason: user.suspension_reason || '',
+        reason: user.suspension_reason || '',
+        suspended_by: 'system',
+        suspended_by_name: 'System',
+        suspension_type: 'temporary' as SuspensionType,
+        is_active: true
+      }));
+    } catch (err: any) {
+      console.error('❌ Failed to fetch suspended users:', err);
+      return [];
+    }
+  };
+
+  const fetchUserSuspensionHistory = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_flag_audit')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map(entry => ({
+        id: entry.id,
+        user_id: entry.user_id,
+        suspended_at: entry.created_at,
+        suspended_until: null,
+        reason: entry.reason || 'No reason provided',
+        suspension_reason: entry.reason || 'No reason provided',
+        suspended_by: entry.actor_id,
+        suspended_by_name: 'Admin',
+        suspension_type: 'temporary' as SuspensionType,
+        duration: null,
+        is_active: entry.flagged,
+        unblocked_at: entry.flagged ? null : entry.created_at,
+        notes: null
+      }));
+    } catch (err: any) {
+      console.error('❌ Failed to load suspension history:', err);
+      return [];
+    }
+  };
+
   const getSuspensionHistory = async (userId: string): Promise<SuspensionAuditEntry[]> => {
     try {
       const { data, error } = await supabase
@@ -176,6 +272,10 @@ export const useSuspension = () => {
   return {
     suspendUser,
     unsuspendUser,
+    reactivateUser,
+    fetchUserSuspensionStatus,
+    fetchSuspendedUsers,
+    fetchUserSuspensionHistory,
     getSuspensionHistory,
     loading,
     error

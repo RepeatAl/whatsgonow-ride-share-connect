@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertTriangle } from 'lucide-react';
 import { useSuspension } from '@/hooks/use-suspension';
 import type { SuspensionType } from '@/types/suspension';
+import type { SuspensionReasonCode } from '@/types/suspension-enhanced';
 
 interface SuspendUserDialogProps {
   userId: string;
@@ -20,6 +21,7 @@ interface SuspendUserDialogProps {
 
 export const SuspendUserDialog = ({ userId, userName, isOpen, onClose, onSuspended }: SuspendUserDialogProps) => {
   const [reason, setReason] = useState('');
+  const [reasonCode, setReasonCode] = useState<SuspensionReasonCode>('OTHER');
   const [duration, setDuration] = useState<string | null>(null);
   const [durationType, setDurationType] = useState('days');
   const [durationValue, setDurationValue] = useState('');
@@ -30,17 +32,18 @@ export const SuspendUserDialog = ({ userId, userName, isOpen, onClose, onSuspend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Calculate PostgreSQL interval string if duration is set
-    let intervalString = null;
+    // Calculate duration string if duration is set
+    let durationString = null;
     if (durationValue && parseInt(durationValue) > 0) {
-      intervalString = `${durationValue} ${durationType}`;
+      durationString = `${durationValue} ${durationType}`;
     }
     
     const success = await suspendUser({
       user_id: userId,
       reason,
-      duration: intervalString,
-      suspension_type: suspensionType
+      reasonCode,
+      suspension_type: suspensionType,
+      duration: durationString
     });
     
     if (success) {
@@ -64,6 +67,25 @@ export const SuspendUserDialog = ({ userId, userName, isOpen, onClose, onSuspend
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
+          <div className="space-y-2">
+            <Label htmlFor="reasonCode">Grund (Kategorie)</Label>
+            <Select value={reasonCode} onValueChange={(value) => setReasonCode(value as SuspensionReasonCode)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Grund auswählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SPAM">Spam</SelectItem>
+                <SelectItem value="ABUSE">Missbrauch</SelectItem>
+                <SelectItem value="FRAUD">Betrug</SelectItem>
+                <SelectItem value="TOS_VIOLATION">AGB-Verstoß</SelectItem>
+                <SelectItem value="TRUST_SCORE_LOW">Niedriger Trust Score</SelectItem>
+                <SelectItem value="MULTIPLE_FLAGS">Mehrfache Meldungen</SelectItem>
+                <SelectItem value="MANUAL_REVIEW">Manuelle Prüfung</SelectItem>
+                <SelectItem value="OTHER">Sonstiges</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="suspensionType">Suspendierungstyp</Label>
             <Select
