@@ -8,8 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle } from 'lucide-react';
 import { useSuspension } from '@/hooks/use-suspension';
-import type { SuspensionType } from '@/types/suspension';
-import type { SuspensionReasonCode } from '@/types/suspension-enhanced';
+import type { SuspensionType, SuspensionReasonCode } from '@/types/suspension';
 
 interface SuspendUserDialogProps {
   userId: string;

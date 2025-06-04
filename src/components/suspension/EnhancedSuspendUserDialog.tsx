@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Ban, Calendar } from 'lucide-react';
 import { useSuspensionEnhanced } from '@/hooks/use-suspension-enhanced';
-import { SUSPENSION_REASON_CODES, type SuspensionReasonCode, type SuspensionType } from '@/types/suspension-enhanced';
+import { type SuspensionReasonCode, type SuspensionType } from '@/types/suspension';
 
 interface EnhancedSuspendUserDialogProps {
   userId: string;
@@ -38,7 +39,7 @@ export const EnhancedSuspendUserDialog = ({
     const success = await suspendUser({
       user_id: userId,
       reason,
-      reasonCode: reasonCode, // Fixed: use reasonCode instead of reason_code
+      reasonCode: reasonCode,
       suspension_type: suspensionType,
       duration: suspensionType === 'permanent' ? null : duration,
       auditNotes: auditNotes

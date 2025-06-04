@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
-import type { EnhancedSuspendUserOptions } from '@/types/suspension-enhanced';
+import type { EnhancedSuspendUserOptions } from '@/types/suspension';
 
 export const useSuspensionEnhanced = () => {
   const [loading, setLoading] = useState(false);
