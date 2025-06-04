@@ -4,11 +4,11 @@ import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 import type { 
   EnhancedSuspendUserOptions, 
-  SuspensionAuditEntry,
+  SuspensionReasonCode,
   SuspensionType,
-  SuspensionReasonCode 
-} from '@/types/suspension-enhanced';
-import type { SuspendedUserInfo } from '@/types/suspension';
+  UserSuspension,
+  SuspendedUserInfo
+} from '@/types/suspension';
 
 export const useSuspension = () => {
   const [loading, setLoading] = useState(false);
@@ -200,7 +200,7 @@ export const useSuspension = () => {
     }
   };
 
-  const fetchUserSuspensionHistory = async (userId: string) => {
+  const fetchUserSuspensionHistory = async (userId: string): Promise<UserSuspension[]> => {
     try {
       const { data, error } = await supabase
         .from('user_flag_audit')
@@ -231,42 +231,8 @@ export const useSuspension = () => {
     }
   };
 
-  const getSuspensionHistory = async (userId: string): Promise<SuspensionAuditEntry[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('user_flag_audit')
-        .select(`
-          id,
-          user_id,
-          flagged,
-          reason,
-          created_at,
-          actor_id,
-          role
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Transform to SuspensionAuditEntry format
-      return (data || []).map(entry => ({
-        id: entry.id,
-        user_id: entry.user_id,
-        action: entry.flagged ? 'suspended' : 'unsuspended',
-        reason: entry.reason || 'No reason provided',
-        reason_code: extractReasonCode(entry.reason),
-        suspension_type: 'temporary' as SuspensionType,
-        duration: null,
-        suspended_by: entry.actor_id,
-        suspended_by_name: 'Admin',
-        audit_notes: null,
-        created_at: entry.created_at
-      }));
-    } catch (err: any) {
-      console.error('❌ Failed to load suspension history:', err);
-      return [];
-    }
+  const getSuspensionHistory = async (userId: string): Promise<UserSuspension[]> => {
+    return fetchUserSuspensionHistory(userId);
   };
 
   return {

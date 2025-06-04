@@ -5,7 +5,17 @@ export interface SuspensionStatus {
   suspension_reason: string | null;
 }
 
-export type SuspensionType = 'hard' | 'soft' | 'temporary';
+export type SuspensionType = 'hard' | 'soft' | 'temporary' | 'permanent';
+
+export type SuspensionReasonCode = 
+  | 'SPAM'
+  | 'ABUSE' 
+  | 'FRAUD'
+  | 'TOS_VIOLATION'
+  | 'TRUST_SCORE_LOW'
+  | 'MULTIPLE_FLAGS'
+  | 'MANUAL_REVIEW'
+  | 'OTHER';
 
 export interface UserSuspension {
   id: string;
@@ -44,4 +54,13 @@ export interface SuspendUserOptions {
   reason: string;
   suspension_type: SuspensionType;
   notify_user?: boolean;
+}
+
+export interface EnhancedSuspendUserOptions {
+  user_id: string;
+  reason: string;
+  reasonCode: SuspensionReasonCode;
+  suspension_type: SuspensionType;
+  duration?: string | null;
+  auditNotes?: string;
 }
