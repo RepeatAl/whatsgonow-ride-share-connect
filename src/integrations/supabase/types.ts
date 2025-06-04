@@ -198,6 +198,63 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          from_language: string | null
+          from_region: string | null
+          id: string
+          language: string
+          metadata: Json | null
+          page_path: string | null
+          region: string | null
+          session_id: string
+          timestamp: string
+          to_language: string | null
+          to_region: string | null
+          user_id: string | null
+          video_id: string | null
+          video_title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          from_language?: string | null
+          from_region?: string | null
+          id?: string
+          language?: string
+          metadata?: Json | null
+          page_path?: string | null
+          region?: string | null
+          session_id: string
+          timestamp?: string
+          to_language?: string | null
+          to_region?: string | null
+          user_id?: string | null
+          video_id?: string | null
+          video_title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          from_language?: string | null
+          from_region?: string | null
+          id?: string
+          language?: string
+          metadata?: Json | null
+          page_path?: string | null
+          region?: string | null
+          session_id?: string
+          timestamp?: string
+          to_language?: string | null
+          to_region?: string | null
+          user_id?: string | null
+          video_id?: string | null
+          video_title?: string | null
+        }
+        Relationships: []
+      }
       cm_regions: {
         Row: {
           active: boolean | null

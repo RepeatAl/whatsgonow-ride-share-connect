@@ -1,13 +1,14 @@
+
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 
 const getOrCreateSessionId = () => {
-  let sessionId = localStorage.getItem('analytics_session_id');
+  let sessionId = sessionStorage.getItem('analytics_session_id');
   if (!sessionId) {
     sessionId = uuidv4();
-    localStorage.setItem('analytics_session_id', sessionId);
+    sessionStorage.setItem('analytics_session_id', sessionId);
   }
   return sessionId;
 };
@@ -23,19 +24,28 @@ export const useAnalytics = () => {
         if (sessionError) throw sessionError;
 
         const sessionId = getOrCreateSessionId();
+        const currentLanguage = localStorage.getItem('language') || 'de';
+        const currentRegion = localStorage.getItem('selected_region') || 'unknown';
 
         const { error: insertError } = await supabase
-          .from('analytics')
+          .from('analytics_events')
           .insert({
-            page: location.pathname,
+            event_type: 'page_view',
+            page_path: location.pathname,
             user_id: session?.user?.id ?? null,
             session_id: sessionId,
-            timestamp: new Date().toISOString()
+            language: currentLanguage,
+            region: currentRegion,
+            timestamp: new Date().toISOString(),
+            metadata: {
+              referrer: document.referrer || null,
+              user_agent: navigator.userAgent || null
+            }
           });
 
         if (insertError) throw insertError;
+        console.log('✅ Page view tracked:', location.pathname);
       } catch (error) {
-        // Optionale Fehlerausgabe für Analytics (kann auch entfernt werden)
         console.error("Analytics tracking failed:", error);
       } finally {
         setLoading(false);
@@ -43,8 +53,7 @@ export const useAnalytics = () => {
     };
 
     trackPageView();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]); // Wichtig: nur auf Pfadwechsel tracken
+  }, [location.pathname]);
 
   return { loading };
 };

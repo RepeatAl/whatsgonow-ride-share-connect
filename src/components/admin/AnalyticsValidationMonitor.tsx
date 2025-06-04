@@ -1,231 +1,285 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Database, Settings, Trash2 } from 'lucide-react';
-import AnalyticsErrorLogger from '@/utils/analytics-error-logger';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { RefreshCw, CheckCircle, AlertTriangle, XCircle, BarChart3 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { useAnalyticsFeatureFlags } from '@/hooks/useAnalyticsFeatureFlags';
+
+interface AnalyticsHealth {
+  total_events: number;
+  events_today: number;
+  unique_sessions_today: number;
+  error_events_today: number;
+  last_event_at: string | null;
+  most_common_event_types: Array<{ event_type: string; count: number }>;
+}
 
 const AnalyticsValidationMonitor = () => {
-  const [errorCounts, setErrorCounts] = useState({
-    validation: 0,
-    database: 0,
-    system: 0,
-    total: 0,
-  });
-  const [recentErrors, setRecentErrors] = useState<any[]>([]);
-  const [selectedErrorType, setSelectedErrorType] = useState<'all' | 'validation' | 'database' | 'system'>('all');
+  const [health, setHealth] = useState<AnalyticsHealth | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const featureFlags = useAnalyticsFeatureFlags();
 
-  const refreshData = () => {
-    setErrorCounts(AnalyticsErrorLogger.getErrorCount());
-    setRecentErrors(AnalyticsErrorLogger.getRecentErrors(20));
+  const fetchAnalyticsHealth = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Get basic stats
+      const { data: totalData, error: totalError } = await supabase
+        .from('analytics_events')
+        .select('*', { count: 'exact', head: true });
+
+      if (totalError) throw totalError;
+
+      // Get today's events
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayData, error: todayError } = await supabase
+        .from('analytics_events')
+        .select('session_id, event_type')
+        .gte('created_at', today);
+
+      if (todayError) throw todayError;
+
+      // Get error events today
+      const { data: errorData, error: errorDataError } = await supabase
+        .from('analytics_events')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today)
+        .like('event_type', '%error%');
+
+      if (errorDataError) throw errorDataError;
+
+      // Get last event
+      const { data: lastEventData, error: lastEventError } = await supabase
+        .from('analytics_events')
+        .select('created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (lastEventError && lastEventError.code !== 'PGRST116') {
+        throw lastEventError;
+      }
+
+      // Calculate unique sessions today
+      const uniqueSessions = todayData ? new Set(todayData.map(e => e.session_id)).size : 0;
+
+      // Count event types
+      const eventTypeCounts = todayData?.reduce((acc, event) => {
+        acc[event.event_type] = (acc[event.event_type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+
+      const mostCommonEventTypes = Object.entries(eventTypeCounts)
+        .map(([event_type, count]) => ({ event_type, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      setHealth({
+        total_events: totalData?.length || 0,
+        events_today: todayData?.length || 0,
+        unique_sessions_today: uniqueSessions,
+        error_events_today: errorData?.length || 0,
+        last_event_at: lastEventData?.created_at || null,
+        most_common_event_types: mostCommonEventTypes
+      });
+
+    } catch (err: any) {
+      console.error('Analytics health check failed:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    refreshData();
-    
-    // Refresh every 30 seconds
-    const interval = setInterval(refreshData, 30000);
-    return () => clearInterval(interval);
+    fetchAnalyticsHealth();
   }, []);
 
-  const clearErrors = () => {
-    AnalyticsErrorLogger.clearErrors();
-    refreshData();
-  };
-
-  const getFilteredErrors = () => {
-    if (selectedErrorType === 'all') {
-      return recentErrors;
+  const getHealthStatus = () => {
+    if (!health) return 'unknown';
+    
+    if (health.error_events_today > health.events_today * 0.1) {
+      return 'critical'; // More than 10% errors
     }
-    return recentErrors.filter(error => error.errorType === selectedErrorType);
+    if (health.events_today === 0) {
+      return 'warning'; // No events today
+    }
+    return 'healthy';
   };
 
-  const getErrorIcon = (errorType: string) => {
-    switch (errorType) {
-      case 'validation':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'database':
-        return <Database className="h-4 w-4 text-red-500" />;
-      case 'system':
-        return <Settings className="h-4 w-4 text-blue-500" />;
-      default:
-        return <AlertTriangle className="h-4 w-4 text-gray-500" />;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'healthy': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-amber-600" />;
+      case 'critical': return <XCircle className="h-4 w-4 text-red-600" />;
+      default: return <AlertTriangle className="h-4 w-4 text-gray-600" />;
     }
   };
 
-  const getErrorBadgeColor = (errorType: string) => {
-    switch (errorType) {
-      case 'validation':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'database':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'system':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'healthy': return <Badge className="bg-green-100 text-green-800">Healthy</Badge>;
+      case 'warning': return <Badge className="bg-amber-100 text-amber-800">Warning</Badge>;
+      case 'critical': return <Badge className="bg-red-100 text-red-800">Critical</Badge>;
+      default: return <Badge variant="secondary">Unknown</Badge>;
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Error Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Validation Errors</p>
-                <p className="text-2xl font-bold text-yellow-600">{errorCounts.validation}</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Database Errors</p>
-                <p className="text-2xl font-bold text-red-600">{errorCounts.database}</p>
-              </div>
-              <Database className="h-8 w-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">System Errors</p>
-                <p className="text-2xl font-bold text-blue-600">{errorCounts.system}</p>
-              </div>
-              <Settings className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Errors</p>
-                <p className="text-2xl font-bold text-gray-900">{errorCounts.total}</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-gray-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Error Log */}
+  if (!featureFlags.validationDashboard) {
+    return (
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Recent Analytics Errors</CardTitle>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refreshData}
-              >
-                Refresh
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearErrors}
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear All
-              </Button>
-            </div>
-          </div>
-          
-          {/* Filter Buttons */}
-          <div className="flex gap-2">
-            {['all', 'validation', 'database', 'system'].map((type) => (
-              <Button
-                key={type}
-                variant={selectedErrorType === type ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedErrorType(type as any)}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Analytics Validation Monitor
+          </CardTitle>
+          <CardDescription>Feature disabled</CardDescription>
         </CardHeader>
-        
         <CardContent>
-          <div className="space-y-3">
-            {getFilteredErrors().length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                No errors found for the selected filter.
-              </p>
-            ) : (
-              getFilteredErrors().map((error, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {getErrorIcon(error.errorType)}
-                      <Badge className={getErrorBadgeColor(error.errorType)}>
-                        {error.errorType}
-                      </Badge>
-                      <span className="text-sm text-gray-500">
-                        {new Date(error.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      Session: {error.sessionId.slice(-8)}
-                    </Badge>
-                  </div>
-                  
-                  {error.validationErrors && (
-                    <div className="text-sm">
-                      <strong>Validation Errors:</strong>
-                      <ul className="list-disc list-inside ml-4 mt-1">
-                        {error.validationErrors.map((validationError: string, idx: number) => (
-                          <li key={idx} className="text-red-600">{validationError}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  {error.databaseError && (
-                    <div className="text-sm">
-                      <strong>Database Error:</strong>
-                      <p className="text-red-600 ml-4">{error.databaseError}</p>
-                    </div>
-                  )}
-                  
-                  {error.systemError && (
-                    <div className="text-sm">
-                      <strong>System Error:</strong>
-                      <p className="text-blue-600 ml-4">{error.systemError}</p>
-                    </div>
-                  )}
-                  
-                  {error.originalEvent && (
-                    <details className="text-sm">
-                      <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
-                        Original Event Data
-                      </summary>
-                      <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-auto">
-                        {JSON.stringify(error.originalEvent, null, 2)}
-                      </pre>
-                    </details>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+          <Alert>
+            <AlertDescription>
+              Analytics validation dashboard is currently disabled. Enable the 'analytics_validation_dashboard' feature flag to use this monitor.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
-    </div>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Analytics Validation Monitor
+            </CardTitle>
+            <CardDescription>
+              Real-time health monitoring for analytics events
+            </CardDescription>
+          </div>
+          <Button 
+            onClick={fetchAnalyticsHealth} 
+            disabled={loading}
+            variant="outline"
+            size="sm"
+          >
+            {loading ? (
+              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Refresh
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        {error && (
+          <Alert className="mb-4 border-red-200 bg-red-50">
+            <XCircle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load analytics health: {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {health && (
+          <div className="space-y-4">
+            {/* Overall Status */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(getHealthStatus())}
+                <span className="font-medium">Analytics Health:</span>
+                {getStatusBadge(getHealthStatus())}
+              </div>
+              <span className="text-sm text-muted-foreground">
+                Last updated: {new Date().toLocaleTimeString()}
+              </span>
+            </div>
+
+            {/* Key Metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-3 border rounded-lg">
+                <div className="text-2xl font-bold">{health.total_events}</div>
+                <div className="text-sm text-muted-foreground">Total Events</div>
+              </div>
+              <div className="text-center p-3 border rounded-lg">
+                <div className="text-2xl font-bold">{health.events_today}</div>
+                <div className="text-sm text-muted-foreground">Events Today</div>
+              </div>
+              <div className="text-center p-3 border rounded-lg">
+                <div className="text-2xl font-bold">{health.unique_sessions_today}</div>
+                <div className="text-sm text-muted-foreground">Sessions Today</div>
+              </div>
+              <div className="text-center p-3 border rounded-lg">
+                <div className="text-2xl font-bold text-red-600">{health.error_events_today}</div>
+                <div className="text-sm text-muted-foreground">Errors Today</div>
+              </div>
+            </div>
+
+            {/* Feature Flags Status */}
+            <div className="border rounded-lg p-3">
+              <h4 className="font-medium mb-2">Feature Flags Status</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Events V2:</span>
+                  <Badge variant={featureFlags.eventsV2 ? "default" : "secondary"}>
+                    {featureFlags.eventsV2 ? "Enabled" : "Disabled"}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Video Tracking:</span>
+                  <Badge variant={featureFlags.videoTracking ? "default" : "secondary"}>
+                    {featureFlags.videoTracking ? "Enabled" : "Disabled"}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Language Tracking:</span>
+                  <Badge variant={featureFlags.languageTracking ? "default" : "secondary"}>
+                    {featureFlags.languageTracking ? "Enabled" : "Disabled"}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Error Monitoring:</span>
+                  <Badge variant={featureFlags.errorMonitoring ? "default" : "secondary"}>
+                    {featureFlags.errorMonitoring ? "Enabled" : "Disabled"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Most Common Events */}
+            {health.most_common_event_types.length > 0 && (
+              <div className="border rounded-lg p-3">
+                <h4 className="font-medium mb-2">Top Event Types Today</h4>
+                <div className="space-y-1">
+                  {health.most_common_event_types.map(({ event_type, count }) => (
+                    <div key={event_type} className="flex justify-between text-sm">
+                      <span>{event_type}</span>
+                      <span className="font-medium">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Last Event */}
+            {health.last_event_at && (
+              <div className="text-sm text-muted-foreground">
+                Last event: {new Date(health.last_event_at).toLocaleString()}
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
