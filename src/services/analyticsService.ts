@@ -1,7 +1,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
-import type { AnalyticsEvent } from '@/types/analytics';
+import type { AnalyticsEvent, VideoAnalyticsEvent, LanguageAnalyticsEvent, UserJourneyEvent } from '@/types/analytics';
 
 class AnalyticsService {
   private static getOrCreateSessionId(): string {
@@ -56,41 +56,35 @@ class AnalyticsService {
         user_agent: navigator.userAgent || null,
         ...metadata
       }
-    });
+    } as UserJourneyEvent);
   }
 
   static async trackVideoEvent(
-    eventType: string, 
+    eventType: VideoAnalyticsEvent['event_type'], 
     videoId: string, 
-    metadata?: Record<string, any>
+    metadata?: VideoAnalyticsEvent['metadata']
   ): Promise<boolean> {
     return this.trackEvent({
       event_type: eventType,
       video_id: videoId,
       metadata
-    });
+    } as VideoAnalyticsEvent);
   }
 
   static async trackLanguageChange(fromLanguage: string, toLanguage: string): Promise<boolean> {
     return this.trackEvent({
       event_type: 'language_switched',
       from_language: fromLanguage,
-      to_language: toLanguage,
-      metadata: {
-        switched_at: new Date().toISOString()
-      }
-    });
+      to_language: toLanguage
+    } as LanguageAnalyticsEvent);
   }
 
   static async trackRegionChange(fromRegion: string, toRegion: string): Promise<boolean> {
     return this.trackEvent({
       event_type: 'region_changed',
       from_region: fromRegion,
-      to_region: toRegion,
-      metadata: {
-        changed_at: new Date().toISOString()
-      }
-    });
+      to_region: toRegion
+    } as LanguageAnalyticsEvent);
   }
 }
 
