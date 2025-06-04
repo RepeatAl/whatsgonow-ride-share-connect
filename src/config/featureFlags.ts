@@ -1,5 +1,16 @@
 
+/**
+ * Feature Flags Configuration for Whatsgonow
+ * Centralized feature flag management with environment support
+ */
+
 export type FeatureFlagName = 
+  | 'video_gallery_public'
+  | 'bulk_item_upload'
+  | 'multilingual_chat'
+  | 'trust_score_system' 
+  | 'invoice_management'
+  | 'real_time_tracking'
   | 'analytics_events_v2'
   | 'video_analytics_tracking'
   | 'language_analytics_tracking'
@@ -7,39 +18,36 @@ export type FeatureFlagName =
   | 'analytics_validation_dashboard'
   | 'experimental_analytics_features';
 
-export type FeatureFlagScope = 'global' | 'user' | 'role' | 'region';
-export type FeatureFlagEnvironment = 'production' | 'staging' | 'development';
-export type FeatureFlagCategory = 'analytics' | 'ui' | 'api' | 'security' | 'monitoring' | 'admin' | 'experimental';
-
 export interface FeatureFlag {
   flag_name: FeatureFlagName;
   enabled: boolean;
-  description: string;
-  category: FeatureFlagCategory;
-  scope: FeatureFlagScope;
-  environment: FeatureFlagEnvironment;
-  metadata: Record<string, any>;
-  version: number;
+  created_at: string;
   updated_at: string;
+  description?: string;
+  environment: string;
+  metadata?: Record<string, any>;
 }
 
 export interface FeatureFlagAudit {
   audit_id: string;
-  flag_id: string;
   flag_name: FeatureFlagName;
-  action: 'enabled' | 'disabled' | 'created' | 'updated' | 'deleted' | 'archived';
-  field_changed?: string;
-  previous_value?: any;
-  new_value?: any;
+  action: 'enabled' | 'disabled' | 'created' | 'deleted' | 'updated';
+  previous_value?: Record<string, any>;
+  new_value?: Record<string, any>;
   changed_by?: string;
   changed_at: string;
   reason?: string;
-  environment: FeatureFlagEnvironment;
-  metadata: Record<string, any>;
+  field_changed?: string;
 }
 
-// Environment-basierte Fallbacks (wenn Database nicht verfügbar)
+// Default values for feature flags (fallback when DB unavailable)
 export const FEATURE_FLAG_DEFAULTS: Record<FeatureFlagName, boolean> = {
+  video_gallery_public: true,
+  bulk_item_upload: false,
+  multilingual_chat: false,
+  trust_score_system: false,
+  invoice_management: true,
+  real_time_tracking: false,
   analytics_events_v2: true,
   video_analytics_tracking: true,
   language_analytics_tracking: true,
@@ -48,27 +56,13 @@ export const FEATURE_FLAG_DEFAULTS: Record<FeatureFlagName, boolean> = {
   experimental_analytics_features: false,
 };
 
-// Environment-spezifische Overrides
-export const ENVIRONMENT_OVERRIDES: Partial<Record<FeatureFlagEnvironment, Partial<Record<FeatureFlagName, boolean>>>> = {
-  development: {
-    analytics_validation_dashboard: true,
-    experimental_analytics_features: true,
-  },
-  staging: {
-    experimental_analytics_features: true,
-  },
-  production: {
-    experimental_analytics_features: false,
-  },
-};
-
-// Helper für Environment Detection
-export const getCurrentEnvironment = (): FeatureFlagEnvironment => {
+// Environment detection
+export const getCurrentEnvironment = (): string => {
   if (typeof window === 'undefined') return 'production';
   
   const hostname = window.location.hostname;
   
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+  if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
     return 'development';
   }
   
@@ -79,14 +73,15 @@ export const getCurrentEnvironment = (): FeatureFlagEnvironment => {
   return 'production';
 };
 
-// Type Guards
-export const isValidFeatureFlagName = (name: string): name is FeatureFlagName => {
-  return Object.keys(FEATURE_FLAG_DEFAULTS).includes(name as FeatureFlagName);
+// Get default value for a feature flag
+export const getFeatureFlagDefault = (flagName: FeatureFlagName): boolean => {
+  return FEATURE_FLAG_DEFAULTS[flagName] ?? false;
 };
 
-export const getFeatureFlagDefault = (flagName: FeatureFlagName): boolean => {
-  const environment = getCurrentEnvironment();
-  const envOverride = ENVIRONMENT_OVERRIDES[environment]?.[flagName];
-  
-  return envOverride !== undefined ? envOverride : FEATURE_FLAG_DEFAULTS[flagName];
-};
+// Feature flag categories for organization
+export const FEATURE_FLAG_CATEGORIES = {
+  UI: ['video_gallery_public', 'multilingual_chat'],
+  ANALYTICS: ['analytics_events_v2', 'video_analytics_tracking', 'language_analytics_tracking', 'analytics_error_monitoring', 'analytics_validation_dashboard'],
+  BACKEND: ['bulk_item_upload', 'trust_score_system', 'invoice_management', 'real_time_tracking'],
+  EXPERIMENTAL: ['experimental_analytics_features']
+} as const;

@@ -1,194 +1,88 @@
 
 import { useState } from 'react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
-import { SuspensionStatus, UserSuspension, SuspendedUserInfo, SuspendUserOptions } from '@/types/suspension';
+import type { 
+  EnhancedSuspendUserOptions, 
+  SuspensionAuditEntry,
+  SuspensionType,
+  SuspensionReasonCode 
+} from '@/types/suspension-enhanced';
 
-export function useSuspension() {
+export const useSuspension = () => {
   const [loading, setLoading] = useState(false);
-  const { profile } = useSimpleAuth();
-  
-  const canSuspend = profile?.role && ['admin', 'super_admin'].includes(profile.role);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchUserSuspensionStatus = async (userId: string): Promise<SuspensionStatus> => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_suspended, suspended_until, suspension_reason')
-        .eq('user_id', userId)
-        .single();
-
-      if (error) throw error;
-
-      return {
-        is_suspended: data.is_suspended || false,
-        suspended_until: data.suspended_until,
-        suspension_reason: data.suspension_reason
-      };
-    } catch (err) {
-      console.error('Error fetching suspension status:', err);
-      return {
-        is_suspended: false,
-        suspended_until: null,
-        suspension_reason: null
-      };
-    }
-  };
-
-  const fetchUserSuspensions = async (userId: string): Promise<UserSuspension[]> => {
-    try {
-      // This would need a proper suspensions table
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId);
-
-      if (error) throw error;
-
-      return data || [];
-    } catch (err) {
-      console.error('Error fetching user suspensions:', err);
-      return [];
-    }
-  };
-
-  const fetchUserSuspensionHistory = async (userId: string): Promise<UserSuspension[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId);
-
-      if (error) throw error;
-
-      return data?.map(item => ({
-        id: item.user_id,
-        user_id: item.user_id,
-        suspended_by: 'admin',
-        suspension_reason: item.suspension_reason || '',
-        reason: item.suspension_reason || '',
-        suspended_at: item.created_at,
-        suspended_until: item.suspended_until,
-        duration: null,
-        suspension_type: 'hard' as const,
-        is_active: item.is_suspended,
-        unblocked_at: null,
-        notes: null
-      })) || [];
-    } catch (err) {
-      console.error('Error fetching suspension history:', err);
-      return [];
-    }
-  };
-
-  const fetchAllSuspensions = async (): Promise<UserSuspension[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('is_suspended', true);
-
-      if (error) throw error;
-
-      return data || [];
-    } catch (err) {
-      console.error('Error fetching all suspensions:', err);
-      return [];
-    }
-  };
-
-  const fetchSuspendedUsers = async (filters?: any): Promise<SuspendedUserInfo[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('active_profiles')
-        .select('*')
-        .eq('is_suspended', true);
-
-      if (error) throw error;
-
-      return data?.map(user => ({
-        user_id: user.user_id,
-        name: `${user.first_name} ${user.last_name}`,
-        first_name: user.first_name || '',
-        last_name: user.last_name || '',
-        email: user.email,
-        suspended_at: user.created_at,
-        suspended_until: user.suspended_until,
-        suspension_reason: user.suspension_reason || '',
-        reason: user.suspension_reason || '',
-        suspended_by: 'admin',
-        suspended_by_name: 'Administrator',
-        suspension_type: 'hard' as const,
-        is_active: true
-      })) || [];
-    } catch (err) {
-      console.error('Error fetching suspended users:', err);
-      return [];
-    }
-  };
-
-  const suspendUser = async (options: SuspendUserOptions) => {
-    if (!canSuspend) {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Nur Admins können Nutzer suspendieren",
-        variant: "destructive"
-      });
-      return false;
-    }
+  const suspendUser = async (options: EnhancedSuspendUserOptions): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
+      console.log('🚫 Starting user suspension:', options.user_id);
 
-      const suspendedUntil = options.duration 
-        ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Simple 1 day for now
-        : null;
-
-      const { error } = await supabase
+      // Update user profile directly (no more SECURITY DEFINER view)
+      const { error: suspendError } = await supabase
         .from('profiles')
         .update({
           is_suspended: true,
-          suspended_until: suspendedUntil,
+          suspended_until: options.duration ? new Date(Date.now() + parseDuration(options.duration)).toISOString() : null,
           suspension_reason: options.reason
         })
         .eq('user_id', options.user_id);
 
-      if (error) throw error;
+      if (suspendError) {
+        throw new Error(`Suspension failed: ${suspendError.message}`);
+      }
 
+      // Create audit entry with enhanced data
+      const { error: auditError } = await supabase
+        .from('user_flag_audit')
+        .insert({
+          user_id: options.user_id,
+          flagged: true,
+          reason: `${options.reasonCode}: ${options.reason}`,
+          actor_id: (await supabase.auth.getUser()).data.user?.id,
+          role: 'admin'
+        });
+
+      if (auditError) {
+        console.warn('⚠️ Audit logging failed:', auditError);
+      }
+
+      console.log('✅ User suspension completed');
+      
       toast({
-        title: "Nutzer suspendiert",
-        description: "Der Nutzer wurde erfolgreich suspendiert.",
+        title: "User gesperrt",
+        description: `User wurde erfolgreich gesperrt: ${options.reasonCode}`,
+        duration: 5000
       });
 
       return true;
-    } catch (err) {
-      console.error('Error suspending user:', err);
+    } catch (err: any) {
+      console.error('❌ Suspension failed:', err);
+      setError(err.message);
+      
       toast({
-        title: "Fehler",
-        description: "Nutzer konnte nicht suspendiert werden",
+        title: "Sperrung fehlgeschlagen",
+        description: err.message,
         variant: "destructive"
       });
+
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const reactivateUser = async (userId: string, notes?: string) => {
-    if (!canSuspend) {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Nur Admins können Nutzer reaktivieren",
-        variant: "destructive"
-      });
-      return false;
-    }
+  const unsuspendUser = async (userId: string, reason?: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
+      console.log('✅ Starting user unsuspension:', userId);
 
-      const { error } = await supabase
+      // Update profile directly (RLS-protected)
+      const { error: unsuspendError } = await supabase
         .from('profiles')
         .update({
           is_suspended: false,
@@ -197,36 +91,123 @@ export function useSuspension() {
         })
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (unsuspendError) {
+        throw new Error(`Unsuspension failed: ${unsuspendError.message}`);
+      }
 
+      // Create audit entry
+      const { error: auditError } = await supabase
+        .from('user_flag_audit')
+        .insert({
+          user_id: userId,
+          flagged: false,
+          reason: reason || 'Manual unsuspension by admin',
+          actor_id: (await supabase.auth.getUser()).data.user?.id,
+          role: 'admin'
+        });
+
+      if (auditError) {
+        console.warn('⚠️ Audit logging failed:', auditError);
+      }
+
+      console.log('✅ User unsuspension completed');
+      
       toast({
-        title: "Nutzer reaktiviert",
-        description: "Der Nutzer wurde erfolgreich reaktiviert.",
+        title: "Sperrung aufgehoben",
+        description: "User wurde erfolgreich entsperrt.",
+        duration: 5000
       });
 
       return true;
-    } catch (err) {
-      console.error('Error reactivating user:', err);
+    } catch (err: any) {
+      console.error('❌ Unsuspension failed:', err);
+      setError(err.message);
+      
       toast({
-        title: "Fehler",
-        description: "Nutzer konnte nicht reaktiviert werden",
+        title: "Entsperrung fehlgeschlagen",
+        description: err.message,
         variant: "destructive"
       });
+
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    fetchUserSuspensionStatus,
-    fetchUserSuspensions,
-    fetchUserSuspensionHistory,
-    fetchAllSuspensions,
-    fetchSuspendedUsers,
-    suspendUser,
-    reactivateUser,
-    loading,
-    canSuspend
+  const getSuspensionHistory = async (userId: string): Promise<SuspensionAuditEntry[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('user_flag_audit')
+        .select(`
+          id,
+          user_id,
+          flagged,
+          reason,
+          created_at,
+          actor_id,
+          role
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transform to SuspensionAuditEntry format
+      return (data || []).map(entry => ({
+        id: entry.id,
+        user_id: entry.user_id,
+        action: entry.flagged ? 'suspended' : 'unsuspended',
+        reason: entry.reason || 'No reason provided',
+        reason_code: extractReasonCode(entry.reason),
+        suspension_type: 'temporary' as SuspensionType,
+        duration: null,
+        suspended_by: entry.actor_id,
+        suspended_by_name: 'Admin',
+        audit_notes: null,
+        created_at: entry.created_at
+      }));
+    } catch (err: any) {
+      console.error('❌ Failed to load suspension history:', err);
+      return [];
+    }
   };
+
+  return {
+    suspendUser,
+    unsuspendUser,
+    getSuspensionHistory,
+    loading,
+    error
+  };
+};
+
+// Helper functions
+function parseDuration(duration: string): number {
+  const match = duration.match(/(\d+)([dhm])/);
+  if (!match) return 24 * 60 * 60 * 1000; // Default 24h
+
+  const value = parseInt(match[1]);
+  const unit = match[2];
+
+  switch (unit) {
+    case 'h': return value * 60 * 60 * 1000;
+    case 'd': return value * 24 * 60 * 60 * 1000;
+    case 'm': return value * 60 * 1000;
+    default: return 24 * 60 * 60 * 1000;
+  }
+}
+
+function extractReasonCode(reason: string | null): SuspensionReasonCode {
+  if (!reason) return 'OTHER';
+  
+  const codes: SuspensionReasonCode[] = ['SPAM', 'ABUSE', 'FRAUD', 'TOS_VIOLATION', 'TRUST_SCORE_LOW', 'MULTIPLE_FLAGS', 'MANUAL_REVIEW'];
+  
+  for (const code of codes) {
+    if (reason.toUpperCase().includes(code)) {
+      return code;
+    }
+  }
+  
+  return 'OTHER';
 }

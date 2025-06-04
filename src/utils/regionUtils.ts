@@ -1,7 +1,7 @@
 
 /**
  * Region utility functions for Whatsgonow
- * Updated to work with new cm_regions structure (international-ready)
+ * Updated to work with new cm_regions structure and RLS policies
  */
 
 import { supabase } from "@/lib/supabaseClient";
@@ -28,8 +28,8 @@ export const isTestRegion = (region: string | null | undefined): boolean => {
   ) : false;
 };
 
-// Function to fetch user region from new cm_regions structure
-export const fetchUserRegion = async (supabase: any, userId: string): Promise<string | null> => {
+// Function to fetch user region with RLS compliance
+export const fetchUserRegion = async (userId: string): Promise<string | null> => {
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -58,7 +58,7 @@ export const fetchUserRegion = async (supabase: any, userId: string): Promise<st
   }
 };
 
-// Function to get all active regions
+// Function to get all accessible regions (respects RLS policies)
 export const fetchAllRegions = async (): Promise<CMRegion[]> => {
   try {
     const { data, error } = await supabase
@@ -79,7 +79,7 @@ export const fetchAllRegions = async (): Promise<CMRegion[]> => {
   }
 };
 
-// Function to find region by postal code
+// Function to find region by postal code (public access for landing page)
 export const findRegionByPostalCode = async (postalCode: string, countryCode: string = 'DE'): Promise<CMRegion | null> => {
   try {
     const { data, error } = await supabase
@@ -125,4 +125,20 @@ export const getRegionDisplayName = (region: CMRegion): string => {
   }
   
   return displayName;
+};
+
+// Function to check if current user can access region (RLS helper)
+export const canAccessRegion = async (regionId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('cm_regions')
+      .select('region_id')
+      .eq('region_id', regionId)
+      .single();
+
+    // If we can read it, RLS allows access
+    return !error && !!data;
+  } catch (error) {
+    return false;
+  }
 };
