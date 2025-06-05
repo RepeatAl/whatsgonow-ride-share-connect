@@ -8,12 +8,17 @@ import EnhancedLoginForm from '@/components/auth/EnhancedLoginForm';
 
 const Login = () => {
   const { t } = useTranslation(['auth', 'common']);
-  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
+  const { getLocalizedUrl } = useLanguageMCP();
 
-  console.log('[Login] Current language:', currentLanguage);
-  console.log('[Login] Login URL:', getLocalizedUrl('/login'));
-  console.log('[Login] Register URL:', getLocalizedUrl('/register'));
-  console.log('[Login] Home URL:', getLocalizedUrl('/'));
+  const handleBackToHome = () => {
+    try {
+      // Use window.location.href as fallback for reliable navigation
+      window.location.href = getLocalizedUrl('/');
+    } catch (error) {
+      // Ultimate fallback to root
+      window.location.href = '/';
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -27,11 +32,9 @@ const Login = () => {
             </Button>
           </Link>
           <div>
-            <Link to={getLocalizedUrl('/')}>
-              <Button variant="outline">
-                {t('common:back_home', 'Zurück zur Startseite')}
-              </Button>
-            </Link>
+            <Button variant="outline" onClick={handleBackToHome}>
+              {t('common:back_home', 'Zurück zur Startseite')}
+            </Button>
           </div>
         </div>
       </div>

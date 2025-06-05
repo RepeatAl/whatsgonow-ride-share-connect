@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Eye, EyeOff, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Loader2, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { supabase } from '@/lib/supabaseClient';
@@ -30,7 +30,11 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<Date | null>(null);
+
+  const MAX_ATTEMPTS = 5;
+  const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -56,38 +60,55 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     }
   };
 
+  const isLockedOut = () => {
+    return lockoutUntil && new Date() < lockoutUntil;
+  };
+
+  const getRemainingLockoutTime = () => {
+    if (!lockoutUntil) return 0;
+    return Math.max(0, Math.ceil((lockoutUntil.getTime() - new Date().getTime()) / 1000 / 60));
+  };
+
+  const handleFailedAttempt = () => {
+    const newFailedAttempts = failedAttempts + 1;
+    setFailedAttempts(newFailedAttempts);
+    
+    if (newFailedAttempts >= MAX_ATTEMPTS) {
+      const lockoutTime = new Date(Date.now() + LOCKOUT_DURATION);
+      setLockoutUntil(lockoutTime);
+      setError(`Zu viele Fehlversuche. Account gesperrt für ${Math.ceil(LOCKOUT_DURATION / 1000 / 60)} Minuten.`);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLockedOut()) {
+      const remaining = getRemainingLockoutTime();
+      setError(`Account noch ${remaining} Minuten gesperrt. Bitte warten Sie.`);
+      return;
+    }
+    
     setLoading(true);
     setError(null);
-    setDebugInfo(null);
 
     try {
       // Pre-flight check: Does user exist in our profiles table?
       const { user: existingUser, error: userCheckError } = await checkUserExists(formData.email);
       
-      const debug = {
-        email: formData.email,
-        userExistsInProfiles: !!existingUser,
-        userRole: existingUser?.role || 'not found',
-        userVerified: existingUser?.verified || false,
-        userSuspended: existingUser?.is_suspended || false,
-        timestamp: new Date().toISOString()
-      };
-
-      console.log('🔍 Login Debug Info:', debug);
-      setDebugInfo(debug);
-
       if (userCheckError) {
-        throw new Error(`Datenbankfehler: ${userCheckError.message}`);
+        throw new Error('Es gab ein Problem beim Überprüfen Ihres Accounts. Bitte versuchen Sie es später erneut.');
       }
 
       if (!existingUser) {
-        throw new Error(`Kein Benutzer mit der E-Mail ${formData.email} gefunden. Bitte registrieren Sie sich zuerst.`);
+        setError('Kein Account mit dieser E-Mail-Adresse gefunden. Bitte registrieren Sie sich zuerst oder überprüfen Sie Ihre E-Mail-Adresse.');
+        handleFailedAttempt();
+        return;
       }
 
       if (existingUser.is_suspended) {
-        throw new Error('Ihr Account ist gesperrt. Bitte kontaktieren Sie den Support.');
+        setError('Ihr Account ist gesperrt. Bitte kontaktieren Sie den Support für weitere Informationen.');
+        return;
       }
 
       // Attempt Supabase Auth login
@@ -97,26 +118,27 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
       });
 
       if (authError) {
-        console.error('🔥 Supabase Auth Error:', authError);
-        
-        // Provide specific error messages
         if (authError.message.includes('Invalid login credentials')) {
-          throw new Error('Ungültige Anmeldedaten. Bitte überprüfen Sie E-Mail und Passwort.');
+          setError('E-Mail-Adresse oder Passwort ist falsch. Bitte überprüfen Sie Ihre Eingaben.');
+          handleFailedAttempt();
         } else if (authError.message.includes('Email not confirmed')) {
-          throw new Error('E-Mail-Adresse nicht bestätigt. Bitte prüfen Sie Ihr E-Mail-Postfach.');
+          setError('Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse. Schauen Sie in Ihr E-Mail-Postfach.');
         } else if (authError.message.includes('Too many requests')) {
-          throw new Error('Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.');
+          setError('Zu viele Anmeldeversuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.');
         } else {
-          throw new Error(`Anmeldefehler: ${authError.message}`);
+          setError('Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.');
         }
+        return;
       }
 
       if (!data.user) {
-        throw new Error('Anmeldung fehlgeschlagen: Kein Benutzer zurückgegeben.');
+        setError('Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+        return;
       }
 
-      console.log('✅ Login successful for:', formData.email);
-      console.log('🎯 User role:', existingUser.role);
+      // Reset failed attempts on successful login
+      setFailedAttempts(0);
+      setLockoutUntil(null);
 
       // Redirect based on role using localized URLs
       switch (existingUser.role) {
@@ -139,8 +161,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
       }
 
     } catch (err: any) {
-      console.error('❌ Login failed:', err);
-      setError(err.message);
+      setError('Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
     } finally {
       setLoading(false);
     }
@@ -170,7 +191,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
               value={formData.email}
               onChange={handleChange}
               required
-              disabled={loading}
+              disabled={loading || isLockedOut()}
               placeholder="ihre.email@beispiel.de"
               autoComplete="email"
             />
@@ -188,7 +209,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
                 value={formData.password}
                 onChange={handleChange}
                 required
-                disabled={loading}
+                disabled={loading || isLockedOut()}
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
@@ -198,7 +219,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
                 size="sm"
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                 onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
+                disabled={loading || isLockedOut()}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -218,24 +239,9 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
             </Alert>
           )}
 
-          {debugInfo && (
-            <Alert className="border-blue-200 bg-blue-50">
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription className="text-blue-800">
-                <div className="text-xs space-y-1">
-                  <div>📧 E-Mail: {debugInfo.email}</div>
-                  <div>👤 Benutzer gefunden: {debugInfo.userExistsInProfiles ? '✅' : '❌'}</div>
-                  <div>🎭 Rolle: {debugInfo.userRole}</div>
-                  <div>✅ Verifiziert: {debugInfo.userVerified ? '✅' : '❌'}</div>
-                  <div>🚫 Gesperrt: {debugInfo.userSuspended ? '❌' : '✅'}</div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-
           <Button 
             type="submit" 
-            disabled={loading || !formData.email || !formData.password}
+            disabled={loading || !formData.email || !formData.password || isLockedOut()}
             className="w-full"
           >
             {loading ? (

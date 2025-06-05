@@ -16,19 +16,27 @@ export const BackButton = () => {
   
   // Don't render on excluded paths (landing pages)
   if (excludedPaths.includes(location.pathname)) {
-    console.log("[BackButton] Not rendering on landing page:", location.pathname);
     return null;
   }
 
   const handleGoBack = () => {
     try {
-      console.log("[BackButton] Going back from:", location.pathname);
-      
       // Check if we're on profile page and redirect to dashboard instead
       if (location.pathname.includes('/profile')) {
         const dashboardPath = `/${currentLanguage}/dashboard`;
-        console.log("[BackButton] On profile, redirecting to dashboard:", dashboardPath);
         navigate(dashboardPath, { replace: true });
+        return;
+      }
+
+      // Check if we're on login/register pages - go to home
+      if (location.pathname.includes('/login') || location.pathname.includes('/register')) {
+        const homePath = `/${currentLanguage}`;
+        try {
+          navigate(homePath, { replace: true });
+        } catch (navError) {
+          // Fallback to window.location for reliability
+          window.location.href = homePath;
+        }
         return;
       }
 
@@ -37,22 +45,28 @@ export const BackButton = () => {
         // Check if we can safely go back
         const referrer = document.referrer;
         if (referrer && referrer.includes(window.location.origin)) {
-          console.log("[BackButton] Going back in history");
           navigate(-1);
         } else {
           // If no valid referrer, go to dashboard
-          console.log("[BackButton] No valid referrer, going to dashboard");
-          navigate(`/${currentLanguage}/dashboard`, { replace: true });
+          const dashboardPath = `/${currentLanguage}/dashboard`;
+          try {
+            navigate(dashboardPath, { replace: true });
+          } catch (navError) {
+            window.location.href = dashboardPath;
+          }
         }
       } else {
         // If there's no history or only one item, go to dashboard
-        console.log("[BackButton] No history, going to dashboard");
-        navigate(`/${currentLanguage}/dashboard`, { replace: true });
+        const dashboardPath = `/${currentLanguage}/dashboard`;
+        try {
+          navigate(dashboardPath, { replace: true });
+        } catch (navError) {
+          window.location.href = dashboardPath;
+        }
       }
     } catch (error) {
-      console.error("Navigation error:", error);
-      // Fallback to dashboard on any error
-      navigate(`/${currentLanguage}/dashboard`, { replace: true });
+      // Ultimate fallback to home page
+      window.location.href = `/${currentLanguage}`;
     }
   };
 
