@@ -1,7 +1,8 @@
 
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
+import { useTranslation } from 'react-i18next';
 
 // Import pages
 import Home from '@/pages/Home';
@@ -34,72 +35,101 @@ import PublicRoute from './PublicRoute';
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
 
+// Language sync component
+const LanguageSync = () => {
+  const { lang } = useParams<{ lang: string }>();
+  const location = useLocation();
+  const { currentLanguage, supportedLanguages } = useLanguageMCP();
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    console.log('[MCPRouter-LanguageSync] Route params:', { 
+      lang, 
+      currentLanguage, 
+      pathname: location.pathname,
+      i18nLang: i18n.language 
+    });
+
+    // Check if URL language is valid and different from current
+    if (lang && supportedLanguages.some(l => l.code === lang)) {
+      if (currentLanguage !== lang || i18n.language !== lang) {
+        console.log('[MCPRouter-LanguageSync] Syncing language from URL:', lang);
+        i18n.changeLanguage(lang);
+      }
+    }
+  }, [lang, currentLanguage, i18n, location.pathname, supportedLanguages]);
+
+  return null;
+};
+
 const MCPRouter = () => {
-  const { currentLanguage } = useLanguageMCP();
+  const { currentLanguage, supportedLanguages } = useLanguageMCP();
   
-  console.log('[MCPRouter] Current language:', currentLanguage);
+  console.log('[MCPRouter] Rendering with language:', currentLanguage);
   
   return (
     <Routes>
       {/* Root redirect to default language */}
       <Route path="/" element={<Navigate to={`/${currentLanguage}`} replace />} />
       
-      {/* Language-specific routes */}
-      <Route path="/:lang" element={<PublicRoute><Home /></PublicRoute>} />
-      <Route path="/:lang/home" element={<Navigate to={`/${currentLanguage}`} replace />} />
-      <Route path="/:lang/about" element={<PublicRoute><About /></PublicRoute>} />
-      <Route path="/:lang/faq" element={<PublicRoute><Faq /></PublicRoute>} />
-      
-      {/* Auth routes */}
-      <Route path="/:lang/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/:lang/register" element={<PublicRoute><Register /></PublicRoute>} />
-      <Route path="/:lang/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
-      <Route path="/:lang/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
-      <Route path="/:lang/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
-      <Route path="/:lang/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-      <Route path="/:lang/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-      
-      {/* Public ESG Dashboard - accessible to everyone */}
-      <Route path="/:lang/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
-      
-      {/* Protected routes - Main Dashboard with role-based redirect */}
-      <Route path="/:lang/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      
-      {/* Protected routes - Role-specific Dashboards */}
-      <Route path="/:lang/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
-      <Route path="/:lang/dashboard/driver" element={<ProtectedRoute><DashboardDriver /></ProtectedRoute>} />
-      <Route path="/:lang/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
-      <Route path="/:lang/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
-      
-      {/* Enhanced Admin Dashboard */}
-      <Route path="/:lang/admin-enhanced" element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <DashboardAdminEnhanced />
-          </AdminRoute>
-        </ProtectedRoute>
+      {/* Language-specific routes with sync component */}
+      <Route path="/:lang/*" element={
+        <>
+          <LanguageSync />
+          <Routes>
+            <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
+            <Route path="/home" element={<Navigate to={`/${currentLanguage}`} replace />} />
+            <Route path="/about" element={<PublicRoute><About /></PublicRoute>} />
+            <Route path="/faq" element={<PublicRoute><Faq /></PublicRoute>} />
+            
+            {/* Auth routes */}
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
+            <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
+            <Route path="/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
+            <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+            <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+            
+            {/* Public ESG Dashboard */}
+            <Route path="/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
+            <Route path="/dashboard/driver" element={<ProtectedRoute><DashboardDriver /></ProtectedRoute>} />
+            <Route path="/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
+            <Route path="/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
+            
+            <Route path="/admin-enhanced" element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <DashboardAdminEnhanced />
+                </AdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/system-tests" element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <SystemTests />
+                </AdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/rls-test" element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <RlsTest />
+                </AdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+          </Routes>
+        </>
       } />
-      
-      {/* Admin Tools */}
-      <Route path="/:lang/system-tests" element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <SystemTests />
-          </AdminRoute>
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/:lang/rls-test" element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <RlsTest />
-          </AdminRoute>
-        </ProtectedRoute>
-      } />
-      
-      {/* Other protected routes */}
-      <Route path="/:lang/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/:lang/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
       
       {/* Catch legacy routes without language prefix and redirect */}
       <Route path="/login" element={<Navigate to={`/${currentLanguage}/login`} replace />} />
@@ -109,7 +139,7 @@ const MCPRouter = () => {
       <Route path="/system-tests" element={<Navigate to={`/${currentLanguage}/system-tests`} replace />} />
       <Route path="/rls-test" element={<Navigate to={`/${currentLanguage}/rls-test`} replace />} />
       
-      {/* 404 fallback - show proper NotFound page instead of redirecting */}
+      {/* 404 fallback */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

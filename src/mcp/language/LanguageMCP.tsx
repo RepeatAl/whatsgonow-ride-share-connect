@@ -139,18 +139,20 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
       // 3. Update localStorage
       localStorage.setItem('i18nextLng', lang);
       
-      // 4. Build new URL path
+      // 4. Build new URL path with proper structure
       const currentPath = location.pathname;
       const pathSegments = currentPath.split('/').filter(Boolean);
       
       // Remove current language prefix if present
       const isCurrentLangInUrl = supportedLanguages.some(l => l.code === pathSegments[0]);
       const pathWithoutLang = isCurrentLangInUrl 
-        ? '/' + pathSegments.slice(1).join('/')
-        : currentPath;
+        ? pathSegments.slice(1).join('/')
+        : pathSegments.join('/');
       
-      // Build new path with new language
-      const newPath = `/${lang}${pathWithoutLang === '/' ? '' : pathWithoutLang}`;
+      // Build new path: always start with language, then path
+      const newPath = pathWithoutLang 
+        ? `/${lang}/${pathWithoutLang}`
+        : `/${lang}`;
       
       console.log('[LanguageMCP] Navigating to new path:', {
         from: currentPath,
@@ -159,15 +161,13 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
         isCurrentLangInUrl
       });
       
-      // 5. Navigate to new path with immediate effect
-      navigate(newPath, { replace: true });
-      
-      // 6. Force page refresh if needed (especially for mobile)
+      // 5. Use window.location for reliable mobile navigation
       if (isMobileDevice) {
-        console.log('[LanguageMCP] Mobile device detected, forcing refresh after navigation');
-        setTimeout(() => {
-          window.location.href = newPath;
-        }, 100);
+        console.log('[LanguageMCP] Mobile device: using window.location for navigation');
+        window.location.href = newPath + location.search;
+      } else {
+        // 6. Use React Router navigation for desktop
+        navigate(newPath + location.search, { replace: true });
       }
       
       console.log('[LanguageMCP] Language change completed successfully');
@@ -176,11 +176,11 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
       console.error('[LanguageMCP] Error changing language:', error);
       throw error;
     } finally {
-      // Clear loading state
+      // Clear loading state after a short delay
       setTimeout(() => {
         setLanguageLoading(false);
         console.log('[LanguageMCP] Language loading state cleared');
-      }, isMobileDevice ? 500 : 200);
+      }, isMobileDevice ? 1000 : 300);
     }
   };
 
@@ -191,11 +191,13 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Remove current language prefix if present
     const isCurrentLangInUrl = supportedLanguages.some(l => l.code === pathSegments[0]);
     const pathWithoutLang = isCurrentLangInUrl 
-      ? '/' + pathSegments.slice(1).join('/')
-      : currentPath;
+      ? pathSegments.slice(1).join('/')
+      : pathSegments.join('/');
     
-    // Build new path with new language
-    const newPath = `/${newLang}${pathWithoutLang === '/' ? '' : pathWithoutLang}`;
+    // Build new path
+    const newPath = pathWithoutLang 
+      ? `/${newLang}/${pathWithoutLang}`
+      : `/${newLang}`;
     
     console.log('[LanguageMCP] URL navigation:', {
       from: currentPath,
@@ -203,7 +205,11 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
       isMobile: isMobileDevice
     });
     
-    navigate(newPath, { replace: true });
+    if (isMobileDevice) {
+      window.location.href = newPath + location.search;
+    } else {
+      navigate(newPath + location.search, { replace: true });
+    }
   };
 
   const getLocalizedUrl = (path: string): string => {

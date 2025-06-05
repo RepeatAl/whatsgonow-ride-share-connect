@@ -64,7 +64,7 @@ export const LanguageSwitcher = ({
     setIsDropdownOpen(open);
   };
 
-  // Enhanced language change with better error handling
+  // Enhanced language change with immediate feedback
   const handleLanguageChange = async (langCode: string) => {
     console.log('[LanguageSwitcher] Language change initiated:', {
       from: currentLanguage,
@@ -95,28 +95,29 @@ export const LanguageSwitcher = ({
       console.log('[LanguageSwitcher] Showing toast for language change to:', langName);
       
       toast({
-        description: `Wechsle zu ${langName}...`,
-        duration: 2000,
+        description: `Sprache wird zu ${langName} geändert...`,
+        duration: 3000,
       });
       
-      // Execute language change
+      // Execute language change with small delay for UI feedback
       console.log('[LanguageSwitcher] Calling setLanguageByCode...');
+      await new Promise(resolve => setTimeout(resolve, 100)); // Small delay for UI feedback
       await setLanguageByCode(langCode);
       
-      // Success feedback
-      console.log('[LanguageSwitcher] Language change successful, showing success toast');
-      toast({
-        description: `Sprache geändert zu ${langName}`,
-        duration: 2000,
-      });
+      console.log('[LanguageSwitcher] Language change successful');
       
     } catch (error) {
       console.error('[LanguageSwitcher] Language change failed:', error);
       toast({
         variant: "destructive",
-        description: "Fehler beim Ändern der Sprache. Bitte versuchen Sie es erneut.",
-        duration: 4000,
+        description: "Fehler beim Ändern der Sprache. Seite wird neu geladen...",
+        duration: 3000,
       });
+      
+      // Fallback: force page reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } finally {
       // Clear changing state
       setTimeout(() => {
@@ -155,7 +156,9 @@ export const LanguageSwitcher = ({
           size={variant === "compact" ? "icon" : "sm"}
           className={`${variant === "compact" ? "w-12 h-12 p-0" : "h-12 px-4 gap-2"} ${
             isMobileDevice ? "min-w-[48px] min-h-[48px] touch-manipulation" : ""
-          } transition-all duration-200 hover:scale-105 active:scale-95`}
+          } transition-all duration-200 hover:scale-105 active:scale-95 ${
+            isLoading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
           disabled={isLoading}
           aria-label={t("change_language") || "Sprache ändern"}
           onClick={() => {
@@ -168,7 +171,13 @@ export const LanguageSwitcher = ({
           }}
         >
           {variant === "compact" ? (
-            <Globe className="h-6 w-6" />
+            <>
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                <Globe className="h-6 w-6" />
+              )}
+            </>
           ) : (
             <>
               <span className="text-xl">{currentLangMeta.flag}</span>
@@ -203,7 +212,9 @@ export const LanguageSwitcher = ({
               }}
               className={`cursor-pointer flex items-center justify-between transition-colors ${
                 currentLanguage === lang.code ? "bg-accent font-medium" : ""
-              } ${isMobileDevice ? "py-4 px-4 touch-manipulation min-h-[52px] text-base" : "py-3 px-3"}`}
+              } ${isMobileDevice ? "py-4 px-4 touch-manipulation min-h-[52px] text-base" : "py-3 px-3"} ${
+                isLoading ? "opacity-50 pointer-events-none" : ""
+              }`}
               disabled={isLoading}
             >
               <div className="flex items-center gap-3">
@@ -229,7 +240,6 @@ export const LanguageSwitcher = ({
             </>
           )}
 
-          {/* Future Languages (Coming Soon) */}
           {futureLanguages.map((lang) => (
             <DropdownMenuItem
               key={lang.code}
