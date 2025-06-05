@@ -1,8 +1,8 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, AlertTriangle } from 'lucide-react';
 import { mockTransports, mockRequests } from '@/data/mockData';
+import MapFallback from './MapFallback';
 import type { Transport, TransportRequest } from '@/data/mockData';
 
 interface HereMapComponentProps {
@@ -25,6 +25,8 @@ interface MarkerData {
   price?: number;
   type: 'test' | 'transport' | 'request';
 }
+
+type ErrorType = 'api_key' | 'network' | 'cors' | 'unknown';
 
 // German cities coordinates for demo data
 const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
@@ -58,7 +60,9 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<ErrorType>('unknown');
   const [mapReady, setMapReady] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Test markers for proof of concept
   const testMarkers: MarkerData[] = [
@@ -149,25 +153,70 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     return markers;
   };
 
+  const categorizeError = (err: any): ErrorType => {
+    const errorMessage = err?.message?.toLowerCase() || '';
+    const errorString = err?.toString?.()?.toLowerCase() || '';
+    
+    if (errorMessage.includes('api') || errorMessage.includes('key') || errorString.includes('unauthorized')) {
+      return 'api_key';
+    }
+    if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorString.includes('cors')) {
+      return 'network';
+    }
+    if (errorMessage.includes('csp') || errorMessage.includes('content security policy')) {
+      return 'cors';
+    }
+    
+    return 'unknown';
+  };
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    setError(null);
+    setErrorType('unknown');
+    setIsLoading(true);
+    setMapReady(false);
+    
+    // Clear existing map instance
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.dispose();
+      mapInstanceRef.current = null;
+    }
+    
+    console.log(`[HERE Maps] Retry attempt ${retryCount + 1}`);
+  };
+
   useEffect(() => {
     const initializeMap = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Load HERE Maps API from CDN
-        if (!window.H) {
-          await loadHereMapsAPI();
-        }
+        console.log('[HERE Maps] Initializing map...');
+        console.log('[HERE Maps] HTTPS:', window.location.protocol === 'https:');
+        console.log('[HERE Maps] Hostname:', window.location.hostname);
 
-        // Get API key from environment/secrets
-        const apiKey = import.meta.env.VITE_HERE_MAPS_API_KEY || 'demo-key';
+        // Enhanced API key check
+        const apiKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
+        console.log('[HERE Maps] API Key check:', {
+          exists: !!apiKey,
+          isDemoKey: apiKey === 'demo-key',
+          keyPrefix: apiKey ? apiKey.substring(0, 8) + '...' : 'None'
+        });
         
         if (!apiKey || apiKey === 'demo-key') {
-          throw new Error('HERE Maps API Key nicht konfiguriert');
+          throw new Error('HERE Maps API Key nicht konfiguriert oder Demo-Key aktiv');
+        }
+
+        // Load HERE Maps API from CDN with enhanced error handling
+        if (!window.H) {
+          console.log('[HERE Maps] Loading SDK from CDN...');
+          await loadHereMapsAPI();
+          console.log('[HERE Maps] SDK loaded successfully');
         }
 
         // Initialize HERE Maps Platform
+        console.log('[HERE Maps] Initializing Platform...');
         platformRef.current = new window.H.service.Platform({
           'apikey': apiKey
         });
@@ -177,6 +226,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
 
         // Initialize map
         if (mapRef.current) {
+          console.log('[HERE Maps] Creating map instance...');
           mapInstanceRef.current = new window.H.Map(
             mapRef.current,
             defaultLayers.vector.normal.map,
@@ -200,12 +250,21 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
             addMarkersToMap(mockMarkers);
           }
 
+          console.log('[HERE Maps] Map initialized successfully');
           setMapReady(true);
         }
 
       } catch (err) {
-        console.error('HERE Maps initialization error:', err);
+        const errorType = categorizeError(err);
+        console.error('[HERE Maps] Initialization error:', {
+          error: err,
+          type: errorType,
+          retryCount,
+          stackTrace: err?.stack
+        });
+        
         setError(err instanceof Error ? err.message : 'Karte konnte nicht geladen werden');
+        setErrorType(errorType);
       } finally {
         setIsLoading(false);
       }
@@ -219,7 +278,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         mapInstanceRef.current.dispose();
       }
     };
-  }, [center.lat, center.lng, zoom, showTestMarkers, showMockData, showTransports, showRequests]);
+  }, [center.lat, center.lng, zoom, showTestMarkers, showMockData, showTransports, showRequests, retryCount]);
 
   const loadHereMapsAPI = (): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -229,11 +288,20 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         return;
       }
 
+      console.log('[HERE Maps] Loading SDK from CDN...');
       const script = document.createElement('script');
       script.src = 'https://js.api.here.com/v3/3.1/mapsjs-bundle.js';
       script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('HERE Maps SDK konnte nicht geladen werden'));
+      
+      script.onload = () => {
+        console.log('[HERE Maps] SDK loaded successfully from CDN');
+        resolve();
+      };
+      
+      script.onerror = (event) => {
+        console.error('[HERE Maps] SDK loading failed:', event);
+        reject(new Error('HERE Maps SDK konnte nicht geladen werden'));
+      };
       
       document.head.appendChild(script);
     });
@@ -306,20 +374,16 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     return count;
   };
 
+  // Show fallback map if there's an error
   if (error) {
     return (
       <div className={`w-full ${className}`} style={{ width, height }}>
-        <Alert className="h-full flex items-center justify-center border-red-200 bg-red-50">
-          <AlertTriangle className="h-6 w-6 text-red-600 mr-3" />
-          <div>
-            <AlertDescription className="text-red-800 font-medium">
-              Karte konnte nicht geladen werden
-            </AlertDescription>
-            <AlertDescription className="text-red-600 text-sm mt-1">
-              Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.
-            </AlertDescription>
-          </div>
-        </Alert>
+        <MapFallback
+          height={height}
+          errorType={errorType}
+          onRetry={handleRetry}
+          showMockData={showMockData}
+        />
       </div>
     );
   }
@@ -330,7 +394,9 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
           <div className="flex items-center space-x-3">
             <Loader2 className="h-6 w-6 animate-spin text-gray-600" />
-            <span className="text-gray-600 font-medium">Karte wird geladen...</span>
+            <span className="text-gray-600 font-medium">
+              HERE Maps wird geladen... {retryCount > 0 && `(Versuch ${retryCount + 1})`}
+            </span>
           </div>
         </div>
       )}
