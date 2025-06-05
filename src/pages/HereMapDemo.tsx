@@ -5,13 +5,19 @@ import { HereMapComponent } from '@/components/map';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Smartphone, Monitor, Check } from 'lucide-react';
+import { MapPin, Smartphone, Monitor, Check, Filter, Truck, Package } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
 const HereMapDemo = () => {
-  const [showTestMarkers, setShowTestMarkers] = useState(true);
-  const [mapCenter, setMapCenter] = useState({ lat: 52.5, lng: 13.4 });
+  const { t } = useTranslation(['common']);
+  const { currentLanguage } = useLanguageMCP();
+  const [showTransports, setShowTransports] = useState(true);
+  const [showRequests, setShowRequests] = useState(true);
+  const [mapCenter, setMapCenter] = useState({ lat: 51.1657, lng: 10.4515 }); // Center of Germany
 
   const testLocations = [
+    { name: 'Deutschland', lat: 51.1657, lng: 10.4515 },
     { name: 'Berlin', lat: 52.5, lng: 13.4 },
     { name: 'München', lat: 48.1, lng: 11.6 },
     { name: 'Hamburg', lat: 53.6, lng: 10.0 },
@@ -19,12 +25,36 @@ const HereMapDemo = () => {
   ];
 
   const checklistItems = [
-    { title: 'HERE Maps API Key', status: 'completed', desc: 'Sicher in Supabase Secrets hinterlegt' },
-    { title: 'Basis-Kartenkomponente', status: 'completed', desc: 'HereMapComponent.tsx erstellt und funktionsfähig' },
-    { title: 'Responsive Container', status: 'completed', desc: 'Desktop & Mobile optimiert' },
-    { title: 'Test Marker', status: 'completed', desc: 'Hello World Pins als Funktionsnachweis' },
-    { title: 'Error Handling', status: 'completed', desc: 'Fallbacks bei API/Netzwerk-Fehlern' },
-    { title: 'Security Check', status: 'completed', desc: 'Kein API Key im Frontend-Code' }
+    { 
+      title: t('common:api_key_secure', 'HERE Maps API Key'), 
+      status: 'completed', 
+      desc: t('common:api_key_desc', 'Sicher in Supabase Secrets hinterlegt') 
+    },
+    { 
+      title: t('common:map_component', 'Basis-Kartenkomponente'), 
+      status: 'completed', 
+      desc: t('common:map_component_desc', 'HereMapComponent.tsx erstellt und funktionsfähig') 
+    },
+    { 
+      title: t('common:responsive_container', 'Responsive Container'), 
+      status: 'completed', 
+      desc: t('common:responsive_desc', 'Desktop & Mobile optimiert') 
+    },
+    { 
+      title: t('common:mock_data', 'Mock-Daten Integration'), 
+      status: 'completed', 
+      desc: t('common:mock_data_desc', 'Deutsche Städte mit Demo-Transporten und Anfragen') 
+    },
+    { 
+      title: t('common:error_handling', 'Error Handling'), 
+      status: 'completed', 
+      desc: t('common:error_desc', 'Fallbacks bei API/Netzwerk-Fehlern') 
+    },
+    { 
+      title: t('common:security_check', 'Security Check'), 
+      status: 'completed', 
+      desc: t('common:security_desc', 'Kein API Key im Frontend-Code') 
+    }
   ];
 
   return (
@@ -33,9 +63,11 @@ const HereMapDemo = () => {
         <div className="space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">HERE Maps Integration</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {t('common:here_maps_integration', 'HERE Maps Integration')}
+            </h1>
             <p className="text-gray-600 mt-2">
-              MVP-Basis Implementierung gemäß CTO-Checkliste
+              {t('common:mvp_basis_implementation', 'MVP-Basis Implementierung gemäß CTO-Checkliste')}
             </p>
           </div>
 
@@ -45,13 +77,13 @@ const HereMapDemo = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Monitor className="h-5 w-5" />
-                  Desktop Ready
+                  {t('common:desktop_ready', 'Desktop Ready')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge variant="outline" className="text-green-700 border-green-200">
                   <Check className="h-3 w-3 mr-1" />
-                  Funktionsfähig
+                  {t('common:functional', 'Funktionsfähig')}
                 </Badge>
               </CardContent>
             </Card>
@@ -60,13 +92,13 @@ const HereMapDemo = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Smartphone className="h-5 w-5" />
-                  Mobile Ready
+                  {t('common:mobile_ready', 'Mobile Ready')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge variant="outline" className="text-green-700 border-green-200">
                   <Check className="h-3 w-3 mr-1" />
-                  Responsive
+                  {t('common:responsive', 'Responsive')}
                 </Badge>
               </CardContent>
             </Card>
@@ -75,13 +107,13 @@ const HereMapDemo = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  API Integration
+                  {t('common:api_integration', 'API Integration')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge variant="outline" className="text-green-700 border-green-200">
                   <Check className="h-3 w-3 mr-1" />
-                  Sicher konfiguriert
+                  {t('common:securely_configured', 'Sicher konfiguriert')}
                 </Badge>
               </CardContent>
             </Card>
@@ -90,33 +122,55 @@ const HereMapDemo = () => {
           {/* Demo Controls */}
           <Card>
             <CardHeader>
-              <CardTitle>Live Demo & Testing</CardTitle>
+              <CardTitle>{t('common:live_demo_testing', 'Live Demo & Testing')}</CardTitle>
               <CardDescription>
-                Testen Sie die Kartenkomponente mit verschiedenen Einstellungen
+                {t('common:test_map_component', 'Testen Sie die Kartenkomponente mit verschiedenen Einstellungen')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {testLocations.map((location) => (
-                  <Button
-                    key={location.name}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMapCenter({ lat: location.lat, lng: location.lng })}
-                  >
-                    {location.name}
-                  </Button>
-                ))}
+              {/* Location Controls */}
+              <div>
+                <h4 className="font-medium mb-2">{t('common:test_locations', 'Test-Standorte')}</h4>
+                <div className="flex flex-wrap gap-2">
+                  {testLocations.map((location) => (
+                    <Button
+                      key={location.name}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMapCenter({ lat: location.lat, lng: location.lng })}
+                    >
+                      {location.name}
+                    </Button>
+                  ))}
+                </div>
               </div>
               
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant={showTestMarkers ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setShowTestMarkers(!showTestMarkers)}
-                >
-                  Test Marker {showTestMarkers ? 'ausblenden' : 'anzeigen'}
-                </Button>
+              {/* Filter Controls */}
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  {t('common:data_filters', 'Daten-Filter')}
+                </h4>
+                <div className="flex items-center space-x-4">
+                  <Button
+                    variant={showTransports ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowTransports(!showTransports)}
+                    className="flex items-center gap-2"
+                  >
+                    <Truck className="h-4 w-4" />
+                    {t('common:transports', 'Fahrten')} {showTransports ? '✓' : ''}
+                  </Button>
+                  <Button
+                    variant={showRequests ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowRequests(!showRequests)}
+                    className="flex items-center gap-2"
+                  >
+                    <Package className="h-4 w-4" />
+                    {t('common:requests', 'Anfragen')} {showRequests ? '✓' : ''}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -124,28 +178,66 @@ const HereMapDemo = () => {
           {/* Map Component */}
           <Card>
             <CardHeader>
-              <CardTitle>HERE Maps Komponente</CardTitle>
+              <CardTitle>{t('common:here_maps_component', 'HERE Maps Komponente')}</CardTitle>
               <CardDescription>
-                Vollständig responsive Karte mit Test-Markern und Interaktionen
+                {t('common:responsive_map_description', 'Vollständig responsive Karte mit Mock-Daten und Interaktionen')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <HereMapComponent
-                height="500px"
+                height="600px"
                 center={mapCenter}
-                zoom={10}
-                showTestMarkers={showTestMarkers}
+                zoom={7}
+                showMockData={true}
+                showTestMarkers={false}
+                showTransports={showTransports}
+                showRequests={showRequests}
                 className="border rounded-lg"
               />
+            </CardContent>
+          </Card>
+
+          {/* Legend Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('common:map_legend', 'Karten-Legende')}</CardTitle>
+              <CardDescription>
+                {t('common:color_coding_explanation', 'Farbkodierung der Marker nach Preiskategorien')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                  <div className="w-6 h-6 rounded-full bg-green-500"></div>
+                  <div>
+                    <div className="font-medium text-green-800">{t('common:budget_friendly', 'Günstig')}</div>
+                    <div className="text-sm text-green-600">&lt; 15€</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-orange-50 rounded-lg">
+                  <div className="w-6 h-6 rounded-full bg-orange-500"></div>
+                  <div>
+                    <div className="font-medium text-orange-800">{t('common:medium_price', 'Mittel')}</div>
+                    <div className="text-sm text-orange-600">15€ - 25€</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
+                  <div className="w-6 h-6 rounded-full bg-red-500"></div>
+                  <div>
+                    <div className="font-medium text-red-800">{t('common:premium', 'Premium')}</div>
+                    <div className="text-sm text-red-600">&gt; 25€</div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           {/* CTO Checklist */}
           <Card>
             <CardHeader>
-              <CardTitle>CTO-Checkliste Status</CardTitle>
+              <CardTitle>{t('common:cto_checklist_status', 'CTO-Checkliste Status')}</CardTitle>
               <CardDescription>
-                Alle MVP-Basis Anforderungen erfüllt
+                {t('common:mvp_requirements_fulfilled', 'Alle MVP-Basis Anforderungen erfüllt')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -158,7 +250,7 @@ const HereMapDemo = () => {
                       <div className="text-sm text-gray-600">{item.desc}</div>
                     </div>
                     <Badge variant="outline" className="text-green-700 border-green-200">
-                      Erledigt
+                      {t('common:completed', 'Erledigt')}
                     </Badge>
                   </div>
                 ))}

@@ -20,6 +20,7 @@ const PUBLIC_ROUTES = [
   '/privacy-policy',
   '/payment/status',
   '/esg-dashboard',
+  '/here-maps-demo',
 ];
 
 // Function to check if a route is public with improved language support
@@ -59,6 +60,10 @@ export const isPublicRoute = (path: string): boolean => {
   }
   if (cleanPath.startsWith('/pre-register')) {
     console.log('[publicRoutes] Matched pre-register pattern');
+    return true;
+  }
+  if (cleanPath.startsWith('/here-maps-demo')) {
+    console.log('[publicRoutes] Matched here-maps-demo pattern');
     return true;
   }
   

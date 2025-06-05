@@ -23,6 +23,7 @@ import NotFound from '@/pages/NotFound';
 import Feedback from '@/pages/Feedback';
 import RlsTest from '@/pages/RLSTest';
 import SystemTests from '@/pages/SystemTests';
+import HereMapDemo from '@/pages/HereMapDemo';
 
 // Import dashboard pages
 import DashboardDriver from '@/pages/dashboard/DashboardDriver';
@@ -94,6 +95,9 @@ const MCPRouter = () => {
             {/* Public ESG Dashboard */}
             <Route path="/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
             
+            {/* HERE Maps Demo - NEW PUBLIC ROUTE */}
+            <Route path="/here-maps-demo" element={<PublicRoute><HereMapDemo /></PublicRoute>} />
+            
             {/* Protected routes */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
@@ -131,13 +135,14 @@ const MCPRouter = () => {
         </>
       } />
       
-      {/* Catch legacy routes without language prefix and redirect */}
+      {/* Legacy routes without language prefix - redirect with language */}
       <Route path="/login" element={<Navigate to={`/${currentLanguage}/login`} replace />} />
       <Route path="/register" element={<Navigate to={`/${currentLanguage}/register`} replace />} />
       <Route path="/dashboard" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
       <Route path="/profile" element={<Navigate to={`/${currentLanguage}/profile`} replace />} />
       <Route path="/system-tests" element={<Navigate to={`/${currentLanguage}/system-tests`} replace />} />
       <Route path="/rls-test" element={<Navigate to={`/${currentLanguage}/rls-test`} replace />} />
+      <Route path="/here-maps-demo" element={<Navigate to={`/${currentLanguage}/here-maps-demo`} replace />} />
       
       {/* 404 fallback */}
       <Route path="*" element={<NotFound />} />
