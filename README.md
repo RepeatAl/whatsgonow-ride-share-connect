@@ -1,5 +1,4 @@
-
-# Welcome to your Lovable project
+# Whatsgonow - Crowdlogistik Platform
 
 ## Project info
 
@@ -79,3 +78,39 @@ Yes it is!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## HERE Maps Integration
+
+### Setup
+Die Plattform verwendet HERE Maps für Live-Kartendarstellung und Location-Services.
+
+**API Key Konfiguration:**
+1. HERE Developer Account erstellen: [developer.here.com](https://developer.here.com)
+2. API Key über Supabase Secrets als `HERE_MAPS_API_KEY` hinterlegen
+3. Lokale Entwicklung: `VITE_HERE_MAPS_API_KEY` in `.env.local`
+
+**Demo & Testing:**
+- Besuchen Sie `/here-maps-demo` für Live-Demo
+- Responsive Kartenkomponente mit Test-Markern
+- Mobile/Desktop Kompatibilität
+
+**Entwickler-Dokumentation:**
+Siehe `docs/here-maps-integration.md` für:
+- Komponenten-API
+- Marker-Handling
+- Security Best Practices
+- DSGVO-Compliance
+- Performance-Optimierungen
+
+### Verwendung
+
+```tsx
+import { HereMapComponent } from '@/components/map';
+
+<HereMapComponent
+  height="500px"
+  center={{ lat: 52.5, lng: 13.4 }}
+  zoom={10}
+  showTestMarkers={true}
+/>
+```
