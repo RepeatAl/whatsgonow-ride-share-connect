@@ -15,9 +15,11 @@ import { useVideoControls } from "@/hooks/useVideoControls";
 interface VideoPlayerProps {
   src?: string;
   placeholder?: React.ReactNode;
+  videoId?: string;
+  component?: string;
 }
 
-const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, placeholder, videoId, component = 'VideoPlayer' }: VideoPlayerProps) => {
   const { isMobile } = useMobileVideoDetection();
   const {
     isPlaying,
@@ -38,10 +40,11 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     setVideoLoaded,
     debugInfo,
     setDebugInfo,
-    videoRef
-  } = useVideoState();
+    videoRef,
+    videoId: actualVideoId
+  } = useVideoState({ videoId, component });
 
-  // Neue Controls-Logic mit Auto-Hide
+  // Controls mit Auto-Hide
   const {
     showControls,
     handleMouseMove,
@@ -82,6 +85,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
     loadAttempts,
     src,
     cacheBustedSrc,
+    videoId: actualVideoId,
     setIsPlaying,
     setIsMuted,
     setIsLoading,
@@ -95,13 +99,16 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
 
   // Log current state for debugging
   console.log('🎯 VideoPlayer render state:', {
+    videoId: actualVideoId,
+    component,
     src,
     hasError,
     isLoading,
     videoLoaded,
     cacheBustedSrc: !!cacheBustedSrc,
     videoRef: !!videoRef.current,
-    showControls
+    showControls,
+    isMobile
   });
 
   // Fallback for missing or error URLs
@@ -133,20 +140,20 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         loadAttempts={loadAttempts}
       />
       
-      {/* Main Video Element - Always render when we have a URL */}
+      {/* Main Video Element - Mobile optimized */}
       {cacheBustedSrc && (
         <video
-          key={cacheBustedSrc} // Force reload when URL changes
+          key={`${actualVideoId}_${cacheBustedSrc}`}
           ref={videoRef}
           src={cacheBustedSrc}
           className="w-full aspect-video cursor-pointer"
           onClick={togglePlay}
           onPlay={() => {
-            console.log('📺 Video onPlay event triggered');
+            console.log('📺 Video onPlay event triggered:', actualVideoId);
             setIsPlaying(true);
           }}
           onPause={() => {
-            console.log('📺 Video onPause event triggered');
+            console.log('📺 Video onPause event triggered:', actualVideoId);
             setIsPlaying(false);
           }}
           onCanPlay={handleCanPlay}
@@ -155,20 +162,22 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
           onError={handleError}
           onLoadStart={handleLoadStart}
           onLoadedMetadata={handleLoadedMetadata}
-          preload={isMobile ? "metadata" : "auto"}
+          preload={isMobile ? "none" : "metadata"}
           playsInline
           muted={isMuted}
           crossOrigin="anonymous"
           controls={false}
           poster=""
           webkit-playsinline="true"
+          data-video-id={actualVideoId}
+          data-component={component}
         />
       )}
       
-      {/* Loading Indicator - Only show when actually loading */}
+      {/* Loading Indicator */}
       {isLoading && <VideoLoadingState isLoading={isLoading} />}
       
-      {/* Video Controls Overlay - Show when video is ready AND showControls is true */}
+      {/* Video Controls Overlay */}
       {!isLoading && videoLoaded && cacheBustedSrc && (
         <VideoOverlay 
           isPlaying={isPlaying}
@@ -177,7 +186,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Bottom Controls - Show when video is ready AND showControls is true */}
+      {/* Bottom Controls */}
       {!isLoading && videoLoaded && cacheBustedSrc && (
         <VideoControls
           isPlaying={isPlaying}
@@ -190,7 +199,7 @@ const VideoPlayer = ({ src, placeholder }: VideoPlayerProps) => {
         />
       )}
       
-      {/* Mobile hint - Show when video is ready but not playing and controls are not shown */}
+      {/* Mobile hint */}
       {!isLoading && videoLoaded && !isPlaying && isMobile && !showControls && (
         <VideoMobileHint
           isLoading={isLoading}

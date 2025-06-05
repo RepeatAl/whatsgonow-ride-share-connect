@@ -5,15 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Play, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import VideoPlayerWithAnalytics from './home/VideoPlayerWithAnalytics';
 import { useAdminVideos } from '@/hooks/useAdminVideos';
-import { useVideoAnalytics } from '@/hooks/useVideoAnalytics';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
 const HowItWorks = () => {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguageMCP();
   const [selectedVideo, setSelectedVideo] = useState<any>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   
   const { 
     videos, 
@@ -21,14 +20,6 @@ const HowItWorks = () => {
     error,
     refetch 
   } = useAdminVideos();
-
-  const {
-    trackVideoStart,
-    trackVideoPause,
-    trackVideoCompleted,
-    trackVideoError,
-    trackThumbnailClick
-  } = useVideoAnalytics(selectedVideo);
 
   // Filter videos for the current language and correct tags
   const featuredVideos = videos.filter(video => {
@@ -81,30 +72,9 @@ const HowItWorks = () => {
 
   const handleVideoClick = (video: any) => {
     if (video.public_url) {
-      console.log('🎬 Video selected:', video.filename);
+      console.log('🎬 Video selected:', video.filename, 'ID:', video.id);
       setSelectedVideo(video);
-      trackThumbnailClick();
     }
-  };
-
-  const handleVideoPlay = (videoElement: HTMLVideoElement) => {
-    setIsPlaying(true);
-    trackVideoStart(videoElement);
-  };
-
-  const handleVideoPause = (videoElement: HTMLVideoElement) => {
-    setIsPlaying(false);
-    trackVideoPause(videoElement);
-  };
-
-  const handleVideoEnded = (videoElement: HTMLVideoElement) => {
-    setIsPlaying(false);
-    trackVideoCompleted(videoElement);
-  };
-
-  const handleVideoError = (error: any) => {
-    console.error('❌ Video error:', error);
-    trackVideoError('Video load error', error?.message || 'unknown');
   };
 
   const handleRefresh = () => {
@@ -188,25 +158,12 @@ const HowItWorks = () => {
               {/* Selected Video Player */}
               {selectedVideo && (
                 <div className="mb-6">
-                  <div className="relative">
-                    <video
-                      className="w-full rounded-lg shadow-lg"
-                      controls
-                      onPlay={(e) => handleVideoPlay(e.target as HTMLVideoElement)}
-                      onPause={(e) => handleVideoPause(e.target as HTMLVideoElement)}
-                      onEnded={(e) => handleVideoEnded(e.target as HTMLVideoElement)}
-                      onError={handleVideoError}
-                      poster={selectedVideo.thumbnail_url}
-                    >
-                      <source src={selectedVideo.public_url} type={selectedVideo.mime_type} />
-                      {t('common:video_not_supported', 'Ihr Browser unterstützt dieses Video nicht.')}
-                    </video>
-                    {selectedVideo.tags?.includes('featured') && (
-                      <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-                        {t('common:featured', 'Featured')}
-                      </Badge>
-                    )}
-                  </div>
+                  <VideoPlayerWithAnalytics
+                    video={selectedVideo}
+                    src={selectedVideo.public_url}
+                    videoId={`howto_${selectedVideo.id}`}
+                    component="HowItWorks"
+                  />
                   <div className="mt-3">
                     <h3 className="text-lg font-semibold">{getVideoTitle(selectedVideo)}</h3>
                     {getVideoDescription(selectedVideo) && (

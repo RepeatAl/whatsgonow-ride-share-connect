@@ -1,19 +1,31 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import VideoErrorDisplay from "./video/VideoErrorDisplay";
 import VideoLoadingState from "./video/VideoLoadingState";
 import VideoOverlay from "./video/VideoOverlay";
 import VideoControls from "./video/VideoControls";
 import { useVideoAnalytics } from "@/hooks/useVideoAnalytics";
+import { useMobileVideoDetection } from "@/hooks/useMobileVideoDetection";
+import { useMobileVideoManager } from "@/hooks/useMobileVideoManager";
 import type { AdminVideo } from "@/types/admin";
 
 interface VideoPlayerWithAnalyticsProps {
   video: AdminVideo | null;
   src?: string;
   placeholder?: React.ReactNode;
+  videoId?: string;
+  component?: string;
 }
 
-const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAnalyticsProps) => {
+const VideoPlayerWithAnalytics = ({ 
+  video, 
+  src, 
+  placeholder, 
+  videoId, 
+  component = 'VideoPlayerWithAnalytics' 
+}: VideoPlayerWithAnalyticsProps) => {
+  const { isMobile } = useMobileVideoDetection();
+  const { registerVideo, unregisterVideo, playVideo, pauseVideo, isVideoActive } = useMobileVideoManager(isMobile);
+  
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -23,6 +35,9 @@ const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAn
   const [cacheBustedSrc, setCacheBustedSrc] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastSeekTime = useRef<number>(0);
+
+  // Generate unique video ID
+  const actualVideoId = videoId || (video ? `analytics_${video.id}` : `video_${Math.random().toString(36).substr(2, 9)}`);
 
   // Analytics hooks
   const {
@@ -34,30 +49,59 @@ const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAn
     resetAnalytics
   } = useVideoAnalytics(video);
 
+  // Register with mobile manager
+  useEffect(() => {
+    if (isMobile && actualVideoId) {
+      registerVideo(actualVideoId, videoRef, component);
+      console.log('📱 VideoWithAnalytics registered:', { actualVideoId, component });
+      
+      return () => {
+        unregisterVideo(actualVideoId);
+        console.log('📱 VideoWithAnalytics unregistered:', actualVideoId);
+      };
+    }
+  }, [actualVideoId, component, isMobile, registerVideo, unregisterVideo]);
+
+  // Sync with mobile manager
+  useEffect(() => {
+    if (isMobile && actualVideoId) {
+      const isActive = isVideoActive(actualVideoId);
+      if (isActive !== isPlaying) {
+        setIsPlaying(isActive);
+        console.log('📱 VideoWithAnalytics state synced:', { actualVideoId, isActive });
+      }
+    }
+  }, [actualVideoId, isMobile, isVideoActive, isPlaying]);
+
   // Reset analytics when video changes
   useEffect(() => {
     resetAnalytics();
   }, [video?.id, resetAnalytics]);
 
-  // Cache busting and URL validation
+  // Cache busting and URL validation - Mobile optimized
   useEffect(() => {
-    console.log('🎬 VideoPlayer received src:', src);
+    console.log('🎬 VideoPlayerWithAnalytics received src:', src);
     
     if (!src) {
-      console.log('❌ No src provided to VideoPlayer');
+      console.log('❌ No src provided to VideoPlayerWithAnalytics');
       setHasError(true);
       setIsLoading(false);
       setErrorDetails('No video URL provided');
       return;
     }
 
-    const timestamp = Date.now();
-    const cacheBustedUrl = src.includes('?') 
-      ? `${src}&t=${timestamp}` 
-      : `${src}?t=${timestamp}`;
-    
-    setCacheBustedSrc(cacheBustedUrl);
-    console.log('🔄 Cache-busted video URL:', cacheBustedUrl);
+    // Mobile: No cache busting for better compatibility
+    if (isMobile) {
+      setCacheBustedSrc(src);
+      console.log('📱 Mobile: Using direct URL:', src);
+    } else {
+      const timestamp = Date.now();
+      const cacheBustedUrl = src.includes('?') 
+        ? `${src}&t=${timestamp}` 
+        : `${src}?t=${timestamp}`;
+      setCacheBustedSrc(cacheBustedUrl);
+      console.log('🖥️ Desktop: Cache-busted URL:', cacheBustedUrl);
+    }
 
     const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('.ogg') || src.includes('supabase'));
     console.log('🔍 URL validation:', { src, isValidUrl });
@@ -74,10 +118,10 @@ const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAn
     setHasError(false);
     setIsLoading(true);
     setErrorDetails('');
-  }, [src, trackVideoError]);
+  }, [src, isMobile, trackVideoError]);
 
   const handleRefresh = () => {
-    console.log('🔄 Manual refresh triggered');
+    console.log('🔄 Manual refresh triggered for analytics video:', actualVideoId);
     setHasError(false);
     setIsLoading(true);
     setErrorDetails('');
@@ -85,30 +129,51 @@ const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAn
     
     if (src) {
       const timestamp = Date.now();
-      const newCacheBustedUrl = src.includes('?') 
-        ? `${src}&refresh=${timestamp}` 
-        : `${src}?refresh=${timestamp}`;
-      setCacheBustedSrc(newCacheBustedUrl);
-      console.log('🔄 New cache-busted URL:', newCacheBustedUrl);
+      let newUrl = src;
+      
+      if (!isMobile) {
+        newUrl = src.includes('?') 
+          ? `${src}&refresh=${timestamp}` 
+          : `${src}?refresh=${timestamp}`;
+      }
+      
+      setCacheBustedSrc(newUrl);
+      console.log('🔄 New URL for analytics video:', actualVideoId, newUrl);
     }
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (videoRef.current && !hasError) {
       if (isPlaying) {
-        videoRef.current.pause();
-        trackVideoPause(videoRef.current);
+        if (isMobile) {
+          await pauseVideo(actualVideoId);
+          trackVideoPause(videoRef.current);
+        } else {
+          videoRef.current.pause();
+          trackVideoPause(videoRef.current);
+          setIsPlaying(false);
+        }
       } else {
-        videoRef.current.play().then(() => {
-          trackVideoStart(videoRef.current!);
-        }).catch(error => {
+        try {
+          if (isMobile) {
+            const success = await playVideo(actualVideoId);
+            if (success) {
+              trackVideoStart(videoRef.current!);
+            } else {
+              throw new Error('Mobile video manager rejected play request');
+            }
+          } else {
+            await videoRef.current.play();
+            trackVideoStart(videoRef.current!);
+            setIsPlaying(true);
+          }
+        } catch (error) {
           console.error('❌ Video play failed:', error);
           setHasError(true);
           setErrorDetails(`Play failed: ${error.message}`);
           trackVideoError(`Play failed: ${error.message}`, 'play_failed');
-        });
+        }
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -136,21 +201,21 @@ const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAn
   };
 
   const handleCanPlay = () => {
-    console.log('✅ Video can play:', cacheBustedSrc);
+    console.log('✅ Analytics video can play:', cacheBustedSrc);
     setIsLoading(false);
     setHasError(false);
     setErrorDetails('');
   };
 
   const handleError = (error: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('❌ Video error:', error);
+    console.error('❌ Analytics video error:', error);
     const videoElement = videoRef.current;
     let errorMessage = 'Unknown video error';
     
     if (videoElement?.error) {
       const { code, message } = videoElement.error;
       errorMessage = `Video Error ${code}: ${message}`;
-      console.error('❌ Video error details:', {
+      console.error('❌ Analytics video error details:', {
         code,
         message,
         src: cacheBustedSrc,
@@ -166,7 +231,7 @@ const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAn
   };
 
   const handleLoadStart = () => {
-    console.log('🔄 Video load start:', cacheBustedSrc);
+    console.log('🔄 Analytics video load start:', cacheBustedSrc);
     setIsLoading(true);
     setErrorDetails('');
   };
@@ -223,9 +288,11 @@ const VideoPlayerWithAnalytics = ({ video, src, placeholder }: VideoPlayerWithAn
         onLoadStart={handleLoadStart}
         onSeeked={handleSeeked}
         onEnded={handleEnded}
-        preload="metadata"
+        preload={isMobile ? "none" : "metadata"}
         playsInline
         crossOrigin="anonymous"
+        data-video-id={actualVideoId}
+        data-component={component}
       />
       
       {/* Loading Indicator */}
