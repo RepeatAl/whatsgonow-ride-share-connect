@@ -13,8 +13,6 @@ import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Check, Globe, Loader2 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { getImplementedLanguages, getPlannedLanguages, isImplementedLanguage } from "@/utils/languageUtils";
 
 interface LanguageSwitcherProps {
   variant?: "default" | "outline" | "compact";
@@ -40,14 +38,13 @@ export const LanguageSwitcher = ({
     
     try {
       setIsChanging(true);
-      
       await setLanguageByCode(langCode);
       
       toast({
         description: t("language_changed", { language: supportedLanguages.find(l => l.code === langCode)?.name }),
       });
     } catch (error) {
-      console.error('[LANG-SWITCH] Error changing language:', error);
+      console.error('Error changing language:', error);
       toast({
         variant: "destructive",
         description: t("language_change_error"),
@@ -57,19 +54,12 @@ export const LanguageSwitcher = ({
     }
   };
 
-  // Get available and future languages
-  const availableLanguages = getImplementedLanguages();
-  const futureLanguages = getPlannedLanguages();
+  // Filter to only show implemented languages
+  const availableLanguages = supportedLanguages.filter(lang => lang.implemented);
 
-  // If translations aren't ready yet, show a loading state
   if (!ready) {
     return (
-      <Button 
-        variant="ghost" 
-        size="sm"
-        disabled
-        className="h-9 opacity-70"
-      >
+      <Button variant="ghost" size="sm" disabled className="h-9 opacity-70">
         <Loader2 className="h-4 w-4 animate-spin mr-1" />
         <span className="hidden sm:inline">Loading...</span>
       </Button>
@@ -99,53 +89,27 @@ export const LanguageSwitcher = ({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[180px] max-h-[70vh] overflow-auto">
+      <DropdownMenuContent align="end" className="min-w-[180px]">
         <DropdownMenuLabel>{t("select_language")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        <ScrollArea className="max-h-[50vh]">
-          {/* Available Languages */}
-          {availableLanguages.map((lang) => (
-            <DropdownMenuItem
-              key={lang.code}
-              onClick={() => handleLanguageChange(lang.code)}
-              className={`cursor-pointer flex items-center justify-between ${
-                currentLanguage === lang.code ? "bg-accent" : ""
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="mr-1">{lang.flag}</span>
-                <span className={lang.rtl ? "font-rtl" : ""}>{lang.name}</span>
-                {lang.code !== 'de' && lang.code !== 'en' && !isImplementedLanguage(lang.code) && (
-                  <span className="text-xs text-muted-foreground ml-1">{t("partial")}</span>
-                )}
-              </div>
-              {currentLanguage === lang.code && <Check className="h-4 w-4" />}
-            </DropdownMenuItem>
-          ))}
-
-          {/* Separator for future languages */}
-          {futureLanguages.length > 0 && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">{t("coming_soon")}</DropdownMenuLabel>
-            </>
-          )}
-
-          {/* Future Languages (Coming Soon) */}
-          {futureLanguages.map((lang) => (
-            <DropdownMenuItem
-              key={lang.code}
-              disabled
-              className="cursor-not-allowed opacity-50"
-            >
-              <div className="flex items-center gap-2">
-                <span className="mr-1">{lang.flag}</span>
-                <span>{lang.name}</span>
-              </div>
-            </DropdownMenuItem>
-          ))}
-        </ScrollArea>
+        {availableLanguages.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => handleLanguageChange(lang.code)}
+            className={`cursor-pointer flex items-center justify-between ${
+              currentLanguage === lang.code ? "bg-accent" : ""
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="mr-1">{lang.flag}</span>
+              <span className={lang.rtl ? "font-arabic" : ""}>{lang.localName}</span>
+            </div>
+            {currentLanguage === lang.code && (
+              <Check className="h-4 w-4" />
+            )}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

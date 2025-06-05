@@ -48,22 +48,24 @@ const Layout = React.memo(({
           width: '100%'
         }}
       >
-        <div style={{ height: '64px' }}>
-          <Navbar />
-        </div>
+        {!hideNavigation && (
+          <div style={{ height: '64px' }}>
+            <Navbar />
+          </div>
+        )}
         
         <main 
           className={`flex-grow ${minimal ? 'pt-0' : ''}`} 
           style={{ 
-            minHeight: 'calc(100vh - 64px)',
+            minHeight: hideNavigation ? '100vh' : 'calc(100vh - 64px)',
             paddingTop: minimal ? 0 : undefined
           }}
         >
-          <div className={`container mx-auto ${minimal ? 'max-w-none px-0' : ''}`}>
+          <div className={`${minimal ? 'max-w-none px-0' : 'container mx-auto'}`}>
             {user && <UserSuspensionNotice userId={user.id} />}
             
-            {/* Navigation Buttons - nur anzeigen wenn nicht ausgeblendet */}
-            {!hideNavigation && (
+            {/* Navigation Buttons - only show when navigation is not hidden and user is authenticated */}
+            {!hideNavigation && user && (
               <div className="flex items-center gap-2 p-4 border-b bg-gray-50 dark:bg-gray-900">
                 <BackButton />
                 <HomeButton />

@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { useTranslation } from 'react-i18next';
 import { supportedLanguages } from '@/config/supportedLanguages';
 
@@ -12,7 +11,6 @@ interface LanguageMCPContextValue {
   getLocalizedUrl: (path: string) => string;
   isRTL: boolean;
   languageLoading: boolean;
-  isMobileDevice: boolean;
   supportedLanguages: Array<{
     code: string;
     name: string;
@@ -30,7 +28,6 @@ const LanguageMCPContext = createContext<LanguageMCPContextValue>({
   getLocalizedUrl: (path: string) => path,
   isRTL: false,
   languageLoading: false,
-  isMobileDevice: false,
   supportedLanguages: [],
 });
 
@@ -38,38 +35,9 @@ export const useLanguageMCP = () => useContext(LanguageMCPContext);
 
 export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
-  const { user } = useSimpleAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [languageLoading, setLanguageLoading] = useState(false);
-  
-  // Enhanced mobile device detection
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-      const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      const isSmallScreen = window.innerWidth < 768;
-      
-      const isMobileResult = isMobile || (isTouchDevice && isSmallScreen);
-      setIsMobileDevice(isMobileResult);
-      
-      console.log('[LanguageMCP] Mobile detection:', {
-        userAgent: userAgent.substring(0, 50) + '...',
-        isMobile,
-        isTouchDevice,
-        isSmallScreen,
-        finalResult: isMobileResult,
-        screenWidth: window.innerWidth
-      });
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
   
   // Extract language from current URL path
   const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -86,7 +54,6 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
   useEffect(() => {
     if (urlLanguage && supportedLanguages.some(l => l.code === urlLanguage)) {
       if (i18n.language !== urlLanguage) {
-        console.log('[LanguageMCP] Syncing i18n language to URL:', urlLanguage);
         i18n.changeLanguage(urlLanguage);
       }
     }
@@ -102,85 +69,35 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }));
 
   const setLanguage = (lang: string) => {
-    console.log('[LanguageMCP] setLanguage called with:', lang);
     i18n.changeLanguage(lang);
     updateUrlForLanguage(lang);
   };
 
   const setLanguageByCode = async (lang: string) => {
-    if (languageLoading) {
-      console.log('[LanguageMCP] Language change already in progress, skipping');
-      return;
-    }
-    
-    if (currentLanguage === lang) {
-      console.log('[LanguageMCP] Already on requested language:', lang);
-      return;
-    }
+    if (languageLoading || currentLanguage === lang) return;
     
     try {
       setLanguageLoading(true);
-      console.log('[LanguageMCP] Starting language change:', {
-        from: currentLanguage,
-        to: lang,
-        currentPath: location.pathname,
-        isMobile: isMobileDevice
-      });
       
-      // 1. Change i18n language first
+      // Change i18n language
       await i18n.changeLanguage(lang);
-      console.log('[LanguageMCP] i18n language changed successfully to:', lang);
       
-      // 2. Update document direction for RTL languages
+      // Update document direction for RTL languages
       const newIsRTL = ['ar', 'he', 'fa', 'ur'].includes(lang);
       document.documentElement.dir = newIsRTL ? 'rtl' : 'ltr';
       document.body.dir = newIsRTL ? 'rtl' : 'ltr';
       
-      // 3. Update localStorage
+      // Update localStorage
       localStorage.setItem('i18nextLng', lang);
       
-      // 4. Build new URL path with proper structure
-      const currentPath = location.pathname;
-      const pathSegments = currentPath.split('/').filter(Boolean);
-      
-      // Remove current language prefix if present
-      const isCurrentLangInUrl = supportedLanguages.some(l => l.code === pathSegments[0]);
-      const pathWithoutLang = isCurrentLangInUrl 
-        ? pathSegments.slice(1).join('/')
-        : pathSegments.join('/');
-      
-      // Build new path: always start with language, then path
-      const newPath = pathWithoutLang 
-        ? `/${lang}/${pathWithoutLang}`
-        : `/${lang}`;
-      
-      console.log('[LanguageMCP] Navigating to new path:', {
-        from: currentPath,
-        to: newPath,
-        pathWithoutLang,
-        isCurrentLangInUrl
-      });
-      
-      // 5. Use window.location for reliable mobile navigation
-      if (isMobileDevice) {
-        console.log('[LanguageMCP] Mobile device: using window.location for navigation');
-        window.location.href = newPath + location.search;
-      } else {
-        // 6. Use React Router navigation for desktop
-        navigate(newPath + location.search, { replace: true });
-      }
-      
-      console.log('[LanguageMCP] Language change completed successfully');
+      // Update URL
+      updateUrlForLanguage(lang);
       
     } catch (error) {
-      console.error('[LanguageMCP] Error changing language:', error);
+      console.error('Error changing language:', error);
       throw error;
     } finally {
-      // Clear loading state after a short delay
-      setTimeout(() => {
-        setLanguageLoading(false);
-        console.log('[LanguageMCP] Language loading state cleared');
-      }, isMobileDevice ? 1000 : 300);
+      setTimeout(() => setLanguageLoading(false), 300);
     }
   };
 
@@ -199,17 +116,7 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
       ? `/${newLang}/${pathWithoutLang}`
       : `/${newLang}`;
     
-    console.log('[LanguageMCP] URL navigation:', {
-      from: currentPath,
-      to: newPath,
-      isMobile: isMobileDevice
-    });
-    
-    if (isMobileDevice) {
-      window.location.href = newPath + location.search;
-    } else {
-      navigate(newPath + location.search, { replace: true });
-    }
+    navigate(newPath + location.search, { replace: true });
   };
 
   const getLocalizedUrl = (path: string): string => {
@@ -237,7 +144,6 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
     getLocalizedUrl,
     isRTL,
     languageLoading,
-    isMobileDevice,
     supportedLanguages: mappedSupportedLanguages,
   };
 
@@ -248,5 +154,4 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
   );
 };
 
-// Export the provider as LanguageMCP for backward compatibility
 export const LanguageMCP = LanguageMCPProvider;
