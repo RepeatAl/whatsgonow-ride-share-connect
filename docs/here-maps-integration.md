@@ -21,6 +21,19 @@ VITE_HERE_MAPS_API_KEY=your_api_key_here
 # API Key über Supabase Secrets konfiguriert als "HERE_MAPS_API_KEY"
 ```
 
+## HERE Maps SDK Integration
+
+### CDN-basierter Ansatz
+HERE Maps verwendet einen CDN-basierten Ansatz. Das SDK wird dynamisch geladen:
+
+```javascript
+// Automatisches Laden des HERE Maps SDK
+const script = document.createElement('script');
+script.src = 'https://js.api.here.com/v3/3.1/mapsjs-bundle.js';
+```
+
+**Wichtig:** HERE Maps hat KEIN npm Package! Verwenden Sie immer den CDN-Ansatz.
+
 ## Komponenten-API
 
 ### HereMapComponent
@@ -181,3 +194,13 @@ Bei Problemen:
 2. Browser-Entwicklerkonsole auf Fehler prüfen
 3. Netzwerk-Konnektivität testen
 4. Demo-Seite zur Funktionsvalidierung nutzen
+
+## Technische Details
+
+### CDN vs NPM
+HERE Maps verwendet ausschließlich CDN-basierte Integration:
+- ✅ CDN: `https://js.api.here.com/v3/3.1/mapsjs-bundle.js`
+- ❌ NPM: Kein offizielles Package verfügbar
+
+### TypeScript Support
+TypeScript-Definitionen sind in `src/types/here-maps.d.ts` definiert.
