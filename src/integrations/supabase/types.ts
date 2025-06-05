@@ -2251,6 +2251,10 @@ export type Database = {
         Args: { target_user_id: string; flag_reason: string }
         Returns: boolean
       }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_region: {
         Args: { user_id: string }
         Returns: string
@@ -2260,7 +2264,11 @@ export type Database = {
         Returns: boolean
       }
       is_admin_user: {
-        Args: { user_id: string }
+        Args: Record<PropertyKey, never> | { user_id: string }
+        Returns: boolean
+      }
+      is_cm_user: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       is_community_manager: {

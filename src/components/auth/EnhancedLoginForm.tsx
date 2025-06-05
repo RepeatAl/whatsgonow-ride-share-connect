@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { supabase } from '@/lib/supabaseClient';
 
 interface LoginFormProps {
@@ -20,6 +21,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
   const { t } = useTranslation(['auth', 'common']);
   const navigate = useNavigate();
   const { signIn } = useSimpleAuth();
+  const { getLocalizedUrl } = useLanguageMCP();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -116,24 +118,24 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
       console.log('✅ Login successful for:', formData.email);
       console.log('🎯 User role:', existingUser.role);
 
-      // Redirect based on role
+      // Redirect based on role using localized URLs
       switch (existingUser.role) {
         case 'admin':
         case 'super_admin':
-          navigate('/admin/dashboard');
+          navigate(getLocalizedUrl('/admin/dashboard'));
           break;
         case 'cm':
-          navigate('/dashboard/cm');
+          navigate(getLocalizedUrl('/dashboard/cm'));
           break;
         case 'driver':
-          navigate('/dashboard/driver');
+          navigate(getLocalizedUrl('/dashboard/driver'));
           break;
         case 'sender_private':
         case 'sender_business':
-          navigate('/dashboard/sender');
+          navigate(getLocalizedUrl('/dashboard/sender'));
           break;
         default:
-          navigate('/dashboard');
+          navigate(getLocalizedUrl('/dashboard'));
       }
 
     } catch (err: any) {
@@ -264,7 +266,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
             <Button
               type="button"
               variant="link"
-              onClick={() => navigate('/forgot-password')}
+              onClick={() => navigate(getLocalizedUrl('/forgot-password'))}
               disabled={loading}
               className="text-sm"
             >

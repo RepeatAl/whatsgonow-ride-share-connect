@@ -13,7 +13,7 @@ const Login = () => {
   console.log('[Login] Current language:', currentLanguage);
   console.log('[Login] Login URL:', getLocalizedUrl('/login'));
   console.log('[Login] Register URL:', getLocalizedUrl('/register'));
-  console.log('[Login] Home URL:', `/${currentLanguage}`);
+  console.log('[Login] Home URL:', getLocalizedUrl('/'));
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -27,7 +27,7 @@ const Login = () => {
             </Button>
           </Link>
           <div>
-            <Link to={`/${currentLanguage}`}>
+            <Link to={getLocalizedUrl('/')}>
               <Button variant="outline">
                 {t('common:back_home', 'Zurück zur Startseite')}
               </Button>
