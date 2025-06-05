@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Play } from 'lucide-react';
+import { Loader2, Play, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useAdminVideos } from '@/hooks/useAdminVideos';
 import { useVideoAnalytics } from '@/hooks/useVideoAnalytics';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
@@ -17,7 +18,8 @@ const HowItWorks = () => {
   const { 
     videos, 
     loading, 
-    error 
+    error,
+    refetch 
   } = useAdminVideos();
 
   const {
@@ -28,12 +30,32 @@ const HowItWorks = () => {
     trackThumbnailClick
   } = useVideoAnalytics(selectedVideo);
 
-  // Filter videos for the current language and featured videos
-  const featuredVideos = videos.filter(video => 
-    video.active && 
-    video.public &&
-    (video.tags?.includes('featured') || video.tags?.includes('how-it-works'))
-  );
+  // Filter videos for the current language and correct tags
+  const featuredVideos = videos.filter(video => {
+    const isActive = video.active && video.public;
+    const hasRelevantTags = video.tags?.some((tag: string) => 
+      ['howto', 'featured', 'whatsgo', 'how-it-works'].includes(tag.toLowerCase())
+    );
+    
+    console.log('🔍 Video filter check:', {
+      videoId: video.id,
+      filename: video.filename,
+      tags: video.tags,
+      isActive,
+      hasRelevantTags,
+      included: isActive && hasRelevantTags
+    });
+    
+    return isActive && hasRelevantTags;
+  });
+
+  console.log('📹 HowItWorks video summary:', {
+    totalVideos: videos.length,
+    featuredVideos: featuredVideos.length,
+    currentLanguage,
+    loading,
+    error: !!error
+  });
 
   const getVideoTitle = (video: any) => {
     switch (currentLanguage) {
@@ -59,6 +81,7 @@ const HowItWorks = () => {
 
   const handleVideoClick = (video: any) => {
     if (video.public_url) {
+      console.log('🎬 Video selected:', video.filename);
       setSelectedVideo(video);
       trackThumbnailClick();
     }
@@ -80,7 +103,13 @@ const HowItWorks = () => {
   };
 
   const handleVideoError = (error: any) => {
+    console.error('❌ Video error:', error);
     trackVideoError('Video load error', error?.message || 'unknown');
+  };
+
+  const handleRefresh = () => {
+    console.log('🔄 Refreshing videos...');
+    refetch();
   };
 
   if (loading) {
@@ -103,12 +132,21 @@ const HowItWorks = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('common:how_it_works', 'Wie funktioniert es?')}</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            {t('common:how_it_works', 'Wie funktioniert es?')}
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center p-8">
+            <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
               {t('common:error_loading_content', 'Fehler beim Laden der Inhalte')}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {error}
             </p>
           </div>
         </CardContent>
@@ -120,13 +158,29 @@ const HowItWorks = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{t('common:how_it_works', 'Wie funktioniert es?')}</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            {t('common:how_it_works', 'Wie funktioniert es?')}
+            <div className="flex items-center gap-2">
+              {featuredVideos.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {featuredVideos.length} Video{featuredVideos.length !== 1 ? 's' : ''}
+                </Badge>
+              )}
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {featuredVideos.length === 0 ? (
             <div className="text-center p-8">
+              <Play className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
                 {t('common:no_videos_available', 'Keine Videos verfügbar')}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Videos werden in Kürze hinzugefügt.
               </p>
             </div>
           ) : (
@@ -190,7 +244,7 @@ const HowItWorks = () => {
                       <div className="absolute inset-0 bg-black/20 rounded-t-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <Play className="h-8 w-8 text-white" />
                       </div>
-                      {video.tags?.includes('featured') && (
+                      {video.tags?.some((tag: string) => ['featured', 'whatsgo'].includes(tag)) && (
                         <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs">
                           {t('common:featured', 'Featured')}
                         </Badge>
@@ -202,6 +256,15 @@ const HowItWorks = () => {
                         <p className="text-muted-foreground text-xs mt-1 line-clamp-2">
                           {getVideoDescription(video)}
                         </p>
+                      )}
+                      {video.tags && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {video.tags.slice(0, 2).map((tag: string) => (
+                            <Badge key={tag} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
