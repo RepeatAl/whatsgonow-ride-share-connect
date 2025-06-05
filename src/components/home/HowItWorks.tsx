@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Users, CheckCircle, Play, RefreshCw, AlertTriangle } from "lucide-react";
+import { Upload, Users, CheckCircle, Play, RefreshCw, AlertTriangle, Loader2 } from "lucide-react";
 import VideoGalleryWithAnalytics from "./video/VideoGalleryWithAnalytics";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,8 @@ const HowItWorks = () => {
           filename,
           original_name,
           file_path,
+          file_size,
+          mime_type,
           public_url,
           thumbnail_url,
           display_title_de, 
