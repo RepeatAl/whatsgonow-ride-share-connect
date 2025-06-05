@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,11 +19,9 @@ const HowItWorks = () => {
 
   const fetchHowItWorksVideos = async () => {
     try {
-      console.log('🎥 [PUBLIC] Fetching howto videos...');
       setIsLoading(true);
       setError(null);
       
-      // Enhanced query for active, public videos with proper error handling
       const { data, error } = await supabase
         .from('admin_videos')
         .select(`
@@ -32,19 +29,14 @@ const HowItWorks = () => {
           filename,
           original_name,
           file_path,
-          file_size,
-          mime_type,
           public_url,
           thumbnail_url,
-          thumbnail_titles,
           display_title_de, 
           display_title_en, 
           display_title_ar, 
           display_description_de, 
           display_description_en, 
           display_description_ar, 
-          display_titles,
-          display_descriptions,
           description, 
           tags, 
           active, 
@@ -56,68 +48,24 @@ const HowItWorks = () => {
         .contains('tags', ['howto'])
         .order('uploaded_at', { ascending: false });
 
-      console.log('📊 [PUBLIC] Video query result:', { 
-        data, 
-        error, 
-        queryCount: data?.length || 0,
-        refreshKey
-      });
-
       if (error) {
         console.error('❌ [PUBLIC] Video query failed:', error);
         setSystemHealth('error');
-        
-        if (error.code === '42501') {
-          setError('Videos sind momentan nicht verfügbar. Berechtigung wird konfiguriert.');
-        } else if (error.code === '42703') {
-          setError('Datenbank wird aktualisiert. Videos sind gleich verfügbar.');
-        } else {
-          setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
-        }
+        setError('Videos aktuell nicht verfügbar. Bitte später versuchen.');
         return;
       }
 
       if (data && data.length > 0) {
-        console.log('✅ [PUBLIC] Videos found:', {
-          count: data.length,
-          refreshKey
-        });
-        
-        // Process videos and validate URLs
         const processedVideos = data
           .filter(video => video && video.id && video.public_url)
           .map(video => ({
             ...video,
-            // Ensure all required fields are present
             thumbnail_url: video.thumbnail_url || null,
-            thumbnail_titles: video.thumbnail_titles || {},
-            display_titles: video.display_titles || {},
-            display_descriptions: video.display_descriptions || {}
           }));
-        
-        console.log('🔧 [PUBLIC] Processed videos:', {
-          originalCount: data.length,
-          processedCount: processedVideos.length,
-          validUrls: processedVideos.length
-        });
-        
-        if (processedVideos.length === 0) {
-          console.warn('⚠️ [PUBLIC] Videos found but no valid URLs');
-          setSystemHealth('warning');
-          setError('Videos sind konfiguriert, aber URLs sind fehlerhaft.');
-          return;
-        }
         
         setVideos(processedVideos);
         setSystemHealth('good');
-        
-        console.log('📝 [PUBLIC] Final video list ready:', {
-          totalVideos: processedVideos.length,
-          language: currentLanguage,
-          refreshKey
-        });
       } else {
-        console.log('ℹ️ [PUBLIC] No public howto videos found in database');
         setSystemHealth('warning');
         setError('Aktuell sind keine Videos verfügbar.');
       }
@@ -135,7 +83,6 @@ const HowItWorks = () => {
   }, [currentLanguage, refreshKey]);
 
   const handleRefresh = () => {
-    console.log('🔄 [PUBLIC] Manual refresh triggered');
     setRefreshKey(prev => prev + 1);
   };
 
@@ -187,15 +134,14 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Video Gallery Section */}
+        {/* Video Section - Improved Layout */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <h3 className="text-2xl font-semibold text-gray-900">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
                 Was ist Whatsgonow?
               </h3>
-              
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 {getHealthStatusIcon()}
                 <Badge 
                   variant={systemHealth === 'good' ? 'default' : systemHealth === 'warning' ? 'secondary' : 'destructive'}
@@ -204,71 +150,67 @@ const HowItWorks = () => {
                   {systemHealth === 'good' ? 'System OK' : 
                    systemHealth === 'warning' ? 'Warnung' : 'Fehler'}
                 </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="ml-2"
-              >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </Button>
             </div>
             
             {isLoading && (
-              <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange mx-auto mb-4"></div>
-                  <p className="text-gray-600">Videos werden geladen...</p>
-                </div>
-              </div>
+              <Card>
+                <CardContent className="flex items-center justify-center p-12">
+                  <div className="text-center">
+                    <Loader2 className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+                    <p className="text-gray-600">Videos werden geladen...</p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
             
             {error && !isLoading && (
-              <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
-                <div className="text-center text-gray-600">
-                  <div className="flex items-center justify-center mb-4">
-                    {getHealthStatusIcon()}
-                    <span className="ml-2 text-lg font-medium">Video-System Status</span>
-                  </div>
+              <Card>
+                <CardContent className="text-center p-12">
+                  <AlertTriangle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Video-System Status</h3>
                   <p className={`text-lg mb-4 ${getHealthStatusColor()}`}>{error}</p>
-                  <Button
-                    variant="outline"
-                    onClick={handleRefresh}
-                    className="mt-4"
-                  >
+                  <Button variant="outline" onClick={handleRefresh}>
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Erneut versuchen
                   </Button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             )}
             
             {!isLoading && !error && videos.length > 0 && (
-              <VideoGalleryWithAnalytics videos={videos} currentLanguage={currentLanguage} />
+              <Card>
+                <CardContent className="p-6">
+                  <VideoGalleryWithAnalytics videos={videos} currentLanguage={currentLanguage} />
+                </CardContent>
+              </Card>
             )}
             
             {!isLoading && !error && videos.length === 0 && (
-              <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
-                <div className="text-center text-gray-600">
-                  <img 
-                    src="/placeholders/video-placeholder.svg" 
-                    alt="Keine Videos verfügbar"
-                    className="h-32 w-48 mx-auto mb-4 opacity-50"
-                  />
-                  <p className="text-lg">Noch keine Videos verfügbar</p>
-                  <p className="text-sm mt-2 opacity-75">
-                    Videos werden in Kürze hinzugefügt.
-                  </p>
-                </div>
-              </div>
+              <Card>
+                <CardContent className="text-center p-12">
+                  <div className="text-center text-gray-600">
+                    <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">Noch keine Videos verfügbar</h3>
+                    <p className="text-sm opacity-75">
+                      Videos werden in Kürze hinzugefügt.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
 
-        {/* Steps Grid */}
+        {/* Steps Grid - Keep existing layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">

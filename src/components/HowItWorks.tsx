@@ -28,25 +28,15 @@ const HowItWorks = () => {
       ['howto', 'featured', 'whatsgo', 'how-it-works'].includes(tag.toLowerCase())
     );
     
-    console.log('🔍 Video filter check:', {
-      videoId: video.id,
-      filename: video.filename,
-      tags: video.tags,
-      isActive,
-      hasRelevantTags,
-      included: isActive && hasRelevantTags
-    });
-    
     return isActive && hasRelevantTags;
   });
 
-  console.log('📹 HowItWorks video summary:', {
-    totalVideos: videos.length,
-    featuredVideos: featuredVideos.length,
-    currentLanguage,
-    loading,
-    error: !!error
-  });
+  // Automatically select first video if none selected
+  React.useEffect(() => {
+    if (featuredVideos.length > 0 && !selectedVideo) {
+      setSelectedVideo(featuredVideos[0]);
+    }
+  }, [featuredVideos, selectedVideo]);
 
   const getVideoTitle = (video: any) => {
     switch (currentLanguage) {
@@ -72,13 +62,11 @@ const HowItWorks = () => {
 
   const handleVideoClick = (video: any) => {
     if (video.public_url) {
-      console.log('🎬 Video selected:', video.filename, 'ID:', video.id);
       setSelectedVideo(video);
     }
   };
 
   const handleRefresh = () => {
-    console.log('🔄 Refreshing videos...');
     refetch();
   };
 
@@ -115,9 +103,6 @@ const HowItWorks = () => {
             <p className="text-muted-foreground">
               {t('common:error_loading_content', 'Fehler beim Laden der Inhalte')}
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {error}
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -126,111 +111,128 @@ const HowItWorks = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            {t('common:how_it_works', 'Wie funktioniert es?')}
-            <div className="flex items-center gap-2">
-              {featuredVideos.length > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {featuredVideos.length} Video{featuredVideos.length !== 1 ? 's' : ''}
-                </Badge>
-              )}
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {featuredVideos.length === 0 ? (
-            <div className="text-center p-8">
-              <Play className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                {t('common:no_videos_available', 'Keine Videos verfügbar')}
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Videos werden in Kürze hinzugefügt.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Selected Video Player */}
-              {selectedVideo && (
-                <div className="mb-6">
-                  <VideoPlayerWithAnalytics
-                    video={selectedVideo}
-                    src={selectedVideo.public_url}
-                    videoId={`howto_${selectedVideo.id}`}
-                    component="HowItWorks"
-                  />
-                  <div className="mt-3">
-                    <h3 className="text-lg font-semibold">{getVideoTitle(selectedVideo)}</h3>
-                    {getVideoDescription(selectedVideo) && (
-                      <p className="text-muted-foreground mt-1">{getVideoDescription(selectedVideo)}</p>
-                    )}
-                  </div>
-                </div>
-              )}
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          {t('common:how_it_works', 'Wie funktioniert es?')}
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Entdecken Sie, wie Whatsgonow funktioniert und verbinden Sie sich mit Fahrern in Ihrer Region.
+        </p>
+      </div>
 
-              {/* Video Thumbnails Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {featuredVideos.map((video) => (
-                  <div
-                    key={video.id}
-                    className={`cursor-pointer rounded-lg border transition-all hover:shadow-md ${
-                      selectedVideo?.id === video.id 
-                        ? 'border-primary shadow-md' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    onClick={() => handleVideoClick(video)}
-                  >
-                    <div className="relative aspect-video">
-                      {video.thumbnail_url ? (
-                        <img
-                          src={video.thumbnail_url}
-                          alt={getVideoTitle(video)}
-                          className="w-full h-full object-cover rounded-t-lg"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-muted rounded-t-lg flex items-center justify-center">
-                          <Play className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/20 rounded-t-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <Play className="h-8 w-8 text-white" />
-                      </div>
-                      {video.tags?.some((tag: string) => ['featured', 'whatsgo'].includes(tag)) && (
-                        <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs">
-                          {t('common:featured', 'Featured')}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <h4 className="font-medium text-sm line-clamp-2">{getVideoTitle(video)}</h4>
-                      {getVideoDescription(video) && (
-                        <p className="text-muted-foreground text-xs mt-1 line-clamp-2">
-                          {getVideoDescription(video)}
-                        </p>
-                      )}
-                      {video.tags && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {video.tags.slice(0, 2).map((tag: string) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+      {featuredVideos.length === 0 ? (
+        <Card>
+          <CardContent className="text-center p-12">
+            <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              {t('common:no_videos_available', 'Keine Videos verfügbar')}
+            </h3>
+            <p className="text-muted-foreground">
+              Videos werden in Kürze hinzugefügt.
+            </p>
+            <Button variant="outline" onClick={handleRefresh} className="mt-4">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Aktualisieren
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Video Player */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardContent className="p-0">
+                {selectedVideo && (
+                  <div className="aspect-video">
+                    <VideoPlayerWithAnalytics
+                      video={selectedVideo}
+                      src={selectedVideo.public_url}
+                      videoId={`howto_${selectedVideo.id}`}
+                      component="HowItWorks"
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                )}
+              </CardContent>
+              {selectedVideo && (
+                <CardHeader>
+                  <CardTitle className="text-xl">{getVideoTitle(selectedVideo)}</CardTitle>
+                  {getVideoDescription(selectedVideo) && (
+                    <p className="text-muted-foreground">{getVideoDescription(selectedVideo)}</p>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {selectedVideo.tags?.map((tag: string) => (
+                      <Badge key={tag} variant="secondary" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardHeader>
+              )}
+            </Card>
+          </div>
+
+          {/* Video Playlist */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center justify-between">
+                  Weitere Videos
+                  <Badge variant="outline" className="text-xs">
+                    {featuredVideos.length}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="space-y-0">
+                  {featuredVideos.map((video, index) => (
+                    <div
+                      key={video.id}
+                      className={`p-4 cursor-pointer transition-colors border-l-4 ${
+                        selectedVideo?.id === video.id 
+                          ? 'bg-primary/5 border-l-primary' 
+                          : 'hover:bg-muted/50 border-l-transparent'
+                      }`}
+                      onClick={() => handleVideoClick(video)}
+                    >
+                      <div className="flex gap-3">
+                        <div className="relative flex-shrink-0">
+                          <div className="w-16 h-12 bg-muted rounded flex items-center justify-center">
+                            {video.thumbnail_url ? (
+                              <img
+                                src={video.thumbnail_url}
+                                alt={getVideoTitle(video)}
+                                className="w-full h-full object-cover rounded"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <Play className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                          {selectedVideo?.id === video.id && (
+                            <div className="absolute inset-0 bg-primary/20 rounded flex items-center justify-center">
+                              <Play className="h-3 w-3 text-primary" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm line-clamp-2 mb-1">
+                            {getVideoTitle(video)}
+                          </h4>
+                          {getVideoDescription(video) && (
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {getVideoDescription(video)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
