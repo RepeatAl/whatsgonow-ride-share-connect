@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, AlertTriangle } from 'lucide-react';
 import { mockTransports, mockRequests } from '@/data/mockData';
+import { supabase } from '@/lib/supabaseClient';
 import MapFallback from './MapFallback';
 import type { Transport, TransportRequest } from '@/data/mockData';
 
@@ -63,6 +64,45 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   const [errorType, setErrorType] = useState<ErrorType>('unknown');
   const [mapReady, setMapReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+
+  // Fetch API key from Supabase Secrets
+  const getHereMapApiKey = async (): Promise<string | null> => {
+    try {
+      console.log('[HERE Maps] Fetching API key from Supabase Secrets...');
+      
+      // Try to get from Edge Function
+      const { data, error } = await supabase.functions.invoke('get-here-maps-key');
+      
+      if (error) {
+        console.warn('[HERE Maps] Edge Function error:', error);
+        // Fallback to environment variable
+        const envKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
+        if (envKey && envKey !== 'demo-key') {
+          console.log('[HERE Maps] Using environment fallback');
+          return envKey;
+        }
+        throw new Error('HERE Maps API Key nicht verfügbar');
+      }
+      
+      if (data?.apiKey) {
+        console.log('[HERE Maps] API Key erfolgreich von Supabase erhalten');
+        return data.apiKey;
+      }
+      
+      throw new Error('API Key nicht in Response gefunden');
+    } catch (err) {
+      console.error('[HERE Maps] API Key fetch failed:', err);
+      
+      // Final fallback to environment variable
+      const envKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
+      if (envKey && envKey !== 'demo-key') {
+        console.log('[HERE Maps] Using environment fallback after error');
+        return envKey;
+      }
+      
+      return null;
+    }
+  };
 
   // Test markers for proof of concept
   const testMarkers: MarkerData[] = [
@@ -196,17 +236,14 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         console.log('[HERE Maps] HTTPS:', window.location.protocol === 'https:');
         console.log('[HERE Maps] Hostname:', window.location.hostname);
 
-        // Enhanced API key check
-        const apiKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
-        console.log('[HERE Maps] API Key check:', {
-          exists: !!apiKey,
-          isDemoKey: apiKey === 'demo-key',
-          keyPrefix: apiKey ? apiKey.substring(0, 8) + '...' : 'None'
-        });
+        // Get API key from Supabase Secrets
+        const apiKey = await getHereMapApiKey();
         
-        if (!apiKey || apiKey === 'demo-key') {
-          throw new Error('HERE Maps API Key nicht konfiguriert oder Demo-Key aktiv');
+        if (!apiKey) {
+          throw new Error('HERE Maps API Key nicht konfiguriert oder nicht verfügbar');
         }
+
+        console.log('[HERE Maps] API Key erfolgreich geladen:', apiKey.substring(0, 8) + '...');
 
         // Load HERE Maps API from CDN with enhanced error handling
         if (!window.H) {

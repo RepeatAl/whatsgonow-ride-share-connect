@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, XCircle, AlertTriangle, Loader2, ExternalLink } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 interface DiagnosticResult {
   test: string;
@@ -22,7 +22,7 @@ const HereMapDiagnostics: React.FC = () => {
     setDiagnostics([]);
 
     const tests: DiagnosticResult[] = [
-      { test: 'API Key Check', status: 'checking', message: 'Prüfe HERE Maps API-Schlüssel...' },
+      { test: 'Supabase API Key Check', status: 'checking', message: 'Prüfe HERE Maps API-Schlüssel über Supabase...' },
       { test: 'CDN Connectivity', status: 'checking', message: 'Teste Verbindung zu HERE Maps CDN...' },
       { test: 'HTTPS Check', status: 'checking', message: 'Prüfe HTTPS-Verbindung...' },
       { test: 'Browser Support', status: 'checking', message: 'Prüfe Browser-Kompatibilität...' },
@@ -49,22 +49,54 @@ const HereMapDiagnostics: React.FC = () => {
 
   const performDiagnosticTest = async (test: DiagnosticResult): Promise<DiagnosticResult> => {
     switch (test.test) {
-      case 'API Key Check':
-        const apiKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
-        if (!apiKey || apiKey === 'demo-key') {
+      case 'Supabase API Key Check':
+        try {
+          console.log('[Diagnostics] Testing Supabase API key access...');
+          const { data, error } = await supabase.functions.invoke('get-here-maps-key');
+          
+          if (error) {
+            return {
+              ...test,
+              status: 'failed',
+              message: 'Supabase Edge Function Fehler',
+              details: `Error: ${error.message}`
+            };
+          }
+          
+          if (data?.apiKey) {
+            return {
+              ...test,
+              status: 'passed',
+              message: 'API-Schlüssel erfolgreich von Supabase geladen',
+              details: `Key: ${data.apiKey.substring(0, 8)}...`
+            };
+          }
+          
           return {
             ...test,
             status: 'failed',
-            message: 'HERE Maps API-Schlüssel fehlt oder ungültig',
-            details: 'VITE_HERE_MAPS_API_KEY nicht gesetzt oder hat Dummy-Wert'
+            message: 'API-Schlüssel nicht in Supabase Secrets gefunden',
+            details: 'HERE_MAPS_API_KEY muss in Supabase Secrets konfiguriert werden'
+          };
+        } catch (error) {
+          // Fallback to environment variable check
+          const envKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
+          if (envKey && envKey !== 'demo-key') {
+            return {
+              ...test,
+              status: 'warning',
+              message: 'Verwendet Environment Variable als Fallback',
+              details: `Key: ${envKey.substring(0, 8)}... (nicht empfohlen für Production)`
+            };
+          }
+          
+          return {
+            ...test,
+            status: 'failed',
+            message: 'HERE Maps API-Schlüssel nicht verfügbar',
+            details: 'Weder Supabase Secret noch Environment Variable konfiguriert'
           };
         }
-        return {
-          ...test,
-          status: 'passed',
-          message: 'API-Schlüssel konfiguriert',
-          details: `Key: ${apiKey.substring(0, 8)}...`
-        };
 
       case 'CDN Connectivity':
         try {
@@ -189,7 +221,7 @@ const HereMapDiagnostics: React.FC = () => {
           <span>HERE Maps Diagnose</span>
         </CardTitle>
         <CardDescription>
-          Automatische Überprüfung der HERE Maps Integration
+          Automatische Überprüfung der HERE Maps Integration über Supabase
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -246,7 +278,7 @@ const HereMapDiagnostics: React.FC = () => {
                 </a>
               </p>
               <p className="text-xs">
-                Bei API-Key-Problemen: Supabase Secrets überprüfen und VITE_HERE_MAPS_API_KEY setzen.
+                Bei API-Key-Problemen: Supabase Secrets überprüfen und HERE_MAPS_API_KEY setzen.
               </p>
             </AlertDescription>
           </Alert>
