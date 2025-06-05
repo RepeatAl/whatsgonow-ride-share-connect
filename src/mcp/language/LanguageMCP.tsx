@@ -1,7 +1,9 @@
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { useTranslation } from 'react-i18next';
+import { supportedLanguages } from '@/config/supportedLanguages';
 
 interface LanguageMCPContextValue {
   currentLanguage: string;
@@ -35,25 +37,75 @@ export const useLanguageMCP = () => useContext(LanguageMCPContext);
 export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
   const { user } = useSimpleAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
-  const currentLanguage = i18n.language || 'de';
+  // Extract language from current URL path
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const urlLanguage = pathSegments[0];
+  
+  // Determine current language: prioritize URL, then i18n, then default
+  const currentLanguage = supportedLanguages.some(l => l.code === urlLanguage) 
+    ? urlLanguage 
+    : i18n.language || 'de';
+    
   const isRTL = ['ar', 'he', 'fa', 'ur'].includes(currentLanguage);
   const languageLoading = false;
 
-  const supportedLanguages = [
-    { code: 'de', name: 'Deutsch', localName: 'Deutsch', flag: '🇩🇪', rtl: false, implemented: true },
-    { code: 'en', name: 'English', localName: 'English', flag: '🇺🇸', rtl: false, implemented: true },
-    { code: 'fr', name: 'Français', localName: 'Français', flag: '🇫🇷', rtl: false, implemented: false },
-    { code: 'es', name: 'Español', localName: 'Español', flag: '🇪🇸', rtl: false, implemented: false },
-    { code: 'it', name: 'Italiano', localName: 'Italiano', flag: '🇮🇹', rtl: false, implemented: false },
-  ];
+  // Sync i18n with URL language on mount/route change
+  useEffect(() => {
+    if (urlLanguage && supportedLanguages.some(l => l.code === urlLanguage)) {
+      if (i18n.language !== urlLanguage) {
+        console.log('[LanguageMCP] Syncing i18n language to URL:', urlLanguage);
+        i18n.changeLanguage(urlLanguage);
+      }
+    }
+  }, [urlLanguage, i18n]);
+
+  const mappedSupportedLanguages = supportedLanguages.map(lang => ({
+    code: lang.code,
+    name: lang.name,
+    localName: lang.localName,
+    flag: lang.flag,
+    rtl: lang.rtl || false,
+    implemented: lang.implemented,
+  }));
 
   const setLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
+    updateUrlForLanguage(lang);
   };
 
   const setLanguageByCode = async (lang: string) => {
-    i18n.changeLanguage(lang);
+    try {
+      // Change i18n language
+      await i18n.changeLanguage(lang);
+      
+      // Update URL to match new language
+      updateUrlForLanguage(lang);
+      
+      console.log('[LanguageMCP] Language changed to:', lang);
+    } catch (error) {
+      console.error('[LanguageMCP] Error changing language:', error);
+      throw error;
+    }
+  };
+
+  const updateUrlForLanguage = (newLang: string) => {
+    const currentPath = location.pathname;
+    const pathSegments = currentPath.split('/').filter(Boolean);
+    
+    // Remove current language prefix if present
+    const isCurrentLangInUrl = supportedLanguages.some(l => l.code === pathSegments[0]);
+    const pathWithoutLang = isCurrentLangInUrl 
+      ? '/' + pathSegments.slice(1).join('/')
+      : currentPath;
+    
+    // Build new path with new language
+    const newPath = `/${newLang}${pathWithoutLang === '/' ? '' : pathWithoutLang}`;
+    
+    console.log('[LanguageMCP] Navigating from', currentPath, 'to', newPath);
+    navigate(newPath, { replace: true });
   };
 
   const getLocalizedUrl = (path: string): string => {
@@ -81,7 +133,7 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
     getLocalizedUrl,
     isRTL,
     languageLoading,
-    supportedLanguages,
+    supportedLanguages: mappedSupportedLanguages,
   };
 
   return (

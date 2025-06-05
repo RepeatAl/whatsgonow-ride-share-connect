@@ -41,16 +41,19 @@ export const LanguageSwitcher = ({
     try {
       setIsChanging(true);
       
+      console.log('[LanguageSwitcher] Changing language to:', langCode);
       await setLanguageByCode(langCode);
       
       toast({
-        description: t("language_changed", { language: supportedLanguages.find(l => l.code === langCode)?.name }),
+        description: t("language_changed", { 
+          language: supportedLanguages.find(l => l.code === langCode)?.name || langCode 
+        }) || `Sprache geändert zu ${langCode}`,
       });
     } catch (error) {
       console.error('[LANG-SWITCH] Error changing language:', error);
       toast({
         variant: "destructive",
-        description: t("language_change_error"),
+        description: t("language_change_error") || "Fehler beim Ändern der Sprache",
       });
     } finally {
       setIsChanging(false);
@@ -84,7 +87,7 @@ export const LanguageSwitcher = ({
           size={variant === "compact" ? "icon" : "sm"}
           className={variant === "compact" ? "w-8 h-8 p-0" : "h-9 px-3 gap-2"}
           disabled={languageLoading || isChanging}
-          aria-label={t("change_language")}
+          aria-label={t("change_language") || "Sprache ändern"}
         >
           {variant === "compact" ? (
             <Globe className="h-4 w-4" />
@@ -100,7 +103,7 @@ export const LanguageSwitcher = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[180px] max-h-[70vh] overflow-auto">
-        <DropdownMenuLabel>{t("select_language")}</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("select_language") || "Sprache wählen"}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
         <ScrollArea className="max-h-[50vh]">
@@ -117,7 +120,7 @@ export const LanguageSwitcher = ({
                 <span className="mr-1">{lang.flag}</span>
                 <span className={lang.rtl ? "font-rtl" : ""}>{lang.name}</span>
                 {lang.code !== 'de' && lang.code !== 'en' && !isImplementedLanguage(lang.code) && (
-                  <span className="text-xs text-muted-foreground ml-1">{t("partial")}</span>
+                  <span className="text-xs text-muted-foreground ml-1">{t("partial") || "Teilweise"}</span>
                 )}
               </div>
               {currentLanguage === lang.code && <Check className="h-4 w-4" />}
@@ -128,7 +131,9 @@ export const LanguageSwitcher = ({
           {futureLanguages.length > 0 && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">{t("coming_soon")}</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                {t("coming_soon") || "Demnächst verfügbar"}
+              </DropdownMenuLabel>
             </>
           )}
 
