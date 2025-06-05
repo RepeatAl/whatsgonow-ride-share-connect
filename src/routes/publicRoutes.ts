@@ -45,6 +45,12 @@ export const isPublicRoute = (path: string): boolean => {
     return true;
   }
   
+  // CRITICAL: Always allow root paths and home variations
+  if (cleanPath === '/' || cleanPath === '' || cleanPath === '/home') {
+    console.log('[publicRoutes] Root/home path - always public');
+    return true;
+  }
+  
   // Check path patterns (like /delivery/:token)
   if (cleanPath.startsWith('/delivery/')) {
     console.log('[publicRoutes] Matched delivery pattern');
