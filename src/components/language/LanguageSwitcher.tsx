@@ -36,7 +36,6 @@ export const LanguageSwitcher = ({
   const { t, ready } = useTranslation("common");
   const [isChanging, setIsChanging] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<any>({});
 
   // Get current language metadata
   const currentLangMeta = supportedLanguages.find(l => l.code === currentLanguage) || 
@@ -44,7 +43,7 @@ export const LanguageSwitcher = ({
 
   // Debug logging
   useEffect(() => {
-    const info = {
+    console.log('[LanguageSwitcher] State update:', {
       currentLanguage,
       languageLoading,
       isChanging,
@@ -52,14 +51,12 @@ export const LanguageSwitcher = ({
       isMobileDevice,
       ready,
       supportedLanguagesCount: supportedLanguages.length
-    };
-    setDebugInfo(info);
-    console.log('[LanguageSwitcher] State update:', info);
+    });
   }, [currentLanguage, languageLoading, isChanging, isDropdownOpen, isMobileDevice, ready, supportedLanguages]);
 
-  // Simplified mobile handling - remove touch event conflicts
+  // Handle dropdown open/close
   const handleDropdownOpenChange = (open: boolean) => {
-    console.log('[LanguageSwitcher] Dropdown open change:', {
+    console.log('[LanguageSwitcher] Dropdown state change:', {
       from: isDropdownOpen,
       to: open,
       isMobile: isMobileDevice
@@ -67,55 +64,65 @@ export const LanguageSwitcher = ({
     setIsDropdownOpen(open);
   };
 
-  // Enhanced language change with better mobile support
+  // Enhanced language change with better error handling
   const handleLanguageChange = async (langCode: string) => {
-    console.log('[LanguageSwitcher] Language change triggered:', {
+    console.log('[LanguageSwitcher] Language change initiated:', {
       from: currentLanguage,
       to: langCode,
       isChanging,
       languageLoading,
-      isMobile: isMobileDevice
+      isMobile: isMobileDevice,
+      currentUrl: window.location.href
     });
 
-    if (currentLanguage === langCode || isChanging || languageLoading) {
-      console.log('[LanguageSwitcher] Skipping language change - conditions not met');
+    // Prevent duplicate calls
+    if (currentLanguage === langCode) {
+      console.log('[LanguageSwitcher] Already on target language, skipping');
+      return;
+    }
+
+    if (isChanging || languageLoading) {
+      console.log('[LanguageSwitcher] Change already in progress, skipping');
       return;
     }
     
     try {
       setIsChanging(true);
-      setIsDropdownOpen(false); // Close dropdown immediately
+      setIsDropdownOpen(false);
       
       // Show immediate feedback
+      const langName = supportedLanguages.find(l => l.code === langCode)?.name || langCode;
+      console.log('[LanguageSwitcher] Showing toast for language change to:', langName);
+      
       toast({
-        description: "Sprache wird geändert...",
-        duration: 1500,
+        description: `Wechsle zu ${langName}...`,
+        duration: 2000,
       });
       
+      // Execute language change
+      console.log('[LanguageSwitcher] Calling setLanguageByCode...');
       await setLanguageByCode(langCode);
       
       // Success feedback
-      const languageName = supportedLanguages.find(l => l.code === langCode)?.name || langCode;
+      console.log('[LanguageSwitcher] Language change successful, showing success toast');
       toast({
-        description: t("language_changed", { 
-          language: languageName
-        }) || `Sprache geändert zu ${languageName}`,
+        description: `Sprache geändert zu ${langName}`,
         duration: 2000,
       });
       
     } catch (error) {
-      console.error('[LanguageSwitcher] Error changing language:', error);
+      console.error('[LanguageSwitcher] Language change failed:', error);
       toast({
         variant: "destructive",
-        description: t("language_change_error") || "Fehler beim Ändern der Sprache",
-        duration: 3000,
+        description: "Fehler beim Ändern der Sprache. Bitte versuchen Sie es erneut.",
+        duration: 4000,
       });
     } finally {
       // Clear changing state
       setTimeout(() => {
         setIsChanging(false);
-        console.log('[LanguageSwitcher] Language change completed');
-      }, 300);
+        console.log('[LanguageSwitcher] Language change state cleared');
+      }, 500);
     }
   };
 
@@ -130,7 +137,7 @@ export const LanguageSwitcher = ({
         variant="ghost" 
         size="sm"
         disabled
-        className="h-9 opacity-70"
+        className="h-10 opacity-70"
       >
         <Loader2 className="h-4 w-4 animate-spin mr-1" />
         <span className="hidden sm:inline">Loading...</span>
@@ -146,25 +153,26 @@ export const LanguageSwitcher = ({
         <Button 
           variant={variant === "compact" ? "ghost" : variant === "outline" ? "outline" : "default"}
           size={variant === "compact" ? "icon" : "sm"}
-          className={`${variant === "compact" ? "w-10 h-10 p-0" : "h-10 px-4 gap-2"} ${
-            isMobileDevice ? "min-w-[44px] min-h-[44px] touch-manipulation" : ""
-          }`}
+          className={`${variant === "compact" ? "w-12 h-12 p-0" : "h-12 px-4 gap-2"} ${
+            isMobileDevice ? "min-w-[48px] min-h-[48px] touch-manipulation" : ""
+          } transition-all duration-200 hover:scale-105 active:scale-95`}
           disabled={isLoading}
           aria-label={t("change_language") || "Sprache ändern"}
           onClick={() => {
             console.log('[LanguageSwitcher] Button clicked:', {
               isDropdownOpen,
               isLoading,
-              isMobile: isMobileDevice
+              isMobile: isMobileDevice,
+              currentLanguage
             });
           }}
         >
           {variant === "compact" ? (
-            <Globe className="h-5 w-5" />
+            <Globe className="h-6 w-6" />
           ) : (
             <>
-              <span className="text-lg">{currentLangMeta.flag}</span>
-              {showLabel && <span className="hidden sm:inline">{currentLangMeta.name}</span>}
+              <span className="text-xl">{currentLangMeta.flag}</span>
+              {showLabel && <span className="hidden sm:inline font-medium">{currentLangMeta.name}</span>}
               {isLoading && (
                 <Loader2 className="h-4 w-4 animate-spin ml-1" />
               )}
@@ -174,12 +182,12 @@ export const LanguageSwitcher = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className={`min-w-[200px] max-h-[70vh] overflow-auto bg-background border shadow-lg ${
-          isMobileDevice ? "z-[9999]" : "z-50"
+        className={`min-w-[220px] max-h-[70vh] overflow-auto bg-background border shadow-xl ${
+          isMobileDevice ? "z-[99999]" : "z-50"
         }`}
-        sideOffset={isMobileDevice ? 12 : 4}
+        sideOffset={isMobileDevice ? 16 : 8}
       >
-        <DropdownMenuLabel>
+        <DropdownMenuLabel className="text-base font-semibold">
           {t("select_language") || "Sprache wählen"}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -193,21 +201,21 @@ export const LanguageSwitcher = ({
                 console.log('[LanguageSwitcher] Language item clicked:', lang.code);
                 handleLanguageChange(lang.code);
               }}
-              className={`cursor-pointer flex items-center justify-between ${
-                currentLanguage === lang.code ? "bg-accent" : ""
-              } ${isMobileDevice ? "py-4 touch-manipulation min-h-[44px]" : "py-2"}`}
+              className={`cursor-pointer flex items-center justify-between transition-colors ${
+                currentLanguage === lang.code ? "bg-accent font-medium" : ""
+              } ${isMobileDevice ? "py-4 px-4 touch-manipulation min-h-[52px] text-base" : "py-3 px-3"}`}
               disabled={isLoading}
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{lang.flag}</span>
-                <span className={lang.rtl ? "font-rtl" : ""}>{lang.name}</span>
+                <span className="text-xl">{lang.flag}</span>
+                <span className={`${lang.rtl ? "font-rtl" : ""} font-medium`}>{lang.name}</span>
                 {lang.code !== 'de' && lang.code !== 'en' && !isImplementedLanguage(lang.code) && (
-                  <span className="text-xs text-muted-foreground ml-1">
+                  <span className="text-xs text-muted-foreground ml-1 bg-muted px-2 py-1 rounded">
                     {t("partial") || "Teilweise"}
                   </span>
                 )}
               </div>
-              {currentLanguage === lang.code && <Check className="h-4 w-4" />}
+              {currentLanguage === lang.code && <Check className="h-5 w-5 text-primary" />}
             </DropdownMenuItem>
           ))}
 
@@ -215,7 +223,7 @@ export const LanguageSwitcher = ({
           {futureLanguages.length > 0 && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
+              <DropdownMenuLabel className="text-sm text-muted-foreground">
                 {t("coming_soon") || "Demnächst verfügbar"}
               </DropdownMenuLabel>
             </>
@@ -227,12 +235,12 @@ export const LanguageSwitcher = ({
               key={lang.code}
               disabled
               className={`cursor-not-allowed opacity-50 ${
-                isMobileDevice ? "py-4" : "py-2"
+                isMobileDevice ? "py-4 px-4 text-base" : "py-3 px-3"
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{lang.flag}</span>
-                <span>{lang.name}</span>
+                <span className="text-xl">{lang.flag}</span>
+                <span className="font-medium">{lang.name}</span>
               </div>
             </DropdownMenuItem>
           ))}
@@ -243,7 +251,7 @@ export const LanguageSwitcher = ({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Debug: {isMobileDevice ? 'Mobile' : 'Desktop'} | Ready: {ready ? 'Yes' : 'No'}
+              Debug: {isMobileDevice ? 'Mobile' : 'Desktop'} | Lang: {currentLanguage} | Ready: {ready ? 'Yes' : 'No'}
             </DropdownMenuLabel>
           </>
         )}

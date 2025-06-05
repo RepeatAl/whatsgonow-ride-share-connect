@@ -113,31 +113,74 @@ export const LanguageMCPProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
     
+    if (currentLanguage === lang) {
+      console.log('[LanguageMCP] Already on requested language:', lang);
+      return;
+    }
+    
     try {
       setLanguageLoading(true);
-      console.log('[LanguageMCP] Starting language change to:', lang, {
-        currentLanguage,
-        isMobile: isMobileDevice,
-        currentPath: location.pathname
+      console.log('[LanguageMCP] Starting language change:', {
+        from: currentLanguage,
+        to: lang,
+        currentPath: location.pathname,
+        isMobile: isMobileDevice
       });
       
-      // Change i18n language first
+      // 1. Change i18n language first
       await i18n.changeLanguage(lang);
-      console.log('[LanguageMCP] i18n language changed successfully');
+      console.log('[LanguageMCP] i18n language changed successfully to:', lang);
       
-      // Simplified mobile navigation - no delays needed
-      updateUrlForLanguage(lang);
+      // 2. Update document direction for RTL languages
+      const newIsRTL = ['ar', 'he', 'fa', 'ur'].includes(lang);
+      document.documentElement.dir = newIsRTL ? 'rtl' : 'ltr';
+      document.body.dir = newIsRTL ? 'rtl' : 'ltr';
       
-      console.log('[LanguageMCP] Language successfully changed to:', lang);
+      // 3. Update localStorage
+      localStorage.setItem('i18nextLng', lang);
+      
+      // 4. Build new URL path
+      const currentPath = location.pathname;
+      const pathSegments = currentPath.split('/').filter(Boolean);
+      
+      // Remove current language prefix if present
+      const isCurrentLangInUrl = supportedLanguages.some(l => l.code === pathSegments[0]);
+      const pathWithoutLang = isCurrentLangInUrl 
+        ? '/' + pathSegments.slice(1).join('/')
+        : currentPath;
+      
+      // Build new path with new language
+      const newPath = `/${lang}${pathWithoutLang === '/' ? '' : pathWithoutLang}`;
+      
+      console.log('[LanguageMCP] Navigating to new path:', {
+        from: currentPath,
+        to: newPath,
+        pathWithoutLang,
+        isCurrentLangInUrl
+      });
+      
+      // 5. Navigate to new path with immediate effect
+      navigate(newPath, { replace: true });
+      
+      // 6. Force page refresh if needed (especially for mobile)
+      if (isMobileDevice) {
+        console.log('[LanguageMCP] Mobile device detected, forcing refresh after navigation');
+        setTimeout(() => {
+          window.location.href = newPath;
+        }, 100);
+      }
+      
+      console.log('[LanguageMCP] Language change completed successfully');
+      
     } catch (error) {
       console.error('[LanguageMCP] Error changing language:', error);
       throw error;
     } finally {
-      // Shorter delay for better UX
+      // Clear loading state
       setTimeout(() => {
         setLanguageLoading(false);
         console.log('[LanguageMCP] Language loading state cleared');
-      }, 200);
+      }, isMobileDevice ? 500 : 200);
     }
   };
 
