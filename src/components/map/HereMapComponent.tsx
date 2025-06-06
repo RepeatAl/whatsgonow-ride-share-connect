@@ -80,7 +80,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   // Fetch API key from Supabase Secrets OR use hardcoded fallback
   const getHereMapApiKey = async (): Promise<string | null> => {
     // PRIORITY 1: Try hardcoded API key first (if provided)
-    if (HARDCODED_HERE_API_KEY && HARDCODED_HERE_API_KEY !== "YOUR_NEW_HERE_MAPS_API_KEY") {
+    if (HARDCODED_HERE_API_KEY && HARDCODED_HERE_API_KEY.trim() !== "") {
       console.log('[HERE Maps] Using hardcoded API Key');
       return HARDCODED_HERE_API_KEY;
     }
