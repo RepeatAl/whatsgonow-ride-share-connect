@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, AlertTriangle } from 'lucide-react';
@@ -44,6 +45,13 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Dortmund': { lat: 51.5136, lng: 7.4653 }
 };
 
+// Available CDN URLs for HERE Maps SDK for fallback mechanism
+const HERE_CDN_URLS = [
+  'https://js.api.here.com/v3/3.1/mapsjs-bundle.js',
+  'https://cdn.here.com/v3/3.1/mapsjs-bundle.js',
+  'https://js.cdn.here.com/v3/3.1/mapsjs-bundle.js'
+];
+
 const HereMapComponent: React.FC<HereMapComponentProps> = ({
   width = '100%',
   height = '400px',
@@ -64,6 +72,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   const [errorType, setErrorType] = useState<ErrorType>('unknown');
   const [mapReady, setMapReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [cdnUrlIndex, setCdnUrlIndex] = useState(0);
 
   // Fetch API key from Supabase Secrets
   const getHereMapApiKey = async (): Promise<string | null> => {
@@ -217,13 +226,64 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     setIsLoading(true);
     setMapReady(false);
     
+    // Try the next CDN URL
+    setCdnUrlIndex((prevIndex) => (prevIndex + 1) % HERE_CDN_URLS.length);
+    
     // Clear existing map instance
     if (mapInstanceRef.current) {
       mapInstanceRef.current.dispose();
       mapInstanceRef.current = null;
     }
     
-    console.log(`[HERE Maps] Retry attempt ${retryCount + 1}`);
+    console.log(`[HERE Maps] Retry attempt ${retryCount + 1} with CDN: ${HERE_CDN_URLS[cdnUrlIndex]}`);
+  };
+
+  // Enhanced script loading function with fallback mechanism
+  const loadHereMapsAPI = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      if (window.H) {
+        console.log('[HERE Maps] SDK already loaded, reusing existing instance');
+        resolve();
+        return;
+      }
+
+      const currentCdnUrl = HERE_CDN_URLS[cdnUrlIndex];
+      console.log(`[HERE Maps] Loading SDK from ${currentCdnUrl}...`);
+      
+      const script = document.createElement('script');
+      script.src = currentCdnUrl;
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      
+      script.onload = () => {
+        console.log(`[HERE Maps] ✅ SDK loaded successfully from ${currentCdnUrl}`);
+        resolve();
+      };
+      
+      script.onerror = (event) => {
+        console.error(`[HERE Maps] ❌ SDK loading failed from ${currentCdnUrl}:`, event);
+        
+        // Check if we have more CDNs to try
+        if (cdnUrlIndex < HERE_CDN_URLS.length - 1) {
+          console.log(`[HERE Maps] Trying next CDN URL: ${HERE_CDN_URLS[cdnUrlIndex + 1]}`);
+          setCdnUrlIndex(cdnUrlIndex + 1);
+          reject(new Error(`HERE Maps SDK konnte nicht von ${currentCdnUrl} geladen werden. Versuche nächste CDN.`));
+        } else {
+          reject(new Error('HERE Maps SDK konnte nicht geladen werden. Alle CDN-Versuche fehlgeschlagen.'));
+        }
+      };
+      
+      document.head.appendChild(script);
+      
+      // Add a timeout to detect stalled script loading
+      setTimeout(() => {
+        if (!window.H) {
+          console.warn(`[HERE Maps] Script loading timed out after 10 seconds from ${currentCdnUrl}`);
+          script.onerror!(new ErrorEvent('timeout'));
+        }
+      }, 10000);
+    });
   };
 
   useEffect(() => {
@@ -235,6 +295,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         console.log('[HERE Maps] Initializing map...');
         console.log('[HERE Maps] HTTPS:', window.location.protocol === 'https:');
         console.log('[HERE Maps] Hostname:', window.location.hostname);
+        console.log('[HERE Maps] Using CDN URL:', HERE_CDN_URLS[cdnUrlIndex]);
 
         // Get API key from Supabase Secrets
         const apiKey = await getHereMapApiKey();
@@ -246,10 +307,24 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         console.log('[HERE Maps] API Key erfolgreich geladen:', apiKey.substring(0, 8) + '...');
 
         // Load HERE Maps API from CDN with enhanced error handling
-        if (!window.H) {
-          console.log('[HERE Maps] Loading SDK from CDN...');
+        try {
           await loadHereMapsAPI();
           console.log('[HERE Maps] SDK loaded successfully');
+        } catch (sdkError) {
+          console.error('[HERE Maps] Failed to load SDK:', sdkError);
+          
+          // If we have more CDNs to try, let's retry with the next one
+          if (cdnUrlIndex < HERE_CDN_URLS.length - 1) {
+            handleRetry();
+            return; // Exit and let the retry handle it
+          } else {
+            throw sdkError; // No more CDNs to try, propagate the error
+          }
+        }
+
+        // Verify that the HERE Maps API is available
+        if (!window.H) {
+          throw new Error('HERE Maps SDK wurde geladen, aber H-Objekt ist nicht verfügbar');
         }
 
         // Initialize HERE Maps Platform
@@ -274,8 +349,12 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
           );
 
           // Enable map interaction (pan, zoom)
-          const behavior = new window.H.mapevents.Behavior();
-          const ui = new window.H.ui.UI.createDefault(mapInstanceRef.current);
+          const behavior = new window.H.mapevents.Behavior(
+            new window.H.mapevents.MapEvents(mapInstanceRef.current)
+          );
+          
+          // Add UI components
+          const ui = window.H.ui.UI.createDefault(mapInstanceRef.current, defaultLayers);
 
           // Add markers based on configuration
           if (showTestMarkers) {
@@ -315,34 +394,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         mapInstanceRef.current.dispose();
       }
     };
-  }, [center.lat, center.lng, zoom, showTestMarkers, showMockData, showTransports, showRequests, retryCount]);
-
-  const loadHereMapsAPI = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      // Check if already loaded
-      if (window.H) {
-        resolve();
-        return;
-      }
-
-      console.log('[HERE Maps] Loading SDK from CDN...');
-      const script = document.createElement('script');
-      script.src = 'https://js.api.here.com/v3/3.1/mapsjs-bundle.js';
-      script.async = true;
-      
-      script.onload = () => {
-        console.log('[HERE Maps] SDK loaded successfully from CDN');
-        resolve();
-      };
-      
-      script.onerror = (event) => {
-        console.error('[HERE Maps] SDK loading failed:', event);
-        reject(new Error('HERE Maps SDK konnte nicht geladen werden'));
-      };
-      
-      document.head.appendChild(script);
-    });
-  };
+  }, [center.lat, center.lng, zoom, showTestMarkers, showMockData, showTransports, showRequests, retryCount, cdnUrlIndex]);
 
   const getMarkerColor = (marker: MarkerData): string => {
     if (marker.type === 'test') return '#9b87f5'; // Purple for test markers
@@ -380,16 +432,22 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
 
       // Add info bubble on tap/click
       mapMarker.addEventListener('tap', (evt: any) => {
-        const bubble = new window.H.ui.InfoBubble(marker.title, {
-          content: marker.description || ''
-        });
-        bubble.open(mapInstanceRef.current, { lat: marker.lat, lng: marker.lng });
+        const bubble = new window.H.ui.InfoBubble(
+          { lat: marker.lat, lng: marker.lng },
+          { content: `<div><b>${marker.title}</b><br/>${marker.description || ''}</div>` }
+        );
+        bubble.open();
       });
 
       group.addObject(mapMarker);
     });
 
     mapInstanceRef.current.addObject(group);
+    
+    // Ensure all markers are visible
+    mapInstanceRef.current.getViewModel().setLookAtData({
+      bounds: group.getBoundingBox()
+    });
   };
 
   // Resize handler for responsive behavior
@@ -429,11 +487,19 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     <div className={`relative w-full ${className}`} style={{ width, height }}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
-          <div className="flex items-center space-x-3">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-600" />
-            <span className="text-gray-600 font-medium">
-              HERE Maps wird geladen... {retryCount > 0 && `(Versuch ${retryCount + 1})`}
-            </span>
+          <div className="flex flex-col items-center space-y-3">
+            <div className="flex items-center space-x-3">
+              <Loader2 className="h-6 w-6 animate-spin text-gray-600" />
+              <span className="text-gray-600 font-medium">
+                HERE Maps wird geladen... {retryCount > 0 ? `(Versuch ${retryCount + 1})` : ''}
+              </span>
+            </div>
+            
+            {retryCount > 0 && (
+              <div className="text-xs text-gray-500">
+                CDN: {HERE_CDN_URLS[cdnUrlIndex].split('//')[1].split('/')[0]}
+              </div>
+            )}
           </div>
         </div>
       )}

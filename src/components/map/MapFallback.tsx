@@ -1,181 +1,168 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { mockTransports, mockRequests } from '@/data/mockData';
+import { AlertTriangle, Map, RefreshCcw, ExternalLink, Info } from 'lucide-react';
+import { FallbackLocalizedText } from '@/components/common/FallbackLocalizedText';
 
 interface MapFallbackProps {
   height?: string;
-  onRetry?: () => void;
   errorType?: 'api_key' | 'network' | 'cors' | 'unknown';
+  onRetry?: () => void;
   showMockData?: boolean;
 }
 
-const MapFallback: React.FC<MapFallbackProps> = ({ 
-  height = '400px', 
-  onRetry,
+const MapFallback: React.FC<MapFallbackProps> = ({
+  height = '400px',
   errorType = 'unknown',
-  showMockData = true 
+  onRetry,
+  showMockData = false
 }) => {
-  const getErrorMessage = () => {
+  // Error message and instructions based on error type
+  const getErrorContent = () => {
     switch (errorType) {
       case 'api_key':
-        return 'HERE Maps API-Schlüssel fehlt oder ist ungültig';
+        return {
+          title: 'API-Key Fehler',
+          message: 'Die Karte konnte aufgrund eines Problems mit dem API-Schlüssel nicht geladen werden.',
+          instructions: 'Bitte überprüfen Sie, ob der HERE Maps API-Key korrekt konfiguriert ist.'
+        };
       case 'network':
-        return 'Netzwerkverbindung zu HERE Maps fehlgeschlagen';
+        return {
+          title: 'Netzwerkfehler',
+          message: 'Die HERE Maps-Dienste konnten nicht erreicht werden.',
+          instructions: 'Bitte überprüfen Sie Ihre Internetverbindung oder versuchen Sie es später erneut.'
+        };
       case 'cors':
-        return 'HTTPS oder CORS-Konfiguration blockiert HERE Maps';
+        return {
+          title: 'Content Security Policy (CSP) Fehler',
+          message: 'Das Laden des HERE Maps SDK wird durch Ihre Sicherheitseinstellungen blockiert.',
+          instructions: 'Bitte überprüfen Sie die Content-Security-Policy in vercel.json und stellen Sie sicher, dass HERE-Domains und unsafe-eval erlaubt sind.'
+        };
       default:
-        return 'HERE Maps konnte nicht geladen werden';
+        return {
+          title: 'Kartenladevorgang fehlgeschlagen',
+          message: 'Die Karte konnte nicht geladen werden.',
+          instructions: 'Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support.'
+        };
     }
   };
 
-  const getErrorDetails = () => {
-    switch (errorType) {
-      case 'api_key':
-        return 'Prüfen Sie die API-Schlüssel-Konfiguration in den Projekteinstellungen';
-      case 'network':
-        return 'Überprüfen Sie Ihre Internetverbindung oder Firewall-Einstellungen';
-      case 'cors':
-        return 'Stellen Sie sicher, dass die Seite über HTTPS geladen wird';
-      default:
-        return 'Weitere Details finden Sie in der Browser-Konsole';
-    }
-  };
+  const errorContent = getErrorContent();
 
+  // Render mock data or error message
+  if (showMockData) {
+    // Show a simplified mock map view
+    return (
+      <div 
+        className="w-full bg-gray-100 rounded-lg border border-gray-200 overflow-hidden flex flex-col items-center justify-center"
+        style={{ height }}
+      >
+        <div className="p-4 max-w-md text-center">
+          <Map className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-gray-700 mb-2">
+            {errorContent.title}
+          </h3>
+          <p className="text-gray-600 mb-3">
+            {errorContent.message}
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            {errorContent.instructions}
+          </p>
+          
+          {onRetry && (
+            <Button 
+              variant="outline" 
+              onClick={onRetry} 
+              className="flex items-center gap-2"
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Erneut versuchen
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Show full error card
   return (
-    <div className="w-full" style={{ height }}>
-      <Card className="h-full">
-        <CardContent className="p-0 h-full relative">
-          {/* Mock Map Background */}
-          <div 
-            className="w-full h-full bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 relative overflow-hidden"
-            style={{
-              backgroundImage: `
-                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 60%, rgba(168, 85, 247, 0.05) 0%, transparent 50%)
-              `
-            }}
-          >
-            {/* Mock Germany Outline */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg
-                width="200"
-                height="240"
-                viewBox="0 0 200 240"
-                className="opacity-20 text-gray-400"
-                fill="currentColor"
-              >
-                <path d="M100 20 L120 40 L140 30 L160 50 L170 80 L160 120 L140 140 L130 160 L120 180 L100 200 L80 180 L70 160 L60 140 L40 120 L30 80 L40 50 L60 30 L80 40 Z" />
-              </svg>
-            </div>
-
-            {/* Mock Data Pins */}
-            {showMockData && (
-              <>
-                {/* Transport Pins */}
-                {mockTransports.slice(0, 8).map((transport, index) => (
-                  <div
-                    key={`transport-${index}`}
-                    className="absolute"
-                    style={{
-                      left: `${20 + (index * 10) % 60}%`,
-                      top: `${30 + (index * 15) % 40}%`,
-                    }}
-                  >
-                    <div className="relative">
-                      <div 
-                        className={`w-4 h-4 rounded-full border-2 border-white shadow-lg ${
-                          transport.price < 15 ? 'bg-green-500' :
-                          transport.price <= 25 ? 'bg-orange-500' : 'bg-red-500'
-                        }`}
-                      />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md text-xs whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">
-                        {transport.from} → {transport.to}
-                        <br />
-                        {transport.price}€
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Request Pins */}
-                {mockRequests.slice(0, 6).map((request, index) => (
-                  <div
-                    key={`request-${index}`}
-                    className="absolute"
-                    style={{
-                      left: `${25 + (index * 12) % 50}%`,
-                      top: `${40 + (index * 18) % 35}%`,
-                    }}
-                  >
-                    <div className="relative">
-                      <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-lg" />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md text-xs whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">
-                        {request.title}
-                        <br />
-                        Budget: {request.budget}€
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Error Overlay */}
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <Alert className="max-w-md mx-4 bg-white">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription className="space-y-3">
-                  <div>
-                    <div className="font-medium text-red-700">{getErrorMessage()}</div>
-                    <div className="text-sm text-gray-600 mt-1">{getErrorDetails()}</div>
-                  </div>
-                  
-                  {onRetry && (
-                    <Button onClick={onRetry} variant="outline" size="sm" className="w-full">
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Erneut versuchen
-                    </Button>
-                  )}
-                  
-                  <div className="text-xs text-gray-500">
-                    Mock-Daten werden angezeigt. Echte Karte wird nach Behebung des Problems verfügbar sein.
-                  </div>
-                </AlertDescription>
-              </Alert>
+    <Card className="w-full" style={{ minHeight: height }}>
+      <CardHeader className="bg-red-50 border-b border-red-100">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-red-500" />
+          <CardTitle className="text-red-700 text-lg">
+            {errorContent.title}
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4 space-y-3">
+        <p className="text-gray-700">
+          {errorContent.message}
+        </p>
+        
+        <div className="bg-amber-50 p-3 rounded-md border border-amber-200">
+          <div className="flex items-start gap-2">
+            <Info className="h-5 w-5 text-amber-500 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-amber-800">Diagnose & Lösung</h4>
+              <p className="text-sm text-amber-700">
+                {errorContent.instructions}
+              </p>
             </div>
           </div>
-
-          {/* Legend */}
-          {showMockData && (
-            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-              <div className="flex items-center space-x-4 text-xs">
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>&lt; 15€</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                  <span>15-25€</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span>&gt; 25€</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>Anfragen</span>
-                </div>
-              </div>
-            </div>
+        </div>
+        
+        {errorType === 'cors' && (
+          <div className="bg-gray-50 p-3 rounded-md border border-gray-200 font-mono text-xs overflow-auto">
+            <pre className="text-gray-700">
+{`// vercel.json CSP Configuration
+{
+  "headers": [{
+    "source": "/(.*)",
+    "headers": [{
+      "key": "Content-Security-Policy",
+      "value": "... script-src 'self' https://js.api.here.com https://*.here.com 'unsafe-inline' 'unsafe-eval'; ..."
+    }]
+  }]
+}`}
+            </pre>
+          </div>
+        )}
+        
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <FallbackLocalizedText 
+          tKey="common:try_again_later"
+          fallback="Bitte versuchen Sie es später erneut."
+          className="text-gray-500"
+        />
+        
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="link" 
+            size="sm" 
+            className="text-gray-500"
+            onClick={() => window.open('https://developer.here.com/documentation/maps/3.1.38.0/dev_guide/index.html', '_blank')}
+          >
+            <span className="mr-1">Dokumentation</span>
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+          
+          {onRetry && (
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={onRetry} 
+              className="flex items-center gap-1"
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Erneut versuchen
+            </Button>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 
