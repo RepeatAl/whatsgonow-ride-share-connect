@@ -58,10 +58,30 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ onSubmit, defaultVa
       name: item.name || '',
       quantity: item.quantity || 1,
       weight: item.weight,
-      dimensions: typeof item.dimensions === 'string' ? item.dimensions : undefined,
+      dimensions: item.dimensions ? 
+        `${item.dimensions.length}x${item.dimensions.width}x${item.dimensions.height}` : 
+        undefined,
     }));
     form.setValue('items', schemaItems);
   };
+
+  // Convert form items to OrderItem format for the component
+  const formItemsAsOrderItems: OrderItem[] = form.getValues().items.map((item, index) => ({
+    id: `item-${index}`,
+    name: item.name || '',
+    quantity: item.quantity || 1,
+    weight: item.weight,
+    dimensions: item.dimensions ? 
+      (() => {
+        const parts = item.dimensions.split('x').map(Number);
+        return {
+          length: parts[0] || 0,
+          width: parts[1] || 0,
+          height: parts[2] || 0,
+        };
+      })() : 
+      undefined,
+  }));
 
   return (
     <Card className="w-full">
@@ -77,13 +97,7 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ onSubmit, defaultVa
               toggleIsPickup={handleTogglePickup}
             />
             <ItemDetailsSection
-              items={form.getValues().items.map((item, index) => ({
-                id: `item-${index}`,
-                name: item.name || '',
-                quantity: item.quantity || 1,
-                weight: item.weight,
-                dimensions: item.dimensions || '',
-              }))}
+              items={formItemsAsOrderItems}
               onItemsChange={handleItemsChange}
             />
             <Button type="submit">Bestellung aufgeben</Button>

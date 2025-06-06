@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import {
 import Layout from '@/components/Layout';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { Link } from 'react-router-dom';
+import DashboardAdminEnhanced from '@/pages/dashboard/DashboardAdminEnhanced';
 
 const DashboardAdmin = () => {
   const { profile } = useOptimizedAuth();

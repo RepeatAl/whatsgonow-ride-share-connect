@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { 
   translationFeedbackService,
@@ -14,6 +14,7 @@ export function useAdminTranslationFeedback() {
   const { user } = useOptimizedAuth();
   const [loading, setLoading] = useState(false);
   const [reviewing, setReviewing] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<TranslationFeedback[]>([]);
   const { t } = useTranslation();
 
   // Helper zur Rollenprüfung
@@ -31,7 +32,9 @@ export function useAdminTranslationFeedback() {
     }
     setLoading(true);
     try {
-      return await translationFeedbackService.getAllFeedback(filters);
+      const data = await translationFeedbackService.getAllFeedback(filters);
+      setFeedbacks(data);
+      return data;
     } catch (error) {
       console.error('Error loading feedback for admin:', error);
       return [];
@@ -59,6 +62,8 @@ export function useAdminTranslationFeedback() {
           description: t('admin.feedback.status_updated'),
           variant: 'default'
         });
+        // Refresh feedbacks after successful review
+        await loadAllFeedback();
         return true;
       } else {
         throw new Error(error);
@@ -93,7 +98,15 @@ export function useAdminTranslationFeedback() {
     }
   };
 
+  // Load feedbacks on mount
+  useEffect(() => {
+    if (isAdmin) {
+      loadAllFeedback();
+    }
+  }, [isAdmin]);
+
   return {
+    feedbacks,
     loadAllFeedback,
     reviewFeedback,
     loadFeedbackById,

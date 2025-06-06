@@ -4,7 +4,11 @@ export interface OrderItem {
   name: string;
   quantity: number;
   weight?: number;
-  dimensions?: string;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface DetailedItem {
