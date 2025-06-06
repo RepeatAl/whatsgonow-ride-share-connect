@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
@@ -24,6 +23,7 @@ import Feedback from '@/pages/Feedback';
 import RlsTest from '@/pages/RLSTest';
 import SystemTests from '@/pages/SystemTests';
 import HereMapDemo from '@/pages/HereMapDemo';
+import HereMapFeaturesDemo from '@/pages/HereMapFeaturesDemo';
 
 // Import dashboard pages
 import DashboardDriver from '@/pages/dashboard/DashboardDriver';
@@ -98,8 +98,9 @@ const MCPRouter = () => {
             {/* Public ESG Dashboard */}
             <Route path="/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
             
-            {/* HERE Maps Demo - PUBLIC ROUTE */}
+            {/* HERE Maps Demo - PUBLIC ROUTES */}
             <Route path="/here-maps-demo" element={<PublicRoute><HereMapDemo /></PublicRoute>} />
+            <Route path="/here-maps-features" element={<PublicRoute><HereMapFeaturesDemo /></PublicRoute>} />
             
             {/* Protected routes */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -147,6 +148,7 @@ const MCPRouter = () => {
       <Route path="/system-tests" element={<Navigate to={`/${currentLanguage}/system-tests`} replace />} />
       <Route path="/rls-test" element={<Navigate to={`/${currentLanguage}/rls-test`} replace />} />
       <Route path="/here-maps-demo" element={<Navigate to={`/${currentLanguage}/here-maps-demo`} replace />} />
+      <Route path="/here-maps-features" element={<Navigate to={`/${currentLanguage}/here-maps-features`} replace />} />
       
       {/* 404 fallback */}
       <Route path="*" element={<NotFound />} />

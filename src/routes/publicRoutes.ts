@@ -1,4 +1,3 @@
-
 /**
  * Public Routes Configuration
  * Defines which routes are accessible without authentication
@@ -12,13 +11,13 @@ export const publicPaths = [
   '/login',
   '/register',
   '/register/success',
-  '/pre-register',  // FIXED: Pre-register is now public
+  '/pre-register',
   '/pre-register/success',
   '/forgot-password',
   '/reset-password',
   '/esg-dashboard',
   '/here-maps-demo',
-  '/here-maps-features'
+  '/here-maps-features'  // NEW: Feature demo page
 ];
 
 /**

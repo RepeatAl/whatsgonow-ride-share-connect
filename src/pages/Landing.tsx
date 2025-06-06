@@ -1,4 +1,3 @@
-
 import React from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/home/Hero";
@@ -14,7 +13,7 @@ import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Map } from 'lucide-react';
+import { Map, Zap } from 'lucide-react';
 
 /**
  * VOLLSTÄNDIGE Landing Page - Navigation ist jetzt sichtbar
@@ -61,13 +60,22 @@ const Landing = () => {
               </CardContent>
             </Card>
             
-            <div className="text-center">
-              <Link to={getLocalizedUrl('/here-maps-demo')}>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-3">
-                  <Map className="mr-2 h-5 w-5" />
-                  {t('landing:map_cta', 'Interaktive Karte erkunden')}
-                </Button>
-              </Link>
+            <div className="text-center space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to={getLocalizedUrl('/here-maps-demo')}>
+                  <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+                    <Map className="mr-2 h-5 w-5" />
+                    {t('landing:map_cta', 'Interaktive Karte erkunden')}
+                  </Button>
+                </Link>
+                
+                <Link to={getLocalizedUrl('/here-maps-features')}>
+                  <Button variant="default" size="lg" className="text-lg px-8 py-3">
+                    <Zap className="mr-2 h-5 w-5" />
+                    Alle Features testen
+                  </Button>
+                </Link>
+              </div>
             </div>
             
             {/* Map Legend */}
