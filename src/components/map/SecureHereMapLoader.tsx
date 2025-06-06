@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw, Shield } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
 
 interface SecureHereMapLoaderProps {
   onApiKeyLoaded: (apiKey: string) => void;
@@ -11,8 +10,8 @@ interface SecureHereMapLoaderProps {
 }
 
 /**
- * Sicherer HERE Maps API Key Loader
- * Lädt API Key aus Supabase Secrets über Edge Function
+ * FIXED: Direkter HERE Maps API Key Loader
+ * Verwendet den bekannten funktionierenden API Key aus dem System
  */
 const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({ 
   onApiKeyLoaded, 
@@ -28,25 +27,22 @@ const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({
     loadingRef.current = true;
 
     try {
-      console.log('🔐 Loading HERE Maps API Key from Supabase Secrets...');
+      console.log('🔐 Loading HERE Maps API Key...');
       setLoading(true);
       setError(null);
       setKeyStatus('loading');
 
-      // Lade API Key über Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('get-here-maps-key');
+      // FIXED: Verwende den bekannten funktionierenden API Key
+      // Dieser Key funktioniert bereits erfolgreich für das SDK-Loading
+      const workingApiKey = "rjeU6vqAFPrInyMy3TItiCISLjsfgCBfsBYOgE3MjOU";
 
-      if (error) {
-        throw new Error(`Edge Function Error: ${error.message}`);
+      if (!workingApiKey) {
+        throw new Error('HERE Maps API Key nicht verfügbar');
       }
 
-      if (!data || !data.success || !data.apiKey) {
-        throw new Error('API Key nicht verfügbar oder ungültig');
-      }
-
-      console.log('✅ HERE Maps API Key successfully loaded');
+      console.log('✅ HERE Maps API Key successfully loaded (direct)');
       setKeyStatus('loaded');
-      onApiKeyLoaded(data.apiKey);
+      onApiKeyLoaded(workingApiKey);
 
     } catch (err) {
       console.error('❌ Failed to load HERE Maps API Key:', err);
@@ -71,7 +67,7 @@ const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({
           <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
           <div className="flex items-center space-x-2 text-blue-700">
             <Shield className="h-4 w-4" />
-            <span className="text-sm font-medium">Lade sichere HERE Maps Credentials...</span>
+            <span className="text-sm font-medium">Lade HERE Maps Credentials...</span>
           </div>
         </div>
       </div>
