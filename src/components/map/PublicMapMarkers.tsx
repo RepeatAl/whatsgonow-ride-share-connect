@@ -67,6 +67,12 @@ export const PublicMapMarkers: React.FC<PublicMapMarkersProps> = ({
   return null; // Dieser Component rendert nichts direkt
 };
 
+// Unicode-safe base64 encoding function
+const unicodeToBase64 = (str: string): string => {
+  // First encode to UTF-8, then to base64
+  return btoa(unescape(encodeURIComponent(str)));
+};
+
 // Erstelle Icon basierend auf Typ und Preis
 const createMarkerIcon = (type: string, price?: number) => {
   const getColor = () => {
@@ -89,14 +95,16 @@ const createMarkerIcon = (type: string, price?: number) => {
   const color = getColor();
   const symbol = getSymbol();
 
+  const svgString = `
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="14" fill="${color}" stroke="white" stroke-width="2"/>
+      <text x="16" y="20" text-anchor="middle" fill="white" font-size="12">${symbol}</text>
+      ${price ? `<text x="16" y="8" text-anchor="middle" fill="white" font-size="8">${price}€</text>` : ''}
+    </svg>
+  `;
+
   return new window.H.map.Icon(
-    `data:image/svg+xml;base64,${btoa(`
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="16" cy="16" r="14" fill="${color}" stroke="white" stroke-width="2"/>
-        <text x="16" y="20" text-anchor="middle" fill="white" font-size="12">${symbol}</text>
-        ${price ? `<text x="16" y="8" text-anchor="middle" fill="white" font-size="8">${price}€</text>` : ''}
-      </svg>
-    `)}`,
+    `data:image/svg+xml;base64,${unicodeToBase64(svgString)}`,
     { size: { w: 32, h: 32 } }
   );
 };
