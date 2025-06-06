@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
@@ -19,7 +18,7 @@ interface OptimizedAuthContextProps {
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  emergencyReset: () => Promise<void>;
+  emergencyReset: () => Promise<boolean>;
 }
 
 const OptimizedAuthContext = createContext<OptimizedAuthContextProps>({} as OptimizedAuthContextProps);
