@@ -21,6 +21,10 @@ declare global {
         Icon: any;
         Marker: any;
         Group: any;
+        Polyline: any;
+      };
+      geo: {
+        LineString: any;
       };
     };
   }

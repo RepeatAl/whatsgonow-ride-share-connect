@@ -71,7 +71,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Language-aware routes */}
-      <Route path="/:lang/*" element={<LanguageRouter />} />
+      <Route path="/:lang/*" element={<LanguageRouter><div /></LanguageRouter>} />
       
       {/* Default routes (fallback to German) */}
       <Route path="/" element={<Home />} />

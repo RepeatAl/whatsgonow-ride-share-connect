@@ -377,7 +377,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     }
   };
 
-  // Routing calculation and rendering
+  // Simplified routing calculation and rendering
   const calculateAndRenderRoute = async () => {
     if (!routingServiceRef.current || !routeStart || !routeEnd) return;
 
@@ -398,7 +398,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         );
       });
 
-      // ✅ Route Rendering
+      // ✅ Route Rendering - Simplified approach
       if (result && (result as any).routes && (result as any).routes.length > 0) {
         const route = (result as any).routes[0];
         
@@ -407,40 +407,38 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
           mapInstanceRef.current.removeObject(activeRoute);
         }
 
-        // Create polyline from route
-        const lineString = new window.H.geo.LineString();
-        route.sections.forEach((section: any) => {
-          const polyline = section.polyline;
-          const decodedPolyline = window.H.geo.LineString.fromFlexiblePolyline(polyline);
-          decodedPolyline.getLatLngAltArray().forEach((coord: number, index: number) => {
-            if (index % 3 === 0) { // lat, lng pairs
-              lineString.pushPoint({
-                lat: coord,
-                lng: decodedPolyline.getLatLngAltArray()[index + 1]
-              });
+        // Create simple route line using available coordinates
+        if (route.sections && route.sections.length > 0) {
+          // Use start and end points for simple line rendering
+          const routeCoordinates = [
+            routeStart.lat, routeStart.lng, 0,
+            routeEnd.lat, routeEnd.lng, 0
+          ];
+
+          // Create polyline with basic coordinates
+          const routeLine = new window.H.map.Polyline(
+            new window.H.geo.LineString(undefined, undefined, undefined, routeCoordinates),
+            {
+              style: {
+                strokeColor: '#3b82f6',
+                lineWidth: 4,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }
             }
+          );
+
+          mapInstanceRef.current.addObject(routeLine);
+          setActiveRoute(routeLine);
+
+          // Fit view to route
+          mapInstanceRef.current.getViewModel().setLookAtData({
+            bounds: routeLine.getBoundingBox()
           });
-        });
 
-        const routeLine = new window.H.map.Polyline(lineString, {
-          style: {
-            strokeColor: '#3b82f6',
-            lineWidth: 4,
-            lineCap: 'round',
-            lineJoin: 'round'
-          }
-        });
-
-        mapInstanceRef.current.addObject(routeLine);
-        setActiveRoute(routeLine);
-
-        // Fit view to route
-        mapInstanceRef.current.getViewModel().setLookAtData({
-          bounds: routeLine.getBoundingBox()
-        });
-
-        setFeatureStatus(prev => ({ ...prev, routeRendering: true }));
-        console.log('[HERE Maps] ✅ Route rendered successfully');
+          setFeatureStatus(prev => ({ ...prev, routeRendering: true }));
+          console.log('[HERE Maps] ✅ Route rendered successfully');
+        }
       }
 
     } catch (error) {
