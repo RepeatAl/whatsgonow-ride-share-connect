@@ -50,8 +50,8 @@ const HERE_CDN_URLS = [
   'https://cdn.here.com/v3/3.1/mapsjs-bundle.js'
 ];
 
-// Reduced timeout for faster fallbacks
-const SDK_TIMEOUT_MS = 5000; // Reduced from 10 seconds to 5 seconds
+// Increased timeout for better loading success rate
+const SDK_TIMEOUT_MS = 15000; // Increased from 5 seconds to 15 seconds
 
 // ⚠️ HARDCODE BEREICH: Ersetzen Sie "YOUR_NEW_HERE_MAPS_API_KEY" mit Ihrem neuen API Key
 const HARDCODED_HERE_API_KEY = "rjeU6vqAFPrInyMy3TItiCISLjsfgCBfsBYOgE3MjOU";
@@ -217,7 +217,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     if (errorMessage.includes('api') || errorMessage.includes('key') || errorString.includes('unauthorized')) {
       return 'api_key';
     }
-    if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorString.includes('cors')) {
+    if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorString.includes('cors') || errorMessage.includes('timeout')) {
       return 'network';
     }
     if (errorMessage.includes('csp') || errorMessage.includes('content security policy')) {
@@ -227,7 +227,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     return 'unknown';
   };
 
-  // Self-contained CDN loading function with internal retry logic and reduced timeout
+  // Enhanced CDN loading function with improved diagnostics and error handling
   const loadHereMapsAPI = async (): Promise<boolean> => {
     // Check if already loaded
     if (window.H) {
@@ -235,7 +235,9 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
       return true;
     }
 
-    // Try each CDN URL once with reduced timeout
+    console.log(`[HERE Maps] Starting SDK load process with ${SDK_TIMEOUT_MS / 1000}s timeout...`);
+
+    // Try each CDN URL once with increased timeout
     for (const cdnUrl of HERE_CDN_URLS) {
       console.log(`[HERE Maps] Attempting to load SDK from ${cdnUrl}...`);
       
@@ -246,23 +248,32 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
           script.async = true;
           script.crossOrigin = "anonymous";
           
+          // Enhanced loading diagnostics
           script.onload = () => {
-            console.log(`[HERE Maps] ✅ SDK loaded successfully from ${cdnUrl}`);
-            resolve();
+            console.log(`[HERE Maps] ✅ Script element loaded from ${cdnUrl}`);
+            // Additional check for actual HERE Maps object
+            if (window.H) {
+              console.log(`[HERE Maps] ✅ HERE Maps SDK fully available`);
+              resolve();
+            } else {
+              console.error(`[HERE Maps] ❌ Script loaded but H object not available`);
+              reject(new Error(`HERE SDK loaded but H object missing from ${cdnUrl}`));
+            }
           };
           
           script.onerror = (event) => {
-            console.error(`[HERE Maps] ❌ SDK loading failed from ${cdnUrl}:`, event);
-            reject(new Error(`Script loading failed from ${cdnUrl}`));
+            console.error(`[HERE Maps] ❌ Script loading failed from ${cdnUrl}:`, event);
+            reject(new Error(`Script loading failed from ${cdnUrl} - Network or CSP error`));
           };
           
           document.head.appendChild(script);
           
-          // Reduced timeout for faster fallbacks
+          // Increased timeout with better error messages
           setTimeout(() => {
             if (!window.H) {
-              console.warn(`[HERE Maps] Script loading timed out after ${SDK_TIMEOUT_MS / 1000} seconds from ${cdnUrl}`);
-              reject(new Error(`Timeout loading from ${cdnUrl}`));
+              console.warn(`[HERE Maps] ⏰ Script loading timed out after ${SDK_TIMEOUT_MS / 1000} seconds from ${cdnUrl}`);
+              console.warn(`[HERE Maps] 🔍 Check: 1) Domain whitelist in HERE Developer Portal, 2) CSP headers in vercel.json, 3) Network connectivity`);
+              reject(new Error(`Timeout loading from ${cdnUrl} after ${SDK_TIMEOUT_MS / 1000}s`));
             }
           }, SDK_TIMEOUT_MS);
         });
@@ -270,13 +281,19 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         // Success - SDK loaded
         return true;
       } catch (error) {
-        console.warn(`[HERE Maps] Failed to load from ${cdnUrl}, trying next CDN...`);
+        console.warn(`[HERE Maps] ⚠️ Failed to load from ${cdnUrl}:`, error.message);
+        console.warn(`[HERE Maps] 🔄 Trying next CDN...`);
         continue;
       }
     }
 
     // All CDNs failed
-    console.error('[HERE Maps] All CDN URLs failed');
+    console.error('[HERE Maps] ❌ All CDN URLs failed');
+    console.error('[HERE Maps] 🔍 Troubleshooting checklist:');
+    console.error('[HERE Maps] 1. Verify domain "preview--whatsgonow-ride-share-connect.lovable.app" in HERE Developer Portal');
+    console.error('[HERE Maps] 2. Check CSP headers allow HERE domains in vercel.json');
+    console.error('[HERE Maps] 3. Test network connectivity to js.api.here.com');
+    console.error('[HERE Maps] 4. Verify API key is valid and active');
     return false;
   };
 
@@ -286,7 +303,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         setIsLoading(true);
         setError(null);
 
-        console.log('[HERE Maps] Initializing map...');
+        console.log('[HERE Maps] 🚀 Initializing map...');
 
         // Get API key
         const apiKey = await getHereMapApiKey();
@@ -294,12 +311,12 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
           throw new Error('HERE Maps API Key nicht konfiguriert oder nicht verfügbar');
         }
 
-        console.log('[HERE Maps] API Key erfolgreich geladen:', apiKey.substring(0, 8) + '...');
+        console.log('[HERE Maps] 🔑 API Key erfolgreich geladen:', apiKey.substring(0, 8) + '...');
 
-        // Load HERE Maps SDK with stable retry logic
+        // Load HERE Maps SDK with enhanced diagnostics
         const sdkLoaded = await loadHereMapsAPI();
         if (!sdkLoaded) {
-          throw new Error('HERE Maps SDK konnte nicht geladen werden');
+          throw new Error('HERE Maps SDK konnte nicht geladen werden - siehe Console für Details');
         }
 
         // Verify SDK availability
@@ -308,7 +325,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         }
 
         // Initialize HERE Maps Platform
-        console.log('[HERE Maps] Initializing Platform...');
+        console.log('[HERE Maps] 🏗️ Initializing Platform...');
         platformRef.current = new window.H.service.Platform({
           'apikey': apiKey
         });
@@ -318,7 +335,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
 
         // Initialize map
         if (mapRef.current) {
-          console.log('[HERE Maps] Creating map instance...');
+          console.log('[HERE Maps] 🗺️ Creating map instance...');
           mapInstanceRef.current = new window.H.Map(
             mapRef.current,
             defaultLayers.vector.normal.map,
@@ -346,15 +363,16 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
             addMarkersToMap(mockMarkers);
           }
 
-          console.log('[HERE Maps] Map initialized successfully');
+          console.log('[HERE Maps] ✅ Map initialized successfully');
           setMapReady(true);
         }
 
       } catch (err) {
         const errorType = categorizeError(err);
-        console.error('[HERE Maps] Initialization error:', {
+        console.error('[HERE Maps] ❌ Initialization error:', {
           error: err,
           type: errorType,
+          message: err?.message,
           stackTrace: err?.stack
         });
         
@@ -471,6 +489,9 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
               <span className="text-gray-600 font-medium">
                 HERE Maps wird geladen...
               </span>
+            </div>
+            <div className="text-xs text-gray-500 text-center max-w-md">
+              Timeout erhöht auf {SDK_TIMEOUT_MS / 1000}s für bessere Kompatibilität
             </div>
           </div>
         </div>

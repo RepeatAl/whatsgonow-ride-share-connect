@@ -1,434 +1,156 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Check, X, Copy, Globe, Shield, Code, RefreshCcw, ExternalLink, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
-import { HERE_CDN_URLS } from './constants';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 
-interface ApiKeyStatus {
-  available: boolean;
-  message: string;
-  key?: string;
-}
+const HereMapDiagnostics: React.FC = () => {
+  const [diagnostics, setDiagnostics] = useState({
+    hereSDKLoaded: false,
+    networkConnectivity: 'unknown',
+    domainWhitelisted: 'unknown',
+    cspHeaders: 'unknown'
+  });
 
-interface EndpointStatus {
-  url: string;
-  status: 'success' | 'error' | 'pending';
-  message: string;
-  time?: number;
-}
-
-interface CSPStatus {
-  scriptSrc: boolean;
-  connectSrc: boolean;
-  styleSrc: boolean;
-  imgSrc: boolean;
-}
-
-const HereMapDiagnostics = () => {
-  const [apiKeyStatus, setApiKeyStatus] = useState<ApiKeyStatus>({ available: false, message: 'Prüfe API Key...' });
-  const [endpointStatuses, setEndpointStatuses] = useState<EndpointStatus[]>([]);
-  const [hostInfo, setHostInfo] = useState({ hostname: '', protocol: '', pathname: '' });
-  const [cspStatus, setCSPStatus] = useState<CSPStatus>({ scriptSrc: false, connectSrc: false, styleSrc: false, imgSrc: false });
-  const [isLoading, setIsLoading] = useState(true);
   const [isChecking, setIsChecking] = useState(false);
-  
-  // Check API key from Supabase
-  const checkApiKey = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('get-here-maps-key');
-      
-      if (error) {
-        setApiKeyStatus({
-          available: false,
-          message: `Edge Function Error: ${error.message || 'Unbekannter Fehler'}`,
-        });
-        return;
-      }
-      
-      if (data?.apiKey) {
-        // Mask API key for security
-        const maskedKey = data.apiKey.substring(0, 5) + '...' + data.apiKey.substring(data.apiKey.length - 4);
-        setApiKeyStatus({
-          available: true,
-          message: 'API Key erfolgreich geladen',
-          key: maskedKey
-        });
-      } else {
-        setApiKeyStatus({
-          available: false,
-          message: 'API Key nicht gefunden in Response',
-        });
-      }
-    } catch (err) {
-      console.error('[Diagnostics] API key check failed:', err);
-      setApiKeyStatus({
-        available: false,
-        message: `Fehler: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`,
-      });
-    }
-  };
 
-  // Check endpoints
-  const checkEndpoints = async () => {
-    // Create initial state for endpoints
-    const initialEndpoints: EndpointStatus[] = HERE_CDN_URLS.map(url => ({
-      url,
-      status: 'pending',
-      message: 'Prüfe...',
-    }));
-    
-    setEndpointStatuses(initialEndpoints);
-
-    // Check each endpoint
-    const results = await Promise.all(
-      HERE_CDN_URLS.map(async (url, index) => {
-        const startTime = performance.now();
-        
-        try {
-          // We can't actually load the script here, just check if the endpoint responds
-          const response = await fetch(url, {
-            method: 'HEAD',
-            mode: 'no-cors', // This will prevent CORS errors but make it harder to get status
-          });
-          
-          const endTime = performance.now();
-          const timeMs = Math.round(endTime - startTime);
-          
-          // With no-cors mode, we can't actually check the status
-          // So we assume it's fine if we get here without an exception
-          return {
-            url,
-            status: 'success' as const,
-            message: 'Erreichbar',
-            time: timeMs
-          };
-        } catch (err) {
-          console.error(`[Diagnostics] Endpoint check failed for ${url}:`, err);
-          return {
-            url,
-            status: 'error' as const, 
-            message: err instanceof Error ? err.message : 'Verbindungsfehler',
-          };
-        }
-      })
-    );
-
-    setEndpointStatuses(results);
-  };
-  
-  // Check CSP directives
-  const checkCSP = () => {
-    try {
-      // Get CSP meta tag value if exists
-      const cspMetaTag = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-      const cspValue = cspMetaTag ? cspMetaTag.getAttribute('content') || '' : '';
-      
-      // If no CSP meta tag, try to get it from current document CSP
-      // Note: This is not always reliable in browser console
-      const cspFromDocument = document.addEventListener('securitypolicyviolation', (e) => {
-        console.log('CSP Violation:', e);
-      });
-      
-      console.log('[Diagnostics] CSP value:', cspValue);
-      
-      // Test script loading
-      const testScriptSrc = () => {
-        const script = document.createElement('script');
-        script.src = HERE_CDN_URLS[0];
-        script.async = true;
-        
-        // We won't actually add it to the page, just create it for testing
-        return {
-          element: script,
-          allowed: true // Assuming allowed, will be checked via violation events
-        };
-      };
-      
-      // Create test connection
-      const testConnectSrc = () => {
-        // Just check if Fetch API can be used against the URL
-        // This doesn't actually test CSP directly
-        return { allowed: true }; // Simplified check
-      };
-      
-      // Check all CSP directives
-      setCSPStatus({
-        scriptSrc: testScriptSrc().allowed,
-        connectSrc: testConnectSrc().allowed,
-        styleSrc: true, // Simplified
-        imgSrc: true // Simplified
-      });
-      
-    } catch (err) {
-      console.error('[Diagnostics] CSP check failed:', err);
-      setCSPStatus({
-        scriptSrc: false, 
-        connectSrc: false,
-        styleSrc: false,
-        imgSrc: false
-      });
-    }
-  };
-
-  // Get host info
-  const getHostInfo = () => {
-    setHostInfo({
-      hostname: window.location.hostname,
-      protocol: window.location.protocol,
-      pathname: window.location.pathname
-    });
-  };
-
-  // Run all checks
   const runDiagnostics = async () => {
     setIsChecking(true);
-    setIsLoading(true);
-    
-    getHostInfo();
-    await checkApiKey();
-    await checkEndpoints();
-    checkCSP();
-    
-    setIsLoading(false);
+    const results = { ...diagnostics };
+
+    // Check if HERE SDK is loaded
+    results.hereSDKLoaded = !!window.H;
+    console.log('[Diagnostics] HERE SDK loaded:', results.hereSDKLoaded);
+
+    // Test network connectivity to HERE API
+    try {
+      const response = await fetch('https://js.api.here.com/v3/3.1/mapsjs-bundle.js', { 
+        method: 'HEAD',
+        mode: 'no-cors' 
+      });
+      results.networkConnectivity = 'ok';
+      console.log('[Diagnostics] Network connectivity: OK');
+    } catch (error) {
+      results.networkConnectivity = 'failed';
+      console.log('[Diagnostics] Network connectivity: FAILED', error);
+    }
+
+    // Check if we can load a script tag (CSP test)
+    try {
+      const testScript = document.createElement('script');
+      testScript.src = 'https://js.api.here.com/v3/3.1/mapsjs-bundle.js';
+      testScript.async = true;
+      
+      const scriptLoadPromise = new Promise((resolve, reject) => {
+        testScript.onload = () => resolve('ok');
+        testScript.onerror = () => reject('failed');
+        setTimeout(() => reject('timeout'), 5000);
+      });
+
+      document.head.appendChild(testScript);
+      
+      try {
+        await scriptLoadPromise;
+        results.cspHeaders = 'ok';
+        console.log('[Diagnostics] CSP headers: OK');
+      } catch {
+        results.cspHeaders = 'blocked';
+        console.log('[Diagnostics] CSP headers: BLOCKED');
+      }
+      
+      document.head.removeChild(testScript);
+    } catch (error) {
+      results.cspHeaders = 'error';
+      console.log('[Diagnostics] CSP test error:', error);
+    }
+
+    setDiagnostics(results);
     setIsChecking(false);
   };
 
-  // Initial load
-  useEffect(() => {
-    runDiagnostics();
-  }, []);
+  const getStatusIcon = (status: string | boolean) => {
+    if (status === true || status === 'ok') {
+      return <CheckCircle className="h-5 w-5 text-green-500" />;
+    } else if (status === false || status === 'failed' || status === 'blocked' || status === 'error') {
+      return <XCircle className="h-5 w-5 text-red-500" />;
+    } else if (status === 'unknown') {
+      return <AlertTriangle className="h-5 w-5 text-gray-400" />;
+    } else {
+      return <Clock className="h-5 w-5 text-yellow-500" />;
+    }
+  };
+
+  const getStatusText = (status: string | boolean) => {
+    if (status === true || status === 'ok') return 'OK';
+    if (status === false || status === 'failed') return 'Fehler';
+    if (status === 'blocked') return 'Blockiert';
+    if (status === 'error') return 'Fehler';
+    if (status === 'unknown') return 'Unbekannt';
+    return 'Unbekannt';
+  };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5" />
+          HERE Maps Diagnose
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">HERE Maps Diagnose</CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={isChecking}
-              onClick={runDiagnostics}
-              className="flex items-center gap-1"
-            >
-              <RefreshCcw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} />
-              Aktualisieren
-            </Button>
-          </div>
-          <CardDescription>
-            Diagnostische Tests für HERE Maps Integration
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="status">
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="status">Status</TabsTrigger>
-              <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
-              <TabsTrigger value="environment">Umgebung</TabsTrigger>
-            </TabsList>
-            
-            {/* Status Tab */}
-            <TabsContent value="status" className="space-y-4">
-              {/* API Key Status */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className={`p-2 rounded-full ${apiKeyStatus.available ? 'bg-green-100' : 'bg-red-100'}`}>
-                  {apiKeyStatus.available ? 
-                    <Check className="h-5 w-5 text-green-600" /> : 
-                    <X className="h-5 w-5 text-red-600" />
-                  }
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium">API Key Status</h3>
-                  <p className="text-sm text-gray-600">{apiKeyStatus.message}</p>
-                  {apiKeyStatus.key && (
-                    <p className="text-xs bg-gray-100 px-2 py-1 rounded mt-1 font-mono">{apiKeyStatus.key}</p>
-                  )}
-                </div>
-              </div>
-              
-              {/* CSP Status */}
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className={`p-2 rounded-full ${Object.values(cspStatus).every(Boolean) ? 'bg-green-100' : 'bg-yellow-100'} mt-1`}>
-                  {Object.values(cspStatus).every(Boolean) ? 
-                    <Shield className="h-5 w-5 text-green-600" /> : 
-                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                  }
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium">Content-Security-Policy</h3>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div className="flex items-center gap-2">
-                      <div className={`h-3 w-3 rounded-full ${cspStatus.scriptSrc ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <span className="text-sm">script-src</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`h-3 w-3 rounded-full ${cspStatus.connectSrc ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <span className="text-sm">connect-src</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`h-3 w-3 rounded-full ${cspStatus.styleSrc ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <span className="text-sm">style-src</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`h-3 w-3 rounded-full ${cspStatus.imgSrc ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <span className="text-sm">img-src</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* SDK Test */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className={`p-2 rounded-full ${window.H ? 'bg-green-100' : 'bg-red-100'}`}>
-                  {window.H ? 
-                    <Code className="h-5 w-5 text-green-600" /> : 
-                    <X className="h-5 w-5 text-red-600" />
-                  }
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium">HERE SDK Verfügbarkeit</h3>
-                  <p className="text-sm text-gray-600">
-                    {window.H 
-                      ? 'HERE Maps SDK erfolgreich geladen' 
-                      : 'HERE Maps SDK nicht verfügbar'
-                    }
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-            
-            {/* Endpoints Tab */}
-            <TabsContent value="endpoints" className="space-y-3">
-              {endpointStatuses.map((endpoint, index) => (
-                <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg gap-3">
-                  <div className={`p-2 rounded-full ${
-                    endpoint.status === 'success' 
-                      ? 'bg-green-100' 
-                      : endpoint.status === 'error'
-                        ? 'bg-red-100'
-                        : 'bg-gray-100'
-                  }`}>
-                    {endpoint.status === 'success' 
-                      ? <Check className="h-5 w-5 text-green-600" />
-                      : endpoint.status === 'error'
-                        ? <X className="h-5 w-5 text-red-600" />
-                        : <Loader2 className="h-5 w-5 text-gray-600 animate-spin" />
-                    }
-                  </div>
-                  <div className="flex-1 truncate">
-                    <h3 className="font-medium font-mono text-sm truncate">{endpoint.url}</h3>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-600">{endpoint.message}</p>
-                      {endpoint.time && <Badge variant="outline" className="text-xs">{endpoint.time}ms</Badge>}
-                    </div>
-                  </div>
-                  <Button 
-                    size="icon" 
-                    variant="ghost"
-                    onClick={() => window.open(endpoint.url, '_blank')}
-                    title="In neuem Tab öffnen"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </TabsContent>
-            
-            {/* Environment Tab */}
-            <TabsContent value="environment" className="space-y-4">
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="font-medium mb-2">Aktuelle Umgebung</h3>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="text-sm font-medium">Hostname:</div>
-                    <div className="text-sm font-mono col-span-2">{hostInfo.hostname}</div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="text-sm font-medium">Protokoll:</div>
-                    <div className="text-sm font-mono col-span-2">{hostInfo.protocol}</div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="text-sm font-medium">Pfad:</div>
-                    <div className="text-sm font-mono col-span-2">{hostInfo.pathname}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="font-medium mb-2">User-Agent</h3>
-                <p className="text-xs font-mono break-words bg-gray-100 p-2 rounded">
-                  {navigator.userAgent}
-                </p>
-              </div>
-              
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="font-medium mb-2">HERE Developer Portal konfigurieren</h3>
-                <p className="text-sm mb-2">Folgende Domain in der HERE Developer Console freischalten:</p>
-                <div className="flex items-center gap-2 bg-gray-100 p-2 rounded">
-                  <p className="text-xs font-mono flex-1">{window.location.hostname}</p>
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    className="h-6 w-6" 
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.hostname);
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Bitte tragen Sie die Domain ohne Protokoll (http/https) und ohne Pfad ein.
-                </p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Lösungsvorschläge bei Problemen</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <h3 className="font-medium mb-1">❌ API Key nicht verfügbar</h3>
-              <p className="text-sm">
-                1. Prüfen Sie, ob die Edge Function <code>get-here-maps-key</code> korrekt konfiguriert ist.<br/>
-                2. Überprüfen Sie, ob der HERE Maps API Key in den Secrets der Edge Function hinterlegt ist.
-              </p>
-            </div>
-            
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <h3 className="font-medium mb-1">❌ SDK kann nicht geladen werden</h3>
-              <p className="text-sm">
-                1. Überprüfen Sie die Content-Security-Policy (CSP) in <code>vercel.json</code><br/>
-                2. Tragen Sie die Website-Domain in der HERE Developer Console unter "Website Restrictions" ein.<br/>
-                3. Stellen Sie sicher, dass die CSP <code>script-src</code> sowohl <code>https://js.api.here.com</code> als auch <code>'unsafe-eval'</code> enthält.
-              </p>
-            </div>
-            
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <h3 className="font-medium mb-1">❌ Netzwerk-Timeout</h3>
-              <p className="text-sm">
-                1. Prüfen Sie, ob <code>*.here.com</code> in Ihrem Netzwerk erreichbar ist.<br/>
-                2. Bei Firewalls oder restriktiven Netzwerken kann es sein, dass der Zugriff auf externe Skripte blockiert wird.
-              </p>
+            <span className="text-sm">HERE SDK geladen</span>
+            <div className="flex items-center gap-2">
+              {getStatusIcon(diagnostics.hereSDKLoaded)}
+              <span className="text-sm">{getStatusText(diagnostics.hereSDKLoaded)}</span>
             </div>
           </div>
-        </CardContent>
-        <CardFooter>
-          <p className="text-xs text-gray-500">
-            Sollten die Probleme weiterhin bestehen, prüfen Sie die Netzwerk-Logs in den Browser-DevTools (F12).
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Netzwerk-Konnektivität</span>
+            <div className="flex items-center gap-2">
+              {getStatusIcon(diagnostics.networkConnectivity)}
+              <span className="text-sm">{getStatusText(diagnostics.networkConnectivity)}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm">CSP Headers</span>
+            <div className="flex items-center gap-2">
+              {getStatusIcon(diagnostics.cspHeaders)}
+              <span className="text-sm">{getStatusText(diagnostics.cspHeaders)}</span>
+            </div>
+          </div>
+        </div>
+
+        <Button 
+          onClick={runDiagnostics} 
+          disabled={isChecking}
+          className="w-full"
+          size="sm"
+        >
+          {isChecking ? (
+            <>
+              <Clock className="h-4 w-4 mr-2 animate-spin" />
+              Diagnose läuft...
+            </>
+          ) : (
+            'Diagnose starten'
+          )}
+        </Button>
+
+        <div className="text-xs text-gray-500 space-y-1">
+          <p><strong>Erwartete Domain:</strong></p>
+          <p className="font-mono bg-gray-50 p-1 rounded text-xs break-all">
+            preview--whatsgonow-ride-share-connect.lovable.app
           </p>
-        </CardFooter>
-      </Card>
-    </div>
+          <p className="text-xs text-gray-400">
+            Diese Domain muss im HERE Developer Portal eingetragen sein.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
