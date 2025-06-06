@@ -1,6 +1,16 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Check, AlertCircle, Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const DriverApplication = () => {
   const { user, profile, refreshProfile } = useOptimizedAuth();
@@ -168,7 +178,9 @@ const DriverApplication = () => {
       });
 
       // Refresh profile to get updated role if application was approved
-      refreshProfile();
+      if (refreshProfile) {
+        refreshProfile();
+      }
     } catch (error) {
       console.error('Error submitting application:', error);
       toast({
