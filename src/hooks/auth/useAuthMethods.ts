@@ -1,128 +1,152 @@
 
-import { useState } from "react";
-import { getSupabaseClient } from "@/lib/supabaseClient";
-import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useCallback } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
 
-/**
- * Hook that provides authentication methods (sign in, sign up, sign out)
- * Optimiert für Kompatibilität mit aktueller Supabase JS SDK
- */
-export function useAuthMethods() {
-  const supabase = getSupabaseClient();
-  const [authError, setAuthError] = useState<Error | null>(null);
-  const navigate = useNavigate();
-
-  // Sign in with email and password
-  const signIn = async (email: string, password: string) => {
+export const useAuthMethods = () => {
+  // Sign In
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      
-      // Sicherheitsmaßnahme: Token im localStorage aktualisieren
-      if (data.session) {
-        localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
-      }
-      
-      return data;
-    } catch (err: any) {
-      setAuthError(err);
-      toast({
-        title: "Anmeldung fehlgeschlagen",
-        description: err?.message || "Bitte überprüfe deine E-Mail-Adresse und dein Passwort.",
-        variant: "destructive"
+      console.log('🔐 OptimizedAuth: Starting sign in for:', email);
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      throw err;
-    }
-  };
 
-  // Sign up with email, password and optional metadata
-  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+      if (error) {
+        console.error('❌ OptimizedAuth: Sign in error:', error);
+        throw error;
+      }
+
+      console.log('✅ OptimizedAuth: Sign in successful');
+      
+      toast({
+        title: "Anmeldung erfolgreich",
+        description: "Willkommen zurück!",
+      });
+      
+    } catch (error: any) {
+      console.error('❌ OptimizedAuth: Sign in failed:', error);
+      throw error;
+    }
+  }, []);
+
+  // Sign Up
+  const signUp = useCallback(async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
+      console.log('📝 OptimizedAuth: Starting sign up for:', email);
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: metadata,
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/de/dashboard`
         }
       });
-      if (error) throw error;
 
+      if (error) {
+        console.error('❌ OptimizedAuth: Sign up error:', error);
+        throw error;
+      }
+
+      console.log('✅ OptimizedAuth: Sign up successful');
+      
       toast({
         title: "Registrierung erfolgreich",
-        description: "Bestätige deine E‑Mail-Adresse, um fortzufahren."
-      });
-
-      return data;
-    } catch (err: any) {
-      setAuthError(err);
-      toast({
-        title: "Registrierung fehlgeschlagen",
-        description: err?.message || "Bitte versuche es später erneut.",
-        variant: "destructive"
-      });
-      throw err;
-    }
-  };
-
-  // Sign out - optimiert mit besserer Fehlerbehandlung und lokaler Speicherbereinigung
-  const signOut = async () => {
-    try {
-      // Bereinige erst lokalen Speicher
-      cleanupAuthState();
-      
-      // Dann führe den Supabase-Logout durch
-      const { error } = await supabase.auth.signOut({
-        scope: 'global' // Alle Sessions abmelden (nicht nur die aktuelle)
+        description: data.user && !data.session ? 
+          "Bitte bestätigen Sie Ihre E-Mail-Adresse." : 
+          "Willkommen bei Whatsgonow!"
       });
       
-      if (error) throw error;
-      
-      navigate("/", { replace: true });
     } catch (error: any) {
-      setAuthError(error);
-      toast({
-        title: "Fehler beim Abmelden",
-        description: error?.message || "Bitte versuche es später erneut.",
-        variant: "destructive"
-      });
-      
-      // Im Fehlerfall forciert zum Login weiterleiten
-      window.location.href = "/login";
+      console.error('❌ OptimizedAuth: Sign up failed:', error);
       throw error;
     }
-  };
+  }, []);
 
-  // Hilfsfunktion zum Bereinigen aller Auth-related Items aus localStorage/sessionStorage
-  const cleanupAuthState = () => {
-    // Entferne standard auth tokens
-    localStorage.removeItem('supabase.auth.token');
-    
-    // Entferne alle Supabase auth keys aus localStorage
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Entferne aus sessionStorage falls verwendet
+  // Sign Out
+  const signOut = useCallback(async (navigate: (path: string, options?: any) => void, currentLanguage: string) => {
     try {
-      Object.keys(sessionStorage || {}).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          sessionStorage.removeItem(key);
-        }
+      console.log('🚪 OptimizedAuth: Signing out...');
+
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('❌ OptimizedAuth: Sign out error:', error);
+      }
+
+      console.log('✅ OptimizedAuth: Sign out completed');
+      
+      toast({
+        title: "Abmeldung erfolgreich",
+        description: "Auf Wiedersehen!"
       });
-    } catch (e) {
-      // Ignoriere Fehler in Node.js-Umgebung, wo sessionStorage nicht existiert
+
+      // Navigation zur Startseite
+      navigate(`/${currentLanguage}`, { replace: true });
+      
+    } catch (error: any) {
+      console.error('❌ OptimizedAuth: Sign out failed:', error);
+      throw error;
     }
-  };
+  }, []);
+
+  // Emergency Reset für schwere Auth-Probleme
+  const emergencyReset = useCallback(async () => {
+    console.log('🚨 OptimizedAuth: Emergency reset initiated...');
+    
+    try {
+      // Alle lokalen Storage-Daten löschen
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.includes('supabase') || 
+        key.includes('sb-') || 
+        key.includes('auth') ||
+        key.includes('whatsgonow')
+      );
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`🧹 Removed localStorage key: ${key}`);
+      });
+
+      // SessionStorage auch leeren
+      const sessionKeys = Object.keys(sessionStorage).filter(key => 
+        key.includes('supabase') || 
+        key.includes('sb-') || 
+        key.includes('auth')
+      );
+      
+      sessionKeys.forEach(key => {
+        sessionStorage.removeItem(key);
+        console.log(`🧹 Removed sessionStorage key: ${key}`);
+      });
+
+      // Supabase Session force reset
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+        console.log('🔐 Global signout completed');
+      } catch (error) {
+        console.log('⚠️ Global signout failed, continuing...', error);
+      }
+
+      // Force reload für clean state
+      setTimeout(() => {
+        window.location.href = window.location.origin;
+      }, 1000);
+
+      return true;
+    } catch (error) {
+      console.error('❌ Emergency reset failed:', error);
+      return false;
+    }
+  }, []);
 
   return {
     signIn,
     signUp,
     signOut,
-    authError,
-    cleanupAuthState
+    emergencyReset
   };
-}
+};
