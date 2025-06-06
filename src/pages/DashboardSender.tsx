@@ -15,6 +15,8 @@ const DashboardSender = () => {
   const { getLocalizedUrl } = useLanguageMCP();
   const navigate = useNavigate();
 
+  console.log('🎯 DashboardSender: Rendering for user:', user?.email, 'role:', profile?.role);
+
   if (!profile || !['sender_private', 'sender_business'].includes(profile.role)) {
     return (
       <Layout pageType="authenticated">

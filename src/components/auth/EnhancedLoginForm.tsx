@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
+import { toast } from '@/hooks/use-toast';
 
 interface LoginFormProps {
   onToggleMode?: () => void;
@@ -80,14 +81,21 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     try {
       console.log('🔐 EnhancedLoginForm: Starting login process for:', formData.email);
 
-      // Direkt mit OptimizedAuth signIn
+      // Direkt mit OptimizedAuth signIn - kein manueller Redirect
       await signIn(formData.email.trim(), formData.password);
 
       // Reset failed attempts on successful login
       setFailedAttempts(0);
       setLockoutUntil(null);
 
-      console.log('✅ Login successful, navigation will be handled by OptimizedAuth redirect logic');
+      // Success feedback
+      toast({
+        title: "Login erfolgreich",
+        description: "Sie werden weitergeleitet...",
+        variant: "default",
+      });
+
+      console.log('✅ Login successful, redirect will be handled by useAuthRedirect');
 
     } catch (err: any) {
       console.error('❌ Login failed:', err);
@@ -102,6 +110,13 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
       } else {
         setError(err.message || 'Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.');
       }
+
+      // Error feedback
+      toast({
+        title: "Login fehlgeschlagen",
+        description: err.message || 'Unbekannter Fehler',
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

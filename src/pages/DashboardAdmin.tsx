@@ -17,7 +17,9 @@ import { Link } from 'react-router-dom';
 import DashboardAdminEnhanced from '@/pages/dashboard/DashboardAdminEnhanced';
 
 const DashboardAdmin = () => {
-  const { profile } = useOptimizedAuth();
+  const { profile, user } = useOptimizedAuth();
+
+  console.log('🎯 DashboardAdmin: Rendering for user:', user?.email, 'role:', profile?.role);
 
   if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
     return (
@@ -38,7 +40,17 @@ const DashboardAdmin = () => {
 
   return (
     <Layout pageType="admin">
-      <DashboardAdminEnhanced />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            Admin Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Willkommen, {profile?.first_name || user?.email}! Hier verwalten Sie das System.
+          </p>
+        </div>
+        <DashboardAdminEnhanced />
+      </div>
     </Layout>
   );
 };
