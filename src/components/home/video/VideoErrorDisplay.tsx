@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Play, RefreshCw, ExternalLink, AlertCircle } from "lucide-react";
+import { Play, RefreshCw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface VideoErrorDisplayProps {
@@ -15,22 +15,26 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
   const hasVideoExtension = src ? ['.mp4', '.webm', '.ogg'].some(ext => src.includes(ext)) : false;
 
   return (
-    <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-300">
-      <div className="text-center text-gray-600 p-6 max-w-md">
+    <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+      <div className="text-center text-gray-600 p-6 max-w-md bg-white/80 backdrop-blur-sm rounded-lg shadow-sm">
         <div className="flex items-center justify-center mb-4">
-          <Play className="h-12 w-12 text-gray-400" />
+          <Play className="h-10 w-10 text-gray-400" />
         </div>
         
-        <p className="text-base font-medium mb-2">
+        <h3 className="text-lg font-medium mb-2 text-gray-800">
           Video wird bald verfügbar sein
-        </p>
+        </h3>
         
-        <p className="text-sm opacity-75 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Hier wird das Erklärvideo zu Whatsgonow eingebettet
         </p>
         
+        <p className="text-xs text-gray-500 mb-6">
+          Coming Soon – Wir arbeiten dran!
+        </p>
+        
         {error && (
-          <details className="text-xs opacity-50 bg-gray-200 p-2 rounded cursor-pointer mb-4">
+          <details className="text-xs text-gray-400 bg-gray-50 p-2 rounded cursor-pointer mb-4 opacity-60">
             <summary className="font-mono mb-1">Technische Details</summary>
             <p className="text-left">{error}</p>
             {src && (
@@ -49,9 +53,9 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
             size="sm" 
             variant="outline" 
             onClick={onRefresh}
-            className="text-gray-600 border-gray-400 hover:bg-gray-100"
+            className="text-gray-500 border-gray-300 hover:bg-gray-50"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-3 w-3 mr-2" />
             Neu laden
           </Button>
           
@@ -60,17 +64,13 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
               size="sm" 
               variant="outline" 
               onClick={onTestDirectAccess}
-              className="text-gray-600 border-gray-400 hover:bg-gray-100"
+              className="text-gray-500 border-gray-300 hover:bg-gray-50"
             >
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <ExternalLink className="h-3 w-3 mr-2" />
               URL testen
             </Button>
           )}
         </div>
-        
-        <p className="text-xs opacity-50 mt-4">
-          Demo-Modus aktiv
-        </p>
       </div>
     </div>
   );

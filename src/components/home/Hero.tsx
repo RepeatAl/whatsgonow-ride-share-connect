@@ -44,7 +44,7 @@ const Hero = () => {
             
             <Button asChild size="lg" variant="outline" className="border-2 border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white px-8 py-3 text-lg font-semibold transition-all duration-200">
               <Link to={getLocalizedUrl("/pre-register")}>
-                {t('hero.cta_early_access', 'Early Access sichern')}
+                {t('hero.cta_join_now', 'Jetzt mitmachen')}
               </Link>
             </Button>
           </div>

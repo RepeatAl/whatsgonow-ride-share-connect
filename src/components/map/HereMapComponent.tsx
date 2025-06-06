@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, AlertTriangle } from 'lucide-react';
@@ -50,6 +49,9 @@ const HERE_CDN_URLS = [
   'https://js.api.here.com/v3/3.1/mapsjs-bundle.js',
   'https://cdn.here.com/v3/3.1/mapsjs-bundle.js'
 ];
+
+// Reduced timeout for faster fallbacks
+const SDK_TIMEOUT_MS = 5000; // Reduced from 10 seconds to 5 seconds
 
 // ⚠️ HARDCODE BEREICH: Ersetzen Sie "YOUR_NEW_HERE_MAPS_API_KEY" mit Ihrem neuen API Key
 const HARDCODED_HERE_API_KEY = "rjeU6vqAFPrInyMy3TItiCISLjsfgCBfsBYOgE3MjOU";
@@ -225,7 +227,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     return 'unknown';
   };
 
-  // Self-contained CDN loading function with internal retry logic
+  // Self-contained CDN loading function with internal retry logic and reduced timeout
   const loadHereMapsAPI = async (): Promise<boolean> => {
     // Check if already loaded
     if (window.H) {
@@ -233,7 +235,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
       return true;
     }
 
-    // Try each CDN URL once
+    // Try each CDN URL once with reduced timeout
     for (const cdnUrl of HERE_CDN_URLS) {
       console.log(`[HERE Maps] Attempting to load SDK from ${cdnUrl}...`);
       
@@ -256,13 +258,13 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
           
           document.head.appendChild(script);
           
-          // Add timeout to detect stalled loading
+          // Reduced timeout for faster fallbacks
           setTimeout(() => {
             if (!window.H) {
-              console.warn(`[HERE Maps] Script loading timed out after 10 seconds from ${cdnUrl}`);
+              console.warn(`[HERE Maps] Script loading timed out after ${SDK_TIMEOUT_MS / 1000} seconds from ${cdnUrl}`);
               reject(new Error(`Timeout loading from ${cdnUrl}`));
             }
-          }, 10000);
+          }, SDK_TIMEOUT_MS);
         });
 
         // Success - SDK loaded
