@@ -13,8 +13,9 @@ serve(async (req) => {
   }
 
   try {
-    // Get HERE Maps API key from environment (Supabase Secrets)
+    // Get HERE Maps API key and App ID from environment (Supabase Secrets)
     const apiKey = Deno.env.get('HERE_MAPS_API_KEY')
+    const appId = Deno.env.get('HERE_MAPS_APP_ID')
     
     if (!apiKey) {
       console.error('HERE_MAPS_API_KEY not found in environment')
@@ -30,12 +31,27 @@ serve(async (req) => {
       )
     }
 
-    console.log('HERE Maps API Key erfolgreich geladen')
+    if (!appId) {
+      console.error('HERE_MAPS_APP_ID not found in environment')
+      return new Response(
+        JSON.stringify({ 
+          error: 'HERE Maps App ID nicht konfiguriert',
+          details: 'Bitte konfigurieren Sie HERE_MAPS_APP_ID in den Supabase Secrets'
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    console.log('HERE Maps API Key und App ID erfolgreich geladen')
     
     return new Response(
       JSON.stringify({ 
         success: true,
         apiKey: apiKey,
+        appId: appId,
         timestamp: new Date().toISOString()
       }),
       { 

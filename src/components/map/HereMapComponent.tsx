@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, AlertTriangle } from 'lucide-react';
@@ -55,6 +56,7 @@ const SDK_TIMEOUT_MS = 15000; // Increased from 5 seconds to 15 seconds
 
 // ⚠️ HARDCODE BEREICH: Ersetzen Sie "YOUR_NEW_HERE_MAPS_API_KEY" mit Ihrem neuen API Key
 const HARDCODED_HERE_API_KEY = "rjeU6vqAFPrInyMy3TItiCISLjsfgCBfsBYOgE3MjOU";
+const HARDCODED_HERE_APP_ID = "29iqvPg2BRrei4elsIYu";
 
 const HereMapComponent: React.FC<HereMapComponentProps> = ({
   width = '100%',
@@ -76,45 +78,51 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   const [errorType, setErrorType] = useState<ErrorType>('unknown');
   const [mapReady, setMapReady] = useState(false);
 
-  // Fetch API key from Supabase Secrets OR use hardcoded fallback
-  const getHereMapApiKey = async (): Promise<string | null> => {
-    // PRIORITY 1: Try hardcoded API key first (if provided)
-    if (HARDCODED_HERE_API_KEY && HARDCODED_HERE_API_KEY.trim() !== "") {
-      console.log('[HERE Maps] Using hardcoded API Key');
-      return HARDCODED_HERE_API_KEY;
+  // Fetch API key and App ID from Supabase Secrets OR use hardcoded fallback
+  const getHereMapCredentials = async (): Promise<{ apiKey: string; appId: string } | null> => {
+    // PRIORITY 1: Try hardcoded credentials first (if provided)
+    if (HARDCODED_HERE_API_KEY && HARDCODED_HERE_API_KEY.trim() !== "" &&
+        HARDCODED_HERE_APP_ID && HARDCODED_HERE_APP_ID.trim() !== "") {
+      console.log('[HERE Maps] Using hardcoded credentials');
+      return {
+        apiKey: HARDCODED_HERE_API_KEY,
+        appId: HARDCODED_HERE_APP_ID
+      };
     }
     
     try {
-      console.log('[HERE Maps] Fetching API key from Supabase Secrets...');
+      console.log('[HERE Maps] Fetching credentials from Supabase Secrets...');
       
       // Try to get from Edge Function
       const { data, error } = await supabase.functions.invoke('get-here-maps-key');
       
       if (error) {
         console.warn('[HERE Maps] Edge Function error:', error);
-        // Fallback to environment variable
+        // Fallback to environment variables
         const envKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
-        if (envKey && envKey !== 'demo-key') {
+        const envAppId = import.meta.env.VITE_HERE_MAPS_APP_ID;
+        if (envKey && envKey !== 'demo-key' && envAppId && envAppId !== 'demo-app-id') {
           console.log('[HERE Maps] Using environment fallback');
-          return envKey;
+          return { apiKey: envKey, appId: envAppId };
         }
-        throw new Error('HERE Maps API Key nicht verfügbar');
+        throw new Error('HERE Maps credentials nicht verfügbar');
       }
       
-      if (data?.apiKey) {
-        console.log('[HERE Maps] API Key erfolgreich von Supabase erhalten');
-        return data.apiKey;
+      if (data?.apiKey && data?.appId) {
+        console.log('[HERE Maps] Credentials erfolgreich von Supabase erhalten');
+        return { apiKey: data.apiKey, appId: data.appId };
       }
       
-      throw new Error('API Key nicht in Response gefunden');
+      throw new Error('Credentials nicht in Response gefunden');
     } catch (err) {
-      console.error('[HERE Maps] API Key fetch failed:', err);
+      console.error('[HERE Maps] Credentials fetch failed:', err);
       
-      // Final fallback to environment variable
+      // Final fallback to environment variables
       const envKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
-      if (envKey && envKey !== 'demo-key') {
+      const envAppId = import.meta.env.VITE_HERE_MAPS_APP_ID;
+      if (envKey && envKey !== 'demo-key' && envAppId && envAppId !== 'demo-app-id') {
         console.log('[HERE Maps] Using environment fallback after error');
-        return envKey;
+        return { apiKey: envKey, appId: envAppId };
       }
       
       return null;
@@ -293,7 +301,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     console.error('[HERE Maps] 1. Verify domain "preview--whatsgonow-ride-share-connect.lovable.app" in HERE Developer Portal');
     console.error('[HERE Maps] 2. Check CSP headers allow HERE domains in vercel.json');
     console.error('[HERE Maps] 3. Test network connectivity to js.api.here.com');
-    console.error('[HERE Maps] 4. Verify API key is valid and active');
+    console.error('[HERE Maps] 4. Verify API key and App ID are valid and active');
     return false;
   };
 
@@ -305,13 +313,15 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
 
         console.log('[HERE Maps] 🚀 Initializing map...');
 
-        // Get API key
-        const apiKey = await getHereMapApiKey();
-        if (!apiKey) {
-          throw new Error('HERE Maps API Key nicht konfiguriert oder nicht verfügbar');
+        // Get credentials (API key + App ID)
+        const credentials = await getHereMapCredentials();
+        if (!credentials) {
+          throw new Error('HERE Maps credentials nicht konfiguriert oder nicht verfügbar');
         }
 
-        console.log('[HERE Maps] 🔑 API Key erfolgreich geladen:', apiKey.substring(0, 8) + '...');
+        console.log('[HERE Maps] 🔑 Credentials erfolgreich geladen:', 
+          credentials.apiKey.substring(0, 8) + '...', 
+          'App ID:', credentials.appId.substring(0, 8) + '...');
 
         // Load HERE Maps SDK with enhanced diagnostics
         const sdkLoaded = await loadHereMapsAPI();
@@ -324,10 +334,11 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
           throw new Error('HERE Maps SDK wurde geladen, aber H-Objekt ist nicht verfügbar');
         }
 
-        // Initialize HERE Maps Platform
-        console.log('[HERE Maps] 🏗️ Initializing Platform...');
+        // Initialize HERE Maps Platform with both API key and App ID
+        console.log('[HERE Maps] 🏗️ Initializing Platform with credentials...');
         platformRef.current = new window.H.service.Platform({
-          'apikey': apiKey
+          'apikey': credentials.apiKey,
+          'app_id': credentials.appId
         });
 
         // Get default map types
