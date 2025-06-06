@@ -1,4 +1,3 @@
-
 import React from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/home/Hero";
@@ -9,6 +8,7 @@ import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 import HowItWorks from "@/components/HowItWorks";
 import { HereMapWithData } from "@/components/map";
+import StableHereMapWithData from "@/components/map/StableHereMapWithData";
 import { useTranslation } from 'react-i18next';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { Link } from 'react-router-dom';
@@ -17,13 +17,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Map, Zap } from 'lucide-react';
 
 /**
- * VOLLSTÄNDIGE Landing Page mit echten Daten
+ * VOLLSTÄNDIGE Landing Page mit stabilisierten HERE Maps
  */
 const Landing = () => {
   const { t } = useTranslation(['common', 'landing']);
   const { getLocalizedUrl } = useLanguageMCP();
 
-  console.log('[Landing] Rendering COMPLETE Landing page with real HERE Maps data');
+  console.log('[Landing] Rendering COMPLETE Landing page with stabilized HERE Maps');
 
   return (
     <Layout hideNavigation={false} pageType="home">
@@ -34,7 +34,7 @@ const Landing = () => {
         {/* How It Works Section */}
         <HowItWorks />
         
-        {/* HERE Maps Integration Section with REAL DATA */}
+        {/* Stabilized HERE Maps Integration Section */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
@@ -48,7 +48,7 @@ const Landing = () => {
             
             <Card className="mb-8 shadow-lg">
               <CardContent className="p-0">
-                <HereMapWithData
+                <StableHereMapWithData
                   height="400px"
                   center={{ lat: 51.1657, lng: 10.4515 }} // Center of Germany
                   zoom={6}
