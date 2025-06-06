@@ -3,11 +3,11 @@ import React from 'react';
 import Landing from './Landing';
 
 /**
- * Home Page - Uses the full Landing page with all components
- * This ensures the complete landing experience with HERE Maps, Hero, Benefits, etc.
+ * Home Page - Vollständige Landing Page mit allen Sektionen
+ * Hero, HowItWorks, Benefits, UserGroups, Testimonials, ESG, CTA
  */
 const Home = () => {
-  console.log('[Home] Rendering with full Landing page');
+  console.log('[Home] Rendering with complete Landing page');
   return <Landing />;
 };
 

@@ -1,12 +1,19 @@
 
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Users, CheckCircle, Play, RefreshCw, AlertTriangle, Loader2 } from "lucide-react";
-import VideoGalleryWithAnalytics from "./video/VideoGalleryWithAnalytics";
-import { supabase } from "@/lib/supabaseClient";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Play, 
+  RefreshCw, 
+  AlertTriangle, 
+  Loader2,
+  CheckCircle 
+} from "lucide-react";
+import VideoGalleryWithAnalytics from "./video/VideoGalleryWithAnalytics";
+import HowItWorksCore from "./HowItWorksCore";
+import { supabase } from "@/lib/supabaseClient";
 import type { AdminVideo } from "@/types/admin";
 
 const HowItWorks = () => {
@@ -25,27 +32,7 @@ const HowItWorks = () => {
       
       const { data, error } = await supabase
         .from('admin_videos')
-        .select(`
-          id, 
-          filename,
-          original_name,
-          file_path,
-          file_size,
-          mime_type,
-          public_url,
-          thumbnail_url,
-          display_title_de, 
-          display_title_en, 
-          display_title_ar, 
-          display_description_de, 
-          display_description_en, 
-          display_description_ar, 
-          description, 
-          tags, 
-          active, 
-          public, 
-          uploaded_at
-        `)
+        .select('*')
         .eq('public', true)
         .eq('active', true)
         .contains('tags', ['howto'])
@@ -89,33 +76,6 @@ const HowItWorks = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  const steps = [
-    {
-      icon: Upload,
-      title: t('how_it_works.step1.title'),
-      description: t('how_it_works.step1.description'),
-    },
-    {
-      icon: Users,
-      title: t('how_it_works.step2.title'),
-      description: t('how_it_works.step2.description'),
-    },
-    {
-      icon: CheckCircle,
-      title: t('how_it_works.step3.title'),
-      description: t('how_it_works.step3.description'),
-    },
-  ];
-
-  const getHealthStatusColor = () => {
-    switch (systemHealth) {
-      case 'good': return 'text-green-600';
-      case 'warning': return 'text-amber-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
   const getHealthStatusIcon = () => {
     switch (systemHealth) {
       case 'good': return <CheckCircle className="h-4 w-4 text-green-600" />;
@@ -130,14 +90,14 @@ const HowItWorks = () => {
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            {t('how_it_works.title')}
+            {t('how_it_works.title', 'Wie funktioniert whatsgonow?')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {t('how_it_works.description')}
+            {t('how_it_works.description', 'In drei einfachen Schritten zu deinem Transport')}
           </p>
         </div>
 
-        {/* Video Section - Improved Layout */}
+        {/* Video Section */}
         <div className="mb-16">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
@@ -180,7 +140,7 @@ const HowItWorks = () => {
                 <CardContent className="text-center p-12">
                   <AlertTriangle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Video-System Status</h3>
-                  <p className={`text-lg mb-4 ${getHealthStatusColor()}`}>{error}</p>
+                  <p className="text-lg mb-4 text-gray-600">{error}</p>
                   <Button variant="outline" onClick={handleRefresh}>
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Erneut versuchen
@@ -213,26 +173,8 @@ const HowItWorks = () => {
           </div>
         </div>
 
-        {/* Steps Grid - Keep existing layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map((step, index) => (
-            <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="text-center pb-4">
-                <div className="w-12 h-12 bg-brand-orange rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <step.icon className="h-6 w-6 text-white" />
-                </div>
-                <CardTitle className="text-lg font-semibold text-gray-900">
-                  {step.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-gray-600 text-center">
-                  {step.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Steps Grid */}
+        <HowItWorksCore />
       </div>
     </section>
   );
