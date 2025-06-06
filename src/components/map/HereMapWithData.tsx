@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, Refresh } from 'lucide-react';
+import { Loader2, MapPin, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import HereMapModularLoader from './HereMapModularLoader';
@@ -131,7 +130,7 @@ const HereMapWithData: React.FC<HereMapWithDataProps> = ({
             size="sm" 
             className="ml-2"
           >
-            <Refresh className="h-4 w-4 mr-1" />
+            <RefreshCw className="h-4 w-4 mr-1" />
             Neu laden
           </Button>
         </AlertDescription>
@@ -168,7 +167,7 @@ const HereMapWithData: React.FC<HereMapWithDataProps> = ({
             <AlertDescription>
               {t('landing:data_load_error')}: {dataError}
               <Button onClick={refetch} variant="outline" size="sm" className="ml-2">
-                <Refresh className="h-4 w-4 mr-1" />
+                <RefreshCw className="h-4 w-4 mr-1" />
                 {t('common:retry')}
               </Button>
             </AlertDescription>
