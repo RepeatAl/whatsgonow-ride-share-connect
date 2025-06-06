@@ -1,6 +1,7 @@
 
+
 export interface OrderItem {
-  id?: string;
+  id: string; // Required instead of optional
   name: string;
   quantity: number;
   weight?: number;
@@ -22,3 +23,4 @@ export interface DetailedItem {
     height: number;
   };
 }
+
