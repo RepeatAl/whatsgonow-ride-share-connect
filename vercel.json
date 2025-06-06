@@ -6,7 +6,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://js.api.here.com https://*.here.com https://cdn.here.com 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://js.api.here.com https://*.here.com https://*.hereapi.com https://*.supabase.co https://*.lovableproject.com; style-src 'self' 'unsafe-inline' https://js.api.here.com https://*.here.com; img-src * data: blob:; font-src 'self' data:; media-src *;"
+          "value": "default-src 'self'; script-src 'self' https://js.api.here.com https://*.here.com https://cdn.here.com https://api.here.com https://developer.here.com 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://js.api.here.com https://*.here.com https://*.hereapi.com https://api.here.com https://developer.here.com https://*.supabase.co https://*.lovableproject.com; style-src 'self' 'unsafe-inline' https://js.api.here.com https://*.here.com https://api.here.com; img-src * data: blob:; font-src 'self' data:; media-src *;"
         }
       ]
     }

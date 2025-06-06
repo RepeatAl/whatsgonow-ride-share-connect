@@ -25,7 +25,7 @@ interface MarkerData {
   title: string;
   description?: string;
   price?: number;
-  type: 'test' | 'transport' | 'request';
+  type: 'test' | 'transport' | 'request' | 'pickup';
 }
 
 type ErrorType = 'api_key' | 'network' | 'cors' | 'unknown';
@@ -51,12 +51,21 @@ const HERE_CDN_URLS = [
   'https://cdn.here.com/v3/3.1/mapsjs-bundle.js'
 ];
 
-// Increased timeout for better loading success rate
-const SDK_TIMEOUT_MS = 15000; // Increased from 5 seconds to 15 seconds
+// Timeout increased for better loading success rate
+const SDK_TIMEOUT_MS = 12000; // Increased to 12 seconds for better reliability
 
-// ⚠️ HARDCODE BEREICH: Ersetzen Sie "YOUR_NEW_HERE_MAPS_API_KEY" mit Ihrem neuen API Key
+// ⚠️ HARDCODE BEREICH: API Key mit verbesserter Struktur
 const HARDCODED_HERE_API_KEY = "rjeU6vqAFPrInyMy3TItiCISLjsfgCBfsBYOgE3MjOU";
 const HARDCODED_HERE_APP_ID = "29iqvPg2BRrei4elsIYu";
+
+// Mini-Testdaten für Marker
+const TEST_PICKUP_LOCATIONS: MarkerData[] = [
+  { lat: 52.5200, lng: 13.4050, title: 'Berlin Alexanderplatz', description: 'Abholung: Paket nach München', price: 25, type: 'pickup' },
+  { lat: 48.1351, lng: 11.5820, title: 'München Hauptbahnhof', description: 'Lieferung: Dokumente nach Hamburg', price: 15, type: 'pickup' },
+  { lat: 53.5511, lng: 9.9937, title: 'Hamburg Speicherstadt', description: 'Transport: Möbel nach Berlin', price: 45, type: 'pickup' },
+  { lat: 50.9375, lng: 6.9603, title: 'Köln Dom', description: 'Express: Medikamente nach Frankfurt', price: 30, type: 'pickup' },
+  { lat: 50.1109, lng: 8.6821, title: 'Frankfurt Flughafen', description: 'Abholdienst: Koffer nach Stuttgart', price: 20, type: 'pickup' }
+];
 
 const HereMapComponent: React.FC<HereMapComponentProps> = ({
   width = '100%',
@@ -302,6 +311,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     console.error('[HERE Maps] 2. Check CSP headers allow HERE domains in vercel.json');
     console.error('[HERE Maps] 3. Test network connectivity to js.api.here.com');
     console.error('[HERE Maps] 4. Verify API key and App ID are valid and active');
+    console.error('[HERE Maps] 5. Ensure HERE Maps API for JavaScript, Map Tile API v3, and Vector Tile API v2 are linked');
     return false;
   };
 
@@ -365,13 +375,22 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
           const ui = window.H.ui.UI.createDefault(mapInstanceRef.current, defaultLayers);
 
           // Add markers based on configuration
+          let allMarkers: MarkerData[] = [];
+          
           if (showTestMarkers) {
-            addMarkersToMap(testMarkers);
+            allMarkers = [...allMarkers, ...testMarkers];
           }
           
           if (showMockData) {
             const mockMarkers = createMarkersFromMockData();
-            addMarkersToMap(mockMarkers);
+            allMarkers = [...allMarkers, ...mockMarkers];
+          }
+
+          // Always add pickup test markers for demo
+          allMarkers = [...allMarkers, ...TEST_PICKUP_LOCATIONS];
+
+          if (allMarkers.length > 0) {
+            addMarkersToMap(allMarkers);
           }
 
           console.log('[HERE Maps] ✅ Map initialized successfully');
@@ -406,6 +425,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
 
   const getMarkerColor = (marker: MarkerData): string => {
     if (marker.type === 'test') return '#9b87f5'; // Purple for test markers
+    if (marker.type === 'pickup') return '#3b82f6'; // Blue for pickup locations
     
     const price = marker.price || 0;
     if (price < 15) return '#22c55e'; // Green
@@ -453,9 +473,11 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     mapInstanceRef.current.addObject(group);
     
     // Ensure all markers are visible
-    mapInstanceRef.current.getViewModel().setLookAtData({
-      bounds: group.getBoundingBox()
-    });
+    if (markers.length > 0) {
+      mapInstanceRef.current.getViewModel().setLookAtData({
+        bounds: group.getBoundingBox()
+      });
+    }
   };
 
   // Resize handler for responsive behavior
@@ -471,7 +493,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   }, []);
 
   const getActiveMarkerCount = (): number => {
-    let count = 0;
+    let count = TEST_PICKUP_LOCATIONS.length; // Always include pickup locations
     if (showTestMarkers) count += testMarkers.length;
     if (showMockData) count += createMarkersFromMockData().length;
     return count;
@@ -518,18 +540,17 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         }}
       />
       
-      {mapReady && (showTestMarkers || showMockData) && (
+      {mapReady && (
         <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
           <div className="flex items-center space-x-2 text-sm">
-            <MapPin className="h-4 w-4 text-purple-600" />
-            <span className="text-gray-700">{getActiveMarkerCount()} Marker</span>
-            {showMockData && (
-              <div className="flex space-x-1 ml-2">
-                <div className="w-3 h-3 rounded-full bg-green-500" title="< 15€"></div>
-                <div className="w-3 h-3 rounded-full bg-orange-500" title="15-25€"></div>
-                <div className="w-3 h-3 rounded-full bg-red-500" title="> 25€"></div>
-              </div>
-            )}
+            <MapPin className="h-4 w-4 text-blue-600" />
+            <span className="text-gray-700">{getActiveMarkerCount()} Standorte</span>
+            <div className="flex space-x-1 ml-2">
+              <div className="w-3 h-3 rounded-full bg-blue-500" title="Abholorte"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500" title="< 15€"></div>
+              <div className="w-3 h-3 rounded-full bg-orange-500" title="15-25€"></div>
+              <div className="w-3 h-3 rounded-full bg-red-500" title="> 25€"></div>
+            </div>
           </div>
         </div>
       )}
