@@ -4,7 +4,7 @@ export interface OrderItem {
   name: string;
   quantity: number;
   weight: number; // Made required to match Item interface
-  dimensions?: {
+  dimensions: {
     length: number;
     width: number;
     height: number;
