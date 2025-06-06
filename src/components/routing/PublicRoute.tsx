@@ -1,6 +1,6 @@
 
 import React, { ReactNode } from "react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { useLocation, Navigate } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { isPublicRoute } from "@/routes/publicRoutes";
@@ -10,11 +10,11 @@ interface PublicRouteProps {
 }
 
 /**
- * PublicRoute - Updated for SimpleAuth integration
+ * PublicRoute - Updated for OptimizedAuth integration
  * Uses centralized isPublicRoute() check from publicRoutes.ts
  */
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { loading, user } = useSimpleAuth();
+  const { loading, user } = useOptimizedAuth();
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   

@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Trash2, Shield } from "lucide-react";
 import { RoleManager } from '@/components/admin/users/RoleManager';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import type { AdminUser } from "@/types/admin";
 import {
   AlertDialog,
@@ -43,7 +43,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   onUserUpdated,
   onHealthCheck
 }) => {
-  const { profile } = useSimpleAuth();
+  const { profile } = useOptimizedAuth();
   const isSuperAdmin = profile?.role === 'super_admin';
 
   if (isLoading) {

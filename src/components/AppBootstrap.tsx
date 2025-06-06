@@ -2,7 +2,7 @@
 import React, { ErrorInfo, ReactNode, useState, useEffect } from "react";
 import { Loader2, Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUserSession } from "@/contexts/UserSessionContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { useNavigate } from "react-router-dom";
 import { StableLoading } from "@/components/ui/stable-loading";
 
@@ -83,24 +83,22 @@ class ErrorBoundary extends React.Component<{ children: ReactNode, fallback: Rea
 }
 
 export const AppBootstrap = ({ children }: { children: ReactNode }) => {
-  const { loading, isInitialLoad } = useUserSession();
+  const { loading } = useOptimizedAuth();
   const [showContent, setShowContent] = useState(false);
   
   useEffect(() => {
     // Stabilisiere den Loading-State um Flimmern zu vermeiden
-    const isStillLoading = loading || isInitialLoad;
-    
-    if (!isStillLoading && !showContent) {
+    if (!loading && !showContent) {
       // Kleine Verzögerung für smooth transition
       const timer = setTimeout(() => {
         setShowContent(true);
       }, 50);
       
       return () => clearTimeout(timer);
-    } else if (isStillLoading && showContent) {
+    } else if (loading && showContent) {
       setShowContent(false);
     }
-  }, [loading, isInitialLoad, showContent]);
+  }, [loading, showContent]);
   
   if (!showContent) {
     return <StableLoading variant="page" message="Anwendung wird geladen..." />;

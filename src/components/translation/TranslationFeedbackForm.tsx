@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 interface TranslationFeedbackFormProps {
   namespace?: string;
@@ -26,7 +26,7 @@ const TranslationFeedbackForm: React.FC<TranslationFeedbackFormProps> = ({
   const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState<string>('');
   const [suggestedImprovement, setSuggestedImprovement] = useState<string>('');
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
 
   const handleSubmit = () => {
     // Simulate submission

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -21,7 +21,7 @@ interface OrderFormData {
 export const useCreateOrderSubmit = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
 
   const handleSubmit = async (data: OrderFormData) => {
     if (!user) {

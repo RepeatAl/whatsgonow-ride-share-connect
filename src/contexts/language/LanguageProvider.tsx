@@ -1,86 +1,77 @@
 
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
-interface LanguageContextValue {
+interface LanguageContextType {
   currentLanguage: string;
   setLanguage: (lang: string) => void;
-  getLocalizedUrl: (path: string) => string;
-  isRTL: boolean;
+  availableLanguages: string[];
+  isLoading: boolean;
 }
 
-const LanguageContext = createContext<LanguageContextValue>({
-  currentLanguage: 'de',
-  setLanguage: () => {},
-  getLocalizedUrl: (path: string) => path,
-  isRTL: false,
-});
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const useLanguage = () => useContext(LanguageContext);
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+};
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface LanguageProviderProps {
+  children: ReactNode;
+}
+
+export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   const { i18n } = useTranslation();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
+  const [isLoading, setIsLoading] = useState(false);
   
+  const availableLanguages = ['de', 'en', 'ar', 'pl', 'fr', 'es'];
   const currentLanguage = i18n.language || 'de';
-  const isRTL = ['ar', 'he', 'fa', 'ur'].includes(currentLanguage);
 
-  // Extract language from URL path
-  const pathLanguage = location.pathname.split('/')[1];
-  const supportedLanguages = ['de', 'en', 'fr', 'es', 'it'];
+  const setLanguage = async (lang: string) => {
+    if (!availableLanguages.includes(lang)) {
+      console.warn(`Language ${lang} is not available`);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await i18n.changeLanguage(lang);
+      localStorage.setItem('preferred-language', lang);
+      
+      // Save to user profile if authenticated
+      if (user) {
+        // TODO: Save language preference to user profile
+        console.log('TODO: Save language preference to user profile:', lang);
+      }
+    } catch (error) {
+      console.error('Error changing language:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Check if the URL starts with a supported language
-    if (supportedLanguages.includes(pathLanguage)) {
-      if (pathLanguage !== currentLanguage) {
-        i18n.changeLanguage(pathLanguage);
-      }
-    } else {
-      // If no valid language in URL, redirect to the current language
-      const newPath = `/${currentLanguage}${location.pathname}${location.search}`;
-      navigate(newPath, { replace: true });
+    // Initialize language from localStorage or user preference
+    const savedLanguage = localStorage.getItem('preferred-language');
+    if (savedLanguage && availableLanguages.includes(savedLanguage)) {
+      i18n.changeLanguage(savedLanguage);
     }
-  }, [pathLanguage, currentLanguage, location.pathname, location.search, navigate, i18n]);
-
-  const setLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    // Update URL with new language
-    const pathWithoutLang = location.pathname.split('/').slice(2).join('/');
-    const newPath = `/${lang}/${pathWithoutLang}${location.search}`;
-    navigate(newPath, { replace: true });
-  };
-
-  const getLocalizedUrl = (path: string): string => {
-    // Remove leading slash if present
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    
-    // If path is empty or just '/', return language prefix
-    if (!cleanPath || cleanPath === '') {
-      return `/${currentLanguage}`;
-    }
-    
-    // If path already starts with language code, return as is
-    if (cleanPath.startsWith(`${currentLanguage}/`)) {
-      return `/${cleanPath}`;
-    }
-    
-    // Add language prefix
-    return `/${currentLanguage}/${cleanPath}`;
-  };
-
-  const value: LanguageContextValue = {
-    currentLanguage,
-    setLanguage,
-    getLocalizedUrl,
-    isRTL,
-  };
+  }, [i18n]);
 
   return (
-    <LanguageContext.Provider value={value}>
+    <LanguageContext.Provider
+      value={{
+        currentLanguage,
+        setLanguage,
+        availableLanguages,
+        isLoading,
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   );

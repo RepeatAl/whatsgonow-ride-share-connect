@@ -2,13 +2,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
 const DashboardRedirect = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { profile, loading } = useSimpleAuth();
+  const { profile, loading } = useOptimizedAuth();
   const { getLocalizedUrl } = useLanguageMCP();
 
   useEffect(() => {

@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export const DebugAuth = () => {
-  const { user, session, profile, loading, refreshProfile } = useSimpleAuth();
+  const { user, session, profile, loading, refreshProfile } = useOptimizedAuth();
 
   const testRegistration = async () => {
     const testEmail = `test${Date.now()}@example.com`;
@@ -33,7 +33,7 @@ export const DebugAuth = () => {
   return (
     <Card className="m-4">
       <CardHeader>
-        <CardTitle>Auth Debug Info (Profiles-basiert)</CardTitle>
+        <CardTitle>Auth Debug Info (OptimizedAuth)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>

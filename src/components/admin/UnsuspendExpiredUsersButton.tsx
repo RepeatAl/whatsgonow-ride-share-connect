@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 import { RefreshCcw } from 'lucide-react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 interface UnsuspendExpiredUsersButtonProps {
   className?: string;
@@ -16,7 +16,7 @@ const UnsuspendExpiredUsersButton: React.FC<UnsuspendExpiredUsersButtonProps> = 
   variant = 'outline'
 }) => {
   const [loading, setLoading] = useState(false);
-  const { profile } = useSimpleAuth();
+  const { profile } = useOptimizedAuth();
   
   // Prüfen, ob der Nutzer Admin-Berechtigungen hat
   const canRunFunction = profile?.role && ['admin', 'super_admin'].includes(profile.role);

@@ -1,98 +1,104 @@
 
-import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { debounce } from 'lodash';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
-interface OptimizedLanguageContextValue {
+interface OptimizedLanguageContextType {
   currentLanguage: string;
   setLanguage: (lang: string) => void;
-  getLocalizedUrl: (path: string) => string;
-  isRTL: boolean;
-  supportedLanguages: string[];
+  availableLanguages: string[];
+  isLoading: boolean;
+  getLocalizedPath: (path: string) => string;
+  switchLanguage: (newLang: string) => void;
 }
 
-const OptimizedLanguageContext = createContext<OptimizedLanguageContextValue>({
-  currentLanguage: 'de',
-  setLanguage: () => {},
-  getLocalizedUrl: (path: string) => path,
-  isRTL: false,
-  supportedLanguages: ['de', 'en'],
-});
+const OptimizedLanguageContext = createContext<OptimizedLanguageContextType | undefined>(undefined);
 
-export const useOptimizedLanguage = () => useContext(OptimizedLanguageContext);
+export const useOptimizedLanguage = () => {
+  const context = useContext(OptimizedLanguageContext);
+  if (!context) {
+    throw new Error('useOptimizedLanguage must be used within OptimizedLanguageProvider');
+  }
+  return context;
+};
 
-export const OptimizedLanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface OptimizedLanguageProviderProps {
+  children: ReactNode;
+}
+
+export const OptimizedLanguageProvider = ({ children }: OptimizedLanguageProviderProps) => {
   const { i18n } = useTranslation();
-  const location = useLocation();
+  const { user } = useOptimizedAuth();
   const navigate = useNavigate();
-  const { user } = useSimpleAuth();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
   
-  const supportedLanguages = useMemo(() => ['de', 'en', 'fr', 'es', 'it'], []);
+  const availableLanguages = ['de', 'en', 'ar', 'pl', 'fr', 'es'];
   const currentLanguage = i18n.language || 'de';
-  const isRTL = useMemo(() => ['ar', 'he', 'fa', 'ur'].includes(currentLanguage), [currentLanguage]);
 
-  // Extract language from URL path
-  const pathLanguage = useMemo(() => location.pathname.split('/')[1], [location.pathname]);
-
-  // Debounced navigation to prevent rapid redirects
-  const debouncedNavigate = useMemo(
-    () => debounce((path: string) => navigate(path, { replace: true }), 100),
-    [navigate]
-  );
-
-  useEffect(() => {
-    // Check if the URL starts with a supported language
-    if (supportedLanguages.includes(pathLanguage)) {
-      if (pathLanguage !== currentLanguage) {
-        i18n.changeLanguage(pathLanguage);
-      }
-    } else {
-      // If no valid language in URL, redirect to the current language
-      const newPath = `/${currentLanguage}${location.pathname}${location.search}`;
-      debouncedNavigate(newPath);
-    }
-  }, [pathLanguage, currentLanguage, location.pathname, location.search, debouncedNavigate, i18n, supportedLanguages]);
-
-  const setLanguage = useMemo(() => (lang: string) => {
-    if (supportedLanguages.includes(lang)) {
-      i18n.changeLanguage(lang);
-      // Update URL with new language
-      const pathWithoutLang = location.pathname.split('/').slice(2).join('/');
-      const newPath = `/${lang}/${pathWithoutLang}${location.search}`;
-      navigate(newPath, { replace: true });
-    }
-  }, [i18n, location.pathname, location.search, navigate, supportedLanguages]);
-
-  const getLocalizedUrl = useMemo(() => (path: string): string => {
-    // Remove leading slash if present
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    
-    // If path is empty or just '/', return language prefix
-    if (!cleanPath || cleanPath === '') {
-      return `/${currentLanguage}`;
-    }
-    
-    // If path already starts with language code, return as is
-    if (cleanPath.startsWith(`${currentLanguage}/`)) {
-      return `/${cleanPath}`;
-    }
-    
-    // Add language prefix
-    return `/${currentLanguage}/${cleanPath}`;
+  const getLocalizedPath = useCallback((path: string) => {
+    // Remove existing language prefix if present
+    const cleanPath = path.replace(/^\/[a-z]{2}\//, '/');
+    return `/${currentLanguage}${cleanPath === '/' ? '' : cleanPath}`;
   }, [currentLanguage]);
 
-  const value: OptimizedLanguageContextValue = useMemo(() => ({
-    currentLanguage,
-    setLanguage,
-    getLocalizedUrl,
-    isRTL,
-    supportedLanguages,
-  }), [currentLanguage, setLanguage, getLocalizedUrl, isRTL, supportedLanguages]);
+  const setLanguage = async (lang: string) => {
+    if (!availableLanguages.includes(lang)) {
+      console.warn(`Language ${lang} is not available`);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await i18n.changeLanguage(lang);
+      localStorage.setItem('preferred-language', lang);
+      
+      // Save to user profile if authenticated
+      if (user) {
+        console.log('TODO: Save language preference to user profile:', lang);
+      }
+    } catch (error) {
+      console.error('Error changing language:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const switchLanguage = useCallback((newLang: string) => {
+    const currentPath = location.pathname;
+    const newPath = getLocalizedPath(currentPath.replace(/^\/[a-z]{2}\//, '/'));
+    const finalPath = newPath.replace(`/${currentLanguage}`, `/${newLang}`);
+    
+    setLanguage(newLang);
+    navigate(finalPath, { replace: true });
+  }, [location.pathname, currentLanguage, getLocalizedPath, navigate, setLanguage]);
+
+  useEffect(() => {
+    // Initialize language from URL or localStorage
+    const pathLang = location.pathname.match(/^\/([a-z]{2})\//)?.[1];
+    const savedLanguage = localStorage.getItem('preferred-language');
+    
+    if (pathLang && availableLanguages.includes(pathLang)) {
+      if (pathLang !== currentLanguage) {
+        i18n.changeLanguage(pathLang);
+      }
+    } else if (savedLanguage && availableLanguages.includes(savedLanguage)) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n, location.pathname, currentLanguage]);
 
   return (
-    <OptimizedLanguageContext.Provider value={value}>
+    <OptimizedLanguageContext.Provider
+      value={{
+        currentLanguage,
+        setLanguage,
+        availableLanguages,
+        isLoading,
+        getLocalizedPath,
+        switchLanguage,
+      }}
+    >
       {children}
     </OptimizedLanguageContext.Provider>
   );

@@ -1,7 +1,7 @@
 
 import React, { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
@@ -10,7 +10,7 @@ interface AdminRouteProps {
 }
 
 export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user, profile, loading, isProfileLoading } = useSimpleAuth();
+  const { user, profile, loading, isProfileLoading } = useOptimizedAuth();
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   

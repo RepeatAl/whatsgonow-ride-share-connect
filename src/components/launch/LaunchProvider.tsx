@@ -1,7 +1,7 @@
 
 import { useState, ReactNode, createContext, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useUserSession } from "@/contexts/UserSessionContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import NewUserOnboarding from "./NewUserOnboarding";
 
@@ -33,10 +33,11 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Use UserSessionContext instead of AuthContext
-  const { user, isInitialLoad, isTest, region } = useUserSession();
+  // Use OptimizedAuth instead of UserSession
+  const { user, loading } = useOptimizedAuth();
 
   const isLaunchReady = import.meta.env.VITE_LAUNCH_READY === "true";
+  const isTest = import.meta.env.DEV;
 
   const trackEvent = (eventName: string, properties: Record<string, any> = {}) => {
     console.log(`[Analytics] ${eventName}`, properties);
@@ -64,7 +65,7 @@ const LaunchProvider = ({ children }: LaunchProviderProps) => {
     setHasCompletedOnboarding(true);
   };
 
-  if (isInitialLoad) {
+  if (loading) {
     return <LoadingSpinner />;
   }
 

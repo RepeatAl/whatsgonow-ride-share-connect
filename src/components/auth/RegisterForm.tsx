@@ -7,14 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 export const RegisterForm = () => {
   const { t } = useTranslation(["auth", "common"]);
-  const { signUp, loading } = useSimpleAuth();
+  const { signUp, loading } = useOptimizedAuth();
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
   
@@ -89,37 +89,37 @@ export const RegisterForm = () => {
         city: formData.city,
         role: formData.role
       };
-      
+
       await signUp(formData.email, formData.password, metadata);
       
-      // Redirect wird vom Auth-Hook gehandhabt
+      // Success message will be shown by the auth context
+      console.log("Registration successful");
+      
     } catch (err: any) {
       console.error("Registration error:", err);
-      setError(err.message || "Registrierung fehlgeschlagen. Bitte versuche es erneut.");
+      setError(err.message || "Bei der Registrierung ist ein Fehler aufgetreten.");
     } finally {
       setFormLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-2xl text-center">
-          {t("auth:register", "Registrieren")}
-        </CardTitle>
-        <CardDescription className="text-center">
-          Erstelle dein Whatsgonow-Konto
+        <CardTitle>{t("auth:register", "Registrieren")}</CardTitle>
+        <CardDescription>
+          {t("auth:register_description", "Erstelle dein kostenloses Konto")}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {error && (
-          <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 rounded-lg border border-red-200">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-        
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm">{error}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="firstName">Vorname *</Label>
@@ -127,8 +127,8 @@ export const RegisterForm = () => {
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange("firstName", e.target.value)}
-                disabled={isLoading}
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -137,26 +137,51 @@ export const RegisterForm = () => {
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange("lastName", e.target.value)}
-                disabled={isLoading}
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
-          
+
           <div>
-            <Label htmlFor="email">E-Mail *</Label>
+            <Label htmlFor="email">E-Mail-Adresse *</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
-              disabled={isLoading}
               required
+              disabled={isLoading}
             />
           </div>
-          
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="password">Passwort *</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Passwort bestätigen *</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
           <div>
-            <Label htmlFor="phone">Telefon</Label>
+            <Label htmlFor="phone">Telefonnummer</Label>
             <Input
               id="phone"
               type="tel"
@@ -165,7 +190,7 @@ export const RegisterForm = () => {
               disabled={isLoading}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="region">Region *</Label>
             <Select value={formData.region} onValueChange={(value) => handleInputChange("region", value)} disabled={isLoading}>
@@ -173,16 +198,16 @@ export const RegisterForm = () => {
                 <SelectValue placeholder="Wähle deine Region" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Deutschland">Deutschland</SelectItem>
-                <SelectItem value="Österreich">Österreich</SelectItem>
-                <SelectItem value="Schweiz">Schweiz</SelectItem>
-                <SelectItem value="Niederlande">Niederlande</SelectItem>
-                <SelectItem value="Belgien">Belgien</SelectItem>
-                <SelectItem value="Luxemburg">Luxemburg</SelectItem>
+                <SelectItem value="de">Deutschland</SelectItem>
+                <SelectItem value="at">Österreich</SelectItem>
+                <SelectItem value="ch">Schweiz</SelectItem>
+                <SelectItem value="nl">Niederlande</SelectItem>
+                <SelectItem value="be">Belgien</SelectItem>
+                <SelectItem value="fr">Frankreich</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="postalCode">PLZ</Label>
@@ -203,65 +228,41 @@ export const RegisterForm = () => {
               />
             </div>
           </div>
-          
+
           <div>
-            <Label htmlFor="role">Rolle *</Label>
+            <Label htmlFor="role">Ich möchte mich registrieren als *</Label>
             <Select value={formData.role} onValueChange={(value) => handleInputChange("role", value)} disabled={isLoading}>
               <SelectTrigger>
                 <SelectValue placeholder="Wähle deine Rolle" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sender_private">Privater Sender</SelectItem>
-                <SelectItem value="sender_business">Geschäftlicher Sender</SelectItem>
+                <SelectItem value="sender_private">Privater Auftraggeber</SelectItem>
+                <SelectItem value="sender_business">Business Auftraggeber</SelectItem>
                 <SelectItem value="driver">Fahrer</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          
-          <div>
-            <Label htmlFor="password">Passwort *</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              disabled={isLoading}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="confirmPassword">Passwort bestätigen *</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-              disabled={isLoading}
-              required
-            />
-          </div>
-          
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="gdprConsent"
               checked={formData.gdprConsent}
-              onCheckedChange={(checked) => handleInputChange("gdprConsent", checked as boolean)}
+              onCheckedChange={(checked) => handleInputChange("gdprConsent", !!checked)}
               disabled={isLoading}
             />
             <Label htmlFor="gdprConsent" className="text-sm">
               Ich stimme den Datenschutzbestimmungen zu *
             </Label>
           </div>
-          
+
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Registriere...
+                Wird registriert...
               </>
             ) : (
-              "Registrieren"
+              t("auth:register", "Registrieren")
             )}
           </Button>
         </form>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AccessDeniedMessage } from "./AccessDeniedMessage";
 import { isAdmin } from "@/lib/admin-utils";
@@ -16,7 +16,7 @@ export const AdminTabGuard: React.FC<AdminTabGuardProps> = ({
   fallbackTitle,
   fallbackDescription 
 }) => {
-  const { profile, loading, isProfileLoading } = useSimpleAuth();
+  const { profile, loading, isProfileLoading } = useOptimizedAuth();
 
   // Show loading spinner during auth or profile loading
   if (loading || isProfileLoading) {
