@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw, Shield } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 interface SecureHereMapLoaderProps {
   onApiKeyLoaded: (apiKey: string) => void;
@@ -10,13 +12,14 @@ interface SecureHereMapLoaderProps {
 }
 
 /**
- * FIXED: Direkter HERE Maps API Key Loader
- * Verwendet den bekannten funktionierenden API Key aus dem System
+ * Sichere HERE Maps API Key Verwaltung über Supabase Edge Function
+ * Verwendet get-here-maps-key für zentrale, sichere Key-Verwaltung
  */
 const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({ 
   onApiKeyLoaded, 
   onError 
 }) => {
+  const { t } = useTranslation(['common', 'map']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [keyStatus, setKeyStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
@@ -27,26 +30,31 @@ const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({
     loadingRef.current = true;
 
     try {
-      console.log('🔐 Loading HERE Maps API Key...');
+      console.log('🔐 Loading HERE Maps API Key via Supabase Edge Function...');
       setLoading(true);
       setError(null);
       setKeyStatus('loading');
 
-      // FIXED: Verwende den bekannten funktionierenden API Key
-      // Dieser Key funktioniert bereits erfolgreich für das SDK-Loading
-      const workingApiKey = "rjeU6vqAFPrInyMy3TItiCISLjsfgCBfsBYOgE3MjOU";
+      // Sichere API Key Abfrage über Supabase Edge Function
+      const { data, error: functionError } = await supabase.functions.invoke('get-here-maps-key');
 
-      if (!workingApiKey) {
-        throw new Error('HERE Maps API Key nicht verfügbar');
+      if (functionError) {
+        console.error('❌ Edge Function error:', functionError);
+        throw new Error(t('map:api_key_fetch_failed', 'API-Schlüssel konnte nicht geladen werden'));
       }
 
-      console.log('✅ HERE Maps API Key successfully loaded (direct)');
+      if (!data || !data.success || !data.apiKey) {
+        console.error('❌ Invalid response from get-here-maps-key:', data);
+        throw new Error(t('map:api_key_invalid_response', 'Ungültige Antwort beim Laden des API-Schlüssels'));
+      }
+
+      console.log('✅ HERE Maps API Key successfully loaded via Edge Function');
       setKeyStatus('loaded');
-      onApiKeyLoaded(workingApiKey);
+      onApiKeyLoaded(data.apiKey);
 
     } catch (err) {
       console.error('❌ Failed to load HERE Maps API Key:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorMessage = err instanceof Error ? err.message : t('map:unknown_error', 'Unbekannter Fehler');
       setError(errorMessage);
       setKeyStatus('error');
       onError(errorMessage);
@@ -67,7 +75,9 @@ const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({
           <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
           <div className="flex items-center space-x-2 text-blue-700">
             <Shield className="h-4 w-4" />
-            <span className="text-sm font-medium">Lade HERE Maps Credentials...</span>
+            <span className="text-sm font-medium">
+              {t('map:loading_credentials', 'Lade Kartendienst-Anmeldedaten...')}
+            </span>
           </div>
         </div>
       </div>
@@ -79,19 +89,15 @@ const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({
       <Alert variant="destructive" className="mb-4">
         <AlertDescription>
           <div className="space-y-2">
-            <div className="font-medium">HERE Maps API Key Fehler:</div>
-            <div className="text-sm">{error}</div>
-            <div className="text-xs text-gray-600 mt-2">
-              Mögliche Lösungen:
-              <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>API Key in Supabase Secrets konfigurieren</li>
-                <li>HERE Developer Portal: Services aktivieren</li>
-                <li>Domain-Whitelist überprüfen</li>
-              </ul>
+            <div className="font-medium">
+              {t('map:service_unavailable', 'Kartendienst aktuell nicht verfügbar')}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {t('map:service_unavailable_description', 'Die Karte kann momentan nicht geladen werden. Bitte versuchen Sie es später erneut.')}
             </div>
             <Button onClick={() => loadApiKey()} variant="outline" size="sm" className="mt-3">
               <RefreshCw className="h-4 w-4 mr-2" />
-              Erneut versuchen
+              {t('common:retry', 'Erneut versuchen')}
             </Button>
           </div>
         </AlertDescription>
@@ -103,7 +109,7 @@ const SecureHereMapLoader: React.FC<SecureHereMapLoaderProps> = ({
     return (
       <div className="flex items-center space-x-2 text-green-600 text-sm mb-2">
         <Shield className="h-4 w-4" />
-        <span>HERE Maps Credentials erfolgreich geladen</span>
+        <span>{t('map:credentials_loaded', 'Kartendienst erfolgreich verbunden')}</span>
       </div>
     );
   }

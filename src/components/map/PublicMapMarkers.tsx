@@ -17,11 +17,13 @@ export const PublicMapMarkers: React.FC<PublicMapMarkersProps> = ({
   mapData,
   onMarkerClick
 }) => {
-  const { t } = useTranslation(['common', 'landing']);
+  const { t } = useTranslation(['common', 'landing', 'map']);
   const { getLocalizedUrl } = useLanguageMCP();
 
   React.useEffect(() => {
     if (!mapInstance || !uiInstance || !window.H) return;
+
+    console.log('🗺️ Updating map markers:', mapData.length, 'items');
 
     // Entferne vorherige Marker
     const markersToRemove: any[] = [];
@@ -34,46 +36,60 @@ export const PublicMapMarkers: React.FC<PublicMapMarkersProps> = ({
 
     // Füge neue Marker hinzu
     mapData.forEach((item) => {
-      const icon = createMarkerIcon(item.type, item.price);
-      const marker = new window.H.map.Marker(
-        { lat: item.lat, lng: item.lng },
-        { icon }
-      );
-
-      // Click Event für InfoBubble
-      marker.addEventListener('tap', (evt: any) => {
-        // Schließe vorherige Bubbles
-        uiInstance.getBubbles().forEach((bubble: any) => bubble.close());
-
-        const bubble = new window.H.ui.InfoBubble(
+      try {
+        const icon = createMarkerIcon(item.type, item.price);
+        const marker = new window.H.map.Marker(
           { lat: item.lat, lng: item.lng },
-          {
-            content: createInfoBubbleContent(item, t, getLocalizedUrl)
-          }
+          { icon }
         );
 
-        uiInstance.addBubble(bubble);
-        
-        if (onMarkerClick) {
-          onMarkerClick(item);
-        }
-      });
+        // Click Event für InfoBubble
+        marker.addEventListener('tap', (evt: any) => {
+          // Schließe vorherige Bubbles
+          uiInstance.getBubbles().forEach((bubble: any) => bubble.close());
 
-      mapInstance.addObject(marker);
+          const bubble = new window.H.ui.InfoBubble(
+            { lat: item.lat, lng: item.lng },
+            {
+              content: createInfoBubbleContent(item, t, getLocalizedUrl)
+            }
+          );
+
+          uiInstance.addBubble(bubble);
+          
+          if (onMarkerClick) {
+            onMarkerClick(item);
+          }
+        });
+
+        mapInstance.addObject(marker);
+      } catch (error) {
+        console.warn('⚠️ Failed to create marker for item:', item.id, error);
+      }
     });
+
+    console.log('✅ Map markers updated successfully');
 
   }, [mapInstance, uiInstance, mapData, t, getLocalizedUrl, onMarkerClick]);
 
   return null; // Dieser Component rendert nichts direkt
 };
 
-// Unicode-safe base64 encoding function
-const unicodeToBase64 = (str: string): string => {
-  // First encode to UTF-8, then to base64
-  return btoa(unescape(encodeURIComponent(str)));
+// Robuste base64 encoding function für Unicode
+const safeBase64Encode = (str: string): string => {
+  try {
+    // Sichere UTF-8 zu Base64 Konvertierung
+    const utf8Bytes = new TextEncoder().encode(str);
+    const binaryString = Array.from(utf8Bytes, byte => String.fromCharCode(byte)).join('');
+    return btoa(binaryString);
+  } catch (error) {
+    console.warn('⚠️ Base64 encoding failed, using fallback:', error);
+    // Fallback: Einfache ASCII-Zeichen
+    return btoa(str.replace(/[^\x00-\x7F]/g, '?'));
+  }
 };
 
-// Erstelle Icon basierend auf Typ und Preis
+// Erstelle Icon basierend auf Typ und Preis mit stabilem Unicode-Rendering
 const createMarkerIcon = (type: string, price?: number) => {
   const getColor = () => {
     if (!price) return '#6b7280'; // grau
@@ -95,21 +111,38 @@ const createMarkerIcon = (type: string, price?: number) => {
   const color = getColor();
   const symbol = getSymbol();
 
+  // Optimiertes SVG mit besserer Unicode-Unterstützung
   const svgString = `
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="14" fill="${color}" stroke="white" stroke-width="2"/>
-      <text x="16" y="20" text-anchor="middle" fill="white" font-size="12">${symbol}</text>
-      ${price ? `<text x="16" y="8" text-anchor="middle" fill="white" font-size="8">${price}€</text>` : ''}
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="18" r="16" fill="${color}" stroke="white" stroke-width="2"/>
+      <circle cx="18" cy="18" r="14" fill="${color}" opacity="0.9"/>
+      <text x="18" y="23" text-anchor="middle" fill="white" font-size="14" font-family="system-ui, -apple-system, sans-serif">${symbol}</text>
+      ${price ? `<text x="18" y="10" text-anchor="middle" fill="white" font-size="8" font-weight="bold">${price}€</text>` : ''}
     </svg>
   `;
 
-  return new window.H.map.Icon(
-    `data:image/svg+xml;base64,${unicodeToBase64(svgString)}`,
-    { size: { w: 32, h: 32 } }
-  );
+  try {
+    return new window.H.map.Icon(
+      `data:image/svg+xml;base64,${safeBase64Encode(svgString)}`,
+      { size: { w: 36, h: 36 } }
+    );
+  } catch (error) {
+    console.warn('⚠️ Icon creation failed, using fallback:', error);
+    // Fallback: Einfaches Icon ohne Emoji
+    const fallbackSvg = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2"/>
+        <circle cx="12" cy="12" r="3" fill="white"/>
+      </svg>
+    `;
+    return new window.H.map.Icon(
+      `data:image/svg+xml;base64,${safeBase64Encode(fallbackSvg)}`,
+      { size: { w: 24, h: 24 } }
+    );
+  }
 };
 
-// Erstelle InfoBubble Content
+// Erstelle InfoBubble Content mit verbesserter Mehrsprachigkeit
 const createInfoBubbleContent = (
   item: PublicMapItem, 
   t: any, 
@@ -117,41 +150,55 @@ const createInfoBubbleContent = (
 ) => {
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
   };
 
   const detailUrl = item.type === 'trip' 
     ? getLocalizedUrl(`/trip/${item.id}`)
     : getLocalizedUrl(`/order/${item.id}`);
 
+  const typeIcon = item.type === 'trip' ? '🚗' : '📦';
+  const typeLabel = item.type === 'trip' 
+    ? t('map:trip_type', 'Fahrt') 
+    : t('map:order_type', 'Auftrag');
+
   return `
-    <div style="padding: 12px; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <div style="padding: 12px; max-width: 300px; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.4;">
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-        <span style="font-size: 16px;">${item.type === 'trip' ? '🚗' : '📦'}</span>
-        <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #1f2937;">${item.title}</h4>
+        <span style="font-size: 18px;">${typeIcon}</span>
+        <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #1f2937;">${item.title}</h4>
+      </div>
+      
+      <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px;">
+        ${typeLabel}
       </div>
       
       ${item.price ? `
-        <div style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; margin-bottom: 8px; display: inline-block;">
-          <span style="font-weight: 600; color: #059669;">${item.price}€</span>
+        <div style="background: #f3f4f6; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; display: inline-block;">
+          <span style="font-weight: 600; color: #059669; font-size: 14px;">${item.price}€</span>
         </div>
       ` : ''}
       
       ${item.from_address && item.to_address ? `
-        <div style="margin-bottom: 8px; font-size: 12px; color: #6b7280;">
-          <div>${item.from_address}</div>
-          <div style="margin: 2px 0;">↓</div>
+        <div style="margin-bottom: 10px; font-size: 12px; color: #6b7280; background: #f9fafb; padding: 8px; border-radius: 4px;">
+          <div style="font-weight: 500;">${t('map:route', 'Route')}:</div>
+          <div style="margin-top: 4px;">${item.from_address}</div>
+          <div style="margin: 4px 0; text-align: center;">↓</div>
           <div>${item.to_address}</div>
         </div>
       ` : ''}
       
       ${item.date ? `
         <div style="margin-bottom: 12px; font-size: 12px; color: #6b7280;">
-          ${item.type === 'trip' ? t('common:departure') : t('common:deadline')}: ${formatDate(item.date)}
+          <strong>${item.type === 'trip' ? t('common:departure') : t('common:deadline')}:</strong> ${formatDate(item.date)}
         </div>
       ` : ''}
       
@@ -159,7 +206,7 @@ const createInfoBubbleContent = (
         <button 
           onclick="window.open('${detailUrl}', '_blank')" 
           style="
-            padding: 6px 12px; 
+            padding: 8px 12px; 
             background: #3b82f6; 
             color: white; 
             border: none; 
@@ -167,15 +214,16 @@ const createInfoBubbleContent = (
             font-size: 12px; 
             cursor: pointer;
             font-weight: 500;
+            flex: 1;
           "
         >
-          ${t('common:view_details')}
+          ${t('common:view_details', 'Details ansehen')}
         </button>
         
         <button 
           onclick="console.log('Contact for item:', '${item.id}')" 
           style="
-            padding: 6px 12px; 
+            padding: 8px 12px; 
             background: #10b981; 
             color: white; 
             border: none; 
@@ -183,9 +231,10 @@ const createInfoBubbleContent = (
             font-size: 12px; 
             cursor: pointer;
             font-weight: 500;
+            flex: 1;
           "
         >
-          ${item.type === 'trip' ? t('common:book_trip') : t('common:contact_sender')}
+          ${item.type === 'trip' ? t('common:book_trip', 'Buchen') : t('common:contact_sender', 'Kontakt')}
         </button>
       </div>
     </div>
