@@ -9,6 +9,7 @@ declare global {
       };
       mapevents: {
         Behavior: any;
+        MapEvents: any;
       };
       ui: {
         UI: {

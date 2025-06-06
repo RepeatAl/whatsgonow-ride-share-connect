@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Check, X, Copy, Globe, Shield, Code, RefreshCcw, ExternalLink } from 'lucide-react';
+import { AlertTriangle, Check, X, Copy, Globe, Shield, Code, RefreshCcw, ExternalLink, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { HERE_CDN_URLS } from './constants';
 
