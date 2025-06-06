@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import VideoErrorDisplay from "./video/VideoErrorDisplay";
 import VideoLoadingState from "./video/VideoLoadingState";
@@ -78,9 +79,8 @@ const VideoPlayerWithAnalytics = ({
     resetAnalytics();
   }, [video?.id, resetAnalytics]);
 
-  // Cache busting and URL validation - Mobile optimized
+  // Video source validation and processing
   useEffect(() => {
-    // ENHANCED LOGGING: Add detailed log messages to trace video source problems
     console.log('🎬 VideoPlayerWithAnalytics received src:', src);
     console.log('🎬 VideoPlayerWithAnalytics component props:', { 
       videoId, 
@@ -89,15 +89,35 @@ const VideoPlayerWithAnalytics = ({
       isMobile
     });
     
-    if (!src) {
-      console.log('❌ No src provided to VideoPlayerWithAnalytics');
+    // Check if src is provided and valid
+    if (!src || src.trim() === '') {
+      console.log('❌ No valid src provided to VideoPlayerWithAnalytics');
       setHasError(true);
       setIsLoading(false);
-      setErrorDetails('No video URL provided');
+      setErrorDetails('Video URL is empty or missing');
       return;
     }
 
-    // Mobile: No cache busting for better compatibility
+    // Validate URL format
+    const isValidUrl = src.startsWith('http') && (
+      src.includes('.mp4') || 
+      src.includes('.webm') || 
+      src.includes('.ogg') || 
+      src.includes('supabase')
+    );
+    
+    console.log('🔍 URL validation:', { src, isValidUrl });
+    
+    if (!isValidUrl) {
+      console.warn('⚠️ Invalid video URL format:', src);
+      setHasError(true);
+      setIsLoading(false);
+      setErrorDetails(`Invalid video URL format: ${src}`);
+      trackVideoError(`Invalid video URL format: ${src}`, 'invalid_url');
+      return;
+    }
+
+    // Process URL - Mobile: no cache busting for better compatibility
     if (isMobile) {
       setCacheBustedSrc(src);
       console.log('📱 Mobile: Using direct URL:', src);
@@ -108,18 +128,6 @@ const VideoPlayerWithAnalytics = ({
         : `${src}?t=${timestamp}`;
       setCacheBustedSrc(cacheBustedUrl);
       console.log('🖥️ Desktop: Cache-busted URL:', cacheBustedUrl);
-    }
-
-    const isValidUrl = src.startsWith('http') && (src.includes('.mp4') || src.includes('.webm') || src.includes('.ogg') || src.includes('supabase'));
-    console.log('🔍 URL validation:', { src, isValidUrl });
-    
-    if (!isValidUrl) {
-      console.warn('⚠️ Invalid video URL format:', src);
-      setHasError(true);
-      setIsLoading(false);
-      setErrorDetails(`Invalid video URL format: ${src}`);
-      trackVideoError(`Invalid video URL format: ${src}`, 'invalid_url');
-      return;
     }
 
     setHasError(false);
@@ -264,8 +272,8 @@ const VideoPlayerWithAnalytics = ({
     }
   };
 
-  // Show fallback for missing or error URLs - ENHANCED with better logging
-  if (!src || hasError) {
+  // Show fallback for missing, empty, or error URLs
+  if (!src || src.trim() === '' || hasError) {
     console.log('⚠️ Showing VideoErrorDisplay:', { src, hasError, errorDetails });
     return (
       <VideoErrorDisplay 
@@ -301,7 +309,7 @@ const VideoPlayerWithAnalytics = ({
         crossOrigin="anonymous"
         data-video-id={actualVideoId}
         data-component={component}
-        data-src-original={src} /* DEBUG: Add attribute to track original source */
+        data-src-original={src}
       />
       
       {/* Loading Indicator */}

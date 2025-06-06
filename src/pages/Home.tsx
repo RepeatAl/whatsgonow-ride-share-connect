@@ -1,13 +1,13 @@
 
 import React from 'react';
-import Landing from '@/components/Landing';
+import Landing from './Landing';
 
 /**
- * Home Page - Uses the Landing component with HERE Maps integration
- * This ensures there's no conflict between pages/Landing.tsx and components/Landing.tsx
+ * Home Page - Uses the full Landing page with all components
+ * This ensures the complete landing experience with HERE Maps, Hero, Benefits, etc.
  */
 const Home = () => {
-  console.log('[Home] Rendering with Landing component');
+  console.log('[Home] Rendering with full Landing page');
   return <Landing />;
 };
 
