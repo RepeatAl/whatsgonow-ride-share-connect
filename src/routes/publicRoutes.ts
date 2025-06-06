@@ -20,7 +20,7 @@ const PUBLIC_ROUTES = [
   '/privacy-policy',
   '/payment/status',
   '/esg-dashboard',
-  '/here-maps-demo',
+  '/here-maps-demo', // Ensure HERE Maps demo is explicitly listed
 ];
 
 // Function to check if a route is public with improved language support

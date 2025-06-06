@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
@@ -7,6 +8,7 @@ import { cleanupAuthState, isValidProfile, handleAuthError } from "@/utils/auth-
 import { useProfileWithTimeout } from "@/hooks/auth/useProfileWithTimeout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
+import { isPublicRoute } from "@/routes/publicRoutes";
 
 interface SimpleAuthContextProps {
   user: User | null;
@@ -41,7 +43,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     hasTimedOut: hasProfileTimedOut 
   } = useProfileWithTimeout(user);
 
-  // FIX: Vereinfachte Redirect-Logik ohne hasInitialRedirectRun Flag
+  // FIXED: Redirect-Logik mit isPublicRoute() Integration
   useEffect(() => {
     // Warte bis Authentifizierung und Profil geladen sind
     if (loading || isProfileLoading) {
@@ -50,6 +52,13 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const currentPath = location.pathname;
+    
+    // CRITICAL FIX: Öffentliche Routen ZUERST prüfen und komplett überspringen
+    if (isPublicRoute(currentPath)) {
+      console.debug("🟢 [SimpleAuthContext] Public route detected - skipping redirect logic", { path: currentPath });
+      return;
+    }
+    
     const isAuthPage = currentPath.includes('/login') || 
                       currentPath.includes('/register') || 
                       currentPath.includes('/pre-register') ||
@@ -60,7 +69,8 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
       user: !!user, 
       profile: !!profile, 
       isAuthPage,
-      currentPath 
+      currentPath,
+      isPublic: isPublicRoute(currentPath)
     });
 
     // FIX: Benutzer ist authentifiziert und auf Auth-Seite → zu Dashboard weiterleiten
@@ -101,13 +111,8 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // FIX: Nicht authentifiziert und versucht geschützte Route zu besuchen
-    const isPublicPath = currentPath === `/${currentLanguage}` || 
-                        currentPath.includes('/about') || 
-                        currentPath.includes('/faq') ||
-                        currentPath === '/' ||
-                        currentPath === '';
-
-    if (!user && !isAuthPage && !isPublicPath) {
+    // ENTFERNT: Der separate isPublicPath-Check wurde entfernt, da wir jetzt isPublicRoute() verwenden
+    if (!user && !isAuthPage) {
       console.debug("🔒 Not authenticated, redirecting to login");
       navigate(`/${currentLanguage}/login`, { replace: true });
       return;

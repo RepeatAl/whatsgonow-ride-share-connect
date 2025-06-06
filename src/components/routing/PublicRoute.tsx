@@ -11,7 +11,7 @@ interface PublicRouteProps {
 
 /**
  * PublicRoute - Updated for SimpleAuth integration
- * CRITICAL: This route must check if path is public BEFORE any auth redirects
+ * Uses centralized isPublicRoute() check from publicRoutes.ts
  */
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { loading, user } = useSimpleAuth();
@@ -22,19 +22,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   console.log('[PublicRoute] Is public route:', isPublicRoute(location.pathname));
   console.log('[PublicRoute] Loading:', loading, 'User:', !!user);
   
-  // CRITICAL: Always allow pre-register routes
-  if (location.pathname.includes('pre-register')) {
-    console.log('[PublicRoute] Pre-register route - always allowed');
-    return <>{!loading && children}</>;
-  }
-  
-  // CRITICAL: Always allow here-maps-demo routes
-  if (location.pathname.includes('here-maps-demo')) {
-    console.log('[PublicRoute] Here maps demo route - always allowed');
-    return <>{!loading && children}</>;
-  }
-  
-  // CRITICAL: Check if current path is public FIRST
+  // Check if current path is public using the centralized function
   if (isPublicRoute(location.pathname)) {
     console.log('[PublicRoute] Path is public - rendering without auth check');
     return <>{!loading && children}</>;

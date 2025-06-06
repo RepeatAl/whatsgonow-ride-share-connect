@@ -80,7 +80,14 @@ const VideoPlayerWithAnalytics = ({
 
   // Cache busting and URL validation - Mobile optimized
   useEffect(() => {
+    // ENHANCED LOGGING: Add detailed log messages to trace video source problems
     console.log('🎬 VideoPlayerWithAnalytics received src:', src);
+    console.log('🎬 VideoPlayerWithAnalytics component props:', { 
+      videoId, 
+      hasVideo: !!video, 
+      component, 
+      isMobile
+    });
     
     if (!src) {
       console.log('❌ No src provided to VideoPlayerWithAnalytics');
@@ -257,12 +264,13 @@ const VideoPlayerWithAnalytics = ({
     }
   };
 
-  // Fallback for missing or error URLs
+  // Show fallback for missing or error URLs - ENHANCED with better logging
   if (!src || hasError) {
+    console.log('⚠️ Showing VideoErrorDisplay:', { src, hasError, errorDetails });
     return (
       <VideoErrorDisplay 
-        error={errorDetails}
-        src={src}
+        error={errorDetails || "Video URL missing or invalid"}
+        src={src || "No source provided"}
         onRefresh={handleRefresh}
         onTestDirectAccess={testDirectAccess}
       />
@@ -293,6 +301,7 @@ const VideoPlayerWithAnalytics = ({
         crossOrigin="anonymous"
         data-video-id={actualVideoId}
         data-component={component}
+        data-src-original={src} /* DEBUG: Add attribute to track original source */
       />
       
       {/* Loading Indicator */}
