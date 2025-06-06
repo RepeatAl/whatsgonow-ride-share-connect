@@ -53,7 +53,7 @@ const HERE_CDN_URLS = [
 ];
 
 // ⚠️ HARDCODE BEREICH: Ersetzen Sie "YOUR_NEW_HERE_MAPS_API_KEY" mit Ihrem neuen API Key
-const HARDCODED_HERE_API_KEY = "YOUR_NEW_HERE_MAPS_API_KEY";
+const HARDCODED_HERE_API_KEY = "rjeU6vqAFPrInyMy3TItiCISLjsfgCBfsBYOgE3MjOU";
 
 const HereMapComponent: React.FC<HereMapComponentProps> = ({
   width = '100%',
