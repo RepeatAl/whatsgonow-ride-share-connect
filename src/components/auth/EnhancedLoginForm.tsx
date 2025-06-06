@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { supabase } from '@/lib/supabaseClient';
 
 interface LoginFormProps {
   onToggleMode?: () => void;
@@ -20,7 +19,7 @@ interface LoginFormProps {
 const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) => {
   const { t } = useTranslation(['auth', 'common']);
   const navigate = useNavigate();
-  const { signIn } = useOptimizedAuth(); // FIXED: Verwendet jetzt OptimizedAuth
+  const { signIn } = useOptimizedAuth();
   const { getLocalizedUrl } = useLanguageMCP();
   
   const [formData, setFormData] = useState({
@@ -46,20 +45,6 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     if (error) setError(null);
   };
 
-  const checkUserExists = async (email: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, email, role, verified, is_suspended')
-        .eq('email', email)
-        .maybeSingle();
-      
-      return { user: data, error };
-    } catch (err) {
-      return { user: null, error: err };
-    }
-  };
-
   const isLockedOut = () => {
     return lockoutUntil && new Date() < lockoutUntil;
   };
@@ -80,6 +65,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     }
   };
 
+  // PHASE 3: Vereinfachte Login-Logik ohne Profile-Checks
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -95,28 +81,10 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     try {
       console.log('🔐 EnhancedLoginForm: Starting login process for:', formData.email);
 
-      // Pre-flight check: Does user exist in our profiles table?
-      const { user: existingUser, error: userCheckError } = await checkUserExists(formData.email);
+      // ENTFERNT: Anonyme Profile-Abfrage vor Login
+      // Das war die Ursache für "permission denied" Fehler
       
-      if (userCheckError) {
-        console.error('❌ User check error:', userCheckError);
-        throw new Error('Es gab ein Problem beim Überprüfen Ihres Accounts. Bitte versuchen Sie es später erneut.');
-      }
-
-      if (!existingUser) {
-        setError('Kein Account mit dieser E-Mail-Adresse gefunden. Bitte registrieren Sie sich zuerst oder überprüfen Sie Ihre E-Mail-Adresse.');
-        handleFailedAttempt();
-        return;
-      }
-
-      if (existingUser.is_suspended) {
-        setError('Ihr Account ist gesperrt. Bitte kontaktieren Sie den Support für weitere Informationen.');
-        return;
-      }
-
-      console.log('✅ User exists in profiles, proceeding with OptimizedAuth signIn');
-      
-      // Verwende OptimizedAuth signIn
+      // Direkt mit OptimizedAuth signIn
       await signIn(formData.email.trim(), formData.password);
 
       // Reset failed attempts on successful login

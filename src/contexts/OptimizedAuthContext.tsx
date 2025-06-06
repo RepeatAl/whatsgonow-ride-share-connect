@@ -7,14 +7,14 @@ import type { UserProfile } from "@/types/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { isPublicRoute } from "@/routes/publicRoutes";
-import { useAuthCleanup } from "@/hooks/useAuthCleanup";
 
 interface OptimizedAuthContextProps {
   user: User | null;
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
-  error: string | null;
+  isProfileLoading: boolean;
+  profileError: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<void>;
   signOut: () => Promise<void>;
@@ -29,17 +29,19 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const location = useLocation();
   const { currentLanguage } = useLanguageMCP();
-  const { emergencyCleanup, softCleanup } = useAuthCleanup();
 
-  // Optimierte Profile-Abfrage OHNE rekursive RLS-Checks
+  // PHASE 3: Sichere Profile-Abfrage (nur nach Login)
   const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
-      console.log('👤 Fetching profile for user:', userId);
+      console.log('✅ OptimizedAuth: Fetching profile for authenticated user:', userId);
+      setIsProfileLoading(true);
+      setProfileError(null);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -48,32 +50,28 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
         .single();
 
       if (error) {
-        console.error('❌ Profile fetch error:', error);
-        
-        // Bei "no rows" Error, versuche Profil zu erstellen
-        if (error.code === 'PGRST116') {
-          console.log('🔧 No profile found, creating...');
-          return null; // Lass den Nutzer ein Profil erstellen
-        }
-        
-        throw error;
+        console.error('❌ OptimizedAuth: Profile fetch error:', error);
+        setProfileError(error.message);
+        return null;
       }
 
-      console.log('✅ Profile loaded:', data);
+      console.log('✅ OptimizedAuth: Profile loaded successfully:', data);
       return data as UserProfile;
-    } catch (err) {
-      console.error('❌ Profile fetch failed:', err);
-      setError(err instanceof Error ? err.message : 'Profile fetch failed');
+    } catch (err: any) {
+      console.error('❌ OptimizedAuth: Profile fetch failed:', err);
+      setProfileError(err.message || 'Profile fetch failed');
       return null;
+    } finally {
+      setIsProfileLoading(false);
     }
   }, []);
 
-  // Optimierter Sign In OHNE pre-cleanup
+  // PHASE 3: Optimierter Sign In (keine Profile-Checks vor Auth!)
   const signIn = useCallback(async (email: string, password: string) => {
     try {
-      console.log('🔐 Signing in:', email);
+      console.log('🔐 OptimizedAuth: Starting sign in for:', email);
       setLoading(true);
-      setError(null);
+      setProfileError(null);
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -81,48 +79,47 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
       });
 
       if (error) {
-        console.error('❌ Sign in error:', error);
+        console.error('❌ OptimizedAuth: Sign in error:', error);
         throw error;
       }
 
-      console.log('✅ Sign in successful');
+      console.log('✅ OptimizedAuth: Sign in successful');
       
-      // Profile wird automatisch über onAuthStateChange geladen
       toast({
         title: "Anmeldung erfolgreich",
         description: "Willkommen zurück!",
       });
       
     } catch (error: any) {
-      console.error('❌ Sign in failed:', error);
-      setError(error.message);
+      console.error('❌ OptimizedAuth: Sign in failed:', error);
       throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Optimierter Sign Up
+  // Sign Up
   const signUp = useCallback(async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
-      console.log('📝 Signing up:', email);
+      console.log('📝 OptimizedAuth: Starting sign up for:', email);
       setLoading(true);
-      setError(null);
+      setProfileError(null);
 
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: metadata
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/de/dashboard`
         }
       });
 
       if (error) {
-        console.error('❌ Sign up error:', error);
+        console.error('❌ OptimizedAuth: Sign up error:', error);
         throw error;
       }
 
-      console.log('✅ Sign up successful');
+      console.log('✅ OptimizedAuth: Sign up successful');
       
       toast({
         title: "Registrierung erfolgreich",
@@ -132,36 +129,32 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
       });
       
     } catch (error: any) {
-      console.error('❌ Sign up failed:', error);
-      setError(error.message);
+      console.error('❌ OptimizedAuth: Sign up failed:', error);
       throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Optimierter Sign Out
+  // Sign Out
   const signOut = useCallback(async () => {
     try {
-      console.log('🚪 Signing out...');
+      console.log('🚪 OptimizedAuth: Signing out...');
       setLoading(true);
-
-      // Soft cleanup first
-      await softCleanup();
 
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('❌ Sign out error:', error);
+        console.error('❌ OptimizedAuth: Sign out error:', error);
       }
 
       // State sofort clearen
       setUser(null);
       setSession(null);
       setProfile(null);
-      setError(null);
+      setProfileError(null);
       
-      console.log('✅ Sign out completed');
+      console.log('✅ OptimizedAuth: Sign out completed');
       
       toast({
         title: "Abmeldung erfolgreich",
@@ -172,7 +165,7 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
       navigate(`/${currentLanguage}`, { replace: true });
       
     } catch (error: any) {
-      console.error('❌ Sign out failed:', error);
+      console.error('❌ OptimizedAuth: Sign out failed:', error);
       // Auch bei Fehler State clearen
       setUser(null);
       setSession(null);
@@ -180,13 +173,7 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
     } finally {
       setLoading(false);
     }
-  }, [navigate, currentLanguage, softCleanup]);
-
-  // Emergency Reset Funktion
-  const emergencyReset = useCallback(async () => {
-    console.log('🚨 Emergency reset triggered');
-    await emergencyCleanup();
-  }, [emergencyCleanup]);
+  }, [navigate, currentLanguage]);
 
   // Profile refresh
   const refreshProfile = useCallback(async () => {
@@ -196,19 +183,69 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
     setProfile(newProfile);
   }, [user, fetchProfile]);
 
-  // Auth State Change Handler - VEREINFACHT
+  // Emergency Reset für schwere Auth-Probleme
+  const emergencyReset = useCallback(async () => {
+    console.log('🚨 OptimizedAuth: Emergency reset initiated...');
+    
+    try {
+      // Alle lokalen Storage-Daten löschen
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.includes('supabase') || 
+        key.includes('sb-') || 
+        key.includes('auth') ||
+        key.includes('whatsgonow')
+      );
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`🧹 Removed localStorage key: ${key}`);
+      });
+
+      // SessionStorage auch leeren
+      const sessionKeys = Object.keys(sessionStorage).filter(key => 
+        key.includes('supabase') || 
+        key.includes('sb-') || 
+        key.includes('auth')
+      );
+      
+      sessionKeys.forEach(key => {
+        sessionStorage.removeItem(key);
+        console.log(`🧹 Removed sessionStorage key: ${key}`);
+      });
+
+      // Supabase Session force reset
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+        console.log('🔐 Global signout completed');
+      } catch (error) {
+        console.log('⚠️ Global signout failed, continuing...', error);
+      }
+
+      // Force reload für clean state
+      setTimeout(() => {
+        window.location.href = window.location.origin;
+      }, 1000);
+
+      return true;
+    } catch (error) {
+      console.error('❌ Emergency reset failed:', error);
+      return false;
+    }
+  }, []);
+
+  // Auth State Change Handler
   useEffect(() => {
-    console.log('🚀 Setting up optimized auth listener...');
+    console.log('🚀 OptimizedAuth: Setting up auth listener...');
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        console.log('🔄 Auth event:', event);
+        console.log('🔄 OptimizedAuth: Auth event:', event);
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (event === 'SIGNED_IN' && currentSession?.user) {
-          console.log('✅ User signed in, loading profile...');
+          console.log('✅ OptimizedAuth: User signed in, loading profile...');
           
           // Profile laden mit Delay um race conditions zu vermeiden
           setTimeout(async () => {
@@ -218,8 +255,9 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
         }
 
         if (event === 'SIGNED_OUT') {
-          console.log('👋 User signed out');
+          console.log('👋 OptimizedAuth: User signed out');
           setProfile(null);
+          setProfileError(null);
         }
 
         setLoading(false);
@@ -228,7 +266,7 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
 
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('📋 Initial session check:', session ? 'Found' : 'None');
+      console.log('📋 OptimizedAuth: Initial session check:', session ? 'Found' : 'None');
       
       setSession(session);
       setUser(session?.user ?? null);
@@ -247,7 +285,7 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
 
   // Vereinfachte Redirect-Logik
   useEffect(() => {
-    if (loading) return;
+    if (loading || isProfileLoading) return;
 
     const currentPath = location.pathname;
     
@@ -261,26 +299,27 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
 
     // Authentifiziert + auf Auth-Seite → Dashboard
     if (user && profile && isAuthPage) {
-      console.log('✅ Redirecting authenticated user to dashboard');
+      console.log('✅ OptimizedAuth: Redirecting authenticated user to dashboard');
       navigate(`/${currentLanguage}/dashboard`, { replace: true });
       return;
     }
 
     // Nicht authentifiziert + geschützte Route → Login
     if (!user && !isAuthPage) {
-      console.log('🔒 Redirecting unauthenticated user to login');
+      console.log('🔒 OptimizedAuth: Redirecting unauthenticated user to login');
       navigate(`/${currentLanguage}/login`, { replace: true });
       return;
     }
 
-  }, [user, profile, loading, location.pathname, navigate, currentLanguage]);
+  }, [user, profile, loading, isProfileLoading, location.pathname, navigate, currentLanguage]);
 
   const contextValue = useMemo(() => ({
     user,
     session,
     profile,
     loading,
-    error,
+    isProfileLoading,
+    profileError,
     signIn,
     signUp,
     signOut,
@@ -291,7 +330,8 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
     session,
     profile,
     loading,
-    error,
+    isProfileLoading,
+    profileError,
     signIn,
     signUp,
     signOut,
