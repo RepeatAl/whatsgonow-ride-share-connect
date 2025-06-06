@@ -1,13 +1,16 @@
+
+// src/routes/publicRoutes.ts
 /**
- * Public Routes Configuration
- * Defines which routes are accessible without authentication
+ * Central definition of public routes
+ * These routes are accessible without authentication
  */
 
-export const publicPaths = [
+export const publicRoutes = [
   '/',
-  '/home', 
+  '/home',
   '/about',
   '/faq',
+  '/support',
   '/login',
   '/register',
   '/register/success',
@@ -17,47 +20,41 @@ export const publicPaths = [
   '/reset-password',
   '/esg-dashboard',
   '/here-maps-demo',
-  '/here-maps-features'  // NEW: Feature demo page
+  '/here-maps-features',
+  '/mobile-upload',
+  '/upload-complete',
+  '/delivery',
+  '/invoice-download',
+  '/404',
 ];
 
 /**
- * Language-aware path patterns
+ * Check if a route is public (accessible without authentication)
+ * @param path - The path to check
+ * @returns boolean - true if the route is public
  */
-export const languageAwarePatterns = [
-  /^\/[a-z]{2}$/,           // /de, /en, /ar
-  /^\/[a-z]{2}\/.*$/        // /de/*, /en/*, /ar/*
-];
-
-/**
- * Checks if a given path is a public route
- */
-export function isPublicRoute(path: string): boolean {
-  console.log('[publicRoutes] Checking if path is public:', path);
+export const isPublicRoute = (path: string): boolean => {
+  // Remove language prefix for matching
+  const pathParts = path.split('/').filter(Boolean);
   
-  // Remove language prefix for checking
-  let cleanPath = path;
+  // Handle root path
+  if (pathParts.length === 0) return true;
   
-  // Check if path matches language pattern
-  const hasLanguagePrefix = languageAwarePatterns.some(pattern => pattern.test(path));
+  // If first part is language code, check the rest
+  const supportedLanguages = ['de', 'en', 'ar', 'pl', 'fr'];
+  let pathToCheck = path;
   
-  if (hasLanguagePrefix) {
-    // Remove language prefix (e.g., /de/about -> /about)
-    cleanPath = path.replace(/^\/[a-z]{2}/, '') || '/';
+  if (pathParts.length > 0 && supportedLanguages.includes(pathParts[0])) {
+    pathToCheck = pathParts.length === 1 ? '/' : `/${pathParts.slice(1).join('/')}`;
   }
   
-  console.log('[publicRoutes] Clean path for checking:', cleanPath);
+  // Check exact matches first
+  if (publicRoutes.includes(pathToCheck)) return true;
   
-  // Check against public paths
-  const isPublic = publicPaths.some(publicPath => {
-    if (publicPath === '/') {
-      return cleanPath === '/';
-    }
-    return cleanPath === publicPath || cleanPath.startsWith(publicPath + '/');
-  });
+  // Check path patterns (like /delivery/:token)
+  if (pathToCheck.startsWith('/delivery/')) return true;
+  if (pathToCheck.startsWith('/invoice-download/')) return true;
+  if (pathToCheck.startsWith('/mobile-upload/')) return true;
   
-  if (isPublic) {
-    console.log('[publicRoutes] Found exact match for:', cleanPath);
-  }
-  
-  return isPublic;
-}
+  return false;
+};

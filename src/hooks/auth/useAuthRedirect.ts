@@ -35,7 +35,7 @@ export const useAuthRedirect = (
       if (user && profile && isAuthPage) {
         console.log('✅ useAuthRedirect: Authenticated user on auth page, redirecting to dashboard');
         
-        // Rollenbasierte Weiterleitung
+        // FIXED: Use consistent dashboard structure
         let targetPath: string;
         
         switch (profile.role) {

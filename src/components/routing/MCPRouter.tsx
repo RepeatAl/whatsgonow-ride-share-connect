@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
@@ -24,6 +25,7 @@ import RlsTest from '@/pages/RLSTest';
 import SystemTests from '@/pages/SystemTests';
 import HereMapDemo from '@/pages/HereMapDemo';
 import HereMapFeaturesDemo from '@/pages/HereMapFeaturesDemo';
+import Inbox from '@/pages/Inbox';
 
 // Import dashboard pages
 import DashboardDriver from '@/pages/dashboard/DashboardDriver';
@@ -88,7 +90,7 @@ const MCPRouter = () => {
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             <Route path="/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
             
-            {/* Pre-Register routes - FIXED */}
+            {/* Pre-Register routes */}
             <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
             <Route path="/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
             
@@ -102,12 +104,16 @@ const MCPRouter = () => {
             <Route path="/here-maps-demo" element={<PublicRoute><HereMapDemo /></PublicRoute>} />
             <Route path="/here-maps-features" element={<PublicRoute><HereMapFeaturesDemo /></PublicRoute>} />
             
-            {/* Protected routes */}
+            {/* Protected routes - FIXED: consistent dashboard paths */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
             <Route path="/dashboard/driver" element={<ProtectedRoute><DashboardDriver /></ProtectedRoute>} />
             <Route path="/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
+            
+            {/* FIXED: Inbox routes added */}
+            <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
+            <Route path="/inbox/:orderId" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
             
             <Route path="/admin-enhanced" element={
               <ProtectedRoute>
@@ -144,6 +150,8 @@ const MCPRouter = () => {
       <Route path="/register" element={<Navigate to={`/${currentLanguage}/register`} replace />} />
       <Route path="/pre-register" element={<Navigate to={`/${currentLanguage}/pre-register`} replace />} />
       <Route path="/dashboard" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
+      <Route path="/dashboard/*" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
+      <Route path="/inbox" element={<Navigate to={`/${currentLanguage}/inbox`} replace />} />
       <Route path="/profile" element={<Navigate to={`/${currentLanguage}/profile`} replace />} />
       <Route path="/system-tests" element={<Navigate to={`/${currentLanguage}/system-tests`} replace />} />
       <Route path="/rls-test" element={<Navigate to={`/${currentLanguage}/rls-test`} replace />} />

@@ -19,11 +19,13 @@ const DashboardRedirect = () => {
       return;
     }
 
-    // Redirect based on user role
+    // FIXED: Redirect based on user role with consistent dashboard structure
+    console.log('🔄 DashboardRedirect: Redirecting user with role:', profile.role);
+    
     switch (profile.role) {
       case 'admin':
       case 'super_admin':
-        navigate(getLocalizedUrl('/admin/dashboard'));
+        navigate(getLocalizedUrl('/dashboard/admin'));
         break;
       case 'cm':
         navigate(getLocalizedUrl('/dashboard/cm'));

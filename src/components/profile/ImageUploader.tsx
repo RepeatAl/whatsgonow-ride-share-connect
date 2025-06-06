@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Upload, X, Check } from "lucide-react";
+import { Loader2, Upload, X, Check, Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ImageUploaderProps {
@@ -57,7 +57,7 @@ export default function ImageUploader({ userId, onSuccess, onCancel, open, curre
       setUploading(true);
       setError(null);
       
-      // Upload to storage
+      // Upload to storage - FIXED: Use correct path structure for RLS
       const fileExt = file.name.split(".").pop();
       const fileName = `${userId}/avatar.${fileExt}`;
 
@@ -132,6 +132,11 @@ export default function ImageUploader({ userId, onSuccess, onCancel, open, curre
     }
   };
 
+  // FIXED: Handle file selection trigger properly
+  const triggerFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent className="sm:max-w-md">
@@ -142,23 +147,49 @@ export default function ImageUploader({ userId, onSuccess, onCancel, open, curre
         <div className="space-y-4 py-4">
           <div className="flex flex-col items-center justify-center gap-4">
             {/* Preview current or selected image */}
-            <Avatar className="w-32 h-32 border-2 border-dashed border-gray-300 p-1">
-              <AvatarImage 
-                src={imagePreview || currentImage || undefined} 
-                alt="Avatar preview" 
-                className="object-cover"
-              />
-              <AvatarFallback className="text-2xl">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="w-32 h-32 border-2 border-dashed border-gray-300">
+                <AvatarImage 
+                  src={imagePreview || currentImage || undefined} 
+                  alt="Avatar preview" 
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-2xl">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              
+              {/* FIXED: Always show camera button for easy file selection */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="absolute -bottom-2 -right-2 rounded-full w-10 h-10 p-0"
+                onClick={triggerFileSelect}
+                disabled={uploading}
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+            </div>
             
+            {/* Hidden file input - FIXED: Ensure it's accessible */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileChange}
+              disabled={uploading}
+              className="hidden"
+              id="avatar-upload"
+            />
+            
+            {/* Action buttons */}
             {imagePreview && (
               <div className="flex gap-2">
                 <Button 
                   size="sm" 
                   variant="outline" 
                   onClick={reset}
+                  disabled={uploading}
                 >
                   <X className="h-4 w-4 mr-1" /> Zurücksetzen
                 </Button>
@@ -177,31 +208,22 @@ export default function ImageUploader({ userId, onSuccess, onCancel, open, curre
             )}
           </div>
 
+          {/* FIXED: Better upload area with clear instructions */}
           <div className="bg-gray-50 rounded-md p-4">
             <div className="text-sm text-muted-foreground mb-2">
               Wähle ein Bild (max. 2 MB, JPEG/PNG/WEBP)
             </div>
             
-            <div className="flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleFileChange}
+            <div className="flex items-center justify-center">
+              <Button 
+                onClick={triggerFileSelect}
                 disabled={uploading}
-                className="flex-1"
-                id="avatar-upload"
-              />
-              
-              {!imagePreview && (
-                <Button 
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  variant="outline"
-                >
-                  <Upload className="h-4 w-4 mr-1" /> Auswählen
-                </Button>
-              )}
+                variant="outline"
+                className="w-full"
+              >
+                <Upload className="h-4 w-4 mr-2" /> 
+                {imagePreview ? "Anderes Bild wählen" : "Bild auswählen"}
+              </Button>
             </div>
 
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
@@ -213,10 +235,10 @@ export default function ImageUploader({ userId, onSuccess, onCancel, open, curre
             Abbrechen
           </Button>
           
-          {!imagePreview && (
+          {imagePreview && (
             <Button 
               onClick={handleUpload} 
-              disabled={!fileInputRef.current?.files?.length || uploading}
+              disabled={uploading}
             >
               {uploading ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Lädt...</>
