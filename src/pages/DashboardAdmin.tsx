@@ -1,7 +1,18 @@
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Users, 
+  MessageSquare, 
+  AlertTriangle, 
+  TrendingUp,
+  FileText,
+  Settings
+} from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
-import DashboardAdminEnhanced from '@/pages/dashboard/DashboardAdminEnhanced';
+import { Link } from 'react-router-dom';
 
 const DashboardAdmin = () => {
   const { profile } = useOptimizedAuth();

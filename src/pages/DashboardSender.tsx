@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -6,11 +7,11 @@ import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, Clock, CheckCircle } from "lucide-react";
+import { Package, Plus, Clock, CheckCircle, PlusCircle, MapPin } from "lucide-react";
 
 const DashboardSender = () => {
   const { t } = useTranslation(["common"]);
-  const { profile } = useOptimizedAuth();
+  const { profile, user } = useOptimizedAuth();
   const { getLocalizedUrl } = useLanguageMCP();
   const navigate = useNavigate();
 

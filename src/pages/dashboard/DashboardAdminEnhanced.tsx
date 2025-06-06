@@ -10,17 +10,15 @@ import { EscalationsTab } from "@/components/escalation";
 import { UsersTable } from "@/components/admin/users/UsersTable";
 import { useAdminUsers } from "@/hooks/use-admin-users";
 import { useAdminGuard } from "@/hooks/useAdminGuard";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 const DashboardAdminEnhanced = () => {
   const { profile } = useOptimizedAuth();
   const [activeTab, setActiveTab] = useState<string>("overview");
   const { isAdmin, isAdminOrCM } = useAdminGuard();
-  const { profile: simpleProfile } = useSimpleAuth();
   const { users, loading, fetchUsers, updateUserRole, toggleUserActive, deleteUser } = useAdminUsers();
   
-  const isSuperAdmin = simpleProfile?.role === 'super_admin';
+  const isSuperAdmin = profile?.role === 'super_admin';
   
   // Nur Admins und CMs können auf diese Seite zugreifen
   if (!isAdminOrCM) {

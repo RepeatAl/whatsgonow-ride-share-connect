@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Mail, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Mail, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const ForgotPassword = () => {
   const { t } = useTranslation(['auth', 'common']);

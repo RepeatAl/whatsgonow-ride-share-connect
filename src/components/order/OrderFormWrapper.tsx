@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { toast } from '@/hooks/use-toast';
 import { OrderSchema, OrderValues } from './OrderFormSchema';
+import { OrderItem } from './types';
 import AddressSection from './form-sections/AddressSection';
 import ItemDetailsSection from './form-sections/ItemDetailsSection';
 
@@ -50,6 +52,17 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ onSubmit, defaultVa
     onSubmit(values);
   };
 
+  const handleItemsChange = (items: OrderItem[]) => {
+    // Convert OrderItem[] to the expected schema format
+    const schemaItems = items.map(item => ({
+      name: item.name || '',
+      quantity: item.quantity || 1,
+      weight: item.weight,
+      dimensions: typeof item.dimensions === 'string' ? item.dimensions : undefined,
+    }));
+    form.setValue('items', schemaItems);
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -64,8 +77,14 @@ const OrderFormWrapper: React.FC<OrderFormWrapperProps> = ({ onSubmit, defaultVa
               toggleIsPickup={handleTogglePickup}
             />
             <ItemDetailsSection
-              items={form.getValues().items}
-              onItemsChange={(items) => form.setValue('items', items)}
+              items={form.getValues().items.map((item, index) => ({
+                id: `item-${index}`,
+                name: item.name || '',
+                quantity: item.quantity || 1,
+                weight: item.weight,
+                dimensions: item.dimensions || '',
+              }))}
+              onItemsChange={handleItemsChange}
             />
             <Button type="submit">Bestellung aufgeben</Button>
           </form>

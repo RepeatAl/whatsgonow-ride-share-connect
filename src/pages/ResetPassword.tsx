@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Layout from '@/components/Layout';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from '@/integrations/supabase/client';
 
 const ResetPassword = () => {
   const { t } = useTranslation(['auth', 'common']);
@@ -50,8 +50,7 @@ const ResetPassword = () => {
       }
 
       const { data, error } = await supabase.auth.updateUser({
-        password: password,
-        token: token
+        password: password
       });
 
       if (error) {

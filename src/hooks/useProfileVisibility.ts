@@ -1,6 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
+
+// Type definitions
+type VisibilityLevel = 'public' | 'private' | 'transaction' | 'admin';
+
+interface PrivacyError {
+  code: string;
+  message: string;
+}
+
+interface ProfileVisibilitySettings {
+  user_id: string;
+  field_name: string;
+  visibility_level: VisibilityLevel;
+  opt_in: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export const useProfileVisibility = () => {
   const { user } = useOptimizedAuth();
