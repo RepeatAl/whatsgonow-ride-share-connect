@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import EnhancedLoginForm from '@/components/auth/EnhancedLoginForm';
 import EmergencyResetButton from '@/components/ui/EmergencyResetButton';
-import Layout from '@/components/layout/Layout';
+import Layout from '@/components/Layout';
 
 const Login = () => {
   const { t } = useTranslation(['auth', 'common']);
