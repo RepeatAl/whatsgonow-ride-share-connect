@@ -5,8 +5,7 @@
  */
 export const HERE_CDN_URLS = [
   'https://js.api.here.com/v3/3.1/mapsjs-bundle.js',
-  'https://cdn.here.com/v3/3.1/mapsjs-bundle.js', 
-  'https://js.cdn.here.com/v3/3.1/mapsjs-bundle.js'
+  'https://cdn.here.com/v3/3.1/mapsjs-bundle.js'
 ];
 
 /**

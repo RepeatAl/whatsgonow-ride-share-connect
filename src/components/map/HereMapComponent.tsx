@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, AlertTriangle } from 'lucide-react';
@@ -45,11 +44,10 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Dortmund': { lat: 51.5136, lng: 7.4653 }
 };
 
-// Available CDN URLs for HERE Maps SDK for fallback mechanism
+// Available CDN URLs for HERE Maps SDK for fallback mechanism - CORRECTED LIST
 const HERE_CDN_URLS = [
   'https://js.api.here.com/v3/3.1/mapsjs-bundle.js',
-  'https://cdn.here.com/v3/3.1/mapsjs-bundle.js',
-  'https://js.cdn.here.com/v3/3.1/mapsjs-bundle.js'
+  'https://cdn.here.com/v3/3.1/mapsjs-bundle.js'
 ];
 
 // ⚠️ HARDCODE BEREICH: Ersetzen Sie "YOUR_NEW_HERE_MAPS_API_KEY" mit Ihrem neuen API Key
