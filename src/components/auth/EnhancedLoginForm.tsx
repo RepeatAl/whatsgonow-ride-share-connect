@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff, AlertTriangle } from 'lucide-react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -20,7 +20,7 @@ interface LoginFormProps {
 const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) => {
   const { t } = useTranslation(['auth', 'common']);
   const navigate = useNavigate();
-  const { signIn } = useSimpleAuth();
+  const { signIn } = useOptimizedAuth(); // FIXED: Verwendet jetzt OptimizedAuth
   const { getLocalizedUrl } = useLanguageMCP();
   
   const [formData, setFormData] = useState({
@@ -93,10 +93,13 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     setError(null);
 
     try {
+      console.log('🔐 EnhancedLoginForm: Starting login process for:', formData.email);
+
       // Pre-flight check: Does user exist in our profiles table?
       const { user: existingUser, error: userCheckError } = await checkUserExists(formData.email);
       
       if (userCheckError) {
+        console.error('❌ User check error:', userCheckError);
         throw new Error('Es gab ein Problem beim Überprüfen Ihres Accounts. Bitte versuchen Sie es später erneut.');
       }
 
@@ -111,57 +114,30 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
         return;
       }
 
-      // Attempt Supabase Auth login
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: formData.email.trim(),
-        password: formData.password
-      });
-
-      if (authError) {
-        if (authError.message.includes('Invalid login credentials')) {
-          setError('E-Mail-Adresse oder Passwort ist falsch. Bitte überprüfen Sie Ihre Eingaben.');
-          handleFailedAttempt();
-        } else if (authError.message.includes('Email not confirmed')) {
-          setError('Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse. Schauen Sie in Ihr E-Mail-Postfach.');
-        } else if (authError.message.includes('Too many requests')) {
-          setError('Zu viele Anmeldeversuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.');
-        } else {
-          setError('Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.');
-        }
-        return;
-      }
-
-      if (!data.user) {
-        setError('Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.');
-        return;
-      }
+      console.log('✅ User exists in profiles, proceeding with OptimizedAuth signIn');
+      
+      // Verwende OptimizedAuth signIn
+      await signIn(formData.email.trim(), formData.password);
 
       // Reset failed attempts on successful login
       setFailedAttempts(0);
       setLockoutUntil(null);
 
-      // Redirect based on role using localized URLs
-      switch (existingUser.role) {
-        case 'admin':
-        case 'super_admin':
-          navigate(getLocalizedUrl('/admin/dashboard'));
-          break;
-        case 'cm':
-          navigate(getLocalizedUrl('/dashboard/cm'));
-          break;
-        case 'driver':
-          navigate(getLocalizedUrl('/dashboard/driver'));
-          break;
-        case 'sender_private':
-        case 'sender_business':
-          navigate(getLocalizedUrl('/dashboard/sender'));
-          break;
-        default:
-          navigate(getLocalizedUrl('/dashboard'));
-      }
+      console.log('✅ Login successful, navigation will be handled by OptimizedAuth');
 
     } catch (err: any) {
-      setError('Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
+      console.error('❌ Login failed:', err);
+      
+      if (err.message?.includes('Invalid login credentials')) {
+        setError('E-Mail-Adresse oder Passwort ist falsch. Bitte überprüfen Sie Ihre Eingaben.');
+        handleFailedAttempt();
+      } else if (err.message?.includes('Email not confirmed')) {
+        setError('Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse. Schauen Sie in Ihr E-Mail-Postfach.');
+      } else if (err.message?.includes('Too many requests')) {
+        setError('Zu viele Anmeldeversuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.');
+      } else {
+        setError(err.message || 'Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.');
+      }
     } finally {
       setLoading(false);
     }
