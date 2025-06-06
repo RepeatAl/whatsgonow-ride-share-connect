@@ -90,67 +90,80 @@ const VideoManagementPanel = () => {
     {
       id: 'status',
       header: 'Status',
-      cell: (video: AdminVideo) => (
+      accessorKey: 'status',
+      cell: ({ row }: { row: { original: AdminVideo } }) => (
         <VideoStatusIndicator 
-          video={video} 
-          hasStorageFile={storageFiles.has(video.file_path)} 
+          video={row.original} 
+          hasStorageFile={storageFiles.has(row.original.file_path)} 
         />
       ),
     },
     {
       id: 'title',
       header: t('video.title'),
-      cell: (video: AdminVideo) => (
-        <div className="space-y-1">
-          <div className="font-medium">
-            {getVideoTitle(video)}
+      accessorKey: 'title',
+      cell: ({ row }: { row: { original: AdminVideo } }) => {
+        const video = row.original;
+        return (
+          <div className="space-y-1">
+            <div className="font-medium">
+              {getVideoTitle(video)}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {video.filename}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {formatFileSize(video.file_size || 0)} MB
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {video.filename}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {formatFileSize(video.file_size || 0)} MB
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: 'details',
       header: 'Details',
-      cell: (video: AdminVideo) => (
-        <div className="text-sm space-y-1">
-          <div className="text-muted-foreground">
-            {new Date(video.uploaded_at || '').toLocaleDateString('de-DE')}
-          </div>
-          {video.tags && video.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {video.tags.slice(0, 2).map((tag) => (
-                <span key={tag} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                  {tag}
-                </span>
-              ))}
-              {video.tags.length > 2 && (
-                <span className="text-xs text-gray-500">+{video.tags.length - 2}</span>
-              )}
+      accessorKey: 'details',
+      cell: ({ row }: { row: { original: AdminVideo } }) => {
+        const video = row.original;
+        return (
+          <div className="text-sm space-y-1">
+            <div className="text-muted-foreground">
+              {new Date(video.uploaded_at || '').toLocaleDateString('de-DE')}
             </div>
-          )}
-        </div>
-      ),
+            {video.tags && video.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {video.tags.slice(0, 2).map((tag) => (
+                  <span key={tag} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                    {tag}
+                  </span>
+                ))}
+                {video.tags.length > 2 && (
+                  <span className="text-xs text-gray-500">+{video.tags.length - 2}</span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       id: 'actions',
       header: t('video.actions'),
-      cell: (video: AdminVideo) => (
-        <Button
-          variant="destructive"
-          size="sm"
-          disabled={isDeleting}
-          onClick={() => setDeleteDialog({ open: true, video })}
-          title="Video permanent löschen (DB + Storage)"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      ),
+      accessorKey: 'actions',
+      cell: ({ row }: { row: { original: AdminVideo } }) => {
+        const video = row.original;
+        return (
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={isDeleting}
+            onClick={() => setDeleteDialog({ open: true, video })}
+            title="Video permanent löschen (DB + Storage)"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        );
+      },
     },
   ];
 
