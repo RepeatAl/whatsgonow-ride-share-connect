@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { HereMapComponent } from '@/components/map';
 import HereMapDiagnostics from '@/components/map/HereMapDiagnostics';
+import { AdminTabGuard } from '@/components/auth/AdminTabGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,13 +11,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Smartphone, Monitor, Check, Filter, Truck, Package, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { isAdmin } from '@/lib/admin-utils';
 
 const HereMapDemo = () => {
   const { t } = useTranslation(['common']);
   const { currentLanguage } = useLanguageMCP();
+  const { profile } = useSimpleAuth();
   const [showTransports, setShowTransports] = useState(true);
   const [showRequests, setShowRequests] = useState(true);
   const [mapCenter, setMapCenter] = useState({ lat: 51.1657, lng: 10.4515 }); // Center of Germany
+
+  // Check if user has admin privileges for conditional tab rendering
+  const userIsAdmin = isAdmin(profile);
 
   const testLocations = [
     { name: 'Deutschland', lat: 51.1657, lng: 10.4515 },
@@ -69,7 +76,7 @@ const HereMapDemo = () => {
               {t('common:here_maps_integration', 'HERE Maps Integration')}
             </h1>
             <p className="text-gray-600 mt-2">
-              {t('common:mvp_basis_implementation', 'MVP-Basis Implementierung gemäß CTO-Checkliste')}
+              {t('common:mvp_basis_implementation', 'MVP-Basis Implementierung mit öffentlicher Kartenansicht')}
             </p>
           </div>
 
@@ -113,20 +120,22 @@ const HereMapDemo = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge variant="outline" className="text-yellow-700 border-yellow-200">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  Diagnose erforderlich
+                <Badge variant="outline" className="text-green-700 border-green-200">
+                  <Check className="h-3 w-3 mr-1" />
+                  {t('common:public_ready', 'Öffentlich verfügbar')}
                 </Badge>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content Tabs */}
+          {/* Main Content Tabs - Conditionally render tabs based on user role */}
           <Tabs defaultValue="demo" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className={`grid w-full ${userIsAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="demo">Live Demo</TabsTrigger>
-              <TabsTrigger value="diagnostics">Diagnose</TabsTrigger>
-              <TabsTrigger value="checklist">CTO-Checkliste</TabsTrigger>
+              <TabsTrigger value="checklist">Feature Overview</TabsTrigger>
+              {userIsAdmin && (
+                <TabsTrigger value="diagnostics">Diagnose</TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="demo" className="space-y-6">
@@ -209,17 +218,25 @@ const HereMapDemo = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="diagnostics">
-              <HereMapDiagnostics />
-            </TabsContent>
+            {/* Secured Diagnostics Tab - Only for Admins */}
+            {userIsAdmin && (
+              <TabsContent value="diagnostics">
+                <AdminTabGuard
+                  fallbackTitle={t('common:access_denied.admin_title', 'Administrator-Zugriff erforderlich')}
+                  fallbackDescription={t('common:access_denied.diagnostics_desc', 'Die Diagnose-Funktionen sind nur für Systemadministratoren zugänglich.')}
+                >
+                  <HereMapDiagnostics />
+                </AdminTabGuard>
+              </TabsContent>
+            )}
 
             <TabsContent value="checklist" className="space-y-6">
-              {/* CTO Checklist */}
+              {/* Feature Overview */}
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('common:cto_checklist_status', 'CTO-Checkliste Status')}</CardTitle>
+                  <CardTitle>{t('common:feature_overview', 'Feature-Übersicht')}</CardTitle>
                   <CardDescription>
-                    {t('common:mvp_requirements_fulfilled', 'Alle MVP-Basis Anforderungen erfüllt')}
+                    {t('common:mvp_requirements_fulfilled', 'Alle öffentlichen Funktionen sind verfügbar')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

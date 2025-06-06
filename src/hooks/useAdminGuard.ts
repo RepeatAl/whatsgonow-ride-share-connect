@@ -1,6 +1,7 @@
 
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useMemo } from "react";
+import { isAdmin, isCommunityManager, hasElevatedPrivileges } from "@/lib/admin-utils";
 
 export const useAdminGuard = () => {
   const { profile, loading } = useSimpleAuth();
@@ -20,20 +21,20 @@ export const useAdminGuard = () => {
     }
 
     const role = profile.role;
-    const isAdmin = role === 'admin';
+    const adminRole = isAdmin(profile);
     const isSuperAdmin = role === 'super_admin';
-    const isCM = role === 'cm';
-    const isAdminOrCM = isAdmin || isSuperAdmin || isCM;
+    const isCM = isCommunityManager(profile);
+    const isAdminOrCM = hasElevatedPrivileges(profile);
 
     return {
-      isAdmin: isAdmin || isSuperAdmin,
+      isAdmin: adminRole,
       isSuperAdmin,
       isCM,
       isAdminOrCM,
-      canManageVideos: isAdmin || isSuperAdmin,
+      canManageVideos: adminRole,
       canViewVideos: isAdminOrCM,
-      canManageUsers: isAdmin || isSuperAdmin,
-      canManageEscalations: isAdmin || isSuperAdmin
+      canManageUsers: adminRole,
+      canManageEscalations: adminRole
     };
   }, [profile, loading]);
 
