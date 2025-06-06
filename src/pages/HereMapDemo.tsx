@@ -1,298 +1,159 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Layout from '@/components/Layout';
-import { HereMapComponent } from '@/components/map';
-import HereMapDiagnostics from '@/components/map/HereMapDiagnostics';
-import { AdminTabGuard } from '@/components/auth/AdminTabGuard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import HereMapWithData from '@/components/map/HereMapWithData';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Smartphone, Monitor, Check, Filter, Truck, Package, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
-import { isAdmin } from '@/lib/admin-utils';
+import { Map, Zap, Info, TrendingUp } from 'lucide-react';
 
 const HereMapDemo = () => {
-  const { t } = useTranslation(['common']);
-  const { currentLanguage } = useLanguageMCP();
-  const { profile } = useSimpleAuth();
-  const [showTransports, setShowTransports] = useState(true);
-  const [showRequests, setShowRequests] = useState(true);
-  const [mapCenter, setMapCenter] = useState({ lat: 51.1657, lng: 10.4515 }); // Center of Germany
-
-  // Check if user has admin privileges for conditional tab rendering
-  const userIsAdmin = isAdmin(profile);
-
-  const testLocations = [
-    { name: 'Deutschland', lat: 51.1657, lng: 10.4515 },
-    { name: 'Berlin', lat: 52.5, lng: 13.4 },
-    { name: 'München', lat: 48.1, lng: 11.6 },
-    { name: 'Hamburg', lat: 53.6, lng: 10.0 },
-    { name: 'Köln', lat: 50.9, lng: 6.9 }
-  ];
-
-  const checklistItems = [
-    { 
-      title: t('common:api_key_secure', 'HERE Maps API Key'), 
-      status: 'completed', 
-      desc: t('common:api_key_desc', 'Sicher in Supabase Secrets hinterlegt') 
-    },
-    { 
-      title: t('common:map_component', 'Basis-Kartenkomponente'), 
-      status: 'completed', 
-      desc: t('common:map_component_desc', 'HereMapComponent.tsx erstellt und funktionsfähig') 
-    },
-    { 
-      title: t('common:responsive_container', 'Responsive Container'), 
-      status: 'completed', 
-      desc: t('common:responsive_desc', 'Desktop & Mobile optimiert') 
-    },
-    { 
-      title: t('common:mock_data', 'Mock-Daten Integration'), 
-      status: 'completed', 
-      desc: t('common:mock_data_desc', 'Deutsche Städte mit Demo-Transporten und Anfragen') 
-    },
-    { 
-      title: t('common:error_handling', 'Error Handling'), 
-      status: 'completed', 
-      desc: t('common:error_desc', 'Fallbacks bei API/Netzwerk-Fehlern') 
-    },
-    { 
-      title: t('common:security_check', 'Security Check'), 
-      status: 'completed', 
-      desc: t('common:security_desc', 'Kein API Key im Frontend-Code') 
-    }
-  ];
+  const { t } = useTranslation(['common', 'landing']);
+  const { getLocalizedUrl } = useLanguageMCP();
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto px-4 pt-6 pb-16">
-        <div className="space-y-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 py-8">
+        <div className="container mx-auto px-4 max-w-7xl">
+          
           {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {t('common:here_maps_integration', 'HERE Maps Integration')}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {t('common:mvp_basis_implementation', 'MVP-Basis Implementierung mit öffentlicher Kartenansicht')}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Map className="h-8 w-8 text-blue-600" />
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                Live Transport Map
+              </h1>
+            </div>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              {t('landing:map_subtitle')} - Alle verfügbaren Fahrten und Transportanfragen in Echtzeit
             </p>
           </div>
 
-          {/* Status Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
+          {/* Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Monitor className="h-5 w-5" />
-                  {t('common:desktop_ready', 'Desktop Ready')}
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Map className="h-5 w-5 text-blue-600" />
+                  Live Daten
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge variant="outline" className="text-green-700 border-green-200">
-                  <Check className="h-3 w-3 mr-1" />
-                  {t('common:functional', 'Funktionsfähig')}
-                </Badge>
+                <p className="text-gray-600 text-sm">
+                  Echte Transportanfragen und Fahrten von verifizierten Nutzern
+                </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Smartphone className="h-5 w-5" />
-                  {t('common:mobile_ready', 'Mobile Ready')}
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Info className="h-5 w-5 text-green-600" />
+                  DSGVO-konform
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge variant="outline" className="text-green-700 border-green-200">
-                  <Check className="h-3 w-3 mr-1" />
-                  {t('common:responsive', 'Responsive')}
-                </Badge>
+                <p className="text-gray-600 text-sm">
+                  Nur öffentliche Informationen ohne personenbezogene Daten
+                </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  {t('common:api_integration', 'API Integration')}
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                  Interaktiv
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge variant="outline" className="text-green-700 border-green-200">
-                  <Check className="h-3 w-3 mr-1" />
-                  {t('common:public_ready', 'Öffentlich verfügbar')}
-                </Badge>
+                <p className="text-gray-600 text-sm">
+                  Klicken Sie auf Marker für Details und Kontaktmöglichkeiten
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content Tabs - Conditionally render tabs based on user role */}
-          <Tabs defaultValue="demo" className="space-y-6">
-            <TabsList className={`grid w-full ${userIsAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              <TabsTrigger value="demo">Live Demo</TabsTrigger>
-              <TabsTrigger value="checklist">Feature Overview</TabsTrigger>
-              {userIsAdmin && (
-                <TabsTrigger value="diagnostics">Diagnose</TabsTrigger>
-              )}
-            </TabsList>
+          {/* Main Map */}
+          <Card className="shadow-2xl mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Zap className="h-6 w-6 text-green-500" />
+                Live Transport Map Deutschland
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <HereMapWithData 
+                height="600px" 
+                className="rounded-lg overflow-hidden" 
+                center={{ lat: 51.1657, lng: 10.4515 }}
+                zoom={6}
+              />
+            </CardContent>
+          </Card>
 
-            <TabsContent value="demo" className="space-y-6">
-              {/* Demo Controls */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('common:live_demo_testing', 'Live Demo & Testing')}</CardTitle>
-                  <CardDescription>
-                    {t('common:test_map_component', 'Testen Sie die Kartenkomponente mit verschiedenen Einstellungen')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Location Controls */}
-                  <div>
-                    <h4 className="font-medium mb-2">{t('common:test_locations', 'Test-Standorte')}</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {testLocations.map((location) => (
-                        <Button
-                          key={location.name}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setMapCenter({ lat: location.lat, lng: location.lng })}
-                        >
-                          {location.name}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Filter Controls */}
-                  <div>
-                    <h4 className="font-medium mb-2 flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
-                      {t('common:data_filters', 'Daten-Filter')}
-                    </h4>
-                    <div className="flex items-center space-x-4">
-                      <Button
-                        variant={showTransports ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setShowTransports(!showTransports)}
-                        className="flex items-center gap-2"
-                      >
-                        <Truck className="h-4 w-4" />
-                        {t('common:transports', 'Fahrten')} {showTransports ? '✓' : ''}
-                      </Button>
-                      <Button
-                        variant={showRequests ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setShowRequests(!showRequests)}
-                        className="flex items-center gap-2"
-                      >
-                        <Package className="h-4 w-4" />
-                        {t('common:requests', 'Anfragen')} {showRequests ? '✓' : ''}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Actions */}
+          <div className="text-center space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to={getLocalizedUrl('/here-maps-features')}>
+                <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+                  <Zap className="mr-2 h-5 w-5" />
+                  Alle Features testen
+                </Button>
+              </Link>
+              
+              <Link to={getLocalizedUrl('/register')}>
+                <Button size="lg" className="text-lg px-8 py-3">
+                  <Map className="mr-2 h-5 w-5" />
+                  Eigenen Transport einstellen
+                </Button>
+              </Link>
+            </div>
+          </div>
 
-              {/* Map Component */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('common:here_maps_component', 'HERE Maps Komponente')}</CardTitle>
-                  <CardDescription>
-                    {t('common:responsive_map_description', 'Vollständig responsive Karte mit Mock-Daten und Interaktionen')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <HereMapComponent
-                    height="600px"
-                    center={mapCenter}
-                    zoom={7}
-                    showMockData={true}
-                    showTestMarkers={false}
-                    showTransports={showTransports}
-                    showRequests={showRequests}
-                    className="border rounded-lg"
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
+          {/* Instructions */}
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                So funktioniert die Live Map
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-3 text-green-900">🚗 Fahrten (grüne Marker)</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Verfügbare Fahrzeuge mit freier Kapazität</li>
+                    <li>• Preis pro Kilogramm oder Pauschalpreis</li>
+                    <li>• Start- und Zieladresse sichtbar</li>
+                    <li>• Abfahrtszeit und Fahrzeugtyp</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-3 text-blue-900">📦 Transportaufträge (blaue Marker)</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Artikel die transportiert werden müssen</li>
+                    <li>• Gewicht, Maße und Kategorie</li>
+                    <li>• Abholort und Zieladresse</li>
+                    <li>• Deadline und angebotener Preis</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-semibold text-blue-900 mb-2">🔒 Datenschutz & Privatsphäre</h4>
+                <p className="text-sm text-blue-800">
+                  Alle angezeigten Informationen sind öffentlich und enthalten keine personenbezogenen Daten. 
+                  Kontaktdaten und weitere Details werden erst nach Registrierung und bei berechtigtem Interesse freigegeben.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Secured Diagnostics Tab - Only for Admins */}
-            {userIsAdmin && (
-              <TabsContent value="diagnostics">
-                <AdminTabGuard
-                  fallbackTitle={t('common:access_denied.admin_title', 'Administrator-Zugriff erforderlich')}
-                  fallbackDescription={t('common:access_denied.diagnostics_desc', 'Die Diagnose-Funktionen sind nur für Systemadministratoren zugänglich.')}
-                >
-                  <HereMapDiagnostics />
-                </AdminTabGuard>
-              </TabsContent>
-            )}
-
-            <TabsContent value="checklist" className="space-y-6">
-              {/* Feature Overview */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('common:feature_overview', 'Feature-Übersicht')}</CardTitle>
-                  <CardDescription>
-                    {t('common:mvp_requirements_fulfilled', 'Alle öffentlichen Funktionen sind verfügbar')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {checklistItems.map((item, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <Check className="h-4 w-4 text-green-600" />
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">{item.title}</div>
-                          <div className="text-sm text-gray-600">{item.desc}</div>
-                        </div>
-                        <Badge variant="outline" className="text-green-700 border-green-200">
-                          {t('common:completed', 'Erledigt')}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Legend Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('common:map_legend', 'Karten-Legende')}</CardTitle>
-                  <CardDescription>
-                    {t('common:color_coding_explanation', 'Farbkodierung der Marker nach Preiskategorien')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-6 h-6 rounded-full bg-green-500"></div>
-                      <div>
-                        <div className="font-medium text-green-800">{t('common:budget_friendly', 'Günstig')}</div>
-                        <div className="text-sm text-green-600">&lt; 15€</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-orange-50 rounded-lg">
-                      <div className="w-6 h-6 rounded-full bg-orange-500"></div>
-                      <div>
-                        <div className="font-medium text-orange-800">{t('common:medium_price', 'Mittel')}</div>
-                        <div className="text-sm text-orange-600">15€ - 25€</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
-                      <div className="w-6 h-6 rounded-full bg-red-500"></div>
-                      <div>
-                        <div className="font-medium text-red-800">{t('common:premium', 'Premium')}</div>
-                        <div className="text-sm text-red-600">&gt; 25€</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
         </div>
       </div>
     </Layout>

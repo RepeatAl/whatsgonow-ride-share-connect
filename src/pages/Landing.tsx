@@ -1,3 +1,4 @@
+
 import React from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/home/Hero";
@@ -7,7 +8,7 @@ import ESGSection from "@/components/home/ESGSection";
 import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 import HowItWorks from "@/components/HowItWorks";
-import { HereMapComponent } from "@/components/map";
+import { HereMapWithData } from "@/components/map";
 import { useTranslation } from 'react-i18next';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { Link } from 'react-router-dom';
@@ -16,13 +17,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Map, Zap } from 'lucide-react';
 
 /**
- * VOLLSTÄNDIGE Landing Page - Navigation ist jetzt sichtbar
+ * VOLLSTÄNDIGE Landing Page mit echten Daten
  */
 const Landing = () => {
   const { t } = useTranslation(['common', 'landing']);
   const { getLocalizedUrl } = useLanguageMCP();
 
-  console.log('[Landing] Rendering COMPLETE Landing page with HERE Maps and visible navigation');
+  console.log('[Landing] Rendering COMPLETE Landing page with real HERE Maps data');
 
   return (
     <Layout hideNavigation={false} pageType="home">
@@ -33,7 +34,7 @@ const Landing = () => {
         {/* How It Works Section */}
         <HowItWorks />
         
-        {/* HERE Maps Integration Section */}
+        {/* HERE Maps Integration Section with REAL DATA */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
@@ -47,14 +48,10 @@ const Landing = () => {
             
             <Card className="mb-8 shadow-lg">
               <CardContent className="p-0">
-                <HereMapComponent
+                <HereMapWithData
                   height="400px"
-                  showMockData={true}
-                  showTestMarkers={false}
-                  showTransports={true}
-                  showRequests={true}
-                  zoom={6}
                   center={{ lat: 51.1657, lng: 10.4515 }} // Center of Germany
+                  zoom={6}
                   className="rounded-lg overflow-hidden"
                 />
               </CardContent>
@@ -83,19 +80,15 @@ const Landing = () => {
               <div className="inline-flex items-center space-x-6 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-2">
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>Abholorte</span>
+                  <span>Transportaufträge</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>Günstig (&lt; 15€)</span>
+                  <span>Verfügbare Fahrten</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                  <span>Mittel (15-25€)</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span>Premium (&gt; 25€)</span>
+                  <span>Premium-Services</span>
                 </div>
               </div>
             </div>
