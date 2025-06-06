@@ -3,7 +3,7 @@
 // This file follows the conventions from /docs/conventions/roles_and_ids.md
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
 /**
  * Hook to redirect users to their role-specific dashboard
@@ -11,7 +11,7 @@ import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
  */
 export const useRoleRedirect = () => {
   const navigate = useNavigate();
-  const { profile, loading } = useSimpleAuth();
+  const { profile, loading } = useOptimizedAuth();
 
   useEffect(() => {
     if (loading) return;

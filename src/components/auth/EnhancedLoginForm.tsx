@@ -65,7 +65,6 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     }
   };
 
-  // PHASE 3: Vereinfachte Login-Logik ohne Profile-Checks
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -81,9 +80,6 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     try {
       console.log('🔐 EnhancedLoginForm: Starting login process for:', formData.email);
 
-      // ENTFERNT: Anonyme Profile-Abfrage vor Login
-      // Das war die Ursache für "permission denied" Fehler
-      
       // Direkt mit OptimizedAuth signIn
       await signIn(formData.email.trim(), formData.password);
 
@@ -91,7 +87,7 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
       setFailedAttempts(0);
       setLockoutUntil(null);
 
-      console.log('✅ Login successful, navigation will be handled by OptimizedAuth');
+      console.log('✅ Login successful, navigation will be handled by OptimizedAuth redirect logic');
 
     } catch (err: any) {
       console.error('❌ Login failed:', err);

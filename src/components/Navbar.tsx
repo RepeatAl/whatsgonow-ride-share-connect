@@ -2,18 +2,17 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import DesktopMenu from "./navbar/DesktopMenu";
 import MobileMenu from "./navbar/MobileMenu";
 import NavbarLogo from "./navbar/NavbarLogo";
-import LanguageSwitcher from "./LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const Navbar = React.memo(() => {
   const { theme } = useTheme();
-  const { user, profile, loading } = useSimpleAuth();
+  const { user, profile, loading } = useOptimizedAuth();
   const { getLocalizedUrl } = useLanguageMCP();
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
@@ -37,9 +36,6 @@ const Navbar = React.memo(() => {
         <NavbarLogo />
         
         <div className="flex items-center space-x-4">
-          {/* Language Switcher - always visible */}
-          <LanguageSwitcher variant="outline" />
-          
           {/* Emergency Home Button */}
           <Link to={getLocalizedUrl("/")}>
             <Button variant="ghost" size="sm" className="flex items-center gap-2">

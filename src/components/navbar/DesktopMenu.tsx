@@ -1,3 +1,4 @@
+
 import React, { memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, LogOut, MessageSquare, PlusCircle, Route, Package } from "lucide-react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useTranslation } from "react-i18next";
 import ThemeLanguageControls from "./ThemeLanguageControls";
@@ -21,7 +22,7 @@ interface DesktopMenuProps {
 }
 
 const DesktopMenu = memo(({ unreadMessagesCount = 0 }: DesktopMenuProps) => {
-  const { user, profile, signOut } = useSimpleAuth();
+  const { user, profile, signOut } = useOptimizedAuth();
   const navigate = useNavigate();
   const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
   const { t } = useTranslation(['landing', 'common']);

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -18,7 +18,7 @@ const LogoutButton = ({
   showIcon = true,
   className = ""
 }: LogoutButtonProps) => {
-  const { signOut } = useSimpleAuth();
+  const { signOut } = useOptimizedAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
@@ -27,11 +27,10 @@ const LogoutButton = ({
     try {
       setLoading(true);
       
-      // PHASE 1 FIX: Nutze lokalen signOut von SimpleAuth (nicht global!)
       await signOut();
       
       toast({
-        description: "Erfolgreich abgemeldet (nur auf diesem Gerät)",
+        description: "Erfolgreich abgemeldet",
       });
       
       // Navigiere zur lokalisierten Startseite

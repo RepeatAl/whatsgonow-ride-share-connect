@@ -32,7 +32,30 @@ export const useAuthRedirect = (
     // Authentifiziert + auf Auth-Seite → Dashboard
     if (user && profile && isAuthPage) {
       console.log('✅ OptimizedAuth: Redirecting authenticated user to dashboard');
-      navigate(`/${currentLanguage}/dashboard`, { replace: true });
+      
+      // Rollenbasierte Weiterleitung
+      let targetPath = `/${currentLanguage}/dashboard`;
+      
+      switch (profile.role) {
+        case 'admin':
+        case 'super_admin':
+          targetPath = `/${currentLanguage}/dashboard/admin`;
+          break;
+        case 'cm':
+          targetPath = `/${currentLanguage}/dashboard/cm`;
+          break;
+        case 'driver':
+          targetPath = `/${currentLanguage}/dashboard/driver`;
+          break;
+        case 'sender_private':
+        case 'sender_business':
+          targetPath = `/${currentLanguage}/dashboard/sender`;
+          break;
+        default:
+          targetPath = `/${currentLanguage}/profile`;
+      }
+      
+      navigate(targetPath, { replace: true });
       return;
     }
 

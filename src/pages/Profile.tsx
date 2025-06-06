@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 const Profile = () => {
   const { t } = useTranslation(["common"]);
-  const { user, profile } = useSimpleAuth();
+  const { user, profile } = useOptimizedAuth();
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
   const [activeTab, setActiveTab] = useState("profile");
