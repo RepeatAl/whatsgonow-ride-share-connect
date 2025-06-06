@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, AlertTriangle } from 'lucide-react';
@@ -44,7 +45,7 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Dortmund': { lat: 51.5136, lng: 7.4653 }
 };
 
-// Available CDN URLs for HERE Maps SDK for fallback mechanism - CORRECTED LIST
+// Available CDN URLs for HERE Maps SDK - STABLE VERSION
 const HERE_CDN_URLS = [
   'https://js.api.here.com/v3/3.1/mapsjs-bundle.js',
   'https://cdn.here.com/v3/3.1/mapsjs-bundle.js'
@@ -72,8 +73,6 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<ErrorType>('unknown');
   const [mapReady, setMapReady] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [cdnUrlIndex, setCdnUrlIndex] = useState(0);
 
   // Fetch API key from Supabase Secrets OR use hardcoded fallback
   const getHereMapApiKey = async (): Promise<string | null> => {
@@ -226,71 +225,57 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
     return 'unknown';
   };
 
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
-    setError(null);
-    setErrorType('unknown');
-    setIsLoading(true);
-    setMapReady(false);
-    
-    // Try the next CDN URL
-    setCdnUrlIndex((prevIndex) => (prevIndex + 1) % HERE_CDN_URLS.length);
-    
-    // Clear existing map instance
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.dispose();
-      mapInstanceRef.current = null;
+  // Self-contained CDN loading function with internal retry logic
+  const loadHereMapsAPI = async (): Promise<boolean> => {
+    // Check if already loaded
+    if (window.H) {
+      console.log('[HERE Maps] SDK already loaded, reusing existing instance');
+      return true;
     }
-    
-    console.log(`[HERE Maps] Retry attempt ${retryCount + 1} with CDN: ${HERE_CDN_URLS[cdnUrlIndex]}`);
-  };
 
-  // Enhanced script loading function with fallback mechanism
-  const loadHereMapsAPI = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      // Check if already loaded
-      if (window.H) {
-        console.log('[HERE Maps] SDK already loaded, reusing existing instance');
-        resolve();
-        return;
+    // Try each CDN URL once
+    for (const cdnUrl of HERE_CDN_URLS) {
+      console.log(`[HERE Maps] Attempting to load SDK from ${cdnUrl}...`);
+      
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = cdnUrl;
+          script.async = true;
+          script.crossOrigin = "anonymous";
+          
+          script.onload = () => {
+            console.log(`[HERE Maps] ✅ SDK loaded successfully from ${cdnUrl}`);
+            resolve();
+          };
+          
+          script.onerror = (event) => {
+            console.error(`[HERE Maps] ❌ SDK loading failed from ${cdnUrl}:`, event);
+            reject(new Error(`Script loading failed from ${cdnUrl}`));
+          };
+          
+          document.head.appendChild(script);
+          
+          // Add timeout to detect stalled loading
+          setTimeout(() => {
+            if (!window.H) {
+              console.warn(`[HERE Maps] Script loading timed out after 10 seconds from ${cdnUrl}`);
+              reject(new Error(`Timeout loading from ${cdnUrl}`));
+            }
+          }, 10000);
+        });
+
+        // Success - SDK loaded
+        return true;
+      } catch (error) {
+        console.warn(`[HERE Maps] Failed to load from ${cdnUrl}, trying next CDN...`);
+        continue;
       }
+    }
 
-      const currentCdnUrl = HERE_CDN_URLS[cdnUrlIndex];
-      console.log(`[HERE Maps] Loading SDK from ${currentCdnUrl}...`);
-      
-      const script = document.createElement('script');
-      script.src = currentCdnUrl;
-      script.async = true;
-      script.crossOrigin = "anonymous";
-      
-      script.onload = () => {
-        console.log(`[HERE Maps] ✅ SDK loaded successfully from ${currentCdnUrl}`);
-        resolve();
-      };
-      
-      script.onerror = (event) => {
-        console.error(`[HERE Maps] ❌ SDK loading failed from ${currentCdnUrl}:`, event);
-        
-        // Check if we have more CDNs to try
-        if (cdnUrlIndex < HERE_CDN_URLS.length - 1) {
-          console.log(`[HERE Maps] Trying next CDN URL: ${HERE_CDN_URLS[cdnUrlIndex + 1]}`);
-          setCdnUrlIndex(cdnUrlIndex + 1);
-          reject(new Error(`HERE Maps SDK konnte nicht von ${currentCdnUrl} geladen werden. Versuche nächste CDN.`));
-        } else {
-          reject(new Error('HERE Maps SDK konnte nicht geladen werden. Alle CDN-Versuche fehlgeschlagen.'));
-        }
-      };
-      
-      document.head.appendChild(script);
-      
-      // Add a timeout to detect stalled script loading
-      setTimeout(() => {
-        if (!window.H) {
-          console.warn(`[HERE Maps] Script loading timed out after 10 seconds from ${currentCdnUrl}`);
-          script.onerror!(new ErrorEvent('timeout'));
-        }
-      }, 10000);
-    });
+    // All CDNs failed
+    console.error('[HERE Maps] All CDN URLs failed');
+    return false;
   };
 
   useEffect(() => {
@@ -300,36 +285,22 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         setError(null);
 
         console.log('[HERE Maps] Initializing map...');
-        console.log('[HERE Maps] HTTPS:', window.location.protocol === 'https:');
-        console.log('[HERE Maps] Hostname:', window.location.hostname);
-        console.log('[HERE Maps] Using CDN URL:', HERE_CDN_URLS[cdnUrlIndex]);
 
-        // Get API key from Supabase Secrets OR use hardcoded
+        // Get API key
         const apiKey = await getHereMapApiKey();
-        
         if (!apiKey) {
           throw new Error('HERE Maps API Key nicht konfiguriert oder nicht verfügbar');
         }
 
         console.log('[HERE Maps] API Key erfolgreich geladen:', apiKey.substring(0, 8) + '...');
 
-        // Load HERE Maps API from CDN with enhanced error handling
-        try {
-          await loadHereMapsAPI();
-          console.log('[HERE Maps] SDK loaded successfully');
-        } catch (sdkError) {
-          console.error('[HERE Maps] Failed to load SDK:', sdkError);
-          
-          // If we have more CDNs to try, let's retry with the next one
-          if (cdnUrlIndex < HERE_CDN_URLS.length - 1) {
-            handleRetry();
-            return; // Exit and let the retry handle it
-          } else {
-            throw sdkError; // No more CDNs to try, propagate the error
-          }
+        // Load HERE Maps SDK with stable retry logic
+        const sdkLoaded = await loadHereMapsAPI();
+        if (!sdkLoaded) {
+          throw new Error('HERE Maps SDK konnte nicht geladen werden');
         }
 
-        // Verify that the HERE Maps API is available
+        // Verify SDK availability
         if (!window.H) {
           throw new Error('HERE Maps SDK wurde geladen, aber H-Objekt ist nicht verfügbar');
         }
@@ -382,7 +353,6 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         console.error('[HERE Maps] Initialization error:', {
           error: err,
           type: errorType,
-          retryCount,
           stackTrace: err?.stack
         });
         
@@ -401,7 +371,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         mapInstanceRef.current.dispose();
       }
     };
-  }, [center.lat, center.lng, zoom, showTestMarkers, showMockData, showTransports, showRequests, retryCount, cdnUrlIndex]);
+  }, [center.lat, center.lng, zoom, showTestMarkers, showMockData, showTransports, showRequests]);
 
   const getMarkerColor = (marker: MarkerData): string => {
     if (marker.type === 'test') return '#9b87f5'; // Purple for test markers
@@ -483,7 +453,6 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         <MapFallback
           height={height}
           errorType={errorType}
-          onRetry={handleRetry}
           showMockData={showMockData}
         />
       </div>
@@ -498,15 +467,9 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
             <div className="flex items-center space-x-3">
               <Loader2 className="h-6 w-6 animate-spin text-gray-600" />
               <span className="text-gray-600 font-medium">
-                HERE Maps wird geladen... {retryCount > 0 ? `(Versuch ${retryCount + 1})` : ''}
+                HERE Maps wird geladen...
               </span>
             </div>
-            
-            {retryCount > 0 && (
-              <div className="text-xs text-gray-500">
-                CDN: {HERE_CDN_URLS[cdnUrlIndex].split('//')[1].split('/')[0]}
-              </div>
-            )}
           </div>
         </div>
       )}
