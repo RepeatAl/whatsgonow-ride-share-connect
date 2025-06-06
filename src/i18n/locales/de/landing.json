@@ -26,6 +26,10 @@
       "description": "Dein Gegenstand wird sicher und schnell geliefert"
     }
   },
+  "map": {
+    "title": "Live-Transport-Karte",
+    "description": "Diese Karte zeigt öffentlich verfügbare Transportbewegungen. Aus Datenschutzgründen sind keine personenbezogenen Daten sichtbar."
+  },
   "benefits": {
     "title": "Warum Whatsgonow?",
     "description": "Unsere Plattform bietet zahlreiche Vorteile für Versender und Fahrer",

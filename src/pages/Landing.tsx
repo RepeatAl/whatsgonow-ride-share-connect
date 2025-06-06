@@ -8,6 +8,7 @@ import Layout from "@/components/Layout";
 import Hero from "@/components/home/Hero";
 import HowItWorks from "@/components/home/HowItWorks";
 import Benefits from "@/components/home/Benefits";
+import LiveMapSection from "@/components/home/LiveMapSection";
 import Testimonials from "@/components/home/Testimonials";
 import ESGSection from "@/components/home/ESGSection";
 import UserGroups from "@/components/home/UserGroups";
@@ -43,6 +44,9 @@ const Landing = () => {
         
         {/* Benefits Section */}
         <Benefits />
+        
+        {/* Live Map Section */}
+        <LiveMapSection />
         
         {/* User Groups Section */}
         <UserGroups />

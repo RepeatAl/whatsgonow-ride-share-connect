@@ -26,6 +26,10 @@
       "description": "Your item is delivered safely and quickly"
     }
   },
+  "map": {
+    "title": "Live Transport Map",
+    "description": "This map shows publicly available transport movements. For privacy reasons, no personal data is visible."
+  },
   "benefits": {
     "title": "Why Whatsgonow?",
     "description": "Our platform offers numerous benefits for senders and drivers",
