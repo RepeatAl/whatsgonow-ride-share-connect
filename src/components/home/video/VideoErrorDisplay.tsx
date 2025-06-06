@@ -15,42 +15,33 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
   const hasVideoExtension = src ? ['.mp4', '.webm', '.ogg'].some(ext => src.includes(ext)) : false;
 
   return (
-    <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-brand-primary to-brand-orange rounded-lg">
-      <div className="text-center text-white p-6 max-w-md">
+    <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-300">
+      <div className="text-center text-gray-600 p-6 max-w-md">
         <div className="flex items-center justify-center mb-4">
-          {error ? (
-            <AlertCircle className="h-16 w-16 text-red-200" />
-          ) : (
-            <Play className="h-16 w-16" />
-          )}
+          <Play className="h-12 w-12 text-gray-400" />
         </div>
         
-        <p className="text-lg font-medium mb-2">
-          {error ? 'Video-Fehler' : 'Video wird bald verfügbar sein'}
+        <p className="text-base font-medium mb-2">
+          Video wird bald verfügbar sein
         </p>
         
-        <p className="text-sm opacity-80 mb-4">
-          {error 
-            ? 'Das Video konnte nicht geladen werden. Versuchen Sie es erneut oder testen Sie den direkten Zugriff.'
-            : 'Hier wird das Erklärvideo zu whatsgonow eingebettet'
-          }
+        <p className="text-sm opacity-75 mb-4">
+          Hier wird das Erklärvideo zu Whatsgonow eingebettet
         </p>
         
         {error && (
-          <div className="mb-4">
-            <details className="text-xs opacity-75 bg-black bg-opacity-20 p-2 rounded cursor-pointer">
-              <summary className="font-mono mb-1">Fehler-Details</summary>
-              <p className="text-left">{error}</p>
-              {src && (
-                <div className="mt-2">
-                  <p>URL-Status:</p>
-                  <p>• Supabase: {isSupabaseUrl ? '✅' : '❌'}</p>
-                  <p>• Video-Format: {hasVideoExtension ? '✅' : '❌'}</p>
-                  <p className="break-all">• URL: {src}</p>
-                </div>
-              )}
-            </details>
-          </div>
+          <details className="text-xs opacity-50 bg-gray-200 p-2 rounded cursor-pointer mb-4">
+            <summary className="font-mono mb-1">Technische Details</summary>
+            <p className="text-left">{error}</p>
+            {src && (
+              <div className="mt-2">
+                <p>URL-Status:</p>
+                <p>• Supabase: {isSupabaseUrl ? '✅' : '❌'}</p>
+                <p>• Video-Format: {hasVideoExtension ? '✅' : '❌'}</p>
+                <p className="break-all">• URL: {src}</p>
+              </div>
+            )}
+          </details>
         )}
         
         <div className="flex gap-2 justify-center flex-wrap">
@@ -58,7 +49,7 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
             size="sm" 
             variant="outline" 
             onClick={onRefresh}
-            className="text-white border-white hover:bg-white hover:text-brand-orange"
+            className="text-gray-600 border-gray-400 hover:bg-gray-100"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Neu laden
@@ -69,7 +60,7 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
               size="sm" 
               variant="outline" 
               onClick={onTestDirectAccess}
-              className="text-white border-white hover:bg-white hover:text-brand-orange"
+              className="text-gray-600 border-gray-400 hover:bg-gray-100"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               URL testen
@@ -77,11 +68,9 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
           )}
         </div>
         
-        {!error && (
-          <p className="text-xs opacity-60 mt-4">
-            Demo-Modus: Videos werden nach der Integration verfügbar sein
-          </p>
-        )}
+        <p className="text-xs opacity-50 mt-4">
+          Demo-Modus aktiv
+        </p>
       </div>
     </div>
   );

@@ -52,6 +52,9 @@ const HERE_CDN_URLS = [
   'https://js.cdn.here.com/v3/3.1/mapsjs-bundle.js'
 ];
 
+// ⚠️ HARDCODE BEREICH: Ersetzen Sie "YOUR_NEW_HERE_MAPS_API_KEY" mit Ihrem neuen API Key
+const HARDCODED_HERE_API_KEY = "YOUR_NEW_HERE_MAPS_API_KEY";
+
 const HereMapComponent: React.FC<HereMapComponentProps> = ({
   width = '100%',
   height = '400px',
@@ -74,8 +77,14 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const [cdnUrlIndex, setCdnUrlIndex] = useState(0);
 
-  // Fetch API key from Supabase Secrets
+  // Fetch API key from Supabase Secrets OR use hardcoded fallback
   const getHereMapApiKey = async (): Promise<string | null> => {
+    // PRIORITY 1: Try hardcoded API key first (if provided)
+    if (HARDCODED_HERE_API_KEY && HARDCODED_HERE_API_KEY !== "YOUR_NEW_HERE_MAPS_API_KEY") {
+      console.log('[HERE Maps] Using hardcoded API Key');
+      return HARDCODED_HERE_API_KEY;
+    }
+    
     try {
       console.log('[HERE Maps] Fetching API key from Supabase Secrets...');
       
@@ -297,7 +306,7 @@ const HereMapComponent: React.FC<HereMapComponentProps> = ({
         console.log('[HERE Maps] Hostname:', window.location.hostname);
         console.log('[HERE Maps] Using CDN URL:', HERE_CDN_URLS[cdnUrlIndex]);
 
-        // Get API key from Supabase Secrets
+        // Get API key from Supabase Secrets OR use hardcoded
         const apiKey = await getHereMapApiKey();
         
         if (!apiKey) {
