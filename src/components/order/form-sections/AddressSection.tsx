@@ -3,7 +3,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 interface AddressSectionProps {
   form: any; // Replace 'any' with the actual type of your form
@@ -12,7 +12,7 @@ interface AddressSectionProps {
 }
 
 const AddressSection: React.FC<AddressSectionProps> = ({ form, isPickup, toggleIsPickup }) => {
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
 
   return (
     <div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ const NotFound: React.FC = () => {
   };
 
   return (
-    <Layout pageType="error">
+    <Layout pageType="public">
       <div className="container py-12 flex items-center justify-center min-h-[60vh]">
         <Card className="w-full max-w-md text-center">
           <CardHeader>

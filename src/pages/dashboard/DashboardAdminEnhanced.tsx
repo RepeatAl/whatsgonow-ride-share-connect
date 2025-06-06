@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,14 +11,16 @@ import { UsersTable } from "@/components/admin/users/UsersTable";
 import { useAdminUsers } from "@/hooks/use-admin-users";
 import { useAdminGuard } from "@/hooks/useAdminGuard";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 const DashboardAdminEnhanced = () => {
+  const { profile } = useOptimizedAuth();
   const [activeTab, setActiveTab] = useState<string>("overview");
   const { isAdmin, isAdminOrCM } = useAdminGuard();
-  const { profile } = useSimpleAuth();
+  const { profile: simpleProfile } = useSimpleAuth();
   const { users, loading, fetchUsers, updateUserRole, toggleUserActive, deleteUser } = useAdminUsers();
   
-  const isSuperAdmin = profile?.role === 'super_admin';
+  const isSuperAdmin = simpleProfile?.role === 'super_admin';
   
   // Nur Admins und CMs können auf diese Seite zugreifen
   if (!isAdminOrCM) {

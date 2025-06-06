@@ -1,49 +1,101 @@
-
-import { useNavigate } from "react-router-dom";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
+import { Package, Plus, Clock, CheckCircle } from 'lucide-react';
+import Layout from '@/components/Layout';
 
 const DashboardSender = () => {
-  const { profile } = useSimpleAuth();
-  const navigate = useNavigate();
+  const { profile } = useOptimizedAuth();
+
+  if (!profile || !['sender_private', 'sender_business'].includes(profile.role)) {
+    return (
+      <Layout pageType="authenticated">
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Zugriff verweigert</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Diese Seite ist nur für Sender zugänglich.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
-    <Layout>
-      <div className="container mx-auto max-w-6xl px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">
-              Willkommen, {profile?.name ?? "Versender"}
-            </h1>
-            <p className="text-muted-foreground">
-              Hier findest du eine Übersicht deiner Transporte und Anfragen.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="brand"
-              className="flex items-center gap-2"
-              onClick={() => navigate("/create-order")}
-            >
-              <PlusCircle className="h-4 w-4" />
-              Neuer Auftrag
-            </Button>
-          </div>
-        </div>
+    <Layout pageType="authenticated">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                Neuen Auftrag erstellen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Erstelle einen neuen Transportauftrag
+              </p>
+              <Button className="w-full">
+                Auftrag erstellen
+              </Button>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Deine aktuellen Aktivitäten</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Du hast aktuell keine aktiven Transporte. Sobald du einen Auftrag erstellst, erscheint er hier.
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Meine Aufträge
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Verwalte deine aktiven Transportaufträge
+              </p>
+              <Button variant="outline" className="w-full">
+                Aufträge anzeigen
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Laufende Transporte
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Überblick über laufende Transporte
+              </p>
+              <Button variant="outline" className="w-full">
+                Transporte anzeigen
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                Abgeschlossene Aufträge
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Archiv deiner abgeschlossenen Aufträge
+              </p>
+              <Button variant="outline" className="w-full">
+                Aufträge anzeigen
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Layout>
   );

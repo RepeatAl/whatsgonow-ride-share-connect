@@ -1,67 +1,120 @@
-
-import React, { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Layout from "@/components/Layout";
-import CreateOrderForm from "@/components/order/CreateOrderForm";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { useOrderForm } from "@/hooks/useOrderForm";
-import { useOrderSubmit } from "@/hooks/useOrderSubmit";
-
-interface DraftData {
-  draft_data: any;
-  photo_urls: string[];
-  items?: any[];
-}
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import Layout from '@/components/Layout';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 const DraftEdit = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
-  const { user } = useSimpleAuth();
-  const { form, clearDraft } = useOrderForm();
-  const { handleSubmit } = useOrderSubmit(user?.id, clearDraft);
+  const { profile } = useOptimizedAuth();
+  const [draft, setDraft] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
-  }, [user, navigate]);
+    const fetchDraft = async () => {
+      if (!draftId) return;
 
-  const onSubmit = async (values: any) => {
-    const result = await handleSubmit(values, []);
-    if (result.success) {
-      navigate('/orders');
+      try {
+        setLoading(true);
+        // Replace with your actual API call to fetch the draft
+        const response = await fetch(`/api/drafts/${draftId}`);
+        if (!response.ok) throw new Error('Failed to fetch draft');
+
+        const data = await response.json();
+        setDraft(data);
+      } catch (err) {
+        console.error('Error fetching draft:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDraft();
+  }, [draftId]);
+
+  const handleSave = async () => {
+    try {
+      // Replace with your actual API call to save the draft
+      await fetch(`/api/drafts/${draftId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(draft),
+      });
+
+      navigate('/my-orders');
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      setError(err.message);
     }
   };
 
-  if (!user) {
-    return null;
+  const handleDelete = async () => {
+    try {
+      // Replace with your actual API call to delete the draft
+      await fetch(`/api/drafts/${draftId}`, {
+        method: 'DELETE',
+      });
+
+      navigate('/my-orders');
+    } catch (err) {
+      console.error('Error deleting draft:', err);
+      setError(err.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Layout pageType="authenticated">
+        <Card>
+          <CardContent>Loading draft...</CardContent>
+        </Card>
+      </Layout>
+    );
+  }
+
+  if (error || !draft) {
+    return (
+      <Layout pageType="authenticated">
+        <Card>
+          <CardContent>Error: {error || 'Draft not found'}</CardContent>
+        </Card>
+      </Layout>
+    );
   }
 
   return (
-    <Layout>
-      <div className="container mx-auto max-w-4xl px-4 py-8">
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Zurück
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Entwurf bearbeiten
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Bearbeiten Sie Ihren gespeicherten Auftragsentwurf.
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <CreateOrderForm form={form} onSubmit={onSubmit} />
-        </div>
+    <Layout pageType="authenticated">
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle>Edit Draft #{draftId}</CardTitle>
+            <div className="space-x-2">
+              <Button variant="ghost" onClick={() => navigate('/my-orders')}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+              <Button onClick={handleSave}>
+                <Save className="mr-2 h-4 w-4" />
+                Save
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Your form to edit the draft data goes here */}
+            <p>Implement your form here to edit the draft data.</p>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

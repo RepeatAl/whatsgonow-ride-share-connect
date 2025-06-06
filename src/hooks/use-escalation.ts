@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { toast } from '@/hooks/use-toast';
 import { EscalationStatus, Escalation, EscalationFilter } from '@/types/escalation';
 
@@ -9,7 +8,7 @@ export type { EscalationStatus, Escalation, EscalationFilter };
 
 export function useEscalation() {
   const [loading, setLoading] = useState(false);
-  const { profile } = useSimpleAuth();
+  const { profile } = useOptimizedAuth();
   
   // Check if current user has permission to escalate
   const canPreSuspend = profile?.role && ['cm', 'admin', 'super_admin'].includes(profile.role);

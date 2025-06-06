@@ -1,18 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabaseClient';
-import { Loader2, Upload, Check, AlertCircle } from 'lucide-react';
 
 const DriverApplication = () => {
-  const { user, profile, refreshProfile } = useSimpleAuth();
+  const { user, profile, refreshProfile } = useOptimizedAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     drivingExperience: '',

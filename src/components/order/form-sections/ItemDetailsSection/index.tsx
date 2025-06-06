@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Package, Plus, Trash2 } from 'lucide-react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 interface Item {
   id: string;
@@ -23,7 +23,7 @@ interface Props {
 }
 
 const ItemDetailsSection: React.FC<Props> = ({ items, onItemsChange }) => {
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const [localItems, setLocalItems] = useState<Item[]>([]);
 
   useEffect(() => {

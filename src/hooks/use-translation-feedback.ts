@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { translationFeedbackService, TranslationFeedback } from '@/services/translation-feedback';
 import { useLanguage } from '@/contexts/language';
 import { toast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
 export function useTranslationFeedback() {
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const { currentLanguage } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);

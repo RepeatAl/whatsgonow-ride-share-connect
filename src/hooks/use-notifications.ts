@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 export interface Notification {
   id: string;
@@ -18,7 +17,7 @@ export interface Notification {
 }
 
 export const useNotifications = () => {
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);

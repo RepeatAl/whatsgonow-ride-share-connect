@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { MapPin, Clock, Package, Truck } from 'lucide-react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { Handshake, MessageCircle, User } from 'lucide-react';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 const DealPanel = () => {
   const { dealId } = useParams();
   const navigate = useNavigate();
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const [deal, setDeal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

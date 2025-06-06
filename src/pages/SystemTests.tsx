@@ -2,12 +2,12 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import SystemTestRunner from '@/utils/system-testing/SystemTestRunner';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, AlertTriangle } from 'lucide-react';
 
 const SystemTests: React.FC = () => {
-  const { profile } = useSimpleAuth();
+  const { profile } = useOptimizedAuth();
   
   // Only allow admin and super_admin access
   if (!profile || !['admin', 'super_admin'].includes(profile.role)) {

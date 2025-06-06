@@ -1,22 +1,19 @@
-
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
-import { supabase } from "@/lib/supabaseClient";
-import { toast } from "@/hooks/use-toast";
-import { Loader2, Mail, ArrowLeft, AlertCircle } from "lucide-react";
-import Layout from "@/components/Layout";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Mail, CheckCircle } from 'lucide-react';
+import Layout from '@/components/Layout';
+import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
 const ForgotPassword = () => {
-  const { t } = useTranslation(["auth", "common"]);
-  const { getLocalizedUrl, currentLanguage } = useLanguageMCP();
+  const { t } = useTranslation(['auth', 'common']);
+  const { getLocalizedUrl } = useLanguageMCP();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [error, setError] = useState("");
 
   const validateEmail = (email: string) => {
@@ -62,7 +59,7 @@ const ForgotPassword = () => {
         } else if (error.message.includes("user_not_found")) {
           // For security reasons, we don't reveal if user exists or not
           // So we still show success message
-          setEmailSent(true);
+          setResetSent(true);
         } else {
           setError(error.message || "Es gab ein Problem beim Senden der E-Mail.");
         }
@@ -70,7 +67,7 @@ const ForgotPassword = () => {
       }
 
       console.log("✅ Password reset email sent successfully");
-      setEmailSent(true);
+      setResetSent(true);
       
       toast({
         title: "E-Mail gesendet",
@@ -85,9 +82,9 @@ const ForgotPassword = () => {
     }
   };
 
-  if (emailSent) {
+  if (resetSent) {
     return (
-      <Layout pageType="auth">
+      <Layout pageType="public">
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
@@ -113,7 +110,7 @@ const ForgotPassword = () => {
                 <Button 
                   variant="outline" 
                   onClick={() => {
-                    setEmailSent(false);
+                    setResetSent(false);
                     setEmail("");
                     setError("");
                   }}
@@ -130,7 +127,7 @@ const ForgotPassword = () => {
   }
 
   return (
-    <Layout pageType="auth">
+    <Layout pageType="public">
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
           <CardHeader>

@@ -1,19 +1,35 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Package, Clock, MapPin } from "lucide-react";
+import { Package, Plus, Clock, CheckCircle } from "lucide-react";
 
 const DashboardSender = () => {
   const { t } = useTranslation(["common"]);
-  const { user, profile } = useSimpleAuth();
+  const { profile } = useOptimizedAuth();
   const { getLocalizedUrl } = useLanguageMCP();
   const navigate = useNavigate();
+
+  if (!profile || !['sender_private', 'sender_business'].includes(profile.role)) {
+    return (
+      <Layout pageType="authenticated">
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Zugriff verweigert</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Diese Seite ist nur für Sender zugänglich.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   const handleCreateOrder = () => {
     navigate(getLocalizedUrl("/create-order"));
@@ -22,7 +38,7 @@ const DashboardSender = () => {
   const userName = profile?.first_name || profile?.name || user?.email?.split('@')[0] || "Sender";
 
   return (
-    <Layout pageType="dashboard">
+    <Layout pageType="authenticated">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}

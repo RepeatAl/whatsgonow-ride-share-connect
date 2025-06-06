@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Star } from 'lucide-react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import type { FeedbackData } from './types';
 
 export interface FeedbackFormProps {
@@ -19,7 +18,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSubmit, onCancel }) => {
   const { t } = useTranslation();
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState<string>('');
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
 
   const handleSubmit = () => {
     if (rating === null) {

@@ -1,37 +1,50 @@
-
-import React from "react";
-import Layout from "@/components/Layout";
-import CreateOrderForm from "@/components/order/CreateOrderForm";
-import { BackButton } from "@/components/navigation/BackButton";
-import { useOrderForm } from "@/hooks/useOrderForm";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { useOrderSubmit } from "@/hooks/useOrderSubmit";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Package, Upload } from 'lucide-react';
+import Layout from '@/components/Layout';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 const CreateOrderWithItemsTest = () => {
-  const { user } = useSimpleAuth();
-  const { form, clearDraft } = useOrderForm();
-  const { handleSubmit } = useOrderSubmit(user?.id, clearDraft);
+  const { profile } = useOptimizedAuth();
 
-  const onSubmit = async (values: any) => {
-    await handleSubmit(values, []);
-  };
+  if (!profile) {
+    return (
+      <Layout pageType="authenticated">
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Nicht angemeldet</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Bitte melde dich an, um fortzufahren.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
-    <Layout>
-      <div className="max-w-4xl mx-auto px-4 pt-6 pb-16">
-        <BackButton />
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Auftrag mit Artikeln erstellen (Testseite)</h1>
-            <p className="text-gray-600 mt-2">
-              Diese Seite dient zum Testen der Artikelverwaltung beim Erstellen eines Auftrags.
+    <Layout pageType="authenticated">
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Neuen Auftrag erstellen (Test)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600 mb-4">
+              Hier kannst du einen neuen Auftrag mit Artikeln erstellen.
             </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <CreateOrderForm form={form} onSubmit={onSubmit} />
-          </div>
-        </div>
+            <Button>
+              <Upload className="h-4 w-4 mr-2" />
+              Auftrag erstellen
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

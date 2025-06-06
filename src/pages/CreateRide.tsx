@@ -5,7 +5,7 @@ import CreateRideForm from '@/components/rides/CreateRideForm';
 
 const CreateRide = () => {
   return (
-    <Layout pageType="orders">
+    <Layout pageType="authenticated">
       <CreateRideForm />
     </Layout>
   );

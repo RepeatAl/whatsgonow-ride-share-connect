@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 export interface User {
   user_id: string;
@@ -31,7 +31,7 @@ interface UseFetchUsersOptions {
 export function useFetchUsers(region?: string, options: UseFetchUsersOptions = {}) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const { profile } = useSimpleAuth();
+  const { profile } = useOptimizedAuth();
   const { onlyFlagged = false, orderFlagged = false } = options;
 
   useEffect(() => {

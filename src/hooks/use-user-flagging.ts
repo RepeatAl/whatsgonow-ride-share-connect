@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 interface FlaggingOptions {
   reason: string;
@@ -9,7 +9,7 @@ interface FlaggingOptions {
 
 export function useUserFlagging() {
   const [loading, setLoading] = useState(false);
-  const { profile } = useSimpleAuth();
+  const { profile } = useOptimizedAuth();
   
   // Check if current user has permission to flag
   const canFlag = profile?.role && ['cm', 'admin', 'super_admin'].includes(profile.role);

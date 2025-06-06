@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +12,7 @@ const PreRegisterSuccess = () => {
   const { getLocalizedUrl } = useLanguageMCP();
 
   return (
-    <Layout pageType="pre-register-success">
+    <Layout pageType="public">
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">

@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import ValidationDashboard from '@/components/admin/ValidationDashboard';
 import { FeedbackFilters } from '@/components/feedback/admin/FeedbackFilters';
 import Layout from '@/components/Layout';
@@ -12,7 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
 const ValidationAdmin: React.FC = () => {
-  const { user, loading } = useSimpleAuth();
+  const { user, loading } = useOptimizedAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("validation");
   const [selectedStatus, setSelectedStatus] = useState("all");

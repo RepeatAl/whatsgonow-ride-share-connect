@@ -1,13 +1,13 @@
 
 import { useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/auth";
 
 export function useProfileManager() {
   const supabase = getSupabaseClient(); // Wichtig: Jetzt Factory-Pattern
-  const { user, profile, refreshProfile } = useSimpleAuth();
+  const { user, profile, refreshProfile } = useOptimizedAuth();
   const [loadingSave, setLoadingSave] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(true);

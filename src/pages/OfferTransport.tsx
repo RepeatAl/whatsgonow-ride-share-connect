@@ -1,12 +1,12 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 const OfferTransport = () => {
   const navigate = useNavigate();
-  const { user, loading } = useSimpleAuth();
+  const { user, loading } = useOptimizedAuth();
 
   useEffect(() => {
     if (!loading) {

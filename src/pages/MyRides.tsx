@@ -5,7 +5,7 @@ import MyRides from '@/components/rides/MyRides';
 
 const MyRidesPage = () => {
   return (
-    <Layout pageType="orders">
+    <Layout pageType="authenticated">
       <MyRides />
     </Layout>
   );

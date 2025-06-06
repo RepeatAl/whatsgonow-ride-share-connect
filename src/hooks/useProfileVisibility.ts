@@ -1,17 +1,9 @@
-
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
-import type { 
-  ProfileVisibilitySettings, 
-  VisibilityLevel, 
-  ProfileAccessRequest,
-  ProfileAccessResponse,
-  PrivacyError 
-} from '@/types/profile-visibility';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 
 export const useProfileVisibility = () => {
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<PrivacyError | null>(null);
 
