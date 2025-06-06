@@ -1,29 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, AlertTriangle, RefreshCw, Shield } from 'lucide-react';
+import { DataTable } from '@/components/ui/data-table';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Trash2, AlertTriangle, RefreshCw, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { useAdminVideoDelete } from '@/hooks/useAdminVideoDelete';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 import type { AdminVideo } from '@/types/admin';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 const VideoManagementPanel = () => {
+  const { t } = useTranslation('admin');
   const [videos, setVideos] = useState<AdminVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [consistencyIssues, setConsistencyIssues] = useState<any[]>([]);
+  const [consistencyData, setConsistencyData] = useState<{
+    consistent: AdminVideo[];
+    inconsistent: AdminVideo[];
+    orphanedFiles: string[];
+  }>({ consistent: [], inconsistent: [], orphanedFiles: [] });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    video: AdminVideo | null;
+  }>({ open: false, video: null });
+
   const { deleteVideoCompletely, checkVideoConsistency, isDeleting } = useAdminVideoDelete();
 
   const fetchVideos = async () => {
@@ -38,13 +40,13 @@ const VideoManagementPanel = () => {
       setVideos(data || []);
       
       // Check consistency after fetching
-      const issues = await checkVideoConsistency();
-      setConsistencyIssues(issues);
+      const consistencyResult = await checkVideoConsistency();
+      setConsistencyData(consistencyResult);
 
     } catch (error: any) {
       console.error('❌ Failed to fetch videos:', error);
       toast({
-        title: "Fehler",
+        title: t('video.error.general'),
         description: "Videos konnten nicht geladen werden.",
         variant: "destructive"
       });
@@ -53,13 +55,102 @@ const VideoManagementPanel = () => {
     }
   };
 
-  const handleVideoDelete = async (video: AdminVideo) => {
-    const success = await deleteVideoCompletely(video);
+  const handleVideoDelete = async () => {
+    if (!deleteDialog.video) return;
+    
+    const success = await deleteVideoCompletely(deleteDialog.video);
     if (success) {
-      // Refresh the list after successful deletion
-      await fetchVideos();
+      setDeleteDialog({ open: false, video: null });
+      await fetchVideos(); // Refresh the list
     }
   };
+
+  const getStatusIcon = (video: AdminVideo) => {
+    const isInconsistent = consistencyData.inconsistent.some(v => v.id === video.id);
+    
+    if (isInconsistent) {
+      return <XCircle className="h-4 w-4 text-red-500" />;
+    }
+    if (video.active) {
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    }
+    return <XCircle className="h-4 w-4 text-gray-400" />;
+  };
+
+  const getStatusBadge = (video: AdminVideo) => {
+    const isInconsistent = consistencyData.inconsistent.some(v => v.id === video.id);
+    
+    if (isInconsistent) {
+      return <Badge variant="destructive">{t('video.file_missing')}</Badge>;
+    }
+    if (video.active) {
+      return <Badge variant="default">{t('video.active')}</Badge>;
+    }
+    return <Badge variant="secondary">{t('video.inactive')}</Badge>;
+  };
+
+  const columns = [
+    {
+      id: 'status',
+      header: t('video.status'),
+      cell: (video: AdminVideo) => (
+        <div className="flex items-center gap-2">
+          {getStatusIcon(video)}
+          {getStatusBadge(video)}
+        </div>
+      ),
+    },
+    {
+      id: 'title',
+      header: t('video.title'),
+      cell: (video: AdminVideo) => (
+        <div>
+          <div className="font-medium">
+            {video.display_title_de || video.original_name || video.filename}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {video.filename}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'details',
+      header: 'Details',
+      cell: (video: AdminVideo) => (
+        <div className="text-sm space-y-1">
+          <div>
+            {video.public ? (
+              <Badge variant="secondary">{t('video.public')}</Badge>
+            ) : (
+              <Badge variant="outline">{t('video.private')}</Badge>
+            )}
+          </div>
+          <div className="text-muted-foreground">
+            {Math.round((video.file_size || 0) / 1024 / 1024 * 100) / 100} MB
+          </div>
+          <div className="text-muted-foreground">
+            {new Date(video.uploaded_at || '').toLocaleDateString('de-DE')}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: t('video.actions'),
+      cell: (video: AdminVideo) => (
+        <Button
+          variant="destructive"
+          size="sm"
+          disabled={isDeleting}
+          onClick={() => setDeleteDialog({ open: true, video })}
+          title={t('video.delete_tooltip')}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      ),
+    },
+  ];
 
   useEffect(() => {
     fetchVideos();
@@ -76,35 +167,48 @@ const VideoManagementPanel = () => {
     );
   }
 
+  const totalIssues = consistencyData.inconsistent.length + consistencyData.orphanedFiles.length;
+
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold">{t('video.management')}</h2>
+        <p className="text-muted-foreground mt-2">
+          {t('video.description')}
+        </p>
+      </div>
+
       {/* System Health Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Video System Status
+            {t('video.consistency_check')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {consistencyIssues.length === 0 
-                  ? "✅ Alle Videos sind konsistent" 
-                  : `⚠️ ${consistencyIssues.length} Konsistenz-Probleme gefunden`
-                }
-              </p>
-              {consistencyIssues.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {consistencyIssues.slice(0, 3).map((issue, index) => (
-                    <p key={index} className="text-xs text-amber-600">
-                      {issue.issue_type}: {issue.description}
+            <div className="space-y-2">
+              {totalIssues === 0 ? (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>{t('video.all_consistent')}</span>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-amber-600">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>{t('video.consistency_issues', { count: totalIssues })}</span>
+                  </div>
+                  {consistencyData.inconsistent.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {consistencyData.inconsistent.length} Videos ohne Storage-Datei
                     </p>
-                  ))}
-                  {consistencyIssues.length > 3 && (
-                    <p className="text-xs text-muted-foreground">
-                      ...und {consistencyIssues.length - 3} weitere
+                  )}
+                  {consistencyData.orphanedFiles.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {consistencyData.orphanedFiles.length} verwaiste Storage-Dateien
                     </p>
                   )}
                 </div>
@@ -122,131 +226,36 @@ const VideoManagementPanel = () => {
         </CardContent>
       </Card>
 
-      {/* Videos List */}
+      {/* Videos Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Video Verwaltung ({videos.length})</CardTitle>
+          <CardTitle>{t('video.overview')} ({videos.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {videos.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Keine Videos vorhanden
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {videos.map((video) => {
-                const videoIssues = consistencyIssues.filter(issue => 
-                  issue.video_id === video.id || issue.filename === video.filename
-                );
-                
-                return (
-                  <div key={video.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium">
-                            {video.display_title_de || video.original_name || video.filename}
-                          </h3>
-                          {video.tags?.includes('featured') && (
-                            <Badge variant="default">Featured</Badge>
-                          )}
-                          {video.public && <Badge variant="secondary">Öffentlich</Badge>}
-                          {!video.active && <Badge variant="destructive">Inaktiv</Badge>}
-                          {videoIssues.length > 0 && (
-                            <Badge variant="destructive" className="flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3" />
-                              {videoIssues.length} Problem{videoIssues.length > 1 ? 'e' : ''}
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p>Datei: {video.filename}</p>
-                          <p>Größe: {Math.round((video.file_size || 0) / 1024 / 1024 * 100) / 100} MB</p>
-                          <p>Hochgeladen: {new Date(video.uploaded_at || '').toLocaleDateString('de-DE')}</p>
-                          {video.public_url && (
-                            <p>URL: <span className="font-mono text-xs">{video.public_url.substring(0, 50)}...</span></p>
-                          )}
-                        </div>
-
-                        {videoIssues.length > 0 && (
-                          <div className="mt-2 p-2 bg-amber-50 rounded border border-amber-200">
-                            <p className="text-xs font-medium text-amber-800 mb-1">Erkannte Probleme:</p>
-                            {videoIssues.map((issue, index) => (
-                              <p key={index} className="text-xs text-amber-700">
-                                • {issue.description}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            disabled={isDeleting}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Video permanent löschen?</AlertDialogTitle>
-                            <AlertDialogDescription className="space-y-3">
-                              <p>
-                                <strong>{video.display_title_de || video.original_name || video.filename}</strong> wird <strong>permanent gelöscht</strong>.
-                              </p>
-                              
-                              <div className="bg-red-50 p-3 rounded border border-red-200">
-                                <p className="text-sm font-medium text-red-800 mb-2">
-                                  ⚠️ Diese Aktion wird folgende Daten löschen:
-                                </p>
-                                <ul className="text-sm text-red-700 space-y-1">
-                                  <li>• Video-Datei aus dem Storage</li>
-                                  <li>• Thumbnail-Datei (falls vorhanden)</li>
-                                  <li>• Alle Metadaten und Beschreibungen</li>
-                                  <li>• Analytics und Zugriffsprotokolle</li>
-                                </ul>
-                              </div>
-
-                              {videoIssues.length > 0 && (
-                                <div className="bg-amber-50 p-3 rounded border border-amber-200">
-                                  <p className="text-sm font-medium text-amber-800 mb-1">
-                                    🔧 Lösung für erkannte Probleme:
-                                  </p>
-                                  <p className="text-sm text-amber-700">
-                                    Dieses Video hat Konsistenz-Probleme. Die Löschung wird diese beheben.
-                                  </p>
-                                </div>
-                              )}
-                              
-                              <p className="text-sm font-medium text-gray-900">
-                                Diese Aktion kann nicht rückgängig gemacht werden!
-                              </p>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleVideoDelete(video)}
-                              className="bg-red-600 hover:bg-red-700"
-                              disabled={isDeleting}
-                            >
-                              {isDeleting ? 'Lösche...' : 'Permanent löschen'}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">{t('video.no_videos')}</p>
             </div>
+          ) : (
+            <DataTable
+              data={videos}
+              columns={columns}
+              loading={loading}
+            />
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ open, video: deleteDialog.video })}
+        title={t('video.confirm_delete')}
+        description={t('video.confirm_delete_description')}
+        confirmLabel={isDeleting ? t('video.deleting') : t('video.delete')}
+        cancelLabel="Abbrechen"
+        onConfirm={handleVideoDelete}
+      />
     </div>
   );
 };

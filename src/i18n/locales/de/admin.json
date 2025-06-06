@@ -1,82 +1,37 @@
 
 {
-  "dashboard": {
-    "title": "Admin-Dashboard",
-    "welcome": "Willkommen im Admin-Bereich!",
-    "loading": "Lade Admin-Dashboard..."
-  },
-  "validation": {
-    "title": "Validierung",
-    "tab": "Validierung",
-    "xrechnung": {
-      "tab": "XRechnung"
-    }
-  },
-  "tools": {
-    "user_management": "Benutzerverwaltung",
-    "user_management_desc": "Verwalten und bearbeiten Sie Benutzerkonten",
-    "validation": "Validierung",
-    "validation_desc": "Überprüfen und validieren Sie Benutzerinformationen",
-    "feedback": "Feedback",
-    "feedback_desc": "Überprüfen und bearbeiten Sie Benutzer-Feedback",
-    "pre_registrations": "Vorregistrierungen",
-    "pre_registrations_desc": "Verwalten Sie Vorregistrierungen",
-    "system_activity": "Systemaktivität",
-    "system_activity_desc": "Überwachen Sie die Systemaktivität und -protokolle",
-    "invoice_testing": "Rechnungsprüfung",
-    "invoice_testing_desc": "Testen Sie die Rechnungsstellung und den Versand",
-    "translation_feedback": "Übersetzungs-Feedback",
-    "translation_feedback_desc": "Verwalten Sie Übersetzungsvorschläge und -korrekturen der Nutzer"
-  },
-  "feedback": {
-    "title": "Feedback-Verwaltung",
-    "description": "Überprüfen und verwalten Sie Benutzer-Feedback",
-    "status": {
-      "all": "Alle",
-      "pending": "Ausstehend",
-      "in_progress": "In Bearbeitung",
-      "resolved": "Gelöst"
+  "video": {
+    "management": "Video-Verwaltung",
+    "overview": "Video-Übersicht",
+    "description": "Hier kannst du Videos verwalten, löschen oder auf Konsistenz mit dem Storage prüfen.",
+    "no_videos": "Keine Videos vorhanden",
+    "no_active_videos": "Keine aktiven Videos vorhanden",
+    "orphaned_files": "Verwaiste Dateien – bitte prüfen",
+    "title": "Titel",
+    "filename": "Dateiname", 
+    "status": "Status",
+    "language": "Sprache",
+    "actions": "Aktionen",
+    "active": "Aktiv",
+    "inactive": "Deaktiviert", 
+    "file_missing": "Datei fehlt",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "delete": "Video löschen",
+    "delete_tooltip": "Video permanent aus Datenbank und Storage löschen",
+    "confirm_delete": "Video wirklich löschen?",
+    "confirm_delete_description": "Diese Aktion kann nicht rückgängig gemacht werden. Das Video wird permanent aus der Datenbank und dem Storage entfernt.",
+    "deleting": "Lösche...",
+    "deleted_success": "Video erfolgreich gelöscht",
+    "error": {
+      "not_found": "Datei nicht gefunden",
+      "deletion_failed": "Fehler beim Löschen",
+      "storage_failed": "Storage-Löschung fehlgeschlagen",
+      "database_failed": "Datenbank-Löschung fehlgeschlagen",
+      "general": "Ein unbekannter Fehler ist aufgetreten"
     },
-    "type": {
-      "all": "Alle",
-      "bug": "Fehler",
-      "suggestion": "Vorschlag",
-      "compliment": "Lob",
-      "question": "Frage"
-    },
-    "review_success": "Überprüfung erfolgreich",
-    "status_updated": "Der Status des Feedbacks wurde aktualisiert",
-    "review_failed": "Überprüfung fehlgeschlagen"
-  },
-  "pre_registrations": {
-    "title": "Vorregistrierungen verwalten",
-    "description": "Überprüfen und verwalten Sie Benutzer-Vorregistrierungen"
-  },
-  "users": {
-    "title": "Benutzer verwalten",
-    "description": "Benutzerkonten anzeigen, bearbeiten und verwalten"
-  },
-  "error": {
-    "unauthorized": "Nicht autorisiert",
-    "admin_required": "Nur Administratoren können auf diese Funktion zugreifen",
-    "unknown": "Ein unbekannter Fehler ist aufgetreten"
-  },
-  "videos": {
-    "edit": "Bearbeiten",
-    "edit_title": "Video bearbeiten",
-    "title_de": "Titel (DE)",
-    "title_en": "Titel (EN)",
-    "description_de": "Beschreibung (DE)",
-    "description_en": "Beschreibung (EN)",
-    "enter_description": "Beschreibung eingeben...",
-    "save_success": "Video erfolgreich aktualisiert",
-    "save_error": "Fehler beim Speichern des Videos"
-  },
-  "common": {
-    "save": "Speichern",
-    "saving": "Speichern...",
-    "cancel": "Abbrechen",
-    "delete": "Löschen",
-    "edit": "Bearbeiten"
+    "consistency_check": "Konsistenz prüfen",
+    "consistency_issues": "{{count}} Konsistenz-Problem(e) gefunden",
+    "all_consistent": "Alle Videos sind konsistent"
   }
 }
