@@ -1,10 +1,10 @@
 
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { useMemo } from "react";
 import { isAdmin, isCommunityManager, hasElevatedPrivileges } from "@/lib/admin-utils";
 
 export const useAdminGuard = () => {
-  const { profile, loading } = useSimpleAuth();
+  const { profile, loading } = useOptimizedAuth();
   
   const permissions = useMemo(() => {
     if (loading || !profile) {

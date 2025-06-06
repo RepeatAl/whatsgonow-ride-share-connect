@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import { useUserSession } from '@/contexts/UserSessionContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 import { loadNamespace } from '@/i18n/i18n';
 
@@ -35,7 +35,7 @@ export const useStableAppState = (options: UseStableAppStateOptions = {}) => {
     hasMinimumLoadTime: false
   });
 
-  const { loading: authLoading, isInitialLoad } = useUserSession();
+  const { loading: authLoading } = useOptimizedAuth();
   const { languageLoading, currentLanguage } = useLanguageMCP();
 
   // Track minimum load time to prevent flashing
@@ -56,7 +56,7 @@ export const useStableAppState = (options: UseStableAppStateOptions = {}) => {
       console.log('[StableApp] Starting initialization...');
       
       // Wait for auth to be ready (only if required)
-      const authReady = requireAuth ? (!authLoading && !isInitialLoad) : true;
+      const authReady = requireAuth ? !authLoading : true;
       
       // Wait for language to be ready
       const languageReady = !languageLoading && !!currentLanguage;
@@ -81,7 +81,7 @@ export const useStableAppState = (options: UseStableAppStateOptions = {}) => {
         translationsReady
       };
     };
-  }, [authLoading, isInitialLoad, languageLoading, currentLanguage, requiredNamespaces.join(','), requireAuth]);
+  }, [authLoading, languageLoading, currentLanguage, requiredNamespaces.join(','), requireAuth]);
 
   // Run initialization when dependencies change
   useEffect(() => {

@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnreadMessages } from "./use-unread-messages";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
 interface UseMessageSubscriptionProps {
   activeOrderId: string | null;
@@ -13,7 +13,7 @@ export function useMessageSubscription({
   activeOrderId, 
   showToast 
 }: UseMessageSubscriptionProps) {
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const { setUnreadCount } = useUnreadMessages();
 
   useEffect(() => {

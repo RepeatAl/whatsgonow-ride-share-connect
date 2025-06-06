@@ -1,94 +1,105 @@
 
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
-import Layout from "@/components/Layout";
+import React from "react";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, User } from "lucide-react";
+import { Plus, Package, Truck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import Layout from "@/components/Layout";
+import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 
 const Dashboard = () => {
-  const { t } = useTranslation(["common"]);
-  const { user, profile, loading, isProfileLoading } = useSimpleAuth();
-  const { getLocalizedUrl } = useLanguageMCP();
+  const { profile, loading } = useOptimizedAuth();
   const navigate = useNavigate();
 
-  // Rollenbasierte Weiterleitung
-  useEffect(() => {
-    if (loading || isProfileLoading) return;
-    
-    if (!user) {
-      navigate(getLocalizedUrl("/login"));
-      return;
-    }
+  // This hook will redirect users based on their role
+  useRoleRedirect();
 
-    if (!profile) {
-      navigate(getLocalizedUrl("/profile"));
-      return;
-    }
-
-    // Weiterleitung zum rollenspezifischen Dashboard
-    switch (profile.role) {
-      case "sender_private":
-      case "sender_business":
-        navigate(getLocalizedUrl("/dashboard/sender"), { replace: true });
-        break;
-      case "driver":
-        navigate(getLocalizedUrl("/dashboard/driver"), { replace: true });
-        break;
-      case "cm":
-        navigate(getLocalizedUrl("/dashboard/cm"), { replace: true });
-        break;
-      case "admin":
-      case "super_admin":
-        navigate(getLocalizedUrl("/dashboard/admin"), { replace: true });
-        break;
-      default:
-        // Fallback für unbekannte Rollen
-        console.log("Unknown role, staying on main dashboard:", profile.role);
-    }
-  }, [user, profile, loading, isProfileLoading, navigate, getLocalizedUrl]);
-
-  if (loading || isProfileLoading) {
+  if (loading) {
     return (
-      <Layout pageType="dashboard">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Dashboard wird geladen...</p>
-          </div>
+      <Layout pageType="authenticated">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       </Layout>
     );
   }
 
-  // Fallback für Benutzer ohne spezifische Rolle
+  if (!profile) {
+    return null; // useRoleRedirect will handle the redirect
+  }
+
+  // This is a fallback dashboard for users without specific roles
   return (
-    <Layout pageType="dashboard">
+    <Layout 
+      title="Dashboard - Whatsgonow" 
+      description="Dein persönliches Dashboard"
+      pageType="authenticated"
+    >
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">
-            Willkommen bei whatsgonow
-          </h1>
-          
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Willkommen zurück!</h1>
+          <p className="text-gray-600">
+            Hier ist dein Dashboard, {profile.first_name}
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="h-6 w-6" />
-                Profil vervollständigen
+                <Plus className="h-5 w-5" />
+                Neuen Auftrag erstellen
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-600">
-                Bitte vervollständige dein Profil, um whatsgonow nutzen zu können.
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Erstelle einen neuen Transportauftrag
               </p>
-              <Button asChild>
-                <a href={getLocalizedUrl("/profile")}>
-                  Profil bearbeiten
-                </a>
-              </Button>
+              <Link to="/create-order">
+                <Button className="w-full">
+                  Auftrag erstellen
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Meine Aufträge
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Verwalte deine aktiven Transportaufträge
+              </p>
+              <Link to="/my-orders">
+                <Button variant="outline" className="w-full">
+                  Aufträge anzeigen
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Truck className="h-5 w-5" />
+                Transport anbieten
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Biete deine Transportdienste an
+              </p>
+              <Link to="/offer-transport">
+                <Button variant="outline" className="w-full">
+                  Transport anbieten
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

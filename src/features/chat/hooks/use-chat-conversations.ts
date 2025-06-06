@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
 export interface Conversation {
   order_id: string;
@@ -17,7 +17,7 @@ export function useChatConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
 
   useEffect(() => {
     if (!user) return;

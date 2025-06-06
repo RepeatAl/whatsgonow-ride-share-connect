@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
 export function useUnreadMessages() {
   const [unreadCount, setUnreadCount] = useState(0);
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
 
   const fetchUnreadCount = async () => {
     if (!user) {

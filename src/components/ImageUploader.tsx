@@ -1,7 +1,7 @@
 
 // src/components/ImageUploader.tsx
 import { ChangeEvent, useState } from "react";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { supabase } from "@/lib/supabaseClient";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function ImageUploader({ onUploadComplete }: Props) {
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 

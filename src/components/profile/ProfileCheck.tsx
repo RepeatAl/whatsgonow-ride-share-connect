@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { hasValidProfile } from "@/utils/profile-check";
 import ProfileErrorRecovery from "@/components/auth/ProfileErrorRecovery";
@@ -12,10 +12,9 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
     loading, 
     user, 
     isProfileLoading, 
-    profileError, 
-    hasProfileTimedOut,
+    profileError,
     refreshProfile 
-  } = useSimpleAuth();
+  } = useOptimizedAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,12 +35,12 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
     }
   }, [profile, loading, isProfileLoading, user, navigate, location.pathname]);
 
-  // Show profile error recovery if there's an error or timeout
-  if (user && (profileError || hasProfileTimedOut)) {
+  // Show profile error recovery if there's an error
+  if (user && profileError) {
     return (
       <ProfileErrorRecovery
         error={profileError || ""}
-        hasTimedOut={hasProfileTimedOut}
+        hasTimedOut={false}
         onRetry={refreshProfile}
       />
     );

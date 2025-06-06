@@ -1,19 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 const ProfileCompletion = () => {
-  const { user, profile, loading } = useSimpleAuth();
+  const { user, profile, loading } = useOptimizedAuth();
   const [isComplete, setIsComplete] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && user && profile) {
       // Check if required profile fields are present
-      const requiredFields = ['name', 'email', 'role'];
+      const requiredFields = ['first_name', 'last_name', 'email', 'role'];
       const missingFields = requiredFields.filter(field => !profile[field]);
       setIsComplete(missingFields.length === 0);
     }
@@ -61,4 +62,3 @@ const ProfileCompletion = () => {
 };
 
 export default ProfileCompletion;
-

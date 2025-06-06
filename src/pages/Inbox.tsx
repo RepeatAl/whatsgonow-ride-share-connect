@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useChatConversations } from "@/features/chat/hooks/use-chat-conversations";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { useChatRealtime } from "@/features/chat/context/ChatRealtimeContext";
 import { ConversationList } from "@/features/chat/components/ConversationList";
 import { ChatContainer } from "@/features/chat/components/ChatContainer";
@@ -11,7 +11,7 @@ import { ChatContainer } from "@/features/chat/components/ChatContainer";
 const Inbox = () => {
   const { conversations, loading, refresh } = useChatConversations();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const { user } = useSimpleAuth();
+  const { user } = useOptimizedAuth();
   const navigate = useNavigate();
   const params = useParams();
   const { resetUnreadCount, setActiveOrderId } = useChatRealtime();
@@ -47,7 +47,7 @@ const Inbox = () => {
   };
 
   return (
-    <Layout>
+    <Layout pageType="authenticated">
       <div className="container max-w-7xl mx-auto px-4 pt-8 pb-16">
         <div className="flex flex-col gap-6">
           <div>
