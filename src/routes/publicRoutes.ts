@@ -1,78 +1,64 @@
 
-// List of routes that are publicly accessible without authentication
-const PUBLIC_ROUTES = [
+/**
+ * Public Routes Configuration
+ * Defines which routes are accessible without authentication
+ */
+
+export const publicPaths = [
   '/',
+  '/home', 
   '/about',
+  '/faq',
   '/login',
   '/register',
   '/register/success',
-  '/pre-register',
+  '/pre-register',  // FIXED: Pre-register is now public
   '/pre-register/success',
   '/forgot-password',
   '/reset-password',
-  '/faq',
-  '/support',
-  '/mobile-upload',
-  '/upload-complete',
-  '/delivery',
-  '/invoice-download',
-  '/legal',
-  '/privacy-policy',
-  '/payment/status',
   '/esg-dashboard',
-  '/here-maps-demo', // Ensure HERE Maps demo is explicitly listed
+  '/here-maps-demo',
+  '/here-maps-features'
 ];
 
-// Function to check if a route is public with improved language support
-export const isPublicRoute = (path: string): boolean => {
+/**
+ * Language-aware path patterns
+ */
+export const languageAwarePatterns = [
+  /^\/[a-z]{2}$/,           // /de, /en, /ar
+  /^\/[a-z]{2}\/.*$/        // /de/*, /en/*, /ar/*
+];
+
+/**
+ * Checks if a given path is a public route
+ */
+export function isPublicRoute(path: string): boolean {
   console.log('[publicRoutes] Checking if path is public:', path);
   
-  // Remove language prefix for matching
-  const pathSegments = path.split('/').filter(Boolean);
+  // Remove language prefix for checking
   let cleanPath = path;
   
-  // If first segment looks like a language code, remove it
-  if (pathSegments.length > 0 && pathSegments[0].length === 2) {
-    cleanPath = '/' + pathSegments.slice(1).join('/');
-    if (cleanPath === '/') cleanPath = '/';
+  // Check if path matches language pattern
+  const hasLanguagePrefix = languageAwarePatterns.some(pattern => pattern.test(path));
+  
+  if (hasLanguagePrefix) {
+    // Remove language prefix (e.g., /de/about -> /about)
+    cleanPath = path.replace(/^\/[a-z]{2}/, '') || '/';
   }
   
   console.log('[publicRoutes] Clean path for checking:', cleanPath);
   
-  // Check exact matches first
-  if (PUBLIC_ROUTES.includes(cleanPath)) {
+  // Check against public paths
+  const isPublic = publicPaths.some(publicPath => {
+    if (publicPath === '/') {
+      return cleanPath === '/';
+    }
+    return cleanPath === publicPath || cleanPath.startsWith(publicPath + '/');
+  });
+  
+  if (isPublic) {
     console.log('[publicRoutes] Found exact match for:', cleanPath);
-    return true;
   }
   
-  // CRITICAL: Always allow root paths and home variations
-  if (cleanPath === '/' || cleanPath === '' || cleanPath === '/home') {
-    console.log('[publicRoutes] Root/home path - always public');
-    return true;
-  }
-  
-  // Check path patterns (like /delivery/:token)
-  if (cleanPath.startsWith('/delivery/')) {
-    console.log('[publicRoutes] Matched delivery pattern');
-    return true;
-  }
-  if (cleanPath.startsWith('/invoice-download/')) {
-    console.log('[publicRoutes] Matched invoice-download pattern');
-    return true;
-  }
-  if (cleanPath.startsWith('/mobile-upload/')) {
-    console.log('[publicRoutes] Matched mobile-upload pattern');
-    return true;
-  }
-  if (cleanPath.startsWith('/pre-register')) {
-    console.log('[publicRoutes] Matched pre-register pattern');
-    return true;
-  }
-  if (cleanPath.startsWith('/here-maps-demo')) {
-    console.log('[publicRoutes] Matched here-maps-demo pattern');
-    return true;
-  }
-  
-  console.log('[publicRoutes] No match found for:', cleanPath);
-  return false;
-};
+  return isPublic;
+}

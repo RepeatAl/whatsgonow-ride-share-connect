@@ -17,17 +17,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Map } from 'lucide-react';
 
 /**
- * VOLLSTÄNDIGE Landing Page - Alle Bereiche integriert
- * Diese Datei enthält alle notwendigen Komponenten für eine komplette Landing Page
+ * VOLLSTÄNDIGE Landing Page - Navigation ist jetzt sichtbar
  */
 const Landing = () => {
   const { t } = useTranslation(['common', 'landing']);
   const { getLocalizedUrl } = useLanguageMCP();
 
-  console.log('[Landing] Rendering COMPLETE Landing page with HERE Maps');
+  console.log('[Landing] Rendering COMPLETE Landing page with HERE Maps and visible navigation');
 
   return (
-    <Layout hideNavigation={true} pageType="home">
+    <Layout hideNavigation={false} pageType="home">
       <div className="min-h-screen">
         {/* Hero Section */}
         <Hero />

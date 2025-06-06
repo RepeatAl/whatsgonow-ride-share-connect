@@ -44,7 +44,7 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
             <Alert className="text-left">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                Falls das Problem bestehen bleibt, überprüfen Sie die Video-URL in den Admin-Einstellungen.
+                Video-URLs werden automatisch optimiert. Bei anhaltenden Problemen wird das Video-System aktualisiert.
               </AlertDescription>
             </Alert>
           </div>
@@ -55,7 +55,7 @@ const VideoErrorDisplay = ({ error, src, onRefresh, onTestDirectAccess }: VideoE
         )}
         
         <p className="text-xs text-gray-500 mb-6">
-          {isEmpty ? 'Video-Quelle wird aktualisiert...' : 'Coming Soon – Wir arbeiten dran!'}
+          {isEmpty ? 'Video-Quelle wird optimiert...' : 'Coming Soon – Wir arbeiten dran!'}
         </p>
         
         {error && !isEmpty && (

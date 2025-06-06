@@ -1,4 +1,3 @@
-
 import React, { memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -45,6 +44,12 @@ const DesktopMenu = memo(({ unreadMessagesCount = 0 }: DesktopMenuProps) => {
         <Link to={getLocalizedUrl("/login")}>
           <Button variant="ghost" size="sm">
             {t('landing:nav.login', 'Anmelden')}
+          </Button>
+        </Link>
+        
+        <Link to={getLocalizedUrl("/pre-register")}>
+          <Button variant="outline" size="sm" className="mr-2">
+            {t('landing:nav.preregister', 'Vorregistrieren')}
           </Button>
         </Link>
         

@@ -87,15 +87,18 @@ const MCPRouter = () => {
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             <Route path="/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
+            
+            {/* Pre-Register routes - FIXED */}
             <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
             <Route path="/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
+            
             <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
             <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
             
             {/* Public ESG Dashboard */}
             <Route path="/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
             
-            {/* HERE Maps Demo - NEW PUBLIC ROUTE */}
+            {/* HERE Maps Demo - PUBLIC ROUTE */}
             <Route path="/here-maps-demo" element={<PublicRoute><HereMapDemo /></PublicRoute>} />
             
             {/* Protected routes */}
@@ -138,6 +141,7 @@ const MCPRouter = () => {
       {/* Legacy routes without language prefix - redirect with language */}
       <Route path="/login" element={<Navigate to={`/${currentLanguage}/login`} replace />} />
       <Route path="/register" element={<Navigate to={`/${currentLanguage}/register`} replace />} />
+      <Route path="/pre-register" element={<Navigate to={`/${currentLanguage}/pre-register`} replace />} />
       <Route path="/dashboard" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
       <Route path="/profile" element={<Navigate to={`/${currentLanguage}/profile`} replace />} />
       <Route path="/system-tests" element={<Navigate to={`/${currentLanguage}/system-tests`} replace />} />

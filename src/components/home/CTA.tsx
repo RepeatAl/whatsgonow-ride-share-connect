@@ -78,7 +78,7 @@ const CTA = () => {
               to={getLocalizedUrl("/pre-register")}
               onClick={handleLinkClick}
             >
-              {t('cta.button_register', 'Jetzt dabei sein')}
+              {t('cta.button_register', 'Jetzt vorregistrieren')}
             </Link>
           </Button>
         </div>
