@@ -1,7 +1,9 @@
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import type { UserProfile } from "@/types/auth";
+import { useNavigate } from "react-router-dom";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 import { useSessionManager } from "@/hooks/auth/useSessionManager";
 import { useProfile } from "@/hooks/auth/useProfile";
 import { useAuthMethods } from "@/hooks/auth/useAuthMethods";
@@ -29,6 +31,9 @@ interface UserSessionContextProps {
 const UserSessionContext = createContext<UserSessionContextProps>({} as UserSessionContextProps);
 
 export const UserSessionProvider = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate();
+  const { currentLanguage } = useLanguageMCP();
+  
   // Use the session manager hook to handle auth state
   const { 
     user, 
@@ -48,7 +53,12 @@ export const UserSessionProvider = ({ children }: { children: React.ReactNode })
   } = useProfile(user);
   
   // Use the auth methods hook for login/signup/logout
-  const { signIn, signUp, signOut } = useAuthMethods();
+  const { signIn, signUp, signOut: authSignOut } = useAuthMethods();
+
+  // Create a wrapper for signOut that matches the interface
+  const signOut = useCallback(async () => {
+    await authSignOut(navigate, currentLanguage);
+  }, [authSignOut, navigate, currentLanguage]);
 
   // Combine all values for the context provider
   const value = {

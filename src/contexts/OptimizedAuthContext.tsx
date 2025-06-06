@@ -50,33 +50,18 @@ export const OptimizedAuthProvider = ({ children }: { children: ReactNode }) => 
   // Handle redirects
   useAuthRedirect(user, profile, loading, isProfileLoading);
 
-  // Wrapper functions to handle state management
+  // Wrapper functions - simplified without additional loading state
   const signIn = useCallback(async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      await authSignIn(email, password);
-    } finally {
-      setLoading(false);
-    }
+    await authSignIn(email, password);
   }, [authSignIn]);
 
   const signUp = useCallback(async (email: string, password: string, metadata?: Record<string, any>) => {
-    setLoading(true);
-    try {
-      await authSignUp(email, password, metadata);
-    } finally {
-      setLoading(false);
-    }
+    await authSignUp(email, password, metadata);
   }, [authSignUp]);
 
   const signOut = useCallback(async () => {
-    setLoading(true);
-    try {
-      clearAuthState();
-      await authSignOut(navigate, currentLanguage);
-    } finally {
-      setLoading(false);
-    }
+    clearAuthState();
+    await authSignOut(navigate, currentLanguage);
   }, [authSignOut, navigate, currentLanguage, clearAuthState]);
 
   const contextValue = useMemo(() => ({
