@@ -13,6 +13,13 @@ import VideoConsistencyCheck from './VideoConsistencyCheck';
 import VideoStatusIndicator from './VideoStatusIndicator';
 import type { AdminVideo } from '@/types/admin';
 
+interface Column<T> {
+  id: string;
+  header: string;
+  accessorKey?: keyof T;
+  cell?: (row: T) => React.ReactNode;
+}
+
 const VideoManagementPanel = () => {
   const { t } = useTranslation('admin');
   const [videos, setVideos] = useState<AdminVideo[]>([]);
@@ -86,7 +93,7 @@ const VideoManagementPanel = () => {
     return Math.round((bytes || 0) / 1024 / 1024 * 100) / 100;
   };
 
-  const columns = [
+  const columns: Column<AdminVideo>[] = [
     {
       id: 'status',
       header: t('video.status', { defaultValue: 'Status' }),
