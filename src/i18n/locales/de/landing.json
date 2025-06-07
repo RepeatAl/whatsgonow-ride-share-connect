@@ -30,6 +30,64 @@
     "title": "Live-Transport-Karte",
     "description": "Diese Karte zeigt öffentlich verfügbare Transportbewegungen. Aus Datenschutzgründen sind keine personenbezogenen Daten sichtbar."
   },
+  "mapConsent": {
+    "title": "Kartendienst & Datenschutz",
+    "message": "Diese Karte nutzt den externen Dienst HERE Maps. Beim Laden der Karte wird Ihre IP-Adresse an HERE übertragen. Bitte bestätigen Sie Ihre Zustimmung.",
+    "dataProcessing": "Datenverarbeitung:",
+    "ipAddress": "IP-Adresse wird an HERE Global B.V. übertragen",
+    "location": "Ungefähre Standortermittlung für Kartendarstellung",
+    "noStorage": "Keine Speicherung von persönlichen Daten auf unseren Servern",
+    "revocable": "Zustimmung jederzeit widerrufbar",
+    "accept": "Karte anzeigen",
+    "decline": "Ablehnen",
+    "privacy": "Weitere Informationen finden Sie in unserer"
+  },
+  "mapFallback": {
+    "title": "Datenschutz respektiert",
+    "message": "Sie haben der Nutzung von HERE Maps nicht zugestimmt. Ihre Privatsphäre ist uns wichtig.",
+    "alternative": {
+      "title": "Alternative ohne externe Karte:",
+      "search": "Nutzen Sie unsere Suchfunktion für Transporte",
+      "list": "Durchsuchen Sie aktuelle Angebote in der Listenansicht",
+      "register": "Registrieren Sie sich für erweiterte Funktionen"
+    },
+    "reconsider": "Erneut entscheiden"
+  },
+  "mapPolicy": {
+    "title": "HERE Maps Datenschutz & Nutzung",
+    "whatIs": {
+      "title": "Was ist HERE Maps?",
+      "description": "HERE Maps ist ein professioneller Kartendienst der HERE Global B.V. (Niederlande). Wir nutzen diesen Service, um Ihnen eine interaktive Karte mit Transportangeboten anzuzeigen."
+    },
+    "dataTransfer": {
+      "title": "Welche Daten werden übertragen?",
+      "ip": "Ihre IP-Adresse (automatisch bei jedem Internet-Zugriff)",
+      "location": "Ungefähre Standortinformationen (abgeleitet aus IP-Adresse)",
+      "browser": "Browser-Informationen (User-Agent, Bildschirmauflösung)",
+      "interaction": "Karten-Interaktionen (Zoom, Verschieben, Klicks)"
+    },
+    "noData": {
+      "title": "Was passiert NICHT?",
+      "personal": "Keine Übertragung von Namen, E-Mail oder Account-Daten",
+      "storage": "Keine dauerhafte Speicherung auf unseren Servern",
+      "tracking": "Kein Cross-Site-Tracking oder Profiling",
+      "selling": "Keine Weitergabe an Werbetreibende"
+    },
+    "legal": {
+      "title": "Rechtsgrundlage",
+      "description": "Die Nutzung von HERE Maps erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie können diese Einwilligung jederzeit widerrufen."
+    },
+    "revoke": {
+      "title": "Einwilligung widerrufen",
+      "description": "Sie können Ihre Einwilligung zur Nutzung von HERE Maps jederzeit widerrufen:",
+      "button": "Einwilligung widerrufen",
+      "effect": "Nach dem Widerruf wird die Karte nicht mehr geladen und Sie werden erneut nach Ihrer Einwilligung gefragt."
+    },
+    "herePrivacy": {
+      "title": "HERE Maps Datenschutzerklärung",
+      "description": "Weitere Informationen zur Datenverarbeitung durch HERE finden Sie in deren Datenschutzerklärung:"
+    }
+  },
   "benefits": {
     "title": "Warum Whatsgonow?",
     "description": "Unsere Plattform bietet zahlreiche Vorteile für Versender und Fahrer",

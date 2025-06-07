@@ -30,6 +30,64 @@
     "title": "Live Transport Map",
     "description": "This map shows publicly available transport movements. For privacy reasons, no personal data is visible."
   },
+  "mapConsent": {
+    "title": "Map Service & Privacy",
+    "message": "This map uses the external service HERE Maps. When loading the map, your IP address is transmitted to HERE. Please confirm your consent.",
+    "dataProcessing": "Data processing:",
+    "ipAddress": "IP address is transmitted to HERE Global B.V.",
+    "location": "Approximate location determination for map display",
+    "noStorage": "No storage of personal data on our servers",
+    "revocable": "Consent can be revoked at any time",
+    "accept": "Show map",
+    "decline": "Decline",
+    "privacy": "For more information, see our"
+  },
+  "mapFallback": {
+    "title": "Privacy Respected",
+    "message": "You have not consented to the use of HERE Maps. Your privacy is important to us.",
+    "alternative": {
+      "title": "Alternative without external map:",
+      "search": "Use our search function for transports",
+      "list": "Browse current offers in list view",
+      "register": "Register for extended features"
+    },
+    "reconsider": "Reconsider"
+  },
+  "mapPolicy": {
+    "title": "HERE Maps Privacy & Usage",
+    "whatIs": {
+      "title": "What is HERE Maps?",
+      "description": "HERE Maps is a professional map service from HERE Global B.V. (Netherlands). We use this service to show you an interactive map with transport offers."
+    },
+    "dataTransfer": {
+      "title": "What data is transmitted?",
+      "ip": "Your IP address (automatically with every internet access)",
+      "location": "Approximate location information (derived from IP address)",
+      "browser": "Browser information (User-Agent, screen resolution)",
+      "interaction": "Map interactions (zoom, pan, clicks)"
+    },
+    "noData": {
+      "title": "What does NOT happen?",
+      "personal": "No transmission of names, email or account data",
+      "storage": "No permanent storage on our servers",
+      "tracking": "No cross-site tracking or profiling",
+      "selling": "No sharing with advertisers"
+    },
+    "legal": {
+      "title": "Legal basis",
+      "description": "The use of HERE Maps is based on your consent (Art. 6 para. 1 lit. a GDPR). You can revoke this consent at any time."
+    },
+    "revoke": {
+      "title": "Revoke consent",
+      "description": "You can revoke your consent to use HERE Maps at any time:",
+      "button": "Revoke consent",
+      "effect": "After revocation, the map will no longer be loaded and you will be asked for your consent again."
+    },
+    "herePrivacy": {
+      "title": "HERE Maps Privacy Policy",
+      "description": "For more information about data processing by HERE, see their privacy policy:"
+    }
+  },
   "benefits": {
     "title": "Why Whatsgonow?",
     "description": "Our platform offers numerous benefits for senders and drivers",
