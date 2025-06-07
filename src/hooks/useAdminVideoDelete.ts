@@ -1,9 +1,11 @@
-
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import type { AdminVideo } from '@/types/admin';
+
+// 🔒 SYSTEM LOCKED – Änderungen nur mit Freigabe durch @Christiane
+// Status: FINAL - EINGEFROREN (2025-06-07)
 
 export const useAdminVideoDelete = () => {
   const [isDeleting, setIsDeleting] = useState(false);

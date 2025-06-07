@@ -1,4 +1,5 @@
-
+// 🔒 SYSTEM LOCKED – Änderungen nur mit Freigabe durch @Christiane
+// Status: FINAL - EINGEFROREN (2025-06-07)
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';

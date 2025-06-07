@@ -1,3 +1,5 @@
+// 🔒 SYSTEM LOCKED – Änderungen nur mit Freigabe durch @Christiane
+// Status: FINAL - EINGEFROREN (2025-06-07)
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';

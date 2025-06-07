@@ -1,4 +1,5 @@
-
+// 🔒 SYSTEM LOCKED – Änderungen nur mit Freigabe durch @Christiane
+// Status: FINAL - EINGEFROREN (2025-06-07)
 import { useState, useRef, useCallback } from "react";
 import { validateVideoFile } from "./videoValidation";
 import { supabase } from "@/lib/supabaseClient";
