@@ -9,14 +9,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { ReactNode } from "react";
 
+/**
+ * ConfirmDialog
+ *
+ * Ein modaler Bestätigungsdialog mit flexiblem Titel & Beschreibung (string oder JSX).
+ *
+ * Props:
+ * - `title`: string | ReactNode
+ * - `description`: string | ReactNode
+ * - `confirmVariant`: 'default' | 'destructive' | 'outline'
+ *
+ * Beispiel für komplexe Beschreibung:
+ *   <ConfirmDialog
+ *     description={<div><p>Text</p><ul>...</ul></div>}
+ *   />
+ */
 interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  title: string;
-  description: string;
+  title: string | ReactNode;
+  description: string | ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmVariant?: "default" | "destructive" | "outline";
   onConfirm: () => void;
 }
 
@@ -27,6 +44,7 @@ export const ConfirmDialog = ({
   description,
   confirmLabel = "Bestätigen",
   cancelLabel = "Abbrechen",
+  confirmVariant = "default",
   onConfirm,
 }: ConfirmDialogProps) => {
   return (
@@ -34,11 +52,15 @@ export const ConfirmDialog = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription asChild>
+            <div>{description}</div>
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{confirmLabel}</AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm} className={confirmVariant === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}>
+            {confirmLabel}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
