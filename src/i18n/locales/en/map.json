@@ -1,0 +1,36 @@
+
+{
+  "consent": {
+    "title": "Map Service & Privacy",
+    "message": "This map uses the external service HERE Maps. When loading the map, your IP address is transmitted to HERE. Please confirm your consent.",
+    "dataProcessing": "Data processing:",
+    "ipAddress": "IP address is transmitted to HERE Global B.V.",
+    "location": "Approximate location determination for map display",
+    "noStorage": "No storage of personal data on our servers",
+    "revocable": "Consent can be revoked at any time",
+    "accept": "Show map",
+    "decline": "Decline",
+    "privacy": "For more information, see our"
+  },
+  "fallback": {
+    "title": "Privacy Respected",
+    "message": "You have not consented to the use of HERE Maps. Your privacy is important to us.",
+    "alternative": {
+      "title": "Alternative without external map:",
+      "search": "Use our search function for transports",
+      "list": "Browse current offers in list view",
+      "register": "Register for extended features"
+    },
+    "reconsider": "Reconsider"
+  },
+  "markers": {
+    "order": "Order",
+    "trip": "Trip",
+    "guest_upload": "Guest Upload",
+    "expires_in": "Expires in {{time}}",
+    "from": "From",
+    "to": "To",
+    "price": "Price",
+    "weight": "Weight"
+  }
+}

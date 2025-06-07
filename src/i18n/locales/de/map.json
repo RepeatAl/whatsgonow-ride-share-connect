@@ -1,0 +1,36 @@
+
+{
+  "consent": {
+    "title": "Kartendienst & Datenschutz",
+    "message": "Diese Karte nutzt den externen Dienst HERE Maps. Beim Laden der Karte wird Ihre IP-Adresse an HERE übertragen. Bitte bestätigen Sie Ihre Zustimmung.",
+    "dataProcessing": "Datenverarbeitung:",
+    "ipAddress": "IP-Adresse wird an HERE Global B.V. übertragen",
+    "location": "Ungefähre Standortermittlung für Kartendarstellung",
+    "noStorage": "Keine Speicherung von persönlichen Daten auf unseren Servern",
+    "revocable": "Zustimmung jederzeit widerrufbar",
+    "accept": "Karte anzeigen",
+    "decline": "Ablehnen",
+    "privacy": "Weitere Informationen finden Sie in unserer"
+  },
+  "fallback": {
+    "title": "Datenschutz respektiert",
+    "message": "Sie haben der Nutzung von HERE Maps nicht zugestimmt. Ihre Privatsphäre ist uns wichtig.",
+    "alternative": {
+      "title": "Alternative ohne externe Karte:",
+      "search": "Nutzen Sie unsere Suchfunktion für Transporte",
+      "list": "Durchsuchen Sie aktuelle Angebote in der Listenansicht",
+      "register": "Registrieren Sie sich für erweiterte Funktionen"
+    },
+    "reconsider": "Erneut entscheiden"
+  },
+  "markers": {
+    "order": "Auftrag",
+    "trip": "Fahrt",
+    "guest_upload": "Gast-Upload",
+    "expires_in": "Läuft ab in {{time}}",
+    "from": "Von",
+    "to": "Nach",
+    "price": "Preis",
+    "weight": "Gewicht"
+  }
+}
