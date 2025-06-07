@@ -250,3 +250,45 @@ it('should show login prompt for protected action', () => {
 - `AuthRequired` für Message-Input
 - `AuthRequired` für Preisangebote
 - WebSocket nur nach Login
+
+## 📋 Vollständige Permissions-Liste
+
+### Transport & Logistik
+- `create_transport_request` - Transportanfrage erstellen
+- `contact_driver` - Fahrer kontaktieren
+- `book_transport` - Transport buchen
+- `accept_order` - Auftrag annehmen
+
+### Artikel & Veröffentlichung
+- `publish_item` - Artikel veröffentlichen
+- `create_order` - Bestellung erstellen
+- `save_draft` - Entwurf speichern
+
+### Kommunikation
+- `start_chat` - Chat starten
+- `send_message` - Nachricht senden
+- `submit_offer` - Angebot abgeben
+- `submit_feedback` - Bewertung abgeben
+
+### Profil & Daten
+- `save_profile` - Profil speichern
+- `edit_profile` - Profil bearbeiten
+- `view_address` - Vollständige Adresse anzeigen
+- `upload_verification` - Verifizierung hochladen
+
+### Support
+- `open_dispute` - Dispute eröffnen
+- `contact_cm` - Community Manager kontaktieren
+
+## 🔗 Weitere Dokumentation
+
+- **Implementierungsleitfaden**: `docs/auth/implementation-guide.md`
+- **Permissions-Referenz**: `docs/auth/permissions-reference.md`
+- **Troubleshooting**: `docs/auth/troubleshooting.md`
+- **Finales Schema**: `docs/auth-system-public-first.md`
+
+---
+
+**Status**: Phase 1 abgeschlossen, Phase 2 in Vorbereitung  
+**Letzte Aktualisierung**: 2025-01-07  
+**Nächste Migration**: ItemUpload mit temporärem Bucket-System
