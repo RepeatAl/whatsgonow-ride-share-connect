@@ -89,7 +89,7 @@ const VideoManagementPanel = () => {
   const columns = [
     {
       id: 'status',
-      header: t('video.status', { defaultValue: 'Status' }),
+      header: () => t('video.status', { defaultValue: 'Status' }),
       cell: (video: AdminVideo) => (
         <VideoStatusIndicator 
           video={video} 
@@ -99,7 +99,7 @@ const VideoManagementPanel = () => {
     },
     {
       id: 'title',
-      header: t('video.title', { defaultValue: 'Titel' }),
+      header: () => t('video.title', { defaultValue: 'Titel' }),
       accessorKey: 'filename' as keyof AdminVideo,
       cell: (video: AdminVideo) => {
         return (
@@ -119,7 +119,7 @@ const VideoManagementPanel = () => {
     },
     {
       id: 'details',
-      header: t('video.details', { defaultValue: 'Details' }),
+      header: () => t('video.details', { defaultValue: 'Details' }),
       cell: (video: AdminVideo) => {
         return (
           <div className="text-sm space-y-1">
@@ -144,7 +144,7 @@ const VideoManagementPanel = () => {
     },
     {
       id: 'actions',
-      header: t('video.actions', { defaultValue: 'Aktionen' }),
+      header: () => t('video.actions', { defaultValue: 'Aktionen' }),
       cell: (video: AdminVideo) => {
         return (
           <Button
