@@ -1,0 +1,19 @@
+
+{
+  "find_driver": "Find Driver",
+  "public_search_hint": "Search publicly available drivers. Login required for requests.",
+  "pickup_location": "Pickup Location",
+  "delivery_location": "Delivery Location", 
+  "pickup_placeholder": "Enter pickup address",
+  "delivery_placeholder": "Enter delivery address",
+  "pickup_date": "Pickup Date",
+  "pickup_time": "Time",
+  "search_drivers": "Search Available Drivers",
+  "create_request": "Create Transport Request",
+  "available_drivers": "Available Drivers",
+  "contact": "Contact",
+  "login_benefit": "After logging in, you can directly contact drivers and create transport requests.",
+  "driver_rating": "Rating",
+  "distance": "Distance",
+  "available_time": "Available"
+}

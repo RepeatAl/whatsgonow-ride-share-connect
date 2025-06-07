@@ -212,14 +212,41 @@ it('should show login prompt for protected action', () => {
 
 ## 🔄 Nächste Schritte
 
-### Pilot-Migrationen geplant:
+### Pilot-Migrationen:
 1. ✅ **CreateOrderForm** - Umgesetzt
-2. 🔄 **ItemUploadForm** - In Planung
-3. 🔄 **ChatInterface** - In Planung
-4. 🔄 **TransportSearch** - In Planung
+2. ✅ **FindTransport** - Umgesetzt (Phase 1)
+3. 🔄 **ItemUploadForm** - Phase 2 geplant
+4. 🔄 **ChatInterface** - Phase 3 geplant
 
 ### Erweiterungen möglich:
 - Rollenbasierte Permissions
 - Bedingte Aktionen (z.B. nur zu bestimmten Zeiten)
 - Audit-Log für geschützte Aktionen
 - Rate-Limiting pro Aktion
+
+## 🎯 Migration-Status
+
+### Phase 1: FindTransport ✅
+**Umgesetzt:**
+- Öffentliche Fahrersuche ohne Login
+- `AuthRequired` für "Transportanfrage erstellen"
+- `AuthRequired` für "Fahrer kontaktieren"
+- Transport-spezifische i18n-Übersetzungen
+- Mock-Fahrerliste mit Bewertungen
+
+**Neue Permissions:**
+- `create_transport_request`: Login für Transportanfragen
+- `contact_driver`: Login für Fahrerkontakt
+
+### Phase 2: ItemUpload (geplant)
+**Ziele:**
+- Öffentliches Bild-Upload (temporär)
+- `AuthRequired` für "Artikel speichern"
+- Migration von temp zu user-bucket nach Login
+
+### Phase 3: ChatInterface (geplant)
+**Ziele:**
+- Öffentliche Chat-Vorschau
+- `AuthRequired` für Message-Input
+- `AuthRequired` für Preisangebote
+- WebSocket nur nach Login

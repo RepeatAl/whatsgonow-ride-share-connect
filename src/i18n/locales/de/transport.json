@@ -1,0 +1,19 @@
+
+{
+  "find_driver": "Fahrer finden",
+  "public_search_hint": "Suche öffentlich verfügbare Fahrer. Für Anfragen ist eine Anmeldung erforderlich.",
+  "pickup_location": "Abholort",
+  "delivery_location": "Zielort",
+  "pickup_placeholder": "Abholadresse eingeben",
+  "delivery_placeholder": "Lieferadresse eingeben",
+  "pickup_date": "Abholdatum",
+  "pickup_time": "Uhrzeit",
+  "search_drivers": "Verfügbare Fahrer suchen",
+  "create_request": "Transportanfrage erstellen",
+  "available_drivers": "Verfügbare Fahrer",
+  "contact": "Kontakt aufnehmen",
+  "login_benefit": "Nach der Anmeldung kannst du direkt mit Fahrern in Kontakt treten und Transportanfragen erstellen.",
+  "driver_rating": "Bewertung",
+  "distance": "Entfernung",
+  "available_time": "Verfügbar"
+}

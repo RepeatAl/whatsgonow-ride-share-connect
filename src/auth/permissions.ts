@@ -59,6 +59,18 @@ export const loginRequiredActions: Record<string, LoginRequiredAction> = {
     requiresLogin: true,
     description: "Verifizierungsdaten hochladen"
   },
+  
+  // Phase 1: Transport-Aktionen
+  create_transport_request: {
+    action: "create_transport_request",
+    requiresLogin: true,
+    description: "Transportanfrage erstellen"
+  },
+  contact_driver: {
+    action: "contact_driver",
+    requiresLogin: true,
+    description: "Fahrer kontaktieren"
+  },
 
   // Öffentliche Aktionen - kein Login erforderlich
   browse_items: {
