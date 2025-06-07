@@ -10,17 +10,28 @@ interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
 
+/**
+ * ProtectedRoute - Vereinfacht für das neue System
+ * 
+ * Wird nur noch für wirklich geschützte Bereiche verwendet:
+ * - Dashboard
+ * - Profile
+ * - Messages  
+ * - Admin-Bereiche
+ * 
+ * Alle anderen Seiten sind öffentlich, Auth-Checks erfolgen auf Action-Ebene
+ */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { user, profile, loading, isProfileLoading } = useOptimizedAuth();
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   
-  // Show loading spinner during auth or profile loading
+  // Lade-Zustand anzeigen
   if (loading || isProfileLoading) {
     return <LoadingSpinner />;
   }
   
-  // If not authenticated, redirect to login
+  // Nicht authentifiziert → Login
   if (!user) {
     console.log("🔒 Protected route access denied, redirecting to login");
     const loginUrl = getLocalizedUrl('/login');
@@ -33,14 +44,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
     );
   }
   
-  // If roles are specified, check if the user has the required role
+  // Rollenprüfung (falls spezifiziert)
   if (allowedRoles && profile?.role && !allowedRoles.includes(profile.role)) {
     console.log(`🚫 User with role ${profile.role} not allowed to access route requiring ${allowedRoles.join(', ')}`);
     const dashboardUrl = getLocalizedUrl('/dashboard');
     return <Navigate to={dashboardUrl} replace />;
   }
   
-  // If authenticated, render the protected content
+  // Authentifiziert und berechtigt → Inhalt anzeigen
   return <>{children}</>;
 };
 
