@@ -8,7 +8,7 @@ import type { GuestUploadSession, GeoLocation } from "@/types/upload";
 import { createGuestSession } from "./guest/createGuestSession";
 import { updateGuestSessionGeolocation, requestGeolocationPermission } from "./guest/updateGuestSessionGeolocation";
 import { migrateGuestUploadsToUserAccount } from "./guest/migrateToUserAccount";
-import { generateGuestFileName, generateGuestFilePath, generateMobileUploadUrl, cleanupGuestSession } from "./guest/guestUploadUtils";
+import { generateGuestFileName, generateGuestFilePath, generateMobileUploadUrl as generateUploadUrlUtility, cleanupGuestSession } from "./guest/guestUploadUtils";
 
 interface UseGuestUploadProps {
   onProgress?: (progress: number) => void;
@@ -147,7 +147,7 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
     const sessionId = await initializeSession();
     if (!sessionId) return null;
 
-    return generateMobileUploadUrl(sessionId);
+    return generateUploadUrlUtility(sessionId);
   }, [initializeSession]);
 
   return {
