@@ -89,8 +89,7 @@ const VideoManagementPanel = () => {
   const columns = [
     {
       id: 'status',
-      header: 'Status',
-      accessorKey: 'status',
+      header: t('video.status', { defaultValue: 'Status' }),
       cell: ({ row }: { row: { original: AdminVideo } }) => (
         <VideoStatusIndicator 
           video={row.original} 
@@ -100,8 +99,8 @@ const VideoManagementPanel = () => {
     },
     {
       id: 'title',
-      header: t('video.title'),
-      accessorKey: 'title',
+      header: t('video.title', { defaultValue: 'Titel' }),
+      accessorKey: 'filename' as keyof AdminVideo,
       cell: ({ row }: { row: { original: AdminVideo } }) => {
         const video = row.original;
         return (
@@ -121,8 +120,7 @@ const VideoManagementPanel = () => {
     },
     {
       id: 'details',
-      header: 'Details',
-      accessorKey: 'details',
+      header: t('video.details', { defaultValue: 'Details' }),
       cell: ({ row }: { row: { original: AdminVideo } }) => {
         const video = row.original;
         return (
@@ -148,8 +146,7 @@ const VideoManagementPanel = () => {
     },
     {
       id: 'actions',
-      header: t('video.actions'),
-      accessorKey: 'actions',
+      header: t('video.actions', { defaultValue: 'Aktionen' }),
       cell: ({ row }: { row: { original: AdminVideo } }) => {
         const video = row.original;
         return (
@@ -158,7 +155,8 @@ const VideoManagementPanel = () => {
             size="sm"
             disabled={isDeleting}
             onClick={() => setDeleteDialog({ open: true, video })}
-            title="Video permanent löschen (DB + Storage)"
+            title={t('video.delete_tooltip', { defaultValue: 'Video permanent löschen (DB + Storage)' })}
+            aria-label={t('video.delete', { defaultValue: 'Video löschen' })}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -176,7 +174,7 @@ const VideoManagementPanel = () => {
       <Card>
         <CardContent className="flex items-center justify-center p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-orange"></div>
-          <span className="ml-2">Videos werden geladen...</span>
+          <span className="ml-2">{t('video.loading', { defaultValue: 'Videos werden geladen...' })}</span>
         </CardContent>
       </Card>
     );
@@ -189,19 +187,20 @@ const VideoManagementPanel = () => {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Video className="h-6 w-6 text-brand-orange" />
-            {t('video.management')} ({videos.length})
+            {t('video.management', { defaultValue: 'Video-Verwaltung' })} ({videos.length})
           </h2>
           <p className="text-muted-foreground mt-1">
-            Verwalte Videos, überprüfe Konsistenz und lösche nicht benötigte Dateien.
+            {t('video.description', { defaultValue: 'Verwalte Videos, überprüfe Konsistenz und lösche nicht benötigte Dateien.' })}
           </p>
         </div>
         <Button 
           variant="outline" 
           onClick={fetchVideos}
           disabled={loading}
+          aria-label={t('video.refresh', { defaultValue: 'Aktualisieren' })}
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Aktualisieren
+          {t('video.refresh', { defaultValue: 'Aktualisieren' })}
         </Button>
       </div>
 
@@ -211,15 +210,17 @@ const VideoManagementPanel = () => {
       {/* Videos Tabelle */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('video.overview')}</CardTitle>
+          <CardTitle>{t('video.overview', { defaultValue: 'Video-Übersicht' })}</CardTitle>
         </CardHeader>
         <CardContent>
           {videos.length === 0 ? (
             <div className="text-center py-12">
               <Video className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Keine Videos vorhanden</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {t('video.no_videos', { defaultValue: 'Keine Videos vorhanden' })}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                Lade Videos über den Upload-Bereich hoch.
+                {t('video.upload_hint', { defaultValue: 'Lade Videos über den Upload-Bereich hoch.' })}
               </p>
             </div>
           ) : (
@@ -236,7 +237,7 @@ const VideoManagementPanel = () => {
       <ConfirmDialog
         open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ open, video: deleteDialog.video })}
-        title="Video permanent löschen?"
+        title={t('video.confirm_delete', { defaultValue: 'Video permanent löschen?' })}
         description={
           <div className="space-y-2">
             <p>
@@ -252,8 +253,8 @@ const VideoManagementPanel = () => {
             </p>
           </div>
         }
-        confirmLabel={isDeleting ? "Lösche..." : "Permanent löschen"}
-        cancelLabel="Abbrechen"
+        confirmLabel={isDeleting ? t('video.deleting', { defaultValue: 'Lösche...' }) : t('video.delete_permanent', { defaultValue: 'Permanent löschen' })}
+        cancelLabel={t('video.cancel', { defaultValue: 'Abbrechen' })}
         onConfirm={handleVideoDelete}
         confirmVariant="destructive"
       />
