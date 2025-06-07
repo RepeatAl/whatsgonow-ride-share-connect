@@ -2,16 +2,16 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-interface Column<T> {
+interface SimpleColumn<T> {
   id: string;
-  header: string;
+  header: string | React.ReactNode;
   accessorKey?: keyof T;
   cell?: (row: T) => React.ReactNode;
 }
 
 interface DataTableProps<T> {
   data: T[];
-  columns: Column<T>[];
+  columns: SimpleColumn<T>[];
   loading?: boolean;
 }
 
@@ -62,3 +62,5 @@ export function DataTable<T>({ data, columns, loading = false }: DataTableProps<
     </div>
   );
 }
+
+export type { SimpleColumn };
