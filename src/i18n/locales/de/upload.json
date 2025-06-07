@@ -1,0 +1,26 @@
+
+{
+  "section_title": "Bilder hochladen",
+  "form_label": "Bilder hochladen (max. 4, 2 MB pro Datei)",
+  "guest_mode_title": "Gast-Upload-Modus",
+  "temporary": "Temporär",
+  "guest_explanation": "Sie können Bilder ohne Anmeldung hochladen. Diese werden temporär gespeichert.",
+  "files_uploaded": "{{count}} Datei(en) hochgeladen",
+  "expires_soon": "Läuft bald ab",
+  "expires_hours": "{{hours}}h verbleibend", 
+  "expires_days": "{{days}} Tage verbleibend",
+  "login_to_save": "Melden Sie sich an, um Ihre Bilder dauerhaft zu speichern und Artikel zu veröffentlichen.",
+  "login_to_publish": "Zum Veröffentlichen bitte anmelden",
+  "save_button": "Fotos speichern",
+  "publish_button": "Artikel veröffentlichen",
+  "upload_error": "Fehler beim Hochladen",
+  "capture_error": "Fehler beim Speichern des Fotos",
+  "analysis_error": "Fehler bei der Bildanalyse",
+  "session_error": "Fehler beim Erstellen der Upload-Session",
+  "guest_upload_success": "Bild erfolgreich hochgeladen (temporär)",
+  "guest_upload_error": "Fehler beim Upload",
+  "authenticated_upload_success": "Bild erfolgreich hochgeladen",
+  "migration_success": "Bilder erfolgreich in Ihr Konto übernommen",
+  "migration_error": "Fehler beim Übernehmen der Bilder",
+  "save_success": "Fotos erfolgreich gespeichert"
+}

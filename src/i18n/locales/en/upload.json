@@ -1,0 +1,26 @@
+
+{
+  "section_title": "Upload Images",
+  "form_label": "Upload images (max. 4, 2 MB per file)",
+  "guest_mode_title": "Guest Upload Mode", 
+  "temporary": "Temporary",
+  "guest_explanation": "You can upload images without logging in. These will be stored temporarily.",
+  "files_uploaded": "{{count}} file(s) uploaded",
+  "expires_soon": "Expires soon",
+  "expires_hours": "{{hours}}h remaining",
+  "expires_days": "{{days}} days remaining", 
+  "login_to_save": "Log in to permanently save your images and publish articles.",
+  "login_to_publish": "Please log in to publish",
+  "save_button": "Save Photos",
+  "publish_button": "Publish Article",
+  "upload_error": "Upload error",
+  "capture_error": "Error saving photo",
+  "analysis_error": "Image analysis error",
+  "session_error": "Error creating upload session",
+  "guest_upload_success": "Image uploaded successfully (temporary)",
+  "guest_upload_error": "Upload error",
+  "authenticated_upload_success": "Image uploaded successfully", 
+  "migration_success": "Images successfully migrated to your account",
+  "migration_error": "Error migrating images",
+  "save_success": "Photos saved successfully"
+}
