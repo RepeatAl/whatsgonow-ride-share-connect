@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import type { TFunction } from "i18next";
 import type { GuestUploadSession } from "@/types/upload";
 
 export interface MigrationResult {
@@ -13,7 +14,7 @@ export interface MigrationResult {
 export const migrateGuestUploadsToUserAccount = async (
   session: GuestUploadSession,
   userId: string,
-  t: (key: string, defaultValue?: string) => string
+  t: TFunction
 ): Promise<MigrationResult> => {
   try {
     const sessionId = session.session_id;

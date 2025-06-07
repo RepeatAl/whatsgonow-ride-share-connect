@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { GuestUploadSession, GeoLocation } from "@/types/upload";
 import { createGuestSession } from "./guest/createGuestSession";
 import { updateGuestSessionGeolocation, requestGeolocationPermission } from "./guest/updateGuestSessionGeolocation";
@@ -20,6 +21,7 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
   const [currentLocation, setCurrentLocation] = useState<GeoLocation | null>(null);
   const { onProgress } = props || {};
   const { t } = useTranslation(['upload', 'common']);
+  const translate: TFunction = t;
 
   // Initialize session
   const initializeSession = useCallback(async () => {
@@ -28,15 +30,15 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
       setCurrentSession(result.session);
       return result.sessionId;
     }
-    toast.error(t('upload:session_error', 'Fehler beim Erstellen der Upload-Session'));
+    toast.error(translate('upload:session_error', 'Fehler beim Erstellen der Upload-Session'));
     return null;
-  }, [t]);
+  }, [translate]);
 
   // Update session location
   const updateSessionLocation = useCallback(async (location: GeoLocation | null) => {
     if (!currentSession) return false;
 
-    const result = await updateGuestSessionGeolocation(currentSession, location, t);
+    const result = await updateGuestSessionGeolocation(currentSession, location, translate);
     
     if (result.success) {
       setCurrentSession(result.session);
@@ -45,16 +47,16 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
     }
     
     return false;
-  }, [currentSession, t]);
+  }, [currentSession, translate]);
 
   // Request geolocation
   const requestLocation = useCallback(async () => {
-    const location = await requestGeolocationPermission(t);
+    const location = await requestGeolocationPermission(translate);
     if (location && currentSession) {
       await updateSessionLocation(location);
     }
     return location;
-  }, [currentSession, updateSessionLocation, t]);
+  }, [currentSession, updateSessionLocation, translate]);
 
   // Upload file to guest bucket
   const uploadGuestFile = useCallback(async (file: File): Promise<string | null> => {
@@ -107,18 +109,18 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
       if (onProgress) onProgress(100);
 
       console.log('✅ Guest file uploaded successfully');
-      toast.success(t('upload:guest_upload_success', 'Bild erfolgreich hochgeladen (temporär)'));
+      toast.success(translate('upload:guest_upload_success', 'Bild erfolgreich hochgeladen (temporär)'));
       
       return urlData.publicUrl;
     } catch (error) {
       console.error('❌ Guest upload error:', error);
-      toast.error(t('upload:guest_upload_error', 'Fehler beim Upload'));
+      toast.error(translate('upload:guest_upload_error', 'Fehler beim Upload'));
       return null;
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [currentSession, initializeSession, onProgress, t]);
+  }, [currentSession, initializeSession, onProgress, translate]);
 
   // Migrate guest uploads to user account
   const migrateToUserAccount = useCallback(async (userId: string): Promise<string[]> => {
@@ -128,7 +130,7 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
     }
 
     console.log('🔄 Starting migration to user account:', userId);
-    const result = await migrateGuestUploadsToUserAccount(currentSession, userId, t);
+    const result = await migrateGuestUploadsToUserAccount(currentSession, userId, translate);
     
     if (result.success) {
       // Clear local state
@@ -138,7 +140,7 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
     }
     
     return [];
-  }, [currentSession, t]);
+  }, [currentSession, translate]);
 
   // Generate QR code URL for mobile upload
   const generateMobileUploadUrl = useCallback(async () => {

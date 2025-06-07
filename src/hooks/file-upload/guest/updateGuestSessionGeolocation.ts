@@ -1,6 +1,7 @@
 
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
+import type { TFunction } from "i18next";
 import type { GeoLocation, GuestUploadSession } from "@/types/upload";
 
 export interface GeolocationUpdateResult {
@@ -12,7 +13,7 @@ export interface GeolocationUpdateResult {
 export const updateGuestSessionGeolocation = async (
   session: GuestUploadSession,
   location: GeoLocation | null,
-  t: (key: string, defaultValue?: string) => string
+  t: TFunction
 ): Promise<GeolocationUpdateResult> => {
   try {
     console.log('📍 Updating session geolocation:', location ? 'with location' : 'without location');
@@ -66,7 +67,7 @@ export const updateGuestSessionGeolocation = async (
 };
 
 export const requestGeolocationPermission = async (
-  t: (key: string, defaultValue?: string) => string
+  t: TFunction
 ): Promise<GeoLocation | null> => {
   if (!navigator.geolocation) {
     toast.error(t('upload:geolocation_not_supported', 'Standortdienste werden nicht unterstützt'));
