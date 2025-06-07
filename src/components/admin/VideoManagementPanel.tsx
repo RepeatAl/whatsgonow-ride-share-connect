@@ -15,7 +15,7 @@ import type { AdminVideo } from '@/types/admin';
 
 interface Column<T> {
   id: string;
-  header: string;
+  header: string | React.ReactNode;
   accessorKey?: keyof T;
   cell?: (row: T) => React.ReactNode;
 }
