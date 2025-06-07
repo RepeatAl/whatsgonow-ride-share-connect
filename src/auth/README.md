@@ -209,3 +209,17 @@ it('should show login prompt for protected action', () => {
 - ✅ **SEO**: Mehr öffentliche Inhalte für Suchmaschinen
 - ✅ **Mobile**: Nahtlose Touch-Bedienung ohne Redirects
 - ✅ **Skalierbarkeit**: Einfach neue Features hinzufügen
+
+## 🔄 Nächste Schritte
+
+### Pilot-Migrationen geplant:
+1. ✅ **CreateOrderForm** - Umgesetzt
+2. 🔄 **ItemUploadForm** - In Planung
+3. 🔄 **ChatInterface** - In Planung
+4. 🔄 **TransportSearch** - In Planung
+
+### Erweiterungen möglich:
+- Rollenbasierte Permissions
+- Bedingte Aktionen (z.B. nur zu bestimmten Zeiten)
+- Audit-Log für geschützte Aktionen
+- Rate-Limiting pro Aktion
