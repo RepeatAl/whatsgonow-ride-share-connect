@@ -27,8 +27,11 @@
     "cancel": "Cancel",
     "refresh": "Refresh",
     "loading": "Loading videos...",
+    "loading_failed": "Failed to load videos.",
     "upload_hint": "Upload videos via the upload area.",
-    "deleted_success": "Video deleted successfully", 
+    "deleted_success": "Video deleted successfully",
+    "untitled": "Untitled",
+    "no_description": "No description available",
     "error": {
       "not_found": "File not found",
       "deletion_failed": "Deletion failed",

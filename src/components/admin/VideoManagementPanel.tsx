@@ -55,8 +55,8 @@ const VideoManagementPanel = () => {
     } catch (error: any) {
       console.error('❌ Failed to fetch videos:', error);
       toast({
-        title: "Fehler beim Laden",
-        description: "Videos konnten nicht geladen werden.",
+        title: t('video.error.general', { defaultValue: 'Fehler beim Laden' }),
+        description: t('video.loading_failed', { defaultValue: 'Videos konnten nicht geladen werden.' }),
         variant: "destructive"
       });
     } finally {
@@ -72,14 +72,14 @@ const VideoManagementPanel = () => {
       setDeleteDialog({ open: false, video: null });
       await fetchVideos(); // Refresh the list
       toast({
-        title: "✅ Video gelöscht",
+        title: t('video.deleted_success', { defaultValue: '✅ Video gelöscht' }),
         description: `"${deleteDialog.video.display_title_de || deleteDialog.video.filename}" wurde vollständig entfernt.`,
       });
     }
   };
 
   const getVideoTitle = (video: AdminVideo) => {
-    return video.display_title_de || video.original_name || video.filename || 'Unbenannt';
+    return video.display_title_de || video.original_name || video.filename || t('video.untitled', { defaultValue: 'Unbenannt' });
   };
 
   const formatFileSize = (bytes: number) => {
@@ -90,10 +90,10 @@ const VideoManagementPanel = () => {
     {
       id: 'status',
       header: t('video.status', { defaultValue: 'Status' }),
-      cell: ({ row }: { row: { original: AdminVideo } }) => (
+      cell: (video: AdminVideo) => (
         <VideoStatusIndicator 
-          video={row.original} 
-          hasStorageFile={storageFiles.has(row.original.file_path)} 
+          video={video} 
+          hasStorageFile={storageFiles.has(video.file_path)} 
         />
       ),
     },
@@ -101,8 +101,7 @@ const VideoManagementPanel = () => {
       id: 'title',
       header: t('video.title', { defaultValue: 'Titel' }),
       accessorKey: 'filename' as keyof AdminVideo,
-      cell: ({ row }: { row: { original: AdminVideo } }) => {
-        const video = row.original;
+      cell: (video: AdminVideo) => {
         return (
           <div className="space-y-1">
             <div className="font-medium">
@@ -121,8 +120,7 @@ const VideoManagementPanel = () => {
     {
       id: 'details',
       header: t('video.details', { defaultValue: 'Details' }),
-      cell: ({ row }: { row: { original: AdminVideo } }) => {
-        const video = row.original;
+      cell: (video: AdminVideo) => {
         return (
           <div className="text-sm space-y-1">
             <div className="text-muted-foreground">
@@ -147,8 +145,7 @@ const VideoManagementPanel = () => {
     {
       id: 'actions',
       header: t('video.actions', { defaultValue: 'Aktionen' }),
-      cell: ({ row }: { row: { original: AdminVideo } }) => {
-        const video = row.original;
+      cell: (video: AdminVideo) => {
         return (
           <Button
             variant="destructive"

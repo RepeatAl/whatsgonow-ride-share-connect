@@ -27,8 +27,11 @@
     "cancel": "Abbrechen",
     "refresh": "Aktualisieren",
     "loading": "Videos werden geladen...",
+    "loading_failed": "Videos konnten nicht geladen werden.",
     "upload_hint": "Lade Videos über den Upload-Bereich hoch.",
     "deleted_success": "Video erfolgreich gelöscht",
+    "untitled": "Unbenannt",
+    "no_description": "Keine Beschreibung vorhanden",
     "error": {
       "not_found": "Datei nicht gefunden",
       "deletion_failed": "Fehler beim Löschen",
