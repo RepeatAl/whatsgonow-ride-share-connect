@@ -625,6 +625,51 @@ export type Database = {
           },
         ]
       }
+      guest_upload_sessions: {
+        Row: {
+          accuracy: number | null
+          created_at: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          location_captured_at: string | null
+          location_consent: boolean | null
+          migrated_at: string | null
+          migrated_to_user_id: string | null
+          session_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          file_count?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_captured_at?: string | null
+          location_consent?: boolean | null
+          migrated_at?: string | null
+          migrated_to_user_id?: string | null
+          session_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          file_count?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_captured_at?: string | null
+          location_consent?: boolean | null
+          migrated_at?: string | null
+          migrated_to_user_id?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
       invoice_access_log: {
         Row: {
           access_time: string | null
@@ -1365,7 +1410,10 @@ export type Database = {
           fragile: boolean
           from_address: string
           item_name: string
+          lat: number | null
+          lng: number | null
           load_assistance: boolean
+          location_accuracy: number | null
           negotiable: boolean
           order_id: string
           preferred_vehicle_type: string
@@ -1388,7 +1436,10 @@ export type Database = {
           fragile?: boolean
           from_address: string
           item_name?: string
+          lat?: number | null
+          lng?: number | null
           load_assistance?: boolean
+          location_accuracy?: number | null
           negotiable?: boolean
           order_id?: string
           preferred_vehicle_type?: string
@@ -1411,7 +1462,10 @@ export type Database = {
           fragile?: boolean
           from_address?: string
           item_name?: string
+          lat?: number | null
+          lng?: number | null
           load_assistance?: boolean
+          location_accuracy?: number | null
           negotiable?: boolean
           order_id?: string
           preferred_vehicle_type?: string

@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import AuthRequired from "@/components/auth/AuthRequired";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import type { GeoLocation } from "@/types/upload";
 
 interface ImageUploadSectionProps {
   userId?: string;
@@ -47,7 +48,8 @@ export const ImageUploadSection = ({
     isUploading,
     uploadProgress,
     isGuest,
-    guestSession
+    guestSession,
+    updateSessionLocation
   } = usePublicUpload({
     orderId,
     onProgress: (progress) => console.log("Upload progress:", progress)
@@ -65,6 +67,18 @@ export const ImageUploadSection = ({
   
   // Initialize item analysis hook
   const { analyzeItemPhoto, isAnalyzing } = useItemAnalysis();
+
+  // Handle location consent for guest uploads
+  const handleLocationConsent = useCallback(async (location: GeoLocation | null) => {
+    if (isGuest && updateSessionLocation) {
+      const success = await updateSessionLocation(location);
+      if (success && location) {
+        console.log('📍 Location consent granted:', location);
+      } else if (success && !location) {
+        console.log('📍 Location consent revoked');
+      }
+    }
+  }, [isGuest, updateSessionLocation]);
 
   // Handle file selection and upload
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,11 +257,13 @@ export const ImageUploadSection = ({
           {t('upload:section_title', 'Bilder hochladen')}
         </h3>
         
-        {/* Guest Upload Notice */}
+        {/* Guest Upload Notice with Location Consent */}
         {isGuest && guestSession && (
           <GuestUploadNotice 
-            fileCount={guestSession.fileCount}
-            expiresAt={guestSession.expiresAt}
+            fileCount={guestSession.file_count}
+            expiresAt={guestSession.expires_at}
+            onLocationConsent={handleLocationConsent}
+            locationEnabled={guestSession.location_consent}
           />
         )}
         

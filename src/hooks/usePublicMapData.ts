@@ -2,23 +2,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useTranslation } from 'react-i18next';
+import type { PublicMapItem, GuestUploadSession } from '@/types/upload';
 
-export interface PublicMapItem {
-  id: string;
-  type: 'trip' | 'item' | 'order' | 'offer';
-  title: string;
-  lat: number;
-  lng: number;
-  price?: number;
-  date?: string;
-  route_polyline?: string;
-  category?: string;
-  status: string;
-  from_address?: string;
-  to_address?: string;
-  weight?: number;
-  description?: string;
-}
+export { type PublicMapItem } from '@/types/upload';
 
 export const usePublicMapData = () => {
   const { t } = useTranslation(['common', 'landing']);
@@ -50,7 +36,9 @@ export const usePublicMapData = () => {
             status,
             item_name,
             category,
-            published_at
+            published_at,
+            lat,
+            lng
           `)
           .eq('status', 'published')
           .not('published_at', 'is', null)
@@ -102,8 +90,45 @@ export const usePublicMapData = () => {
         console.warn('⚠️ Rides query failed, continuing without rides:', err);
       }
 
+      // NEW: Load guest uploads with location consent
+      let guestUploads: GuestUploadSession[] = [];
+      try {
+        const { data: guestData, error: guestError } = await supabase
+          .from('guest_upload_sessions')
+          .select(`
+            id,
+            session_id,
+            lat,
+            lng,
+            accuracy,
+            location_consent,
+            location_captured_at,
+            expires_at,
+            created_at,
+            file_count,
+            migrated_to_user_id,
+            migrated_at
+          `)
+          .eq('location_consent', true)
+          .not('lat', 'is', null)
+          .not('lng', 'is', null)
+          .gt('expires_at', new Date().toISOString())
+          .is('migrated_to_user_id', null)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (guestError) {
+          console.warn('⚠️ Guest uploads loading failed:', guestError.message);
+        } else {
+          guestUploads = guestData || [];
+          console.log(`✅ Loaded ${guestUploads.length} guest uploads with location`);
+        }
+      } catch (err) {
+        console.warn('⚠️ Guest uploads query failed, continuing without guest data:', err);
+      }
+
       // FALLBACK: Wenn keine echten Daten, verwende Mock-Daten für Demo
-      if (orders.length === 0 && rides.length === 0) {
+      if (orders.length === 0 && rides.length === 0 && guestUploads.length === 0) {
         console.log('📝 Using mock data for demo purposes');
         setMapData(getMockMapData());
         return;
@@ -114,8 +139,8 @@ export const usePublicMapData = () => {
         id: order.order_id,
         type: 'order' as const,
         title: order.item_name || order.description || t('common:order'),
-        lat: generateMockCoordinates(order.from_address).lat,
-        lng: generateMockCoordinates(order.from_address).lng,
+        lat: order.lat || generateMockCoordinates(order.from_address).lat,
+        lng: order.lng || generateMockCoordinates(order.from_address).lng,
         price: order.price,
         date: order.deadline,
         category: order.category,
@@ -141,10 +166,26 @@ export const usePublicMapData = () => {
         description: ride.description
       }));
 
+      // NEW: Verarbeite Guest Uploads zu Map Items
+      const guestItems: PublicMapItem[] = guestUploads
+        .filter(guest => guest.lat && guest.lng)
+        .map(guest => ({
+          id: guest.session_id,
+          type: 'guest' as const,
+          title: t('common:guest_upload', 'Gast-Upload'),
+          lat: guest.lat!,
+          lng: guest.lng!,
+          status: 'active',
+          expires_at: guest.expires_at,
+          session_id: guest.session_id,
+          file_count: guest.file_count,
+          description: t('common:guest_upload_description', '{{count}} Datei(en) hochgeladen', { count: guest.file_count })
+        }));
+
       // Kombiniere alle Items
-      const allItems = [...orderItems, ...rideItems];
+      const allItems = [...orderItems, ...rideItems, ...guestItems];
       setMapData(allItems);
-      console.log(`✅ Successfully loaded ${allItems.length} map items`);
+      console.log(`✅ Successfully loaded ${allItems.length} map items (${guestItems.length} guest uploads)`);
 
     } catch (err) {
       console.error('❌ Error fetching public map data:', err);
@@ -189,18 +230,16 @@ export const usePublicMapData = () => {
         description: 'Mitfahrgelegenheit mit Transportkapazität'
       },
       {
-        id: 'mock-order-2',
-        type: 'order',
-        title: 'Fahrrad Transport Köln → Düsseldorf',
+        id: 'mock-guest-1',
+        type: 'guest',
+        title: 'Gast-Upload',
         lat: 50.9375,
         lng: 6.9603,
-        price: 18,
-        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'published',
-        from_address: 'Köln, Ehrenfeld',
-        to_address: 'Düsseldorf, Altstadt',
-        weight: 15,
-        description: 'Stadtfahrrad, Schutz vor Kratzern wichtig'
+        status: 'active',
+        expires_at: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+        session_id: 'mock-session',
+        file_count: 2,
+        description: '2 Datei(en) hochgeladen'
       }
     ];
   };

@@ -4,22 +4,17 @@ import { supabase } from "@/lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import type { GuestUploadSession, GeoLocation } from "@/types/upload";
 
 interface UseGuestUploadProps {
   onProgress?: (progress: number) => void;
-}
-
-interface GuestUploadSession {
-  sessionId: string;
-  createdAt: string;
-  expiresAt: string;
-  fileCount: number;
 }
 
 export function useGuestUpload(props?: UseGuestUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [currentSession, setCurrentSession] = useState<GuestUploadSession | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<GeoLocation | null>(null);
   const { onProgress } = props || {};
   const { t } = useTranslation(['upload', 'common']);
 
@@ -39,12 +34,21 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
           .single();
           
         if (sessionData) {
-          setCurrentSession({
-            sessionId: sessionData.session_id,
-            createdAt: sessionData.created_at,
-            expiresAt: sessionData.expires_at,
-            fileCount: sessionData.file_count
-          });
+          const session: GuestUploadSession = {
+            id: sessionData.id,
+            session_id: sessionData.session_id,
+            lat: sessionData.lat,
+            lng: sessionData.lng,
+            accuracy: sessionData.accuracy,
+            location_consent: sessionData.location_consent || false,
+            location_captured_at: sessionData.location_captured_at,
+            expires_at: sessionData.expires_at,
+            created_at: sessionData.created_at,
+            file_count: sessionData.file_count,
+            migrated_to_user_id: sessionData.migrated_to_user_id,
+            migrated_at: sessionData.migrated_at
+          };
+          setCurrentSession(session);
           return sessionData.session_id;
         }
       }
@@ -58,7 +62,8 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
         .insert({
           session_id: newSessionId,
           expires_at: expiresAt.toISOString(),
-          file_count: 0
+          file_count: 0,
+          location_consent: false
         })
         .select()
         .single();
@@ -67,11 +72,19 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
 
       localStorage.setItem('whatsgonow-guest-session', newSessionId);
       
-      const newSession = {
-        sessionId: newSessionId,
-        createdAt: data.created_at,
-        expiresAt: data.expires_at,
-        fileCount: 0
+      const newSession: GuestUploadSession = {
+        id: data.id,
+        session_id: newSessionId,
+        lat: null,
+        lng: null,
+        accuracy: null,
+        location_consent: false,
+        location_captured_at: null,
+        expires_at: data.expires_at,
+        created_at: data.created_at,
+        file_count: 0,
+        migrated_to_user_id: null,
+        migrated_at: null
       };
       
       setCurrentSession(newSession);
@@ -82,6 +95,50 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
       return null;
     }
   }, [t]);
+
+  // Update session with location data
+  const updateSessionLocation = useCallback(async (location: GeoLocation | null) => {
+    if (!currentSession) return false;
+
+    try {
+      const updateData = location 
+        ? {
+            lat: location.lat,
+            lng: location.lng,
+            accuracy: location.accuracy,
+            location_consent: true,
+            location_captured_at: location.timestamp
+          }
+        : {
+            lat: null,
+            lng: null,
+            accuracy: null,
+            location_consent: false,
+            location_captured_at: null
+          };
+
+      const { error } = await supabase
+        .from('guest_upload_sessions')
+        .update(updateData)
+        .eq('session_id', currentSession.session_id);
+
+      if (error) throw error;
+
+      // Update local state
+      setCurrentSession(prev => prev ? { 
+        ...prev, 
+        ...updateData 
+      } : null);
+      
+      setCurrentLocation(location);
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating session location:', error);
+      toast.error(t('upload:location_update_error', 'Fehler beim Speichern der Standortdaten'));
+      return false;
+    }
+  }, [currentSession, t]);
 
   // Upload file to guest bucket
   const uploadGuestFile = useCallback(async (file: File): Promise<string | null> => {
@@ -114,7 +171,7 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
       // Update session file count
       await supabase
         .from('guest_upload_sessions')
-        .update({ file_count: (currentSession?.fileCount || 0) + 1 })
+        .update({ file_count: (currentSession?.file_count || 0) + 1 })
         .eq('session_id', sessionId);
 
       const { data: urlData } = supabase.storage
@@ -142,7 +199,7 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
     if (!currentSession) return [];
 
     try {
-      const sessionId = currentSession.sessionId;
+      const sessionId = currentSession.session_id;
       
       // Get all files from guest session
       const { data: files } = await supabase.storage
@@ -173,7 +230,12 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
                 metadata: { 
                   owner: userId,
                   migratedFrom: sessionId,
-                  migratedAt: new Date().toISOString()
+                  migratedAt: new Date().toISOString(),
+                  originalLocation: currentSession.lat && currentSession.lng ? {
+                    lat: currentSession.lat,
+                    lng: currentSession.lng,
+                    accuracy: currentSession.accuracy
+                  } : null
                 }
               });
 
@@ -207,6 +269,7 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
       // Clear local session
       localStorage.removeItem('whatsgonow-guest-session');
       setCurrentSession(null);
+      setCurrentLocation(null);
 
       toast.success(t('upload:migration_success', 'Bilder erfolgreich in Ihr Konto übernommen'));
       
@@ -232,7 +295,9 @@ export function useGuestUpload(props?: UseGuestUploadProps) {
     migrateToUserAccount,
     generateMobileUploadUrl,
     initializeSession,
+    updateSessionLocation,
     currentSession,
+    currentLocation,
     isUploading,
     uploadProgress
   };

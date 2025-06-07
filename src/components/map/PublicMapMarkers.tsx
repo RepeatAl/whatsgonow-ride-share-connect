@@ -2,7 +2,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import type { PublicMapItem } from '@/hooks/usePublicMapData';
+import type { PublicMapItem } from '@/types/upload';
 
 interface PublicMapMarkersProps {
   mapInstance: any;
@@ -17,7 +17,7 @@ export const PublicMapMarkers: React.FC<PublicMapMarkersProps> = ({
   mapData,
   onMarkerClick
 }) => {
-  const { t } = useTranslation(['common', 'landing', 'map']);
+  const { t } = useTranslation(['common', 'landing', 'map', 'upload']);
   const { getLocalizedUrl } = useLanguageMCP();
 
   React.useEffect(() => {
@@ -92,6 +92,7 @@ const safeBase64Encode = (str: string): string => {
 // Erstelle Icon basierend auf Typ und Preis mit stabilem Unicode-Rendering
 const createMarkerIcon = (type: string, price?: number) => {
   const getColor = () => {
+    if (type === 'guest') return '#9ca3af'; // grau für Gast-Uploads
     if (!price) return '#6b7280'; // grau
     if (price < 15) return '#10b981'; // grün
     if (price < 25) return '#f59e0b'; // orange
@@ -104,6 +105,7 @@ const createMarkerIcon = (type: string, price?: number) => {
       case 'order': return '📦';
       case 'item': return '📦';
       case 'offer': return '💰';
+      case 'guest': return '⏰'; // Uhr-Symbol für temporäre Uploads
       default: return '📍';
     }
   };
@@ -114,10 +116,11 @@ const createMarkerIcon = (type: string, price?: number) => {
   // Optimiertes SVG mit besserer Unicode-Unterstützung
   const svgString = `
     <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="18" cy="18" r="16" fill="${color}" stroke="white" stroke-width="2"/>
-      <circle cx="18" cy="18" r="14" fill="${color}" opacity="0.9"/>
+      <circle cx="18" cy="18" r="16" fill="${color}" stroke="white" stroke-width="2" opacity="${type === 'guest' ? '0.7' : '1'}"/>
+      <circle cx="18" cy="18" r="14" fill="${color}" opacity="${type === 'guest' ? '0.6' : '0.9'}"/>
       <text x="18" y="23" text-anchor="middle" fill="white" font-size="14" font-family="system-ui, -apple-system, sans-serif">${symbol}</text>
       ${price ? `<text x="18" y="10" text-anchor="middle" fill="white" font-size="8" font-weight="bold">${price}€</text>` : ''}
+      ${type === 'guest' ? `<circle cx="28" cy="8" r="6" fill="#f59e0b" opacity="0.9"/>` : ''}
     </svg>
   `;
 
@@ -131,7 +134,7 @@ const createMarkerIcon = (type: string, price?: number) => {
     // Fallback: Einfaches Icon ohne Emoji
     const fallbackSvg = `
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2"/>
+        <circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2" opacity="${type === 'guest' ? '0.7' : '1'}"/>
         <circle cx="12" cy="12" r="3" fill="white"/>
       </svg>
     `;
@@ -161,6 +164,68 @@ const createInfoBubbleContent = (
     }
   };
 
+  const formatTimeLeft = (expiresAt: string) => {
+    const now = new Date();
+    const expires = new Date(expiresAt);
+    const hoursLeft = Math.floor((expires.getTime() - now.getTime()) / (1000 * 60 * 60));
+    
+    if (hoursLeft < 1) return t('upload:expires_soon', 'Läuft bald ab');
+    if (hoursLeft < 24) return t('upload:expires_hours', '{{hours}}h verbleibend', { hours: hoursLeft });
+    
+    const daysLeft = Math.floor(hoursLeft / 24);
+    return t('upload:expires_days', '{{days}} Tage verbleibend', { days: daysLeft });
+  };
+
+  // Spezial-Behandlung für Guest-Uploads
+  if (item.type === 'guest') {
+    return `
+      <div style="padding: 12px; max-width: 300px; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.4;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <span style="font-size: 18px;">⏰</span>
+          <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #1f2937;">${item.title}</h4>
+        </div>
+        
+        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px;">
+          ${t('upload:temporary', 'Temporär')}
+        </div>
+        
+        <div style="background: #f3f4f6; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; display: inline-block;">
+          <span style="font-weight: 600; color: #f59e0b; font-size: 12px;">${formatTimeLeft(item.expires_at!)}</span>
+        </div>
+        
+        ${item.file_count ? `
+          <div style="margin-bottom: 10px; font-size: 12px; color: #6b7280; background: #f9fafb; padding: 8px; border-radius: 4px;">
+            <div style="margin-top: 4px;">${t('upload:files_uploaded', '{{count}} Datei(en) hochgeladen', { count: item.file_count })}</div>
+          </div>
+        ` : ''}
+        
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <button 
+            onclick="console.log('Guest upload info:', '${item.session_id}')" 
+            style="
+              padding: 8px 12px; 
+              background: #9ca3af; 
+              color: white; 
+              border: none; 
+              border-radius: 6px; 
+              font-size: 12px; 
+              cursor: pointer;
+              font-weight: 500;
+              flex: 1;
+            "
+          >
+            ${t('upload:guest_mode_title', 'Gast-Upload-Modus')}
+          </button>
+        </div>
+        
+        <div style="margin-top: 8px; font-size: 10px; color: #9ca3af; text-align: center;">
+          ${t('upload:login_to_save', 'Melden Sie sich an, um Ihre Bilder dauerhaft zu speichern.')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Standard-Behandlung für andere Marker-Typen
   const detailUrl = item.type === 'trip' 
     ? getLocalizedUrl(`/trip/${item.id}`)
     : getLocalizedUrl(`/order/${item.id}`);

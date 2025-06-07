@@ -5,6 +5,7 @@ import { useGuestUpload } from "./useGuestUpload";
 import { useFileUploader } from "./useFileUploader";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import type { GeoLocation } from "@/types/upload";
 
 interface UsePublicUploadProps {
   orderId?: string;
@@ -69,6 +70,14 @@ export function usePublicUpload({ orderId, onProgress }: UsePublicUploadProps = 
     return uploadedUrls;
   }, [uploadFile, onProgress]);
 
+  // Update session location (guest uploads only)
+  const updateSessionLocation = useCallback(async (location: GeoLocation | null) => {
+    if (!user && guestUpload.updateSessionLocation) {
+      return await guestUpload.updateSessionLocation(location);
+    }
+    return false;
+  }, [user, guestUpload]);
+
   // Migrate guest uploads after login
   const handlePostLoginMigration = useCallback(async (userId: string): Promise<string[]> => {
     if (!user || user.id !== userId) {
@@ -87,6 +96,7 @@ export function usePublicUpload({ orderId, onProgress }: UsePublicUploadProps = 
   return {
     uploadFile,
     uploadFiles,
+    updateSessionLocation,
     handlePostLoginMigration,
     generateQrCodeUrl,
     isUploading: isUploading || guestUpload.isUploading || authenticatedUpload.isUploading,
