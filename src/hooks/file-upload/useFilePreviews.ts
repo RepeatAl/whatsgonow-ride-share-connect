@@ -1,8 +1,9 @@
+
 import { useState, useRef, useCallback, useMemo } from "react";
 import { MAX_FILES } from "./constants";
 
 /**
- * useFilePreviews – Handles preview URLs for image upload slots
+ * useFilePreviews – Handles preview URLs for image upload slots
  * Always returns a fixed-length array (MAX_FILES) and provides utilities to update, remove, clear and initialize previews.
  */
 export const useFilePreviews = (initialUrls: string[] = []) => {

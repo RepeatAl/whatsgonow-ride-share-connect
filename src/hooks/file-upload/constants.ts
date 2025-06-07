@@ -1,3 +1,4 @@
+
 // Maximale Anzahl der Upload-Dateien
 export const MAX_FILES = 4;
 

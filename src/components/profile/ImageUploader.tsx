@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Loader2, Upload, X, Check, Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { validateFile } from "@/hooks/file-upload/fileValidation";
 
 interface ImageUploaderProps {
   userId: string;
@@ -27,14 +28,8 @@ export default function ImageUploader({ userId, onSuccess, onCancel, open, curre
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Datei darf maximal 2 MB groß sein.");
-      return;
-    }
-
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setError("Nur JPEG, PNG oder WEBP sind erlaubt.");
+    // Use centralized validation
+    if (!validateFile(file)) {
       return;
     }
 
