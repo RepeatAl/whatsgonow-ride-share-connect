@@ -51,7 +51,7 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ form, onSubmit }) => 
               type="text" 
               placeholder={t('order:from_address', 'Von...')}
               className="w-full p-2 border rounded"
-              {...form.register('pickupAddress')}
+              {...form.register('pickupStreet')}
             />
           </div>
         </div>
@@ -70,7 +70,7 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ form, onSubmit }) => 
               type="text" 
               placeholder={t('order:to_address', 'Nach...')}
               className="w-full p-2 border rounded"
-              {...form.register('deliveryAddress')}
+              {...form.register('deliveryStreet')}
             />
           </div>
         </div>
