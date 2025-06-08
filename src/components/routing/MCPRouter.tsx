@@ -1,26 +1,27 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { LandingPage } from '@/pages/LandingPage';
-import { About } from '@/pages/About';
-import { FAQ } from '@/pages/FAQ';
-import { Login } from '@/pages/Login';
-import { Register } from '@/pages/Register';
-import { RegisterSuccess } from '@/pages/RegisterSuccess';
-import { ForgotPassword } from '@/pages/ForgotPassword';
-import { ResetPassword } from '@/pages/ResetPassword';
-import { PreRegister } from '@/pages/PreRegister';
-import { PreRegisterSuccess } from '@/pages/PreRegisterSuccess';
-import { Profile } from '@/pages/Profile';
-import { CompleteProfile } from '@/pages/CompleteProfile';
-import { Dashboard } from '@/pages/Dashboard';
-import { DashboardAdmin } from '@/pages/DashboardAdmin';
-import { DashboardCM } from '@/pages/DashboardCM';
-import { DashboardSender } from '@/pages/DashboardSender';
-import { Inbox } from '@/pages/Inbox';
-import { MyRides } from '@/pages/MyRides';
-import { PublicRoute } from './PublicRoute';
-import { ProtectedRoute } from './ProtectedRoute';
+import Landing from '@/pages/Landing';
+import About from '@/pages/About';
+import Faq from '@/pages/Faq';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import RegisterSuccess from '@/pages/RegisterSuccess';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import PreRegister from '@/pages/PreRegister';
+import PreRegisterSuccess from '@/pages/PreRegisterSuccess';
+import Profile from '@/pages/Profile';
+import CompleteProfile from '@/pages/CompleteProfile';
+import Dashboard from '@/pages/Dashboard';
+import DashboardAdmin from '@/pages/DashboardAdmin';
+import DashboardCM from '@/pages/DashboardCM';
+import DashboardSender from '@/pages/DashboardSender';
+import Inbox from '@/pages/Inbox';
+import MyRides from '@/pages/MyRides';
+import PublicRoute from './PublicRoute';
+import ProtectedRoute from './ProtectedRoute';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import SystemAuditPage from '@/pages/SystemAudit';
 import AdminDashboard from '@/pages/AdminDashboard';
@@ -52,7 +53,7 @@ export const MCPRouter = () => {
         {/* Public routes */}
         <Route path={`/${currentLanguage}`} element={
           <PublicRoute>
-            <LandingPage />
+            <Landing />
           </PublicRoute>
         } />
         
@@ -64,7 +65,7 @@ export const MCPRouter = () => {
         
         <Route path={`/${currentLanguage}/faq`} element={
           <PublicRoute>
-            <FAQ />
+            <Faq />
           </PublicRoute>
         } />
         
@@ -187,3 +188,5 @@ export const MCPRouter = () => {
     </Router>
   );
 };
+
+export default MCPRouter;

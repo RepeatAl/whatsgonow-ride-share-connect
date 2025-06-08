@@ -1,80 +1,33 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import Layout from "@/components/Layout";
-import { useChatConversations } from "@/features/chat/hooks/use-chat-conversations";
-import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
-import { useChatRealtime } from "@/features/chat/context/ChatRealtimeContext";
-import { ConversationList } from "@/features/chat/components/ConversationList";
-import { ChatContainer } from "@/features/chat/components/ChatContainer";
+import React from 'react';
+import Layout from '@/components/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mail, MessageSquare } from 'lucide-react';
 
 const Inbox = () => {
-  const { conversations, loading, refresh } = useChatConversations();
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const { user } = useOptimizedAuth();
-  const navigate = useNavigate();
-  const params = useParams();
-  const { resetUnreadCount, setActiveOrderId } = useChatRealtime();
-  const orderIdFromUrl = params.orderId;
-
-  useEffect(() => {
-    // If there's an orderId in the URL, select that conversation
-    if (orderIdFromUrl) {
-      setSelectedConversation(orderIdFromUrl);
-      setActiveOrderId(orderIdFromUrl);
-    } else {
-      setActiveOrderId(null);
-    }
-
-    // Reset unread count when entering the inbox
-    resetUnreadCount();
-  }, [orderIdFromUrl, resetUnreadCount, setActiveOrderId]);
-
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
-
-  const handleConversationClick = (conversationId: string) => {
-    setSelectedConversation(conversationId);
-    setActiveOrderId(conversationId);
-    navigate(`/inbox/${conversationId}`);
-  };
-
-  const handleBackToList = () => {
-    setSelectedConversation(null);
-    navigate("/inbox");
-  };
-
   return (
     <Layout pageType="authenticated">
-      <div className="container max-w-7xl mx-auto px-4 pt-8 pb-16">
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold">Nachrichten</h1>
-            <p className="text-muted-foreground mt-1">
-              Kommuniziere mit Sendern und Fahrern zu deinen Aufträgen
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-250px)]">
-            {/* Conversation List */}
-            <div className={selectedConversation ? "hidden md:block" : ""}>
-              <ConversationList
-                conversations={conversations}
-                loading={loading}
-                selectedConversation={selectedConversation}
-                onConversationSelect={handleConversationClick}
-              />
-            </div>
-
-            {/* Chat Content */}
-            <ChatContainer
-              selectedConversation={selectedConversation}
-              conversations={conversations}
-              onBackToList={handleBackToList}
-            />
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Posteingang
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Keine Nachrichten
+                </h3>
+                <p className="text-gray-600">
+                  Du hast aktuell keine Nachrichten in deinem Posteingang.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>

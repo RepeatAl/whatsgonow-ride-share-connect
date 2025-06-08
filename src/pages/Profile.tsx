@@ -1,29 +1,21 @@
 
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
-import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import ProfileTabs from "@/components/profile/ProfileTabs";
-import { useNavigate } from "react-router-dom";
-import { Shield, User, Settings, ChevronRight } from "lucide-react";
-import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
+import React from 'react';
+import Layout from '@/components/Layout';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { User, Settings, Shield } from 'lucide-react';
 
 const Profile = () => {
-  const { t } = useTranslation(["common"]);
   const { user, profile } = useOptimizedAuth();
-  const navigate = useNavigate();
-  const { getLocalizedUrl } = useLanguageMCP();
 
   if (!user || !profile) {
     return (
-      <Layout>
+      <Layout pageType="authenticated">
         <div className="container mx-auto px-4 py-8">
           <Card>
-            <CardContent className="p-8 text-center">
-              <p>Profil wird geladen...</p>
+            <CardContent className="pt-6">
+              <p className="text-center text-gray-600">Lädt Profil...</p>
             </CardContent>
           </Card>
         </div>
@@ -31,133 +23,55 @@ const Profile = () => {
     );
   }
 
-  // Role-based visibility
-  const isAdmin = profile.role === 'admin' || profile.role === 'super_admin';
-
-  const handleNavigateToDashboard = () => {
-    // Rollenbasierte Dashboard-Navigation
-    switch (profile.role) {
-      case 'admin':
-      case 'super_admin':
-        navigate(getLocalizedUrl('/dashboard/admin'));
-        break;
-      case 'cm':
-        navigate(getLocalizedUrl('/dashboard/cm'));
-        break;
-      case 'driver':
-        navigate(getLocalizedUrl('/dashboard/driver'));
-        break;
-      case 'sender_private':
-      case 'sender_business':
-        navigate(getLocalizedUrl('/dashboard/sender'));
-        break;
-      default:
-        navigate(getLocalizedUrl('/dashboard'));
-    }
-  };
-
-  const handleNavigateToEnhancedAdmin = () => {
-    navigate(getLocalizedUrl('/admin-enhanced'));
-  };
-
   return (
     <Layout pageType="profile">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">
-                  {t("common:navigation.profile", "Profil")}
-                </h1>
-                <p className="text-muted-foreground">
-                  Verwalte deine Kontoinformationen und Einstellungen
-                </p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={handleNavigateToDashboard} className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Zum Dashboard
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                
-                {isAdmin && (
-                  <Button 
-                    onClick={handleNavigateToEnhancedAdmin}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Shield className="h-4 w-4" />
-                    Enhanced Admin
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Profile Overview Card */}
-          <Card className="mb-6">
+        <div className="max-w-2xl mx-auto">
+          <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                    {profile.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Mein Profil
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-medium text-gray-900 mb-4">Persönliche Informationen</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Vorname</label>
+                    <p className="mt-1 text-sm text-gray-900">{profile.first_name || 'Nicht angegeben'}</p>
                   </div>
                   <div>
-                    <CardTitle className="text-xl">
-                      {profile.first_name && profile.last_name 
-                        ? `${profile.first_name} ${profile.last_name}`
-                        : user.email
-                      }
-                    </CardTitle>
-                    <p className="text-muted-foreground">{user.email}</p>
+                    <label className="block text-sm font-medium text-gray-700">Nachname</label>
+                    <p className="mt-1 text-sm text-gray-900">{profile.last_name || 'Nicht angegeben'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">E-Mail</label>
+                    <p className="mt-1 text-sm text-gray-900">{user.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Rolle</label>
+                    <p className="mt-1 text-sm text-gray-900">{profile.role || 'Nicht zugewiesen'}</p>
                   </div>
                 </div>
-                
-                <div className="flex flex-col items-end gap-2">
-                  <Badge variant={isAdmin ? "destructive" : "secondary"}>
-                    {profile.role === 'admin' && 'Administrator'}
-                    {profile.role === 'super_admin' && 'Super Admin'}
-                    {profile.role === 'cm' && 'Community Manager'}
-                    {profile.role === 'driver' && 'Fahrer'}
-                    {profile.role === 'sender_private' && 'Privater Sender'}
-                    {profile.role === 'sender_business' && 'Business Sender'}
-                    {!profile.role && 'Benutzer'}
-                  </Badge>
-                  
-                  {profile.verified && (
-                    <Badge variant="outline" className="text-green-600 border-green-600">
-                      ✓ Verifiziert
-                    </Badge>
-                  )}
-                </div>
               </div>
-            </CardHeader>
-            
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Region:</span>
-                  <p className="text-muted-foreground">{profile.region || 'Nicht angegeben'}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Stadt:</span>
-                  <p className="text-muted-foreground">{profile.city || 'Nicht angegeben'}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Profil vollständig:</span>
-                  <p className="text-muted-foreground">
-                    {profile.profile_complete ? '✓ Ja' : '⚠ Nein'}
-                  </p>
+
+              <div className="border-t pt-6">
+                <h3 className="font-medium text-gray-900 mb-4">Konto-Einstellungen</h3>
+                <div className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Profil bearbeiten
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Passwort ändern
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Profile Tabs */}
-          <ProfileTabs />
         </div>
       </div>
     </Layout>

@@ -1,34 +1,34 @@
 
-import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { LanguageMCPProvider } from '@/mcp/language/LanguageMCP';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Toaster } from '@/components/ui/toaster';
-import MCPRouter from '@/components/routing/MCPRouter';
-import { OptimizedAuthProvider } from '@/contexts/OptimizedAuthContext';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
+import { OptimizedAuthProvider } from "@/contexts/OptimizedAuthContext";
+import { LanguageMCPProvider } from "@/mcp/language/LanguageMCP";
+import MCPRouter from "@/components/routing/MCPRouter";
+import "./App.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
-  console.log('🚀 App starting with optimized auth and language');
-
   return (
-    <Router>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <LanguageMCPProvider>
+        <OptimizedAuthProvider>
           <TooltipProvider>
-            <LanguageMCPProvider>
-              <OptimizedAuthProvider>
-                <Toaster />
-                <MCPRouter />
-              </OptimizedAuthProvider>
-            </LanguageMCPProvider>
+            <MCPRouter />
+            <Toaster />
           </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </Router>
+        </OptimizedAuthProvider>
+      </LanguageMCPProvider>
+    </QueryClientProvider>
   );
 }
 
