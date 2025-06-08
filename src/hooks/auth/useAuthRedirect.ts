@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
 import type { UserProfile } from '@/types/auth';
@@ -15,10 +15,12 @@ export const useAuthRedirect = (
   const navigate = useNavigate();
   const location = useLocation();
   const { currentLanguage, getLocalizedUrl } = useLanguageMCP();
+  const redirectedRef = useRef(false);
 
   useEffect(() => {
-    // Warten bis Auth und Profile vollständig geladen sind
+    // Reset redirect flag when auth state changes significantly
     if (loading || isProfileLoading) {
+      redirectedRef.current = false;
       console.log('🔄 useAuthRedirect: Still loading...', { loading, isProfileLoading });
       return;
     }
@@ -26,16 +28,26 @@ export const useAuthRedirect = (
     const currentPath = location.pathname;
     console.log('🧭 useAuthRedirect: Checking redirect for path:', currentPath);
 
+    // Precise auth page detection with regex for language prefixes
+    const isStrictAuthPage = /^\/[a-z]{2}\/(login|register)$/.test(currentPath) || 
+                            /^\/(login|register)$/.test(currentPath);
+
+    console.log('🔍 useAuthRedirect: Auth page check:', { 
+      currentPath, 
+      isStrictAuthPage, 
+      hasUser: !!user, 
+      hasProfile: !!profile,
+      alreadyRedirected: redirectedRef.current 
+    });
+
     // Öffentliche Routen überspringen (außer Login/Register bei authentifizierten Usern)
     if (isPublicRoute(currentPath)) {
-      const isAuthPage = currentPath.includes('/login') || 
-                        currentPath.includes('/register');
-
-      // Authentifiziert + auf Auth-Seite → Dashboard
-      if (user && profile && isAuthPage) {
+      // Authentifiziert + auf Auth-Seite → Dashboard (mit Loop-Prevention)
+      if (user && profile && isStrictAuthPage && !redirectedRef.current) {
+        redirectedRef.current = true;
         console.log('✅ useAuthRedirect: Authenticated user on auth page, redirecting to dashboard');
         
-        // FIXED: Use consistent dashboard structure
+        // FIXED: Use consistent dashboard structure with 100ms delay
         let targetPath: string;
         
         switch (profile.role) {
@@ -58,7 +70,12 @@ export const useAuthRedirect = (
         }
         
         console.log('🎯 useAuthRedirect: Redirecting to:', targetPath);
-        navigate(targetPath, { replace: true });
+        
+        // Use timeout for clean redirect timing
+        setTimeout(() => {
+          navigate(targetPath, { replace: true });
+        }, 100);
+        
         return;
       }
 
@@ -81,4 +98,13 @@ export const useAuthRedirect = (
     }
 
   }, [user, profile, loading, isProfileLoading, location.pathname, navigate, currentLanguage, getLocalizedUrl]);
+
+  // Reset redirect flag when location changes significantly
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      redirectedRef.current = false;
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 };

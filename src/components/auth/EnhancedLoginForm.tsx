@@ -81,19 +81,22 @@ const EnhancedLoginForm = ({ onToggleMode, showSignUp = true }: LoginFormProps) 
     try {
       console.log('🔐 EnhancedLoginForm: Starting login process for:', formData.email);
 
-      // Direkt mit OptimizedAuth signIn - kein manueller Redirect
+      // FIXED: Direkt mit OptimizedAuth signIn - KEIN manueller Redirect mehr!
+      // useAuthRedirect übernimmt die komplette Weiterleitung
       await signIn(formData.email.trim(), formData.password);
 
       // Reset failed attempts on successful login
       setFailedAttempts(0);
       setLockoutUntil(null);
 
-      // Success feedback
-      toast({
-        title: "Login erfolgreich",
-        description: "Sie werden weitergeleitet...",
-        variant: "default",
-      });
+      // Success feedback mit Delay für bessere UX
+      setTimeout(() => {
+        toast({
+          title: "Login erfolgreich",
+          description: "Sie werden weitergeleitet...",
+          variant: "default",
+        });
+      }, 150);
 
       console.log('✅ Login successful, redirect will be handled by useAuthRedirect');
 
