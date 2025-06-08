@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 import type { PreRegistrationFormData } from '@/lib/validators/pre-registration';
 
@@ -13,9 +12,15 @@ export const usePreRegistrationSubmit = () => {
     setIsLoading(true);
     
     try {
-      // FIXED: Echter API-Call statt Mock - korrigierte Property-Namen
-      const { data: result, error } = await supabase.functions.invoke('pre-register', {
-        body: {
+      // FIXED: Direkter fetch() Aufruf ohne Supabase Client Auth-Abhängigkeiten
+      const response = await fetch('https://orgcruwmxqiwnjnkxpjb.supabase.co/functions/v1/pre-register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+          // WICHTIG: Kein Authorization Header für anonyme Calls
+        },
+        body: JSON.stringify({
           first_name: data.first_name,
           last_name: data.last_name,
           email: data.email,
@@ -25,23 +30,29 @@ export const usePreRegistrationSubmit = () => {
           wants_sender: data.wants_sender,
           vehicle_types: data.vehicle_types,
           gdpr_consent: data.gdpr_consent,
-          language: 'de', // Standard-Sprache
+          language: 'de',
           source: 'website'
-        }
+        })
       });
 
-      if (error) {
-        console.error('❌ Pre-registration failed:', error);
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error('❌ Pre-registration failed:', result);
         
         // Benutzerfreundliche Fehlermeldungen
         let errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.';
         
-        if (error.message?.includes('duplicate')) {
+        if (response.status === 409 || result.error?.includes('already registered')) {
           errorMessage = 'Diese E-Mail-Adresse ist bereits registriert.';
-        } else if (error.message?.includes('invalid email')) {
-          errorMessage = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
-        } else if (error.message?.includes('network')) {
-          errorMessage = 'Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.';
+        } else if (response.status === 400) {
+          if (result.error?.includes('Invalid email')) {
+            errorMessage = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+          } else if (result.error?.includes('Missing required fields')) {
+            errorMessage = 'Bitte füllen Sie alle Pflichtfelder aus.';
+          } else if (result.error?.includes('GDPR consent')) {
+            errorMessage = 'Die DSGVO-Einwilligung ist erforderlich.';
+          }
         }
         
         toast({
@@ -50,7 +61,7 @@ export const usePreRegistrationSubmit = () => {
           variant: "destructive",
         });
         
-        throw error;
+        throw new Error(result.error || 'Pre-registration failed');
       }
 
       // Erfolgreiche Verarbeitung
@@ -68,7 +79,7 @@ export const usePreRegistrationSubmit = () => {
     } catch (error: any) {
       console.error('❌ Pre-registration submission error:', error);
       
-      // Fallback für unerwartete Fehler
+      // Nur Fallback-Toast wenn noch nicht von Response-Handling behandelt
       if (!error.message?.includes('duplicate') && !error.message?.includes('invalid')) {
         toast({
           title: "Vorregistrierung fehlgeschlagen",
