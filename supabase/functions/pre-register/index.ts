@@ -74,7 +74,7 @@ serve(async (req) => {
 
     console.log('📝 Inserting pre-registration:', { email, first_name, last_name });
 
-    // Pre-Registration in Datenbank einfügen
+    // FIXED: Pre-Registration in korrekte Tabelle einfügen (nicht profiles!)
     const { data: preRegData, error: insertError } = await supabaseClient
       .from('pre_registrations')
       .insert([
@@ -120,7 +120,7 @@ serve(async (req) => {
 
     console.log('✅ Pre-registration inserted successfully:', preRegData.id);
 
-    // Bestätigungs-E-Mail senden
+    // Bestätigungs-E-Mail senden (MCP-konform: nicht blockierend)
     try {
       console.log('📧 Sending confirmation email...');
       
