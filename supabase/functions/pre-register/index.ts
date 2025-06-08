@@ -19,7 +19,7 @@ serve(async (req) => {
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
     const { 
@@ -74,7 +74,7 @@ serve(async (req) => {
 
     console.log('📝 Inserting pre-registration:', { email, first_name, last_name });
 
-    // FIXED: Pre-Registration in korrekte Tabelle einfügen (nicht profiles!)
+    // FIXED: Service Role Key verwenden für direkten Admin-Zugriff
     const { data: preRegData, error: insertError } = await supabaseClient
       .from('pre_registrations')
       .insert([
