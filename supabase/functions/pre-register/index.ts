@@ -74,6 +74,29 @@ serve(async (req) => {
 
     console.log('📝 Inserting pre-registration:', { email, first_name, last_name });
 
+    // Check if email already exists
+    const { data: existingReg, error: checkError } = await supabaseClient
+      .from('pre_registrations')
+      .select('id, email, created_at')
+      .eq('email', email)
+      .single()
+
+    if (existingReg) {
+      console.log('⚠️ Email already pre-registered:', existingReg.email);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Diese E-Mail-Adresse ist bereits für die Vorregistrierung angemeldet.',
+          suggestion: 'Sie können direkt zur Registrierung wechseln.',
+          existing: true,
+          email: existingReg.email
+        }),
+        { 
+          status: 409, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     // FIXED: Service Role Key verwenden für direkten Admin-Zugriff
     const { data: preRegData, error: insertError } = await supabaseClient
       .from('pre_registrations')
@@ -101,7 +124,10 @@ serve(async (req) => {
       
       if (insertError.code === '23505') { // Unique violation
         return new Response(
-          JSON.stringify({ error: 'This email address is already registered' }),
+          JSON.stringify({ 
+            error: 'Diese E-Mail-Adresse ist bereits registriert',
+            suggestion: 'Sie können direkt zur Registrierung wechseln.'
+          }),
           { 
             status: 409, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -120,14 +146,14 @@ serve(async (req) => {
 
     console.log('✅ Pre-registration inserted successfully:', preRegData.id);
 
-    // Bestätigungs-E-Mail über Resend senden
+    // FIXED: Bestätigungs-E-Mail über Resend senden
+    let emailSent = false;
     try {
-      console.log('📧 Sending confirmation email via Resend...');
+      console.log('📧 Attempting to send confirmation email via Resend...');
       
       const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
       if (!RESEND_API_KEY) {
         console.error('❌ RESEND_API_KEY not configured');
-        // E-Mail-Fehler ist nicht kritisch - Pre-Registration war erfolgreich
       } else {
         // Sprach-spezifische E-Mail-Inhalte
         const emailContent = {
@@ -176,6 +202,7 @@ serve(async (req) => {
           </html>
         `;
 
+        // FIXED: Tatsächlicher Resend API Call
         const emailResponse = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -191,12 +218,13 @@ serve(async (req) => {
         });
 
         const emailResult = await emailResponse.json();
+        console.log('📧 Resend API Response:', { status: emailResponse.status, result: emailResult });
 
         if (!emailResponse.ok) {
           console.error('❌ Resend API error:', emailResult);
-          // E-Mail-Fehler ist nicht kritisch
         } else {
           console.log('✅ Email sent successfully via Resend:', emailResult.id);
+          emailSent = true;
           
           // Markiere als E-Mail versendet
           await supabaseClient
@@ -207,14 +235,17 @@ serve(async (req) => {
       }
     } catch (emailError) {
       console.error('⚠️ Email sending exception:', emailError);
-      // E-Mail-Fehler ist nicht kritisch
+      // E-Mail-Fehler ist nicht kritisch - Pre-Registration war trotzdem erfolgreich
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         id: preRegData.id,
-        message: 'Pre-registration completed successfully' 
+        email_sent: emailSent,
+        message: emailSent 
+          ? 'Vorregistrierung abgeschlossen. Bestätigungs-E-Mail wurde versendet.' 
+          : 'Vorregistrierung abgeschlossen. Bestätigungs-E-Mail konnte nicht versendet werden.'
       }),
       { 
         status: 200, 
@@ -225,7 +256,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Unexpected error in pre-register function:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

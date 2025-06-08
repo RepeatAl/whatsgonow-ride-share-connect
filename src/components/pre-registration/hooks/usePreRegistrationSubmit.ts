@@ -40,12 +40,27 @@ export const usePreRegistrationSubmit = () => {
       if (!response.ok) {
         console.error('❌ Pre-registration failed:', result);
         
-        // Benutzerfreundliche Fehlermeldungen
+        // FIXED: Bessere Behandlung für bereits registrierte E-Mails
+        if (response.status === 409 && result.existing) {
+          // Benutzerfreundliche Behandlung für bereits registrierte E-Mails
+          toast({
+            title: "E-Mail bereits registriert",
+            description: "Diese E-Mail-Adresse ist bereits für die Vorregistrierung angemeldet. Sie können direkt zur Registrierung wechseln.",
+            variant: "default",
+          });
+          
+          // Optional: Auto-Weiterleitung zur Registrierung
+          setTimeout(() => {
+            window.location.href = `/register?email=${encodeURIComponent(data.email)}`;
+          }, 2000);
+          
+          return result;
+        }
+        
+        // Andere Fehlermeldungen
         let errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.';
         
-        if (response.status === 409 || result.error?.includes('already registered')) {
-          errorMessage = 'Diese E-Mail-Adresse ist bereits registriert.';
-        } else if (response.status === 400) {
+        if (response.status === 400) {
           if (result.error?.includes('Invalid email')) {
             errorMessage = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
           } else if (result.error?.includes('Missing required fields')) {
@@ -69,9 +84,14 @@ export const usePreRegistrationSubmit = () => {
       
       setIsSuccess(true);
       
+      // FIXED: Verbesserte Erfolgsmeldung mit E-Mail-Status
+      const successMessage = result.email_sent 
+        ? "Wir haben Ihnen eine Bestätigungs-E-Mail gesendet. Bitte prüfen Sie auch Ihren Spam-Ordner."
+        : "Ihre Vorregistrierung war erfolgreich. Die Bestätigungs-E-Mail konnte nicht versendet werden, aber Ihre Anmeldung wurde gespeichert.";
+      
       toast({
         title: "Vorregistrierung erfolgreich!",
-        description: "Wir haben Ihnen eine Bestätigungs-E-Mail gesendet. Bitte prüfen Sie auch Ihren Spam-Ordner.",
+        description: successMessage,
       });
 
       return result;
@@ -80,7 +100,7 @@ export const usePreRegistrationSubmit = () => {
       console.error('❌ Pre-registration submission error:', error);
       
       // Nur Fallback-Toast wenn noch nicht von Response-Handling behandelt
-      if (!error.message?.includes('duplicate') && !error.message?.includes('invalid')) {
+      if (!error.message?.includes('duplicate') && !error.message?.includes('invalid') && !error.message?.includes('already registered')) {
         toast({
           title: "Vorregistrierung fehlgeschlagen",
           description: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.",

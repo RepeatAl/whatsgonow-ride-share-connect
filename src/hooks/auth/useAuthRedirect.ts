@@ -37,6 +37,9 @@ export const useAuthRedirect = (
       isStrictAuthPage, 
       hasUser: !!user, 
       hasProfile: !!profile,
+      profileComplete: profile?.profile_complete,
+      onboardingComplete: profile?.onboarding_complete,
+      userRole: profile?.role,
       alreadyRedirected: redirectedRef.current 
     });
 
@@ -95,6 +98,59 @@ export const useAuthRedirect = (
       console.log('⚠️ useAuthRedirect: Authenticated user without profile, redirecting to complete-profile');
       navigate(getLocalizedUrl('/complete-profile'), { replace: true });
       return;
+    }
+
+    // FIXED: Profile vorhanden aber incomplete → Dashboard direkt bei drivers mit profile_complete
+    if (user && profile && profile.profile_complete) {
+      // Wenn Profile complete ist, direkt zum Dashboard - unabhängig vom Onboarding-Status
+      const isDashboardRoute = currentPath.includes('/dashboard');
+      const isCompleteProfileRoute = currentPath.includes('/complete-profile');
+      
+      if (isCompleteProfileRoute && !redirectedRef.current) {
+        redirectedRef.current = true;
+        console.log('🎯 useAuthRedirect: Profile complete, skipping completion page, going to dashboard');
+        
+        let targetPath: string;
+        switch (profile.role) {
+          case 'admin':
+          case 'super_admin':
+            targetPath = getLocalizedUrl('/dashboard/admin');
+            break;
+          case 'cm':
+            targetPath = getLocalizedUrl('/dashboard/cm');
+            break;
+          case 'driver':
+            targetPath = getLocalizedUrl('/dashboard/driver');
+            break;
+          case 'sender_private':
+          case 'sender_business':
+            targetPath = getLocalizedUrl('/dashboard/sender');
+            break;
+          default:
+            targetPath = getLocalizedUrl('/dashboard');
+        }
+        
+        setTimeout(() => {
+          navigate(targetPath, { replace: true });
+        }, 100);
+        
+        return;
+      }
+      
+      // Wenn wir bereits auf einer Dashboard-Route sind, alles ok
+      if (isDashboardRoute) {
+        return;
+      }
+    }
+
+    // Profile vorhanden aber unvollständig → Complete Profile
+    if (user && profile && !profile.profile_complete) {
+      const isCompleteProfileRoute = currentPath.includes('/complete-profile');
+      if (!isCompleteProfileRoute) {
+        console.log('⚠️ useAuthRedirect: Profile incomplete, redirecting to complete-profile');
+        navigate(getLocalizedUrl('/complete-profile'), { replace: true });
+        return;
+      }
     }
 
   }, [user, profile, loading, isProfileLoading, location.pathname, navigate, currentLanguage, getLocalizedUrl]);
