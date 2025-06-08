@@ -31,8 +31,11 @@ export default function ImageUploader({ onUploadComplete }: Props) {
     setError(null);
     setUploading(true);
 
-    // Wir legen die Datei im Bucket unter /<user_id>/<originalName> ab
-    const filePath = `${user.id}/${file.name}`;
+    // FIXED: Eindeutige Dateinamen generieren um Konflikte zu vermeiden
+    const timestamp = Date.now();
+    const fileExtension = file.name.split('.').pop();
+    const uniqueFileName = `${timestamp}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+    const filePath = `${user.id}/${uniqueFileName}`;
 
     const { data, error: uploadError } = await supabase
       .storage
@@ -42,8 +45,9 @@ export default function ImageUploader({ onUploadComplete }: Props) {
         upsert: false,
         contentType: file.type,
         metadata: {
-          user_id: user.id,        // <- hier setzt du dein user_id‑Feld
-          published: "false",       // <- später kannst du das auf "true" schalten
+          user_id: user.id,
+          published: "true", // FIXED: Direkt als published markieren für Sichtbarkeit
+          uploaded_at: new Date().toISOString()
         },
       });
 
@@ -51,37 +55,45 @@ export default function ImageUploader({ onUploadComplete }: Props) {
 
     if (uploadError) {
       console.error("Upload failed:", uploadError);
-      setError("Upload fehlgeschlagen.");
+      setError("Upload fehlgeschlagen: " + uploadError.message);
       return;
     }
 
-    // Public URL holen – Benutzer sehen das Bild dann nur, wenn published = 'true'
-    // Fix: The getPublicUrl method returns an object with a 'data' property that contains the publicUrl
+    // FIXED: Bessere URL-Generierung mit Fehlerbehandlung
     const { data: urlData } = supabase
       .storage
       .from("items-images")
       .getPublicUrl(data.path);
 
-    if (!urlData) {
-      console.error("Could not get public URL");
+    if (!urlData?.publicUrl) {
+      console.error("Could not get public URL for path:", data.path);
       setError("Kann URL nicht abrufen.");
       return;
     }
 
+    console.log("✅ Image uploaded successfully:", urlData.publicUrl);
     onUploadComplete(urlData.publicUrl);
   };
 
   return (
-    <div>
-      <label className="block mb-2 font-medium">Artikelbild hochladen (max. 2 MB)</label>
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Artikelbild hochladen (max. 2 MB)
+      </label>
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp"
         onChange={handleFileChange}
         disabled={uploading}
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
       />
-      {uploading && <p>⏳ Hochladen…</p>}
-      {error && <p className="text-red-600 mt-1">{error}</p>}
+      {uploading && (
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+          <p className="text-sm text-gray-600">Hochladen...</p>
+        </div>
+      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }

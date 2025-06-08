@@ -1,108 +1,61 @@
 
-import { useEffect, useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProfileTabContent } from "./tabs/ProfileTabContent";
-import { RatingsTabContent } from "./tabs/RatingsTabContent";
-import { RoleTabContent } from "./tabs/RoleTabContent";
-import { DriverTabContent } from "./tabs/DriverTabContent";
-import { SenderTabContent } from "./tabs/SenderTabContent";
-import type { UserProfile } from "@/types/auth";
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Camera, MapPin, Star, Settings } from 'lucide-react';
+import ProfileTabContent from './tabs/ProfileTabContent';
+import RoleTabContent from './tabs/RoleTabContent';
+import RatingsTabContent from './tabs/RatingsTabContent';
+import ImageGallery from './ImageGallery';
 
-interface ProfileTabsProps {
-  profile: UserProfile;
-  userId: string;
-  activeTab: string;
-  setActiveTab: (value: string) => void;
-  showDriverSection: boolean;
-  showBusinessSection: boolean;
-  showCMSection: boolean;
-  showAdminSection: boolean;
-  canBecomeDriver: boolean;
-}
-
-export function ProfileTabs({
-  profile,
-  userId,
-  activeTab,
-  setActiveTab,
-  showDriverSection,
-  showBusinessSection,
-  showCMSection,
-  showAdminSection,
-  canBecomeDriver
-}: ProfileTabsProps) {
-  // Determine the default active tab based on user role
-  const defaultTab = useMemo(() => {
-    if (profile.role?.startsWith('sender')) return 'sender';
-    if (profile.role === 'driver') return 'driver';
-    if (profile.role === 'cm') return 'community';
-    if (profile.role === 'admin' || profile.role === 'admin_limited') return 'admin';
-    return 'profile';
-  }, [profile.role]);
-
-  // Set the default tab when the component mounts
-  useEffect(() => {
-    if (activeTab === 'profile' && defaultTab !== 'profile') {
-      setActiveTab(defaultTab);
-    }
-  }, [defaultTab, activeTab, setActiveTab]);
-
+export default function ProfileTabs() {
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
-        <TabsTrigger value="profile">Profil</TabsTrigger>
-        <TabsTrigger value="sender">Versender</TabsTrigger>
-        <TabsTrigger value="ratings">Bewertungen</TabsTrigger>
-        {showDriverSection && <TabsTrigger value="driver">Fahrer</TabsTrigger>}
-        {showBusinessSection && <TabsTrigger value="business">Business</TabsTrigger>}
-        {showCMSection && <TabsTrigger value="community">CM</TabsTrigger>}
-        {showAdminSection && <TabsTrigger value="admin">Admin</TabsTrigger>}
+    <Tabs defaultValue="profile" className="w-full">
+      <TabsList className="grid w-full grid-cols-5">
+        <TabsTrigger value="profile" className="flex items-center gap-2">
+          <User className="h-4 w-4" />
+          <span className="hidden sm:inline">Profil</span>
+        </TabsTrigger>
+        <TabsTrigger value="images" className="flex items-center gap-2">
+          <Camera className="h-4 w-4" />
+          <span className="hidden sm:inline">Bilder</span>
+        </TabsTrigger>
+        <TabsTrigger value="addresses" className="flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
+          <span className="hidden sm:inline">Adressen</span>
+        </TabsTrigger>
+        <TabsTrigger value="ratings" className="flex items-center gap-2">
+          <Star className="h-4 w-4" />
+          <span className="hidden sm:inline">Bewertungen</span>
+        </TabsTrigger>
+        <TabsTrigger value="role" className="flex items-center gap-2">
+          <Settings className="h-4 w-4" />
+          <span className="hidden sm:inline">Rolle</span>
+        </TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="profile">
-        <ProfileTabContent profile={profile} canBecomeDriver={canBecomeDriver} />
+
+      <TabsContent value="profile" className="mt-6">
+        <ProfileTabContent />
       </TabsContent>
 
-      <TabsContent value="sender">
-        <SenderTabContent profile={profile} />
+      <TabsContent value="images" className="mt-6">
+        <ImageGallery />
       </TabsContent>
 
-      <TabsContent value="ratings">
-        <RatingsTabContent userId={userId} />
+      <TabsContent value="addresses" className="mt-6">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Adressbuch</h3>
+          <p className="text-gray-600">Ihre gespeicherten Adressen werden hier angezeigt.</p>
+          {/* AddressBook component would go here */}
+        </div>
       </TabsContent>
 
-      {showDriverSection && (
-        <TabsContent value="driver">
-          <DriverTabContent profile={profile} />
-        </TabsContent>
-      )}
+      <TabsContent value="ratings" className="mt-6">
+        <RatingsTabContent />
+      </TabsContent>
 
-      {showBusinessSection && (
-        <TabsContent value="business">
-          <RoleTabContent 
-            title="Geschäftseinstellungen"
-            description="Verwalte deine Geschäftsinformationen und Firmendetails."
-          />
-        </TabsContent>
-      )}
-
-      {showCMSection && (
-        <TabsContent value="community">
-          <RoleTabContent 
-            title="Community Manager"
-            description="Verwaltung deiner Community Manager Funktionen."
-          />
-        </TabsContent>
-      )}
-
-      {showAdminSection && (
-        <TabsContent value="admin">
-          <RoleTabContent 
-            title="Admin-Einstellungen"
-            description="Hier kannst du auf Admin-spezifische Einstellungen und Funktionen zugreifen."
-          />
-        </TabsContent>
-      )}
+      <TabsContent value="role" className="mt-6">
+        <RoleTabContent />
+      </TabsContent>
     </Tabs>
   );
 }
