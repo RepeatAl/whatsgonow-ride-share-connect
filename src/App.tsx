@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { OptimizedAuthProvider } from "@/contexts/OptimizedAuthContext";
 import { LanguageMCPProvider } from "@/mcp/language/LanguageMCP";
-import MCPRouter from "@/components/routing/MCPRouter";
+import { MCPRouter } from "@/components/routing/MCPRouter";
 import "./App.css";
 
 const queryClient = new QueryClient({
@@ -20,14 +20,16 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageMCPProvider>
-        <OptimizedAuthProvider>
-          <TooltipProvider>
-            <MCPRouter />
-            <Toaster />
-          </TooltipProvider>
-        </OptimizedAuthProvider>
-      </LanguageMCPProvider>
+      <BrowserRouter>
+        <LanguageMCPProvider>
+          <OptimizedAuthProvider>
+            <TooltipProvider>
+              <MCPRouter />
+              <Toaster />
+            </TooltipProvider>
+          </OptimizedAuthProvider>
+        </LanguageMCPProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
