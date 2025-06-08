@@ -1,176 +1,189 @@
-
-import React, { useEffect } from 'react';
-import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { useTranslation } from 'react-i18next';
+import { LandingPage } from '@/pages/LandingPage';
+import { About } from '@/pages/About';
+import { FAQ } from '@/pages/FAQ';
+import { Login } from '@/pages/Login';
+import { Register } from '@/pages/Register';
+import { RegisterSuccess } from '@/pages/RegisterSuccess';
+import { ForgotPassword } from '@/pages/ForgotPassword';
+import { ResetPassword } from '@/pages/ResetPassword';
+import { PreRegister } from '@/pages/PreRegister';
+import { PreRegisterSuccess } from '@/pages/PreRegisterSuccess';
+import { Profile } from '@/pages/Profile';
+import { CompleteProfile } from '@/pages/CompleteProfile';
+import { Dashboard } from '@/pages/Dashboard';
+import { DashboardAdmin } from '@/pages/DashboardAdmin';
+import { DashboardCM } from '@/pages/DashboardCM';
+import { DashboardSender } from '@/pages/DashboardSender';
+import { Inbox } from '@/pages/Inbox';
+import { MyRides } from '@/pages/MyRides';
+import { PublicRoute } from './PublicRoute';
+import { ProtectedRoute } from './ProtectedRoute';
+import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
+import SystemAuditPage from '@/pages/SystemAudit';
+import AdminDashboard from '@/pages/AdminDashboard';
 
-// Import pages
-import Home from '@/pages/Home';
-import About from '@/pages/About';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import RegisterSuccess from '@/pages/RegisterSuccess';
-import PreRegister from '@/pages/PreRegister';
-import PreRegisterSuccess from '@/pages/PreRegisterSuccess';
-import Dashboard from '@/pages/Dashboard';
-import DashboardSender from '@/pages/DashboardSender';
-import Profile from '@/pages/Profile';
-import CompleteProfile from '@/pages/CompleteProfile';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import ESGDashboard from '@/pages/ESGDashboard';
-import Faq from '@/pages/Faq';
-import NotFound from '@/pages/NotFound';
-import Feedback from '@/pages/Feedback';
-import RlsTest from '@/pages/RLSTest';
-import SystemTests from '@/pages/SystemTests';
-import HereMapDemo from '@/pages/HereMapDemo';
-import HereMapFeaturesDemo from '@/pages/HereMapFeaturesDemo';
-import Inbox from '@/pages/Inbox';
-import MyRidesPage from '@/pages/MyRides';
+export const MCPRouter = () => {
+  const { currentLanguage } = useLanguageMCP();
+  const { user, profile, loading } = useOptimizedAuth();
 
-// Import dashboard pages
-import DashboardCM from '@/pages/dashboard/DashboardCM';
-import DashboardAdmin from '@/pages/dashboard/DashboardAdmin';
-import DashboardAdminEnhanced from '@/pages/dashboard/DashboardAdminEnhanced';
+  console.log('[MCPRouter] Current state:', { 
+    currentLanguage, 
+    hasUser: !!user, 
+    hasProfile: !!profile, 
+    userRole: profile?.role,
+    loading 
+  });
 
-// Import route guards
-import PublicRoute from './PublicRoute';
-import ProtectedRoute from './ProtectedRoute';
-import AdminRoute from './AdminRoute';
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>;
+  }
 
-// Language sync component
-const LanguageSync = () => {
-  const { lang } = useParams<{ lang: string }>();
-  const location = useLocation();
-  const { currentLanguage, supportedLanguages } = useLanguageMCP();
-  const { i18n } = useTranslation();
-
-  useEffect(() => {
-    console.log('[MCPRouter-LanguageSync] Route params:', { 
-      lang, 
-      currentLanguage, 
-      pathname: location.pathname,
-      i18nLang: i18n.language 
-    });
-
-    // Check if URL language is valid and different from current
-    if (lang && supportedLanguages.some(l => l.code === lang)) {
-      if (currentLanguage !== lang || i18n.language !== lang) {
-        console.log('[MCPRouter-LanguageSync] Syncing language from URL:', lang);
-        i18n.changeLanguage(lang);
-      }
-    }
-  }, [lang, currentLanguage, i18n, location.pathname, supportedLanguages]);
-
-  return null;
-};
-
-const MCPRouter = () => {
-  const { currentLanguage, supportedLanguages } = useLanguageMCP();
-  
-  console.log('[MCPRouter] Rendering with language:', currentLanguage);
-  
   return (
-    <Routes>
-      {/* Root redirect to default language */}
-      <Route path="/" element={<Navigate to={`/${currentLanguage}`} replace />} />
-      
-      {/* Language-specific routes with sync component */}
-      <Route path="/:lang/*" element={
-        <>
-          <LanguageSync />
-          <Routes>
-            <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
-            <Route path="/home" element={<Navigate to={`/${currentLanguage}`} replace />} />
-            <Route path="/about" element={<PublicRoute><About /></PublicRoute>} />
-            <Route path="/faq" element={<PublicRoute><Faq /></PublicRoute>} />
-            
-            {/* Auth routes */}
-            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-            <Route path="/register/success" element={<PublicRoute><RegisterSuccess /></PublicRoute>} />
-            
-            {/* Pre-Register routes */}
-            <Route path="/pre-register" element={<PublicRoute><PreRegister /></PublicRoute>} />
-            <Route path="/pre-register/success" element={<PublicRoute><PreRegisterSuccess /></PublicRoute>} />
-            
-            <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-            <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-            
-            <Route path="/complete-profile" element={<ProtectedRoute><CompleteProfile /></ProtectedRoute>} />
-            
-            {/* Public ESG Dashboard */}
-            <Route path="/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
-            
-            {/* HERE Maps Demo - PUBLIC ROUTES */}
-            <Route path="/here-maps-demo" element={<PublicRoute><HereMapDemo /></PublicRoute>} />
-            <Route path="/here-maps-features" element={<PublicRoute><HereMapFeaturesDemo /></PublicRoute>} />
-            
-            {/* FIXED: Consolidated Dashboard - Single entry point */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
-            <Route path="/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
-            <Route path="/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
-            
-            {/* FIXED: Redirect driver dashboard to main dashboard */}
-            <Route path="/dashboard/driver" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
-            
-            {/* Rides routes */}
-            <Route path="/rides" element={<ProtectedRoute><MyRidesPage /></ProtectedRoute>} />
-            
-            {/* Inbox routes */}
-            <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
-            <Route path="/inbox/:orderId" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
-            
-            <Route path="/admin-enhanced" element={
-              <ProtectedRoute>
-                <AdminRoute>
-                  <DashboardAdminEnhanced />
-                </AdminRoute>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/system-tests" element={
-              <ProtectedRoute>
-                <AdminRoute>
-                  <SystemTests />
-                </AdminRoute>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/rls-test" element={
-              <ProtectedRoute>
-                <AdminRoute>
-                  <RlsTest />
-                </AdminRoute>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
-          </Routes>
-        </>
-      } />
-      
-      {/* Legacy routes without language prefix - redirect with language */}
-      <Route path="/login" element={<Navigate to={`/${currentLanguage}/login`} replace />} />
-      <Route path="/register" element={<Navigate to={`/${currentLanguage}/register`} replace />} />
-      <Route path="/pre-register" element={<Navigate to={`/${currentLanguage}/pre-register`} replace />} />
-      <Route path="/complete-profile" element={<Navigate to={`/${currentLanguage}/complete-profile`} replace />} />
-      <Route path="/dashboard" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
-      <Route path="/dashboard/*" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
-      <Route path="/inbox" element={<Navigate to={`/${currentLanguage}/inbox`} replace />} />
-      <Route path="/profile" element={<Navigate to={`/${currentLanguage}/profile`} replace />} />
-      <Route path="/system-tests" element={<Navigate to={`/${currentLanguage}/system-tests`} replace />} />
-      <Route path="/rls-test" element={<Navigate to={`/${currentLanguage}/rls-test`} replace />} />
-      <Route path="/here-maps-demo" element={<Navigate to={`/${currentLanguage}/here-maps-demo`} replace />} />
-      <Route path="/here-maps-features" element={<Navigate to={`/${currentLanguage}/here-maps-features`} replace />} />
-      
-      {/* 404 fallback */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <Router>
+      <Routes>
+        {/* Language root redirect */}
+        <Route path="/" element={<Navigate to={`/${currentLanguage}`} replace />} />
+        
+        {/* Public routes */}
+        <Route path={`/${currentLanguage}`} element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/about`} element={
+          <PublicRoute>
+            <About />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/faq`} element={
+          <PublicRoute>
+            <FAQ />
+          </PublicRoute>
+        } />
+        
+        {/* Auth routes */}
+        <Route path={`/${currentLanguage}/login`} element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/register`} element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/register/success`} element={
+          <PublicRoute>
+            <RegisterSuccess />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/forgot-password`} element={
+          <PublicRoute>
+            <ForgotPassword />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/reset-password`} element={
+          <PublicRoute>
+            <ResetPassword />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/pre-register`} element={
+          <PublicRoute>
+            <PreRegister />
+          </PublicRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/pre-register/success`} element={
+          <PublicRoute>
+            <PreRegisterSuccess />
+          </PublicRoute>
+        } />
+        
+        {/* Protected routes */}
+        <Route path={`/${currentLanguage}/profile`} element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/complete-profile`} element={
+          <ProtectedRoute>
+            <CompleteProfile />
+          </ProtectedRoute>
+        } />
+        
+        {/* UPDATED: Consolidated dashboard routes */}
+        <Route path={`/${currentLanguage}/dashboard`} element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* REDIRECT: Old driver dashboard to main dashboard */}
+        <Route path={`/${currentLanguage}/dashboard/driver`} element={
+          <Navigate to={`/${currentLanguage}/dashboard`} replace />
+        } />
+        
+        <Route path={`/${currentLanguage}/dashboard/admin`} element={
+          <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+            <DashboardAdmin />
+          </ProtectedRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/dashboard/cm`} element={
+          <ProtectedRoute allowedRoles={['cm', 'admin', 'super_admin']}>
+            <DashboardCM />
+          </ProtectedRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/dashboard/sender`} element={
+          <ProtectedRoute allowedRoles={['sender_private', 'sender_business', 'admin', 'super_admin']}>
+            <DashboardSender />
+          </ProtectedRoute>
+        } />
+        
+        {/* NEW: Admin tools for system audit and management */}
+        <Route path={`/${currentLanguage}/admin`} element={
+          <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        
+        <Route path={`/${currentLanguage}/admin/audit`} element={
+          <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+            <SystemAuditPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Messages and communication */}
+        <Route path={`/${currentLanguage}/inbox`} element={
+          <ProtectedRoute>
+            <Inbox />
+          </ProtectedRoute>
+        } />
+        
+        {/* Driver specific routes */}
+        <Route path={`/${currentLanguage}/rides`} element={
+          <ProtectedRoute allowedRoles={['driver', 'admin', 'super_admin']}>
+            <MyRides />
+          </ProtectedRoute>
+        } />
+        
+        {/* Fallback route */}
+        <Route path="*" element={<Navigate to={`/${currentLanguage}`} replace />} />
+      </Routes>
+    </Router>
   );
 };
-
-export default MCPRouter;
