@@ -9,32 +9,42 @@ interface PublicRouteProps {
 }
 
 /**
- * PublicRoute - FIXED: Simplified to prevent redirect loops
+ * PublicRoute - FIXED: Simplified logic to prevent redirect loops
  * 
- * Zeigt Inhalte öffentlich an. Für eingeloggte Nutzer auf Auth-Seiten
- * wird ein rollenbasiertes Dashboard-Redirect durchgeführt.
+ * Only redirects authenticated users with COMPLETE profiles from auth pages.
+ * onboarding_complete is NO LONGER a blocker - only used for UX hints.
  */
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { loading, user, profile } = useOptimizedAuth();
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   
-  // FIXED: Wait for auth to stabilize before any redirects
+  console.debug("🌐 PublicRoute check:", {
+    path: location.pathname,
+    loading,
+    hasUser: !!user,
+    hasProfile: !!profile,
+    profileComplete: profile?.profile_complete,
+    onboardingComplete: profile?.onboarding_complete
+  });
+  
+  // Wait for auth to stabilize
   if (loading) {
     return null;
   }
   
-  // FIXED: Simplified auth page detection
+  // Simplified auth page detection
   const isAuthPage = location.pathname.includes('/login') || 
                     location.pathname.includes('/register');
   
   const isPreRegisterPage = location.pathname.includes('/pre-register');
   
-  // FIXED: Only redirect authenticated users with complete profiles from auth pages
-  if (user && profile?.profile_complete && profile?.onboarding_complete && (isAuthPage || isPreRegisterPage)) {
-    console.log('[PublicRoute] Redirecting authenticated user with complete profile');
+  // FIXED: Only redirect authenticated users with COMPLETE profiles from auth pages
+  // CRITICAL: onboarding_complete is NO LONGER required for dashboard access
+  if (user && profile?.profile_complete && (isAuthPage || isPreRegisterPage)) {
+    console.debug('✅ PublicRoute: Redirecting authenticated user with complete profile');
     
-    // FIXED: Simple role-based redirect without complex logic
+    // Simple role-based redirect
     let redirectUrl: string;
     switch (profile.role) {
       case 'admin':
@@ -58,9 +68,9 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
     return <Navigate to={redirectUrl} replace />;
   }
   
-  // FIXED: Simplified incomplete profile handling
-  if (user && profile && (!profile.profile_complete || !profile.onboarding_complete) && isPreRegisterPage) {
-    console.log('[PublicRoute] Redirecting incomplete profile to complete-profile');
+  // FIXED: Redirect incomplete profiles away from pre-register (they should complete their profile first)
+  if (user && profile && !profile.profile_complete && isPreRegisterPage) {
+    console.debug('⚠️ PublicRoute: Redirecting incomplete profile to complete-profile');
     return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
   }
   

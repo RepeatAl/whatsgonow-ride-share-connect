@@ -11,8 +11,8 @@ interface ProtectedRouteProps {
 }
 
 /**
- * ProtectedRoute - STABILIZED: profile_complete is the central condition for access
- * onboarding_complete is only for UX hints, not blocking access
+ * ProtectedRoute - STABILIZED: profile_complete is the ONLY condition for access
+ * onboarding_complete is now IRRELEVANT for access control - only UX info
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { user, profile, loading, isProfileLoading } = useOptimizedAuth();
@@ -57,7 +57,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   }
   
   // STABILIZED: profile_complete=true is sufficient for dashboard access
-  // onboarding_complete=false is just UX info, not a blocker
+  // onboarding_complete=false is just UX info, NOT a blocker anymore
   if (profile.profile_complete) {
     console.debug("✅ ProtectedRoute: Profile complete, checking role permissions");
     

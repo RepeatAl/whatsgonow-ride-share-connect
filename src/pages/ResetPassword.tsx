@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,8 @@ import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2, ArrowLeft } from 'lucid
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Layout from '@/components/Layout';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
 
 const ResetPassword = () => {
   const { t } = useTranslation(['auth', 'common']);
@@ -24,16 +26,49 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const token = searchParams.get('token');
+  
+  // FIXED: Get tokens from URL params for password reset
+  const accessToken = searchParams.get('access_token');
+  const refreshToken = searchParams.get('refresh_token');
+  const type = searchParams.get('type');
 
   useEffect(() => {
-    if (!token) {
-      setError('Ungültiger oder fehlender Token.');
+    // FIXED: Verify this is a password reset session
+    if (type !== 'recovery' || !accessToken) {
+      setError('Ungültiger oder fehlender Passwort-Reset-Link.');
+      return;
     }
-  }, [token]);
+
+    // FIXED: Set the session with the tokens from the URL
+    const setSession = async () => {
+      try {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        });
+        
+        if (error) {
+          console.error('Session setup error:', error);
+          setError('Ungültiger Reset-Link. Bitte fordern Sie einen neuen an.');
+        }
+      } catch (err) {
+        console.error('Session setup failed:', err);
+        setError('Fehler beim Verarbeiten des Reset-Links.');
+      }
+    };
+
+    setSession();
+  }, [accessToken, refreshToken, type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // FIXED: Password validation
+    if (password.length < 6) {
+      setError('Das Passwort muss mindestens 6 Zeichen lang sein.');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError(t('auth:passwords_not_match', 'Die Passwörter stimmen nicht überein.'));
@@ -41,32 +76,46 @@ const ResetPassword = () => {
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
-      if (!token) {
-        setError('Ungültiger oder fehlender Token.');
-        return;
-      }
-
+      console.debug('🔐 Resetting password...');
+      
       const { data, error } = await supabase.auth.updateUser({
         password: password
       });
 
       if (error) {
-        console.error('Passwort zurücksetzen fehlgeschlagen:', error);
-        setError(t('auth:reset_password_failed', 'Das Zurücksetzen des Passworts ist fehlgeschlagen. Bitte versuchen Sie es erneut.'));
+        console.error('❌ Password reset failed:', error);
+        setError('Das Zurücksetzen des Passworts ist fehlgeschlagen. Bitte versuchen Sie es erneut.');
         return;
       }
 
+      console.log('✅ Password reset successful:', data);
+      
+      // Show success toast
+      toast({
+        title: "Passwort erfolgreich zurückgesetzt!",
+        description: "Sie können sich jetzt mit Ihrem neuen Passwort anmelden.",
+        variant: "default",
+      });
+      
       setSuccess(true);
-      console.log('Passwort erfolgreich zurückgesetzt:', data);
+      
+      // FIXED: Redirect to login page after short delay
+      setTimeout(() => {
+        navigate(getLocalizedUrl('/login'), { replace: true });
+      }, 2000);
+      
     } catch (error: any) {
-      console.error('Fehler beim Zurücksetzen des Passworts:', error);
-      setError(t('auth:reset_password_failed', 'Das Zurücksetzen des Passworts ist fehlgeschlagen. Bitte versuchen Sie es erneut.'));
+      console.error('❌ Password reset error:', error);
+      setError('Das Zurücksetzen des Passworts ist fehlgeschlagen. Bitte versuchen Sie es erneut.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleBackToLogin = () => {
+    navigate(getLocalizedUrl('/login'), { replace: true });
   };
 
   if (isLoading) {
@@ -79,7 +128,7 @@ const ResetPassword = () => {
             </CardHeader>
             <CardContent>
               <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                <Loader2 className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
                 <p className="mt-4">{t('auth:resetting_password', 'Passwort wird zurückgesetzt...')}</p>
               </div>
             </CardContent>
@@ -89,7 +138,7 @@ const ResetPassword = () => {
     );
   }
 
-  if (error && !token) {
+  if (error && (!accessToken || type !== 'recovery')) {
     return (
       <Layout pageType="public">
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -105,7 +154,7 @@ const ResetPassword = () => {
                 </AlertDescription>
               </Alert>
               <div className="mt-4 text-center">
-                <Button variant="link" onClick={() => navigate(getLocalizedUrl('/login'))}>
+                <Button variant="link" onClick={handleBackToLogin}>
                   {t('auth:back_to_login', 'Zurück zum Login')}
                 </Button>
               </div>
@@ -131,10 +180,10 @@ const ResetPassword = () => {
                   {t('auth:password_reset_success', 'Passwort erfolgreich zurückgesetzt!')}
                 </h3>
                 <p className="mt-1 text-sm text-gray-700">
-                  {t('auth:you_can_now_login', 'Sie können sich jetzt mit Ihrem neuen Passwort anmelden.')}
+                  {t('auth:you_can_now_login', 'Sie werden zur Anmeldung weitergeleitet...')}
                 </p>
                 <div className="mt-6">
-                  <Button onClick={() => navigate(getLocalizedUrl('/login'))}>
+                  <Button onClick={handleBackToLogin}>
                     {t('auth:back_to_login', 'Zurück zum Login')}
                   </Button>
                 </div>
@@ -168,6 +217,7 @@ const ResetPassword = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={6}
                   />
                   <Button
                     type="button"
@@ -194,6 +244,7 @@ const ResetPassword = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    minLength={6}
                   />
                   <Button
                     type="button"
@@ -232,7 +283,7 @@ const ResetPassword = () => {
               </div>
             </form>
             <div className="text-center">
-              <Button variant="link" onClick={() => navigate(getLocalizedUrl('/login'))}>
+              <Button variant="link" onClick={handleBackToLogin}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t('auth:back_to_login', 'Zurück zum Login')}
               </Button>

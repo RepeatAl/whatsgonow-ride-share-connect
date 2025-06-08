@@ -7,6 +7,7 @@ import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 /**
  * STABILIZED: Role redirect hook with prevent infinite loops
  * Only redirects from exact /dashboard path to avoid conflicts
+ * onboarding_complete is NO LONGER checked - only profile_complete matters
  */
 export const useRoleRedirect = () => {
   const navigate = useNavigate();
@@ -26,6 +27,12 @@ export const useRoleRedirect = () => {
       return;
     }
 
+    // FIXED: Only check profile_complete, ignore onboarding_complete
+    if (!profile.profile_complete) {
+      console.debug("🔄 useRoleRedirect: Profile incomplete, letting ProtectedRoute handle redirect");
+      return;
+    }
+
     // CRITICAL: Only redirect from exact generic dashboard path
     const currentPath = location.pathname;
     const isGenericDashboard = currentPath.endsWith('/dashboard') && 
@@ -35,7 +42,9 @@ export const useRoleRedirect = () => {
       currentPath,
       isGenericDashboard,
       role: profile.role,
-      hasRedirected: hasRedirectedRef.current
+      hasRedirected: hasRedirectedRef.current,
+      profileComplete: profile.profile_complete,
+      onboardingComplete: profile.onboarding_complete
     });
     
     if (!isGenericDashboard) {
@@ -70,7 +79,7 @@ export const useRoleRedirect = () => {
         console.debug("🔄 useRoleRedirect: Unknown role, staying on generic dashboard");
         hasRedirectedRef.current = false; // Allow future redirects for unknown roles
     }
-  }, [profile?.role, loading, navigate, location.pathname, getLocalizedUrl]);
+  }, [profile?.role, profile?.profile_complete, loading, navigate, location.pathname, getLocalizedUrl]);
 
   // Reset redirect flag when leaving dashboard area
   useEffect(() => {
