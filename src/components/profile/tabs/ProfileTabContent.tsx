@@ -3,15 +3,21 @@ import { Card } from "@/components/ui/card";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import DriverApplication from "@/components/profile/DriverApplication";
 import { useProfileManager } from "@/hooks/use-profile-manager";
-import type { UserProfile } from "@/types/auth";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
-interface ProfileTabContentProps {
-  profile: UserProfile;
-  canBecomeDriver: boolean;
-}
-
-export function ProfileTabContent({ profile, canBecomeDriver }: ProfileTabContentProps) {
+export function ProfileTabContent() {
+  const { profile } = useOptimizedAuth();
   const { handleSave, loadingSave } = useProfileManager();
+  
+  if (!profile) {
+    return (
+      <Card className="p-6">
+        <p>Profil wird geladen...</p>
+      </Card>
+    );
+  }
+  
+  const canBecomeDriver = !profile.role?.includes('driver') && profile.can_become_driver;
 
   return (
     <div className="mt-4 space-y-4">

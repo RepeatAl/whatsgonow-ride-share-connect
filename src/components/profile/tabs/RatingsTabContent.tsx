@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star } from "lucide-react";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
 // This file follows the conventions from /docs/conventions/roles_and_ids.md
 interface Rating {
@@ -17,16 +18,15 @@ interface Rating {
   };
 }
 
-interface RatingsTabContentProps {
-  userId: string;
-}
-
-export function RatingsTabContent({ userId }: RatingsTabContentProps) {
+export function RatingsTabContent() {
+  const { user } = useOptimizedAuth();
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user?.id) return;
+    
     async function fetchRatings() {
       try {
         // Updated query to use from_user_id and to_user_id
@@ -42,7 +42,7 @@ export function RatingsTabContent({ userId }: RatingsTabContentProps) {
               avatar_url
             )
           `)
-          .eq("to_user_id", userId);
+          .eq("to_user_id", user!.id);
 
         if (error) throw error;
         
@@ -78,7 +78,7 @@ export function RatingsTabContent({ userId }: RatingsTabContentProps) {
     }
 
     fetchRatings();
-  }, [userId]);
+  }, [user?.id]);
 
   if (loading) {
     return (

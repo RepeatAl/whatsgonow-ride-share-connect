@@ -6,7 +6,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ProfileTabs } from "@/components/profile/ProfileTabs";
+import ProfileTabs from "@/components/profile/ProfileTabs";
 import { useNavigate } from "react-router-dom";
 import { Shield, User, Settings, ChevronRight } from "lucide-react";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
@@ -16,7 +16,6 @@ const Profile = () => {
   const { user, profile } = useOptimizedAuth();
   const navigate = useNavigate();
   const { getLocalizedUrl } = useLanguageMCP();
-  const [activeTab, setActiveTab] = useState("profile");
 
   if (!user || !profile) {
     return (
@@ -34,15 +33,6 @@ const Profile = () => {
 
   // Role-based visibility
   const isAdmin = profile.role === 'admin' || profile.role === 'super_admin';
-  const isCM = profile.role === 'cm';
-  const isDriver = profile.role === 'driver';
-  const isSender = profile.role?.startsWith('sender');
-  
-  const showDriverSection = isDriver || profile.can_become_driver;
-  const showBusinessSection = profile.role === 'sender_business';
-  const showCMSection = isCM || isAdmin;
-  const showAdminSection = isAdmin;
-  const canBecomeDriver = !isDriver && profile.can_become_driver;
 
   const handleNavigateToDashboard = () => {
     // Rollenbasierte Dashboard-Navigation
@@ -127,7 +117,7 @@ const Profile = () => {
                 </div>
                 
                 <div className="flex flex-col items-end gap-2">
-                  <Badge variant={isAdmin ? "destructive" : isCM ? "default" : "secondary"}>
+                  <Badge variant={isAdmin ? "destructive" : "secondary"}>
                     {profile.role === 'admin' && 'Administrator'}
                     {profile.role === 'super_admin' && 'Super Admin'}
                     {profile.role === 'cm' && 'Community Manager'}
@@ -167,17 +157,7 @@ const Profile = () => {
           </Card>
 
           {/* Profile Tabs */}
-          <ProfileTabs
-            profile={profile}
-            userId={user.id}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            showDriverSection={showDriverSection}
-            showBusinessSection={showBusinessSection}
-            showCMSection={showCMSection}
-            showAdminSection={showAdminSection}
-            canBecomeDriver={canBecomeDriver}
-          />
+          <ProfileTabs />
         </div>
       </div>
     </Layout>

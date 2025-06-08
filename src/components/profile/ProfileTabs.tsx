@@ -2,9 +2,9 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Camera, MapPin, Star, Settings } from 'lucide-react';
-import ProfileTabContent from './tabs/ProfileTabContent';
-import RoleTabContent from './tabs/RoleTabContent';
-import RatingsTabContent from './tabs/RatingsTabContent';
+import { ProfileTabContent } from './tabs/ProfileTabContent';
+import { RoleTabContent } from './tabs/RoleTabContent';
+import { RatingsTabContent } from './tabs/RatingsTabContent';
 import ImageGallery from './ImageGallery';
 
 export default function ProfileTabs() {
