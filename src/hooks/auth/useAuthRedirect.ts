@@ -36,39 +36,40 @@ export const useAuthRedirect = (
   };
 
   useEffect(() => {
-    // Reset redirect flag when auth state changes significantly
-    if (loading || isProfileLoading) {
-      redirectedRef.current = false;
-      console.log('🔄 useAuthRedirect: Still loading...', { loading, isProfileLoading });
-      return;
-    }
-
-    const currentPath = location.pathname;
-    console.log('🧭 useAuthRedirect: Checking redirect for path:', currentPath);
-
-    // ENHANCED: Improved auth page detection including pre-register
-    const isAuthPage = /^\/[a-z]{2}\/(login|register)$|^\/(login|register)$/.test(currentPath);
-    const isPreRegisterPage = /^\/[a-z]{2}\/pre-register$|^\/pre-register$/.test(currentPath);
-
-    console.log('🔍 useAuthRedirect: Auth page check:', { 
-      currentPath, 
-      isAuthPage,
-      isPreRegisterPage,
+    // ENHANCED: Debug logging for session diagnosis
+    console.debug("🔄 useAuthRedirect: Debug Info", { 
+      loading, 
+      isProfileLoading,
       hasUser: !!user, 
       hasProfile: !!profile,
       profileComplete: profile?.profile_complete,
       onboardingComplete: profile?.onboarding_complete,
       userRole: profile?.role,
+      currentPath: location.pathname,
       alreadyRedirected: redirectedRef.current 
     });
+
+    // Reset redirect flag when auth state changes significantly
+    if (loading || isProfileLoading) {
+      redirectedRef.current = false;
+      console.debug('🔄 useAuthRedirect: Still loading...', { loading, isProfileLoading });
+      return;
+    }
+
+    const currentPath = location.pathname;
+    console.debug('🧭 useAuthRedirect: Checking redirect for path:', currentPath);
+
+    // ENHANCED: Improved auth page detection including pre-register
+    const isAuthPage = /^\/[a-z]{2}\/(login|register)$|^\/(login|register)$/.test(currentPath);
+    const isPreRegisterPage = /^\/[a-z]{2}\/pre-register$|^\/pre-register$/.test(currentPath);
 
     // CRITICAL FIX: Handle authenticated user on login/register/pre-register pages immediately
     if (user && profile && (isAuthPage || isPreRegisterPage) && !redirectedRef.current) {
       redirectedRef.current = true;
-      console.log('✅ useAuthRedirect: Authenticated user on auth/pre-register page, redirecting to dashboard');
+      console.debug('✅ useAuthRedirect: Authenticated user on auth/pre-register page, redirecting to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
-      console.log('🎯 useAuthRedirect: Redirecting to:', targetPath);
+      console.debug('🎯 useAuthRedirect: Redirecting to:', targetPath);
       
       navigate(targetPath, { replace: true });
       return;
@@ -79,17 +80,30 @@ export const useAuthRedirect = (
       user && 
       profile && 
       profile.profile_complete && 
-      profile.onboarding_complete && // FIXED: Also check onboarding_complete
       (currentPath === '/' || /^\/[a-z]{2}\/?$/.test(currentPath)) && 
       !redirectedRef.current
     ) {
       redirectedRef.current = true;
-      console.log('🏠 useAuthRedirect: Authenticated user on home/language page with complete profile, redirecting to dashboard');
+      console.debug('🏠 useAuthRedirect: Authenticated user on home/language page with complete profile, redirecting to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
-      console.log('🎯 useAuthRedirect: Redirecting from home to:', targetPath);
+      console.debug('🎯 useAuthRedirect: Redirecting from home to:', targetPath);
       
       navigate(targetPath, { replace: true });
+      return;
+    }
+
+    // ENHANCED: Allow dashboard access with profile_complete=true even if onboarding_complete=false
+    const isDashboardRoute = currentPath.includes('/dashboard');
+    if (
+      user && 
+      profile && 
+      profile.profile_complete &&
+      !profile.onboarding_complete &&
+      isDashboardRoute
+    ) {
+      console.debug('⚠️ useAuthRedirect: Profile complete but onboarding incomplete - allowing dashboard access with warning');
+      // Allow access but could show a warning banner
       return;
     }
 
@@ -99,14 +113,13 @@ export const useAuthRedirect = (
       user && 
       profile && 
       profile.profile_complete &&
-      profile.onboarding_complete && // FIXED: Also check onboarding_complete
       isPublicRoute(currentPath) &&
       !isAlwaysPublicRoute(currentPath) && // ENHANCED: Allow always-public routes
       !currentPath.includes('/pre-register') && // Pre-registration blockiert für eingeloggte User
       !redirectedRef.current
     ) {
       redirectedRef.current = true;
-      console.log('🔄 useAuthRedirect: Authenticated user on non-always-public route, redirecting to dashboard');
+      console.debug('🔄 useAuthRedirect: Authenticated user on non-always-public route, redirecting to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
       navigate(targetPath, { replace: true });
@@ -120,32 +133,32 @@ export const useAuthRedirect = (
 
     // Nicht authentifiziert + geschützte Route → Login
     if (!user && !isPublicRoute(currentPath)) {
-      console.log('🔒 useAuthRedirect: Unauthenticated user on protected route, redirecting to login');
+      console.debug('🔒 useAuthRedirect: Unauthenticated user on protected route, redirecting to login');
       navigate(getLocalizedUrl('/login'), { replace: true });
       return;
     }
 
     // User authentifiziert aber kein Profile → Profile vervollständigen
     if (user && !profile) {
-      console.log('⚠️ useAuthRedirect: Authenticated user without profile, redirecting to complete-profile');
+      console.debug('⚠️ useAuthRedirect: Authenticated user without profile, redirecting to complete-profile');
       navigate(getLocalizedUrl('/complete-profile'), { replace: true });
       return;
     }
 
-    // FIXED: Profile vorhanden aber incomplete → Complete Profile
-    if (user && profile && (!profile.profile_complete || !profile.onboarding_complete)) {
+    // FIXED: Only redirect to complete-profile if profile_complete is false (ignore onboarding_complete for dashboard access)
+    if (user && profile && !profile.profile_complete) {
       const isCompleteProfileRoute = currentPath.includes('/complete-profile');
       if (!isCompleteProfileRoute) {
-        console.log('⚠️ useAuthRedirect: Profile incomplete or onboarding not complete, redirecting to complete-profile');
+        console.debug('⚠️ useAuthRedirect: Profile incomplete, redirecting to complete-profile');
         navigate(getLocalizedUrl('/complete-profile'), { replace: true });
         return;
       }
     }
 
-    // FIXED: Profile complete and onboarding complete but on complete-profile page → redirect to dashboard
-    if (user && profile && profile.profile_complete && profile.onboarding_complete && currentPath.includes('/complete-profile')) {
+    // FIXED: Profile complete but on complete-profile page → redirect to dashboard
+    if (user && profile && profile.profile_complete && currentPath.includes('/complete-profile')) {
       redirectedRef.current = true;
-      console.log('🎯 useAuthRedirect: Profile and onboarding complete, skipping completion page, going to dashboard');
+      console.debug('🎯 useAuthRedirect: Profile complete, skipping completion page, going to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
       navigate(targetPath, { replace: true });

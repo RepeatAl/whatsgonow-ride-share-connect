@@ -11,29 +11,35 @@ interface ProtectedRouteProps {
 }
 
 /**
- * ProtectedRoute - Vereinfacht für das neue System
- * 
- * Wird nur noch für wirklich geschützte Bereiche verwendet:
- * - Dashboard
- * - Profile
- * - Messages  
- * - Admin-Bereiche
- * 
- * Alle anderen Seiten sind öffentlich, Auth-Checks erfolgen auf Action-Ebene
+ * ProtectedRoute - ENHANCED for better debugging and fallback handling
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { user, profile, loading, isProfileLoading } = useOptimizedAuth();
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   
+  // ENHANCED: Debug logging
+  console.debug("🔒 ProtectedRoute check:", {
+    path: location.pathname,
+    hasUser: !!user,
+    hasProfile: !!profile,
+    loading,
+    isProfileLoading,
+    userRole: profile?.role,
+    allowedRoles,
+    profileComplete: profile?.profile_complete,
+    onboardingComplete: profile?.onboarding_complete
+  });
+  
   // Lade-Zustand anzeigen
   if (loading || isProfileLoading) {
+    console.debug("🔄 ProtectedRoute: Still loading...");
     return <LoadingSpinner />;
   }
   
   // Nicht authentifiziert → Login
   if (!user) {
-    console.log("🔒 Protected route access denied, redirecting to login");
+    console.debug("🔒 Protected route access denied, redirecting to login");
     const loginUrl = getLocalizedUrl('/login');
     return (
       <Navigate 
@@ -44,14 +50,47 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
     );
   }
   
-  // Rollenprüfung (falls spezifiziert)
-  if (allowedRoles && profile?.role && !allowedRoles.includes(profile.role)) {
-    console.log(`🚫 User with role ${profile.role} not allowed to access route requiring ${allowedRoles.join(', ')}`);
-    const dashboardUrl = getLocalizedUrl('/dashboard');
-    return <Navigate to={dashboardUrl} replace />;
+  // ENHANCED: Allow dashboard access with profile_complete=true even if onboarding incomplete
+  const isDashboardRoute = location.pathname.includes('/dashboard');
+  if (user && profile && profile.profile_complete && isDashboardRoute) {
+    console.debug("✅ ProtectedRoute: Dashboard access granted with complete profile");
+    
+    // Rollenprüfung (falls spezifiziert)
+    if (allowedRoles && profile?.role && !allowedRoles.includes(profile.role)) {
+      console.debug(`🚫 User with role ${profile.role} not allowed to access route requiring ${allowedRoles.join(', ')}`);
+      
+      // ENHANCED: Better role-based fallback
+      const fallbackUrl = (() => {
+        switch (profile.role) {
+          case 'admin':
+          case 'super_admin':
+            return getLocalizedUrl('/dashboard/admin');
+          case 'cm':
+            return getLocalizedUrl('/dashboard/cm');
+          case 'driver':
+            return getLocalizedUrl('/dashboard/driver');
+          case 'sender_private':
+          case 'sender_business':
+            return getLocalizedUrl('/dashboard/sender');
+          default:
+            return getLocalizedUrl('/dashboard');
+        }
+      })();
+      
+      return <Navigate to={fallbackUrl} replace />;
+    }
+    
+    // Authentifiziert und berechtigt → Inhalt anzeigen
+    return <>{children}</>;
   }
   
-  // Authentifiziert und berechtigt → Inhalt anzeigen
+  // FALLBACK: For non-dashboard routes or incomplete profiles
+  if (!profile || !profile.profile_complete) {
+    console.debug("⚠️ ProtectedRoute: Profile incomplete, redirecting to complete profile");
+    return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
+  }
+  
+  // Default: Show content
   return <>{children}</>;
 };
 
