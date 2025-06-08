@@ -2,6 +2,7 @@
 import React, { ReactNode } from "react";
 import { Helmet } from "react-helmet";
 import Navbar from "./Navbar";
+import ConsentBanner from "./ConsentBanner";
 import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
 interface LayoutProps {
@@ -39,6 +40,9 @@ const Layout = ({
             children
           )}
         </main>
+        
+        {/* Global GDPR/DSGVO Consent Banner */}
+        <ConsentBanner />
       </div>
     </>
   );
