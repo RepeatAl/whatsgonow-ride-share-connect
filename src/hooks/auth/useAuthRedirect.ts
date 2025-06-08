@@ -46,12 +46,14 @@ export const useAuthRedirect = (
     const currentPath = location.pathname;
     console.log('🧭 useAuthRedirect: Checking redirect for path:', currentPath);
 
-    // FIXED: Improved auth page detection
+    // ENHANCED: Improved auth page detection including pre-register
     const isAuthPage = /^\/[a-z]{2}\/(login|register)$|^\/(login|register)$/.test(currentPath);
+    const isPreRegisterPage = /^\/[a-z]{2}\/pre-register$|^\/pre-register$/.test(currentPath);
 
     console.log('🔍 useAuthRedirect: Auth page check:', { 
       currentPath, 
-      isAuthPage, 
+      isAuthPage,
+      isPreRegisterPage,
       hasUser: !!user, 
       hasProfile: !!profile,
       profileComplete: profile?.profile_complete,
@@ -60,15 +62,14 @@ export const useAuthRedirect = (
       alreadyRedirected: redirectedRef.current 
     });
 
-    // CRITICAL FIX: Handle authenticated user on login page immediately
-    if (user && profile && isAuthPage && !redirectedRef.current) {
+    // CRITICAL FIX: Handle authenticated user on login/register pages immediately
+    if (user && profile && (isAuthPage || isPreRegisterPage) && !redirectedRef.current) {
       redirectedRef.current = true;
-      console.log('✅ useAuthRedirect: Authenticated user on auth page, redirecting to dashboard');
+      console.log('✅ useAuthRedirect: Authenticated user on auth/pre-register page, redirecting to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
       console.log('🎯 useAuthRedirect: Redirecting to:', targetPath);
       
-      // IMMEDIATE redirect without setTimeout
       navigate(targetPath, { replace: true });
       return;
     }
@@ -91,20 +92,36 @@ export const useAuthRedirect = (
       return;
     }
 
+    // ENHANCED: Handle authenticated user on language-only routes like /de, /en etc
+    if (
+      user && 
+      profile && 
+      profile.profile_complete &&
+      /^\/[a-z]{2}\/?$/.test(currentPath) &&
+      !redirectedRef.current
+    ) {
+      redirectedRef.current = true;
+      console.log('🌐 useAuthRedirect: Authenticated user on language root, redirecting to dashboard');
+      
+      const targetPath = getDashboardPath(profile.role);
+      navigate(targetPath, { replace: true });
+      return;
+    }
+
     // CRITICAL FIX: Handle authenticated user on other public routes with complete profile
     if (
       user && 
       profile && 
       profile.profile_complete &&
       isPublicRoute(currentPath) &&
-      !currentPath.includes('/pre-register') && // Pre-registration bleibt öffentlich auch nach Login
+      !currentPath.includes('/pre-register') && // Pre-registration blockiert für eingeloggte User
       !redirectedRef.current
     ) {
       // Allow specific public routes to remain accessible even after login
       const allowedPublicRoutesAfterLogin = [
         '/faq', '/about', '/support', '/transport-search', 
         '/items-browse', '/rides-public', '/map-view', 
-        '/video-gallery', '/esg-dashboard'
+        '/video-gallery', '/esg-dashboard', '/here-maps-demo', '/here-maps-features'
       ];
       
       const pathWithoutLanguage = currentPath.replace(/^\/[a-z]{2}\//, '/');

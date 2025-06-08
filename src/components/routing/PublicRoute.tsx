@@ -9,10 +9,10 @@ interface PublicRouteProps {
 }
 
 /**
- * PublicRoute - Vereinfacht für das neue "öffentlich vs. geschützt" System
+ * PublicRoute - Enhanced for better pre-register handling
  * 
- * Zeigt Inhalte öffentlich an. Nur noch bei strikten Auth-Seiten (login/register)
- * wird ein Redirect für bereits angemeldete Nutzer durchgeführt.
+ * Zeigt Inhalte öffentlich an. Für eingeloggte Nutzer auf Auth-Seiten
+ * wird ein rollenbasiertes Dashboard-Redirect durchgeführt.
  */
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { loading, user, profile } = useOptimizedAuth();
@@ -24,13 +24,15 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
     return null;
   }
   
-  // Prüfe ob wir auf einer strikten Auth-Seite sind
+  // ENHANCED: Prüfe ob wir auf einer strikten Auth-Seite oder Pre-Register sind
   const isStrictAuthPage = location.pathname.includes('/login') || 
                           (location.pathname.includes('/register') && !location.pathname.includes('/pre-register'));
+  
+  const isPreRegisterPage = location.pathname.includes('/pre-register');
                        
-  // Wenn angemeldeter Nutzer versucht auf Login/Register zu gehen → Dashboard
-  if (user && profile && isStrictAuthPage) {
-    console.log('[PublicRoute] Authenticated user on auth page - redirecting to dashboard');
+  // CRITICAL: Wenn angemeldeter Nutzer mit vollständigem Profil versucht auf Auth-Seiten oder Pre-Register zu gehen → Dashboard
+  if (user && profile && profile.profile_complete && (isStrictAuthPage || isPreRegisterPage)) {
+    console.log('[PublicRoute] Authenticated user with complete profile on auth/pre-register page - redirecting to dashboard');
     
     // Rollenbasiertes Redirect
     let redirectUrl: string;
@@ -54,6 +56,12 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
     }
     
     return <Navigate to={redirectUrl} replace />;
+  }
+  
+  // ENHANCED: Wenn angemeldeter Nutzer ohne vollständiges Profil auf Pre-Register geht → Complete Profile
+  if (user && profile && !profile.profile_complete && isPreRegisterPage) {
+    console.log('[PublicRoute] Authenticated user with incomplete profile on pre-register - redirecting to complete-profile');
+    return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
   }
   
   // Für alle anderen Seiten: Einfach anzeigen (öffentlich)
