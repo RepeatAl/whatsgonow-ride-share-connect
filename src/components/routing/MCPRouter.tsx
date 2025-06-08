@@ -27,8 +27,8 @@ import HereMapDemo from '@/pages/HereMapDemo';
 import HereMapFeaturesDemo from '@/pages/HereMapFeaturesDemo';
 import Inbox from '@/pages/Inbox';
 
-// Import dashboard pages
-import DashboardDriver from '@/pages/dashboard/DashboardDriver';
+// Import dashboard pages - FIXED: Direct import without wrapper
+import DashboardDriverPage from '@/pages/dashboard/DashboardDriver';
 import DashboardCM from '@/pages/dashboard/DashboardCM';
 import DashboardAdmin from '@/pages/dashboard/DashboardAdmin';
 import DashboardAdminEnhanced from '@/pages/dashboard/DashboardAdminEnhanced';
@@ -104,10 +104,10 @@ const MCPRouter = () => {
             <Route path="/here-maps-demo" element={<PublicRoute><HereMapDemo /></PublicRoute>} />
             <Route path="/here-maps-features" element={<PublicRoute><HereMapFeaturesDemo /></PublicRoute>} />
             
-            {/* Protected routes - FIXED: consistent dashboard paths */}
+            {/* Protected routes - FIXED: Direct component import */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
-            <Route path="/dashboard/driver" element={<ProtectedRoute><DashboardDriver /></ProtectedRoute>} />
+            <Route path="/dashboard/driver" element={<ProtectedRoute><DashboardDriverPage /></ProtectedRoute>} />
             <Route path="/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
             
