@@ -13,7 +13,10 @@ import {
   Crown,
   ArrowRight,
   MapPin,
-  MessageCircle
+  MessageCircle,
+  Euro,
+  Clock,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -28,7 +31,11 @@ const DashboardWelcome = () => {
           icon: <Package className="h-8 w-8 text-blue-500" />,
           title: 'Privater Versender',
           description: 'Erstelle Aufträge und finde zuverlässige Fahrer für deine Transporte.',
-          features: ['Aufträge erstellen', 'Fahrer finden', 'Bewertungen abgeben'],
+          stats: [
+            { label: 'Aktive Aufträge', value: '3', icon: <Package className="h-4 w-4" />, color: 'text-blue-600' },
+            { label: 'Abgeschlossene Transporte', value: '12', icon: <TrendingUp className="h-4 w-4" />, color: 'text-green-600' },
+            { label: 'Gesparte Kosten', value: '€245', icon: <Euro className="h-4 w-4" />, color: 'text-emerald-600' }
+          ],
           primaryAction: { 
             label: 'Neuen Auftrag erstellen', 
             href: getLocalizedUrl('/orders/create'),
@@ -45,7 +52,11 @@ const DashboardWelcome = () => {
           icon: <Package className="h-8 w-8 text-green-500" />,
           title: 'Business Versender',
           description: 'Verwalte Unternehmenstransporte mit erweiterten Tools und Analytics.',
-          features: ['Bulk-Aufträge', 'Team-Verwaltung', 'Business Analytics', 'Fahrerpools'],
+          stats: [
+            { label: 'Aktive Aufträge', value: '18', icon: <Package className="h-4 w-4" />, color: 'text-blue-600' },
+            { label: 'Team-Mitglieder', value: '5', icon: <User className="h-4 w-4" />, color: 'text-purple-600' },
+            { label: 'Monatliche Ersparnis', value: '€1,240', icon: <Euro className="h-4 w-4" />, color: 'text-emerald-600' }
+          ],
           primaryAction: { 
             label: 'Business Dashboard', 
             href: getLocalizedUrl('/dashboard/sender'),
@@ -62,10 +73,14 @@ const DashboardWelcome = () => {
           icon: <Truck className="h-8 w-8 text-orange-500" />,
           title: 'Fahrer',
           description: 'Finde Aufträge in deiner Region und verdiene mit flexiblen Fahrdiensten.',
-          features: ['Aufträge finden', 'Route planen', 'Live-Tracking', 'Bewertungen'],
+          stats: [
+            { label: 'Verfügbare Aufträge', value: '12', icon: <Package className="h-4 w-4" />, color: 'text-blue-600' },
+            { label: 'Aktive Fahrten', value: '3', icon: <Truck className="h-4 w-4" />, color: 'text-orange-600' },
+            { label: 'Verdienst heute', value: '€127,50', icon: <Euro className="h-4 w-4" />, color: 'text-emerald-600' }
+          ],
           primaryAction: { 
             label: 'Verfügbare Aufträge', 
-            href: getLocalizedUrl('/dashboard/driver'),
+            href: getLocalizedUrl('/dashboard'),
             icon: <MapPin className="h-4 w-4" />
           },
           secondaryActions: [
@@ -79,7 +94,11 @@ const DashboardWelcome = () => {
           icon: <Shield className="h-8 w-8 text-purple-500" />,
           title: 'Community Manager',
           description: 'Betreue Nutzer in deiner Region und sorge für Qualität in der Community.',
-          features: ['Nutzer moderieren', 'Support leisten', 'Qualitätskontrolle', 'Reports'],
+          stats: [
+            { label: 'Betreute Nutzer', value: '157', icon: <User className="h-4 w-4" />, color: 'text-purple-600' },
+            { label: 'Offene Tickets', value: '4', icon: <MessageCircle className="h-4 w-4" />, color: 'text-orange-600' },
+            { label: 'Qualitätsscore', value: '94%', icon: <TrendingUp className="h-4 w-4" />, color: 'text-emerald-600' }
+          ],
           primaryAction: { 
             label: 'CM Dashboard', 
             href: getLocalizedUrl('/dashboard/cm'),
@@ -97,7 +116,11 @@ const DashboardWelcome = () => {
           icon: <Crown className="h-8 w-8 text-red-500" />,
           title: profile.role === 'super_admin' ? 'Super Administrator' : 'Administrator',
           description: 'Vollzugriff auf System-Management, Nutzer-Administration und Analytics.',
-          features: ['System-Management', 'Nutzer-Administration', 'Analytics', 'Sicherheit'],
+          stats: [
+            { label: 'Registrierte Nutzer', value: '2,340', icon: <User className="h-4 w-4" />, color: 'text-blue-600' },
+            { label: 'Aktive Aufträge', value: '89', icon: <Package className="h-4 w-4" />, color: 'text-orange-600' },
+            { label: 'System Health', value: '99.8%', icon: <TrendingUp className="h-4 w-4" />, color: 'text-emerald-600' }
+          ],
           primaryAction: { 
             label: 'Admin Dashboard', 
             href: getLocalizedUrl('/dashboard/admin'),
@@ -114,7 +137,11 @@ const DashboardWelcome = () => {
           icon: <User className="h-8 w-8 text-gray-500" />,
           title: 'Willkommen',
           description: 'Vervollständige dein Profil, um alle Funktionen nutzen zu können.',
-          features: ['Profil vervollständigen', 'Rolle wählen', 'Erste Schritte'],
+          stats: [
+            { label: 'Profil-Status', value: '60%', icon: <User className="h-4 w-4" />, color: 'text-orange-600' },
+            { label: 'Nächste Schritte', value: '3', icon: <Clock className="h-4 w-4" />, color: 'text-blue-600' },
+            { label: 'Verfügbare Features', value: '8', icon: <Package className="h-4 w-4" />, color: 'text-purple-600' }
+          ],
           primaryAction: { 
             label: 'Profil vervollständigen', 
             href: getLocalizedUrl('/profile'),
@@ -130,7 +157,7 @@ const DashboardWelcome = () => {
   const roleInfo = getRoleInfo();
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="space-y-8">
         {/* Welcome Header */}
         <div className="text-center space-y-4">
@@ -140,6 +167,25 @@ const DashboardWelcome = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Hier findest du eine Übersicht über deine Möglichkeiten auf der Whatsgonow-Plattform.
           </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {roleInfo.stats.map((stat, index) => (
+            <Card key={index}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                  </div>
+                  <div className={`${stat.color}`}>
+                    {stat.icon}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Role Information Card */}
@@ -158,19 +204,6 @@ const DashboardWelcome = () => {
           </CardHeader>
           
           <CardContent className="space-y-6">
-            {/* Features */}
-            <div>
-              <h3 className="font-semibold mb-3">Deine Möglichkeiten:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {roleInfo.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm">
-                    <div className="w-1.5 h-1.5 bg-brand-orange rounded-full"></div>
-                    {feature}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Actions */}
             <div className="space-y-4">
               {/* Primary Action */}

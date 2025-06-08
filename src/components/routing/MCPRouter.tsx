@@ -15,7 +15,7 @@ import PreRegisterSuccess from '@/pages/PreRegisterSuccess';
 import Dashboard from '@/pages/Dashboard';
 import DashboardSender from '@/pages/DashboardSender';
 import Profile from '@/pages/Profile';
-import CompleteProfile from '@/pages/CompleteProfile'; // FIXED: Added missing import
+import CompleteProfile from '@/pages/CompleteProfile';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ESGDashboard from '@/pages/ESGDashboard';
@@ -27,9 +27,9 @@ import SystemTests from '@/pages/SystemTests';
 import HereMapDemo from '@/pages/HereMapDemo';
 import HereMapFeaturesDemo from '@/pages/HereMapFeaturesDemo';
 import Inbox from '@/pages/Inbox';
+import MyRidesPage from '@/pages/MyRides';
 
-// Import dashboard pages - FIXED: Direct import without wrapper
-import DashboardDriverPage from '@/pages/dashboard/DashboardDriver';
+// Import dashboard pages
 import DashboardCM from '@/pages/dashboard/DashboardCM';
 import DashboardAdmin from '@/pages/dashboard/DashboardAdmin';
 import DashboardAdminEnhanced from '@/pages/dashboard/DashboardAdminEnhanced';
@@ -98,7 +98,6 @@ const MCPRouter = () => {
             <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
             <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
             
-            {/* FIXED: Added missing complete-profile route */}
             <Route path="/complete-profile" element={<ProtectedRoute><CompleteProfile /></ProtectedRoute>} />
             
             {/* Public ESG Dashboard */}
@@ -108,14 +107,19 @@ const MCPRouter = () => {
             <Route path="/here-maps-demo" element={<PublicRoute><HereMapDemo /></PublicRoute>} />
             <Route path="/here-maps-features" element={<PublicRoute><HereMapFeaturesDemo /></PublicRoute>} />
             
-            {/* Protected routes - FIXED: Direct component import */}
+            {/* FIXED: Consolidated Dashboard - Single entry point */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/sender" element={<ProtectedRoute><DashboardSender /></ProtectedRoute>} />
-            <Route path="/dashboard/driver" element={<ProtectedRoute><DashboardDriverPage /></ProtectedRoute>} />
             <Route path="/dashboard/cm" element={<ProtectedRoute><DashboardCM /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
             
-            {/* FIXED: Inbox routes added */}
+            {/* FIXED: Redirect driver dashboard to main dashboard */}
+            <Route path="/dashboard/driver" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
+            
+            {/* Rides routes */}
+            <Route path="/rides" element={<ProtectedRoute><MyRidesPage /></ProtectedRoute>} />
+            
+            {/* Inbox routes */}
             <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
             <Route path="/inbox/:orderId" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
             

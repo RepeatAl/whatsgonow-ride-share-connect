@@ -92,8 +92,9 @@ export const RegisterForm = () => {
 
       await signUp(formData.email, formData.password, metadata);
       
-      // Success message will be shown by the auth context
-      console.log("Registration successful");
+      // FIXED: Redirect to success page after successful registration
+      console.log("Registration successful, redirecting...");
+      navigate(getLocalizedUrl('/register/success'), { replace: true });
       
     } catch (err: any) {
       console.error("Registration error:", err);
@@ -239,6 +240,7 @@ export const RegisterForm = () => {
                 <SelectItem value="sender_private">Privater Auftraggeber</SelectItem>
                 <SelectItem value="sender_business">Business Auftraggeber</SelectItem>
                 <SelectItem value="driver">Fahrer</SelectItem>
+                <SelectItem value="cm">Community Manager</SelectItem>
               </SelectContent>
             </Select>
           </div>
