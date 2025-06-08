@@ -28,8 +28,9 @@ export function ProfileCheck({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Then check for incomplete profile
-    if (user && profile && !profile.profile_complete && location.pathname !== "/complete-profile") {
+    // ENHANCED: Check for incomplete profile OR incomplete onboarding
+    if (user && profile && (!profile.profile_complete || !profile.onboarding_complete) && location.pathname !== "/complete-profile") {
+      console.log("⚠️ Profile or onboarding incomplete, redirecting to complete-profile");
       navigate("/complete-profile", { state: { from: location.pathname }, replace: true });
       return;
     }

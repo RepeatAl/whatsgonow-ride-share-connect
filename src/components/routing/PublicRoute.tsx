@@ -9,7 +9,7 @@ interface PublicRouteProps {
 }
 
 /**
- * PublicRoute - Enhanced for better pre-register handling
+ * PublicRoute - Enhanced for better pre-register handling and video accessibility
  * 
  * Zeigt Inhalte öffentlich an. Für eingeloggte Nutzer auf Auth-Seiten
  * wird ein rollenbasiertes Dashboard-Redirect durchgeführt.
@@ -31,7 +31,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const isPreRegisterPage = location.pathname.includes('/pre-register');
                        
   // CRITICAL: Wenn angemeldeter Nutzer mit vollständigem Profil versucht auf Auth-Seiten oder Pre-Register zu gehen → Dashboard
-  if (user && profile && profile.profile_complete && (isStrictAuthPage || isPreRegisterPage)) {
+  if (user && profile && profile.profile_complete && profile.onboarding_complete && (isStrictAuthPage || isPreRegisterPage)) {
     console.log('[PublicRoute] Authenticated user with complete profile on auth/pre-register page - redirecting to dashboard');
     
     // Rollenbasiertes Redirect
@@ -59,12 +59,12 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   }
   
   // ENHANCED: Wenn angemeldeter Nutzer ohne vollständiges Profil auf Pre-Register geht → Complete Profile
-  if (user && profile && !profile.profile_complete && isPreRegisterPage) {
+  if (user && profile && (!profile.profile_complete || !profile.onboarding_complete) && isPreRegisterPage) {
     console.log('[PublicRoute] Authenticated user with incomplete profile on pre-register - redirecting to complete-profile');
     return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
   }
   
-  // Für alle anderen Seiten: Einfach anzeigen (öffentlich)
+  // Für alle anderen Seiten: Einfach anzeigen (öffentlich) - Videos bleiben immer sichtbar
   return <>{children}</>;
 };
 

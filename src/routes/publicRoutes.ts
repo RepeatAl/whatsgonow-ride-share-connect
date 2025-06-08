@@ -69,6 +69,7 @@ export const protectedRoutes = [
 
 /**
  * ENHANCED: Routes that remain accessible even after login (Public First principle)
+ * CRITICAL: Diese Routen bleiben auch nach Login verfügbar - BESONDERS VIDEOS
  */
 export const alwaysPublicRoutes = [
   '/faq',
@@ -78,10 +79,10 @@ export const alwaysPublicRoutes = [
   '/items-browse',
   '/rides-public',
   '/map-view',
-  '/video-gallery',
+  '/video-gallery',         // CRITICAL: Videos müssen immer zugänglich sein
   '/esg-dashboard',
-  '/pre-register',          // CRITICAL: Pre-registration must remain public even after login
-  '/pre-register/success'
+  '/here-maps-demo',        // Demo-Seiten bleiben zugänglich
+  '/here-maps-features'
 ];
 
 /**
@@ -143,6 +144,7 @@ export const isPublicRoute = (path: string): boolean => {
 
 /**
  * ENHANCED: Check if route should remain public even after login
+ * CRITICAL: Videos und Demo-Seiten bleiben IMMER zugänglich
  */
 export const isAlwaysPublicRoute = (path: string): boolean => {
   const pathParts = path.split('/').filter(Boolean);

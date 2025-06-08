@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
 import type { UserProfile } from '@/types/auth';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { isPublicRoute } from '@/routes/publicRoutes';
+import { isPublicRoute, isAlwaysPublicRoute } from '@/routes/publicRoutes';
 
 export const useAuthRedirect = (
   user: User | null,
@@ -62,7 +62,7 @@ export const useAuthRedirect = (
       alreadyRedirected: redirectedRef.current 
     });
 
-    // CRITICAL FIX: Handle authenticated user on login/register pages immediately
+    // CRITICAL FIX: Handle authenticated user on login/register/pre-register pages immediately
     if (user && profile && (isAuthPage || isPreRegisterPage) && !redirectedRef.current) {
       redirectedRef.current = true;
       console.log('✅ useAuthRedirect: Authenticated user on auth/pre-register page, redirecting to dashboard');
@@ -74,16 +74,17 @@ export const useAuthRedirect = (
       return;
     }
 
-    // CRITICAL FIX: Handle authenticated user on home page "/" with complete profile
+    // CRITICAL FIX: Handle authenticated user on home page "/" or language root "/de" with complete profile
     if (
       user && 
       profile && 
       profile.profile_complete && 
-      currentPath === '/' && 
+      profile.onboarding_complete && // FIXED: Also check onboarding_complete
+      (currentPath === '/' || /^\/[a-z]{2}\/?$/.test(currentPath)) && 
       !redirectedRef.current
     ) {
       redirectedRef.current = true;
-      console.log('🏠 useAuthRedirect: Authenticated user on home page with complete profile, redirecting to dashboard');
+      console.log('🏠 useAuthRedirect: Authenticated user on home/language page with complete profile, redirecting to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
       console.log('🎯 useAuthRedirect: Redirecting from home to:', targetPath);
@@ -92,48 +93,24 @@ export const useAuthRedirect = (
       return;
     }
 
-    // ENHANCED: Handle authenticated user on language-only routes like /de, /en etc
+    // CRITICAL FIX: Handle authenticated user on other public routes with complete profile
+    // BUT allow always-public routes to remain accessible
     if (
       user && 
       profile && 
       profile.profile_complete &&
-      /^\/[a-z]{2}\/?$/.test(currentPath) &&
+      profile.onboarding_complete && // FIXED: Also check onboarding_complete
+      isPublicRoute(currentPath) &&
+      !isAlwaysPublicRoute(currentPath) && // ENHANCED: Allow always-public routes
+      !currentPath.includes('/pre-register') && // Pre-registration blockiert für eingeloggte User
       !redirectedRef.current
     ) {
       redirectedRef.current = true;
-      console.log('🌐 useAuthRedirect: Authenticated user on language root, redirecting to dashboard');
+      console.log('🔄 useAuthRedirect: Authenticated user on non-always-public route, redirecting to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
       navigate(targetPath, { replace: true });
       return;
-    }
-
-    // CRITICAL FIX: Handle authenticated user on other public routes with complete profile
-    if (
-      user && 
-      profile && 
-      profile.profile_complete &&
-      isPublicRoute(currentPath) &&
-      !currentPath.includes('/pre-register') && // Pre-registration blockiert für eingeloggte User
-      !redirectedRef.current
-    ) {
-      // Allow specific public routes to remain accessible even after login
-      const allowedPublicRoutesAfterLogin = [
-        '/faq', '/about', '/support', '/transport-search', 
-        '/items-browse', '/rides-public', '/map-view', 
-        '/video-gallery', '/esg-dashboard', '/here-maps-demo', '/here-maps-features'
-      ];
-      
-      const pathWithoutLanguage = currentPath.replace(/^\/[a-z]{2}\//, '/');
-      
-      if (!allowedPublicRoutesAfterLogin.some(route => pathWithoutLanguage.startsWith(route))) {
-        redirectedRef.current = true;
-        console.log('🔄 useAuthRedirect: Authenticated user on other public route, redirecting to dashboard');
-        
-        const targetPath = getDashboardPath(profile.role);
-        navigate(targetPath, { replace: true });
-        return;
-      }
     }
 
     // Skip public routes (except specific redirects handled above)
@@ -156,19 +133,19 @@ export const useAuthRedirect = (
     }
 
     // FIXED: Profile vorhanden aber incomplete → Complete Profile
-    if (user && profile && !profile.profile_complete) {
+    if (user && profile && (!profile.profile_complete || !profile.onboarding_complete)) {
       const isCompleteProfileRoute = currentPath.includes('/complete-profile');
       if (!isCompleteProfileRoute) {
-        console.log('⚠️ useAuthRedirect: Profile incomplete, redirecting to complete-profile');
+        console.log('⚠️ useAuthRedirect: Profile incomplete or onboarding not complete, redirecting to complete-profile');
         navigate(getLocalizedUrl('/complete-profile'), { replace: true });
         return;
       }
     }
 
-    // FIXED: Profile complete but on complete-profile page → redirect to dashboard
-    if (user && profile && profile.profile_complete && currentPath.includes('/complete-profile')) {
+    // FIXED: Profile complete and onboarding complete but on complete-profile page → redirect to dashboard
+    if (user && profile && profile.profile_complete && profile.onboarding_complete && currentPath.includes('/complete-profile')) {
       redirectedRef.current = true;
-      console.log('🎯 useAuthRedirect: Profile complete, skipping completion page, going to dashboard');
+      console.log('🎯 useAuthRedirect: Profile and onboarding complete, skipping completion page, going to dashboard');
       
       const targetPath = getDashboardPath(profile.role);
       navigate(targetPath, { replace: true });
