@@ -1,67 +1,125 @@
 
-# Public-First Auth System - Finales Sichtbarkeits- & Aktionsschema
+# Public-First Auth System - Whatsgonow Zugriffskonzept & Datenschutz
 
-## 🎯 Systemüberblick
+## 🎯 Grundprinzip: Public First
 
-Das Whatsgonow Auth-System folgt dem **"Public-First"** Prinzip: Nutzer können die Plattform vollständig erkunden und vorbereiten, bevor sie sich anmelden müssen. Login wird nur bei konkreten Aktionen erforderlich, die rechtlich, datenschutzrechtlich oder vertraglich relevant sind.
+Das Whatsgonow Auth-System folgt dem **"Public First"** Prinzip: Alle öffentlichen Inhalte und Funktionen bleiben auch im eingeloggten Zustand uneingeschränkt sichtbar. Es gibt keine restriktiven Barrieren für eingeloggte Nutzer in Bezug auf allgemein zugängliche Informationen.
 
-### Kernprinzipien
-- **"Try before you register"** - Nutzer können alles ausprobieren
-- **Nahtloser Login-Flow** - Kein Redirect, sondern Modal-basiert
-- **Granulare Berechtigungen** - Jede Aktion einzeln geschützt
-- **DSGVO-konform** - Personenbezogene Daten nur nach Login
-- **Performance-optimiert** - Keine unnötigen Auth-Checks
+### Philosophie & Leitlinien
+- **Public First**: Alle Inhalte, die keinen Personenbezug haben, sind ohne Login zugänglich
+- **Public bleibt Public**: Öffentliche Inhalte bleiben im eingeloggten Zustand weiter sichtbar
+- **Anonyme Vorregistrierung**: Kein Supabase-Login nötig für Pre-Registration
+- **Registrierung = Start geschützter Bereich**: Erst mit Login gelten Datenschutz-Pflichten
+- **Deal-orientierte Abschottung**: Erst mit Angebotsannahme gelten Transaktionspflichten
 
 ## 🔓 Öffentlich zugänglich (ohne Login)
 
-### Fahrtsuche & Transport
+### Allgemeine Inhalte
 | Feature | Beschreibung | Technische Umsetzung |
 |---------|-------------|---------------------|
+| **Startseite** | Landing Page, Karten, FAQs, Blogartikel | Vollständig öffentlich, keine Auth-Checks |
 | **Fahrtsuche** | Suche von A nach B, Zeit, Datum, Fahrzeugtyp | Vollständig öffentlich, keine Auth-Checks |
-| **Fahrervorschau** | Name, Profilbild, Fahrzeugdaten, Bewertungen | Public-Queries ohne RLS-Einschränkung |
-| **Karte & Regionen** | Öffentliche Fahrten ohne Privatdaten | Anonymisierte Geodaten, keine Adressen |
+| **Video-Inhalte** | How-to-Videos, Plattform-Erklärungen | Öffentliche Video-Galerie |
 
-### Artikel & Vorbereitung
+### Fahrt- und Transportinformationen
+| Sichtbar für alle | Beschreibung |
+|------------------|-------------|
+| **Abfahrts- und Zielregion** | Grober geografischer Bereich |
+| **Uhrzeit & Datum** | Zeitangaben für Fahrten |
+| **Fahrzeugtyp & -größe** | Transportkapazität, Fahrzeugkategorie |
+| **Fahrtbeschreibung** | Allgemeine Beschreibung der Route |
+| **Trust Score & Ratings** | Bewertungen und Vertrauenswerte |
+| **Fahrernamen** | Bei veröffentlichten Fahrten sichtbar |
+| **Firmenname (Business)** | Name von sender_business Nutzern |
+
+### Uploads (Vorbereitung ohne Login)
 | Feature | Beschreibung | Technische Umsetzung |
 |---------|-------------|---------------------|
-| **Artikel vorbereiten** | Bilder hochladen, KI-Analyse, Kategorisierung | Temporärer Gast-Bucket, Migration nach Login |
-| **KI-Vorschläge** | Automatische Kategorisierung, Preisschätzung | Serverless Functions ohne User-Context |
+| **Artikel vorbereiten** | Bilder hochladen, KI-Analyse | Temporärer Gast-Bucket, Migration nach Login |
+| **KI-Vorschläge** | Kategorisierung, Preisschätzung | Serverless Functions ohne User-Context |
 
 ### Community & Information
 | Feature | Beschreibung | Technische Umsetzung |
 |---------|-------------|---------------------|
-| **Öffentlicher Chat** | Community-FAQ, Gruppendiskussionen | Read-only ohne Interaktion |
-| **Info/Hilfe/FAQ** | Konzept, Preise, Sprache, Impressum | Statische Inhalte, i18n-unterstützt |
+| **Öffentliche Posts** | Community-Beiträge, Kommentare | Read-only ohne Interaktion |
+| **FAQ & Support** | Hilfe, Preise, Impressum | Statische Inhalte, i18n-unterstützt |
 
 ## 🔐 Geschützt (Login zwingend erforderlich)
 
-### Transaktionale Aktionen
-| Aktion | Begründung | AuthRequired Action |
-|--------|-----------|-------------------|
-| **Transport buchen** | Vertragsrelevant, Account-Zuordnung | `book_transport` |
-| **Artikel veröffentlichen** | Authentifizierung erforderlich | `publish_item` |
-| **Deal starten** | Vertragsrelevant | `submit_offer` |
-| **Auftrag annehmen** | Vertragsbindung | `accept_order` |
+### Für alle Nutzer geschützt
 
-### Kommunikation & Kontakt
+#### Persönliche Daten
+| Datentyp | Beschreibung | AuthRequired Action |
+|----------|-------------|-------------------|
+| **E-Mail-Adressen** | Alle E-Mail-Kontakte | `view_contact_data` |
+| **Telefonnummern** | Private Telefonnummern | `view_contact_data` |
+| **Private Adressen** | Wohn- und Lieferadressen | `view_address` |
+| **GPS-Positionen** | Personenbezogene Standortdaten | `view_location_data` |
+
+#### Transaktionale Aktionen
 | Aktion | Begründung | AuthRequired Action |
 |--------|-----------|-------------------|
+| **Uploads speichern/veröffentlichen** | Account-Zuordnung erforderlich | `publish_item` |
+| **Transport buchen** | Vertragsrelevant | `book_transport` |
+| **Deal starten/annehmen** | Vertragsbindung | `accept_deal` |
 | **Fahrer kontaktieren** | Personenbezogene Kommunikation | `contact_driver` |
-| **Private Nachricht** | DSGVO-Schutz | `send_private_message` |
-| **Dispute eröffnen** | Verantwortung & Nachvollziehbarkeit | `open_dispute` |
 
-### Persönliche Daten
-| Aktion | Begründung | AuthRequired Action |
-|--------|-----------|-------------------|
-| **Adresse eingeben** | Schutz privater Daten | `enter_address` |
-| **Profil ändern** | Nutzerdaten-Zugriff | `edit_profile` |
-| **Zahlungsdaten** | Sensible Finanzdaten | `manage_payment` |
+### Rollenspezifische Sichtbarkeit
+
+#### Private Auftraggeber (sender_private)
+| Datentyp | Sichtbarkeit |
+|----------|-------------|
+| **Name** | Geschützt - nur eigene Sicht |
+| **Adresse** | Geschützt - nur bei bestätigtem Deal |
+| **Empfängerinformationen** | Immer geschützt |
+
+#### Geschäftliche Auftraggeber (sender_business)  
+| Datentyp | Sichtbarkeit |
+|----------|-------------|
+| **Firmenname** | Öffentlich sichtbar |
+| **Abhol-/Lieferadresse** | Öffentlich (nur Ortsbezug, keine Person) |
+| **Empfängername** | Geschützt |
+
+#### Fahrer (driver)
+| Datentyp | Sichtbarkeit |
+|----------|-------------|
+| **Fahrername** | Öffentlich bei aktiver Fahrt |
+| **Fahrzeugbeschreibung** | Öffentlich |
+| **Zustellnachweis** | Nur für Empfänger + Auftraggeber |
+
+## 🔄 User Journey & Auth-Flow
+
+### 1. Anonymer Zugang (Public)
+- **Sichtbar**: Home, FAQ, Kartenansicht, Auftragsvorschau, Videos
+- **Optional**: Pre-Registration
+- **Auch im Login-Modus zugänglich**: Kein Restriktionswechsel durch Login
+
+### 2. Vorregistrierung (Pre-Registration)
+- **Edge Function**: `pre-register`
+- **Kein Login erforderlich**
+- **Felder**: Vorname, Nachname, E-Mail, PLZ, Interessen, DSGVO-Zustimmung
+- **Speicherung**: `pre_registrations` Tabelle
+- **Email-Bestätigung**: Via Resend API (mehrsprachig)
+- **Fehlerfall**: 409 wenn E-Mail bereits existiert
+
+### 3. Registrierung (Register)
+- **Supabase Auth aktiviert**
+- **Profilanlage**: Durch `handle_new_user` Trigger
+- **Zieltabellen**: `auth.users`, `profiles`
+
+### 4. Login (Sign-In)
+- **Session-Laden + Profile-Laden**
+- **Redirect-Logik**: Rollenbasiert zu Dashboard
+- **Incomplete Profiles**: Redirect zu `/complete-profile`
+
+### 5. Dashboard (Geschützter Bereich)
+- **Zugriff**: Nur mit vollständigem Profil
+- **Sichtbar**: Eigene Aufträge, Angebote, Inbox, Feedback
+- **Öffentliche Inhalte**: Bleiben parallel erreichbar
 
 ## 🧰 Technische Implementierung
 
 ### AuthRequired Wrapper
-Zentrale Komponente für alle geschützten Aktionen:
-
 ```tsx
 <AuthRequired 
   action="publish_item" 
@@ -72,9 +130,26 @@ Zentrale Komponente für alle geschützten Aktionen:
 </AuthRequired>
 ```
 
-### Permission Matrix
-Zentrale Konfiguration in `src/auth/permissions.ts`:
+### RLS-Logik (Role-Based Access Control)
+| Tabelle | Rolle | Rechte |
+|---------|-------|--------|
+| `pre_registrations` | anon | INSERT only |
+| `profiles` | authenticated | SELECT/UPDATE (nur eigenes) |
+| `orders` | driver/sender | Nur eigene (nach Match) |
+| `public_content` | public, all | SELECT |
 
+### Redirect-Logik (useAuthRedirect.ts)
+| Zustand | Zielpfad |
+|---------|----------|
+| Login-Page + eingeloggt | `/dashboard/[role]` |
+| Nach Login auf `/` | `/dashboard/[role]` |
+| Unvollständiges Profil | `/complete-profile` |
+| onboarding_complete false | Onboarding Wizard |
+| Abgemeldet + private Route | `/login` |
+
+## 📊 Permission Matrix
+
+### Login-Required Actions
 ```typescript
 export const loginRequiredActions = {
   // Transaktional
@@ -83,24 +158,59 @@ export const loginRequiredActions = {
   submit_offer: true,
   accept_order: true,
   
-  // Kommunikation
+  // Kommunikation  
   contact_driver: true,
   send_private_message: true,
-  open_dispute: true,
+  start_chat: true,
   
   // Persönliche Daten
-  enter_address: true,
+  view_address: true,
+  view_contact_data: true,
   edit_profile: true,
-  manage_payment: true
+  manage_payment: true,
+  
+  // Uploads
+  save_item: true,
+  create_transport_request: true
 };
 ```
 
-### Login-Flow
-1. **Trigger**: Nutzer klickt geschützten Button
-2. **Check**: `requiresAuthentication(action)` prüft Permission
-3. **Modal**: LoginPrompt öffnet sich nahtlos
-4. **Redirect**: Nach Login automatisch zurück zur Aktion
-5. **Ausführung**: Ursprüngliche Aktion wird ausgeführt
+### Public Actions
+```typescript
+export const publicActions = [
+  'browse_items',
+  'search_transport', 
+  'view_public_info',
+  'change_language',
+  'prepare_upload',
+  'view_ratings',
+  'view_company_info'
+];
+```
+
+## 🛡️ Datenschutz & DSGVO
+
+### Grundsätze
+- **Minimale Datenerhebung**: Nur notwendige Daten ohne Login
+- **Klare Trennung**: Personenbezogen vs. allgemeine Inhalte  
+- **Transparenz**: Nutzer sehen was öffentlich wird
+- **Löschrechte**: Vollständige Datenlöschung möglich
+
+### Technische Umsetzung
+- **RLS-Policies**: Bleiben unverändert in Supabase
+- **Temporäre Daten**: Automatische Bereinigung nach 24h
+- **Audit-Log**: Alle geschützten Aktionen protokolliert
+- **Session-Management**: Sichere Token-Verwaltung
+
+## 🔧 Optimierungspotenziale
+
+| Bereich | Verbesserungsvorschlag |
+|---------|----------------------|
+| **Pre-Registration** | Optionaler Link zu Registrierung bei 409-Fehler |
+| **Redirect-Logik** | Erkennung für `/` ergänzen für sofortiges Dashboard |
+| **Profilvalidierung** | Onboarding-Fortschritt über `onboarding_complete` |
+| **UX** | Hinweise bei bereits existierender Registrierung |
+| **Resend Integration** | Logging & Retry-Logik verbessern |
 
 ## 🧪 Testbare User Journey
 
@@ -109,9 +219,9 @@ export const loginRequiredActions = {
 ✅ Fahrtsuche A → B + Details ansehen
 ✅ Fahrzeugfotos ansehen  
 ✅ Artikelbilder hochladen & KI-Vorschlag
-✅ Chat-Historie lesen
+✅ Video-Galerie durchsuchen
+✅ FAQ & Community-Posts lesen
 ✅ Sprache wechseln
-✅ FAQ durchsuchen
 ```
 
 ### Geschützte Aktionen (Login erforderlich)
@@ -122,92 +232,33 @@ export const loginRequiredActions = {
 🔐 Chat schreiben/Angebot machen
 🔐 Transportanfrage erstellen
 🔐 Profil bearbeiten
+🔐 Persönliche Daten einsehen
 ```
 
-## 📦 Migrations-Status
+## 📦 Status & Roadmap
 
-### ✅ Phase 1: FindTransport (Abgeschlossen)
+### ✅ Phase 1: Transport Search (Abgeschlossen)
 - Öffentliche Fahrersuche implementiert
-- `AuthRequired` für "Transportanfrage erstellen"
-- `AuthRequired` für "Fahrer kontaktieren"
-- i18n-Unterstützung für Transport-Übersetzungen
+- `AuthRequired` für Transportanfragen
+- i18n-Unterstützung
 
-### 🟡 Phase 2: ItemUpload (In Vorbereitung)
+### ✅ Phase 2: Pre-Registration (Abgeschlossen)  
+- Anonyme Vorregistrierung
+- Resend Email-Integration
+- Mehrsprachige Templates
+
+### 🟡 Phase 3: ItemUpload (In Entwicklung)
 - Öffentlicher Bild-Upload (temporär)
 - `AuthRequired` für "Artikel speichern"
 - Migration temp → user-bucket nach Login
-- KI-Analyse ohne Login
 
-### ⏳ Phase 3: ChatInterface (Geplant)
-- Trennung Public-Chat vs. Private-Interaction
-- `AuthRequired` für MessageInput
-- `AuthRequired` für Preisangebote
+### ⏳ Phase 4: Enhanced Chat (Geplant)
+- Trennung Public-Chat vs. Private Messages
+- `AuthRequired` für Nachrichten
 - WebSocket nur nach Login
-
-## 🔧 Entwickler-Guidelines
-
-### Do's
-- ✅ Immer `AuthRequired` für geschützte Aktionen
-- ✅ Permission-Matrix vor neuen Aktionen erweitern
-- ✅ i18n für alle Login-Prompts
-- ✅ Öffentliche Komponenten ohne `useAuth()`
-- ✅ Modal-basierte Login-Flows
-
-### Don'ts
-- ❌ Keine direkten Auth-Checks in UI-Komponenten
-- ❌ Keine Redirect-basierten Login-Flows
-- ❌ Keine `ProtectedRoute` außer für Dashboard/Admin
-- ❌ Keine RLS-Änderungen für Public-First
-- ❌ Keine Auth-Context in Business-Logic
-
-## 🌍 Internationalisierung
-
-Login-Prompts unterstützen vollständige i18n:
-
-```json
-// auth.json
-{
-  "login_required_for_publish": "Zum Veröffentlichen bitte anmelden",
-  "login_required_for_contact": "Zum Kontaktieren bitte anmelden",
-  "login_required_for_booking": "Zum Buchen bitte anmelden"
-}
-```
-
-## 🔒 Sicherheit & DSGVO
-
-- **RLS-Policies**: Bleiben unverändert in Supabase
-- **Temporäre Daten**: Automatische Bereinigung nach 24h
-- **Personenbezogene Daten**: Nur nach explizitem Login
-- **Audit-Log**: Alle geschützten Aktionen protokolliert
-- **Session-Management**: Sichere Token-Verwaltung
-
-## 🚀 Performance
-
-- **Reduzierte Auth-Checks**: Nur bei konkreten Aktionen
-- **Lazy Loading**: User-Context nur bei Bedarf
-- **Caching**: Öffentliche Daten gecacht
-- **WebSocket**: Erst nach Login aktiviert
-- **Optimistic UI**: Sofortige Feedback bei Aktionen
-
-## 📊 Monitoring & Analytics
-
-### Key Metrics
-- **Public-to-Auth Conversion**: Wie viele Gäste registrieren sich?
-- **Action-Trigger Rate**: Welche Aktionen triggern Login am häufigsten?
-- **Drop-off Rate**: Wo brechen Nutzer den Login-Prozess ab?
-- **Session Length**: Wie lange bleiben Nutzer nach Login aktiv?
-
-### Tracking-Events
-```typescript
-// Beispiel-Events für Analytics
-track('public_browse', { feature: 'transport_search' });
-track('auth_required_triggered', { action: 'contact_driver' });
-track('login_completed', { trigger_action: 'publish_item' });
-track('auth_success_action', { completed_action: 'submit_offer' });
-```
 
 ---
 
-**Status**: Produktionsreif seit Phase 1  
-**Letzte Aktualisierung**: 2025-01-07  
-**Nächste Review**: Nach Phase 3 Abschluss
+**Status**: Produktionsreif seit Phase 2  
+**Letzte Aktualisierung**: 2025-06-08  
+**Nächste Review**: Nach Phase 4 Abschluss
