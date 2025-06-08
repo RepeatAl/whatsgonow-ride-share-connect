@@ -23,6 +23,7 @@ export const createPreRegistrationSchema = () => {
       message: zodMessage(t, "gdpr_required", { ns: 'errors' })
     })
   }).superRefine((data, ctx) => {
+    // ENHANCED: Vehicle types validation for drivers
     if (data.wants_driver) {
       if (!data.vehicle_types || data.vehicle_types.length === 0) {
         ctx.addIssue({
@@ -31,6 +32,15 @@ export const createPreRegistrationSchema = () => {
           message: zodMessage(t, "vehicle_required", { ns: 'errors' })
         });
       }
+    }
+
+    // ENHANCED: At least one role must be selected
+    if (!data.wants_driver && !data.wants_cm && !data.wants_sender) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["wants_driver"],
+        message: "Bitte wählen Sie mindestens eine Rolle aus"
+      });
     }
   });
 };

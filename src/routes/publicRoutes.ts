@@ -21,7 +21,7 @@ export const publicRoutes = [
   '/register',
   '/register/success',
   '/pre-register',           // Anonyme Vorregistrierung
-  '/pre-register/success',   
+  '/pre-register/success',   // ENHANCED: Success page for pre-registration
   '/forgot-password',
   '/reset-password',
   
@@ -65,6 +65,23 @@ export const protectedRoutes = [
   '/admin',                 // Admin-Bereich
   '/system-tests',          // Entwickler-Tools
   '/rls-test',              // RLS-Tests
+];
+
+/**
+ * ENHANCED: Routes that remain accessible even after login (Public First principle)
+ */
+export const alwaysPublicRoutes = [
+  '/faq',
+  '/about', 
+  '/support',
+  '/transport-search',
+  '/items-browse',
+  '/rides-public',
+  '/map-view',
+  '/video-gallery',
+  '/esg-dashboard',
+  '/pre-register',          // CRITICAL: Pre-registration must remain public even after login
+  '/pre-register/success'
 ];
 
 /**
@@ -125,6 +142,21 @@ export const isPublicRoute = (path: string): boolean => {
 };
 
 /**
+ * ENHANCED: Check if route should remain public even after login
+ */
+export const isAlwaysPublicRoute = (path: string): boolean => {
+  const pathParts = path.split('/').filter(Boolean);
+  const supportedLanguages = ['de', 'en', 'ar', 'pl', 'fr', 'es', 'cs'];
+  let pathToCheck = path;
+  
+  if (pathParts.length > 0 && supportedLanguages.includes(pathParts[0])) {
+    pathToCheck = pathParts.length === 1 ? '/' : `/${pathParts.slice(1).join('/')}`;
+  }
+  
+  return alwaysPublicRoutes.some(route => pathToCheck.startsWith(route));
+};
+
+/**
  * Prüft ob eine Route geschützt ist und ProtectedRoute benötigt
  */
 export const isProtectedRoute = (path: string): boolean => {
@@ -164,7 +196,8 @@ export const routeCategories = {
   protected: protectedRoutes,
   preRegister: preRegisterRoutes,
   upload: uploadRoutes,
-  tokenBased: tokenBasedRoutes
+  tokenBased: tokenBasedRoutes,
+  alwaysPublic: alwaysPublicRoutes // ENHANCED: Always accessible routes
 };
 
 /**
