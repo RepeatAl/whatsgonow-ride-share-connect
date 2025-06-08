@@ -11,14 +11,14 @@ interface ProtectedRouteProps {
 }
 
 /**
- * ProtectedRoute - ENHANCED for better debugging and fallback handling
+ * ProtectedRoute - STABILIZED: profile_complete is the central condition for access
+ * onboarding_complete is only for UX hints, not blocking access
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { user, profile, loading, isProfileLoading } = useOptimizedAuth();
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   
-  // ENHANCED: Debug logging
   console.debug("🔒 ProtectedRoute check:", {
     path: location.pathname,
     hasUser: !!user,
@@ -31,15 +31,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
     onboardingComplete: profile?.onboarding_complete
   });
   
-  // Lade-Zustand anzeigen
+  // Show loading while auth state is resolving
   if (loading || isProfileLoading) {
-    console.debug("🔄 ProtectedRoute: Still loading...");
+    console.debug("🔄 ProtectedRoute: Still loading auth state...");
     return <LoadingSpinner />;
   }
   
-  // Nicht authentifiziert → Login
+  // Not authenticated → redirect to login
   if (!user) {
-    console.debug("🔒 Protected route access denied, redirecting to login");
+    console.debug("🔒 ProtectedRoute: No user, redirecting to login");
     const loginUrl = getLocalizedUrl('/login');
     return (
       <Navigate 
@@ -50,16 +50,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
     );
   }
   
-  // ENHANCED: Allow dashboard access with profile_complete=true even if onboarding incomplete
-  const isDashboardRoute = location.pathname.includes('/dashboard');
-  if (user && profile && profile.profile_complete && isDashboardRoute) {
-    console.debug("✅ ProtectedRoute: Dashboard access granted with complete profile");
+  // CRITICAL: No profile or incomplete profile → redirect to complete profile
+  if (!profile || !profile.profile_complete) {
+    console.debug("⚠️ ProtectedRoute: Profile incomplete, redirecting to complete-profile");
+    return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
+  }
+  
+  // STABILIZED: profile_complete=true is sufficient for dashboard access
+  // onboarding_complete=false is just UX info, not a blocker
+  if (profile.profile_complete) {
+    console.debug("✅ ProtectedRoute: Profile complete, checking role permissions");
     
-    // Rollenprüfung (falls spezifiziert)
+    // Role-based access control (if specified)
     if (allowedRoles && profile?.role && !allowedRoles.includes(profile.role)) {
-      console.debug(`🚫 User with role ${profile.role} not allowed to access route requiring ${allowedRoles.join(', ')}`);
+      console.debug(`🚫 ProtectedRoute: Role ${profile.role} not allowed for ${allowedRoles.join(', ')}`);
       
-      // ENHANCED: Better role-based fallback
+      // Redirect to appropriate dashboard based on user's role
       const fallbackUrl = (() => {
         switch (profile.role) {
           case 'admin':
@@ -80,18 +86,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
       return <Navigate to={fallbackUrl} replace />;
     }
     
-    // Authentifiziert und berechtigt → Inhalt anzeigen
+    // Access granted - show content
     return <>{children}</>;
   }
   
-  // FALLBACK: For non-dashboard routes or incomplete profiles
-  if (!profile || !profile.profile_complete) {
-    console.debug("⚠️ ProtectedRoute: Profile incomplete, redirecting to complete profile");
-    return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
-  }
-  
-  // Default: Show content
-  return <>{children}</>;
+  // Fallback: should not reach here, but redirect to complete profile for safety
+  console.debug("⚠️ ProtectedRoute: Unexpected state, redirecting to complete-profile");
+  return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
 };
 
 export default ProtectedRoute;

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import type { UserProfile } from '@/types/auth';
@@ -11,11 +11,23 @@ export const useAuthSession = () => {
   const [loading, setLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  
+  // PERFORMANCE: Prevent memory leaks and unnecessary re-renders
+  const fetchInProgressRef = useRef(false);
+  const mountedRef = useRef(true);
 
-  // Profile fetch function
+  // Profile fetch function with debouncing and error handling
   const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
+    // Prevent concurrent fetches
+    if (fetchInProgressRef.current) {
+      console.debug('🔄 OptimizedAuth: Profile fetch already in progress, skipping');
+      return null;
+    }
+    
+    fetchInProgressRef.current = true;
+    
     try {
-      console.debug('✅ OptimizedAuth: Fetching profile for authenticated user:', userId);
+      console.debug('✅ OptimizedAuth: Fetching profile for user:', userId);
       setIsProfileLoading(true);
       setProfileError(null);
       
@@ -31,30 +43,47 @@ export const useAuthSession = () => {
         return null;
       }
 
+      if (!mountedRef.current) {
+        console.debug('🔄 OptimizedAuth: Component unmounted, skipping profile update');
+        return null;
+      }
+
       console.debug('✅ OptimizedAuth: Profile loaded successfully:', data);
       return data as UserProfile;
     } catch (err: any) {
       console.error('❌ OptimizedAuth: Profile fetch failed:', err);
-      setProfileError(err.message || 'Profile fetch failed');
+      if (mountedRef.current) {
+        setProfileError(err.message || 'Profile fetch failed');
+      }
       return null;
     } finally {
-      setIsProfileLoading(false);
+      fetchInProgressRef.current = false;
+      if (mountedRef.current) {
+        setIsProfileLoading(false);
+      }
     }
   }, []);
 
   // Profile refresh function
   const refreshProfile = useCallback(async () => {
-    if (!user) return;
+    if (!user?.id) {
+      console.debug('🔄 OptimizedAuth: No user for profile refresh');
+      return;
+    }
     
     const newProfile = await fetchProfile(user.id);
-    setProfile(newProfile);
-  }, [user, fetchProfile]);
+    if (mountedRef.current && newProfile) {
+      setProfile(newProfile);
+    }
+  }, [user?.id, fetchProfile]);
 
-  // Auth State Change Handler
+  // STABILIZED: Auth State Change Handler with proper cleanup
   useEffect(() => {
     console.debug('🚀 OptimizedAuth: Setting up auth listener...');
     
-    // ENHANCED: Initial session check FIRST - synchronous
+    let initialCheckCompleted = false;
+    
+    // Initial session check
     const checkInitialSession = async () => {
       try {
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
@@ -62,32 +91,41 @@ export const useAuthSession = () => {
         if (error) {
           console.error('❌ OptimizedAuth: Initial session error:', error);
         } else {
-          console.debug('📋 OptimizedAuth: Initial session check:', initialSession ? 'Found' : 'None');
-          setSession(initialSession);
-          setUser(initialSession?.user ?? null);
+          console.debug('📋 OptimizedAuth: Initial session:', initialSession ? 'Found' : 'None');
           
-          if (initialSession?.user) {
-            // Defer profile loading slightly to avoid blocking
-            setTimeout(async () => {
-              const userProfile = await fetchProfile(initialSession.user.id);
-              setProfile(userProfile);
-            }, 50);
+          if (mountedRef.current) {
+            setSession(initialSession);
+            setUser(initialSession?.user ?? null);
+            
+            if (initialSession?.user) {
+              // Defer profile loading to prevent blocking
+              setTimeout(async () => {
+                if (mountedRef.current) {
+                  const userProfile = await fetchProfile(initialSession.user.id);
+                  if (mountedRef.current) {
+                    setProfile(userProfile);
+                  }
+                }
+              }, 50);
+            }
           }
         }
       } catch (err) {
         console.error('❌ OptimizedAuth: Initial session check failed:', err);
       } finally {
-        setLoading(false);
+        initialCheckCompleted = true;
+        if (mountedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
-    // Run initial check
-    checkInitialSession();
-
-    // THEN set up listener
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.debug('🔄 OptimizedAuth: Auth event:', event);
+        
+        if (!mountedRef.current) return;
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
@@ -95,34 +133,58 @@ export const useAuthSession = () => {
         if (event === 'SIGNED_IN' && currentSession?.user) {
           console.debug('✅ OptimizedAuth: User signed in, loading profile...');
           
-          // Profile laden mit Delay um race conditions zu vermeiden
+          // Defer profile loading to prevent race conditions
           setTimeout(async () => {
-            const userProfile = await fetchProfile(currentSession.user.id);
-            setProfile(userProfile);
+            if (mountedRef.current) {
+              const userProfile = await fetchProfile(currentSession.user.id);
+              if (mountedRef.current) {
+                setProfile(userProfile);
+              }
+            }
           }, 100);
         }
 
         if (event === 'SIGNED_OUT') {
           console.debug('👋 OptimizedAuth: User signed out');
-          setProfile(null);
-          setProfileError(null);
+          if (mountedRef.current) {
+            setProfile(null);
+            setProfileError(null);
+          }
         }
 
-        // Loading is already false from initial check
+        // Set loading to false only after initial check is done
+        if (initialCheckCompleted && mountedRef.current) {
+          setLoading(false);
+        }
       }
     );
 
+    // Run initial check
+    checkInitialSession();
+
+    // Cleanup function
     return () => {
+      console.debug('🧹 OptimizedAuth: Cleaning up auth subscription');
+      mountedRef.current = false;
       subscription.unsubscribe();
     };
   }, [fetchProfile]);
 
   // Clear state function
   const clearAuthState = useCallback(() => {
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setProfileError(null);
+    if (mountedRef.current) {
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setProfileError(null);
+    }
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   return {

@@ -2,64 +2,77 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
+import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 /**
- * FIXED: Stabilized role redirect hook to prevent infinite loops
+ * STABILIZED: Role redirect hook with prevent infinite loops
  * Only redirects from exact /dashboard path to avoid conflicts
  */
 export const useRoleRedirect = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, loading } = useOptimizedAuth();
+  const { getLocalizedUrl } = useLanguageMCP();
   const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    // FIXED: Don't do anything while loading or if already redirected
-    if (loading || hasRedirectedRef.current) return;
+    // STABILIZED: Don't redirect while loading or if already redirected
+    if (loading || hasRedirectedRef.current) {
+      return;
+    }
 
+    // No profile means user needs to login/complete profile - handled by ProtectedRoute
     if (!profile) {
-      navigate("/login");
       return;
     }
 
-    // FIXED: Only redirect from exact /dashboard path
+    // CRITICAL: Only redirect from exact generic dashboard path
     const currentPath = location.pathname;
-    console.log("🔄 useRoleRedirect: Current path:", currentPath, "Role:", profile.role);
+    const isGenericDashboard = currentPath.endsWith('/dashboard') && 
+                              !currentPath.includes('/dashboard/');
     
-    if (!currentPath.endsWith('/dashboard')) {
-      console.log("🔄 useRoleRedirect: Not on generic dashboard, skipping redirect");
+    console.debug("🔄 useRoleRedirect:", {
+      currentPath,
+      isGenericDashboard,
+      role: profile.role,
+      hasRedirected: hasRedirectedRef.current
+    });
+    
+    if (!isGenericDashboard) {
+      console.debug("🔄 useRoleRedirect: Not on generic dashboard, skipping redirect");
       return;
     }
 
-    // FIXED: Mark as redirected before navigation to prevent loops
+    // STABILIZED: Prevent multiple redirects
     hasRedirectedRef.current = true;
 
+    // Role-based dashboard redirect
     switch (profile.role) {
       case "sender_private":
       case "sender_business":
-        console.log("🔄 useRoleRedirect: Redirecting sender to /dashboard/sender");
-        navigate("/dashboard/sender", { replace: true });
+        console.debug("🔄 useRoleRedirect: Redirecting sender to /dashboard/sender");
+        navigate(getLocalizedUrl("/dashboard/sender"), { replace: true });
         break;
       case "driver":
-        console.log("🔄 useRoleRedirect: Redirecting driver to /dashboard/driver");
-        navigate("/dashboard/driver", { replace: true });
+        console.debug("🔄 useRoleRedirect: Redirecting driver to /dashboard/driver");
+        navigate(getLocalizedUrl("/dashboard/driver"), { replace: true });
         break;
       case "cm":
-        console.log("🔄 useRoleRedirect: Redirecting CM to /dashboard/cm");
-        navigate("/dashboard/cm", { replace: true });
+        console.debug("🔄 useRoleRedirect: Redirecting CM to /dashboard/cm");
+        navigate(getLocalizedUrl("/dashboard/cm"), { replace: true });
         break;
       case "admin":
       case "super_admin":
-        console.log("🔄 useRoleRedirect: Redirecting admin to /dashboard/admin");
-        navigate("/dashboard/admin", { replace: true });
+        console.debug("🔄 useRoleRedirect: Redirecting admin to /dashboard/admin");
+        navigate(getLocalizedUrl("/dashboard/admin"), { replace: true });
         break;
       default:
-        console.log("🔄 useRoleRedirect: Unknown role, staying on /dashboard");
+        console.debug("🔄 useRoleRedirect: Unknown role, staying on generic dashboard");
         hasRedirectedRef.current = false; // Allow future redirects for unknown roles
     }
-  }, [profile?.role, loading, navigate, location.pathname]);
+  }, [profile?.role, loading, navigate, location.pathname, getLocalizedUrl]);
 
-  // FIXED: Reset redirect flag when leaving dashboard
+  // Reset redirect flag when leaving dashboard area
   useEffect(() => {
     if (!location.pathname.includes('/dashboard')) {
       hasRedirectedRef.current = false;

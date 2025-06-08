@@ -15,6 +15,7 @@ import PreRegisterSuccess from '@/pages/PreRegisterSuccess';
 import Dashboard from '@/pages/Dashboard';
 import DashboardSender from '@/pages/DashboardSender';
 import Profile from '@/pages/Profile';
+import CompleteProfile from '@/pages/CompleteProfile'; // FIXED: Added missing import
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ESGDashboard from '@/pages/ESGDashboard';
@@ -97,6 +98,9 @@ const MCPRouter = () => {
             <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
             <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
             
+            {/* FIXED: Added missing complete-profile route */}
+            <Route path="/complete-profile" element={<ProtectedRoute><CompleteProfile /></ProtectedRoute>} />
+            
             {/* Public ESG Dashboard */}
             <Route path="/esg-dashboard" element={<PublicRoute><ESGDashboard /></PublicRoute>} />
             
@@ -149,6 +153,7 @@ const MCPRouter = () => {
       <Route path="/login" element={<Navigate to={`/${currentLanguage}/login`} replace />} />
       <Route path="/register" element={<Navigate to={`/${currentLanguage}/register`} replace />} />
       <Route path="/pre-register" element={<Navigate to={`/${currentLanguage}/pre-register`} replace />} />
+      <Route path="/complete-profile" element={<Navigate to={`/${currentLanguage}/complete-profile`} replace />} />
       <Route path="/dashboard" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
       <Route path="/dashboard/*" element={<Navigate to={`/${currentLanguage}/dashboard`} replace />} />
       <Route path="/inbox" element={<Navigate to={`/${currentLanguage}/inbox`} replace />} />
