@@ -45,10 +45,12 @@ export function VehicleTypeSelector({ control }: VehicleSelectorProps) {
             name="vehicle_types"
             render={({ field }) => {
               const fieldValue = field.value || [];
+              const checkboxId = `vehicle_${option.value}`;
               return (
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                   <FormControl>
                     <Checkbox
+                      id={checkboxId}
                       checked={fieldValue.includes(option.value)}
                       onCheckedChange={(checked) => {
                         if (checked) {
@@ -64,7 +66,9 @@ export function VehicleTypeSelector({ control }: VehicleSelectorProps) {
                       }}
                     />
                   </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">{option.label}</FormLabel>
+                  <FormLabel htmlFor={checkboxId} className="font-normal cursor-pointer">
+                    {option.label}
+                  </FormLabel>
                 </FormItem>
               );
             }}

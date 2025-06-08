@@ -26,9 +26,14 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
           name="first_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("first_name")}</FormLabel>
+              <FormLabel htmlFor="first_name">{t("first_name")}</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input 
+                  {...field} 
+                  id="first_name"
+                  name="first_name"
+                  autoComplete="given-name"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -40,9 +45,14 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
           name="last_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("last_name")}</FormLabel>
+              <FormLabel htmlFor="last_name">{t("last_name")}</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input 
+                  {...field} 
+                  id="last_name"
+                  name="last_name"
+                  autoComplete="family-name"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -55,9 +65,15 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t("email")}</FormLabel>
+            <FormLabel htmlFor="email">{t("email")}</FormLabel>
             <FormControl>
-              <Input type="email" {...field} />
+              <Input 
+                {...field} 
+                type="email" 
+                id="email"
+                name="email"
+                autoComplete="email"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -69,9 +85,14 @@ export function PersonalInfoFields({ control }: PersonalInfoFieldsProps) {
         name="postal_code"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t("postal_code")}</FormLabel>
+            <FormLabel htmlFor="postal_code">{t("postal_code")}</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input 
+                {...field} 
+                id="postal_code"
+                name="postal_code"
+                autoComplete="postal-code"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

@@ -28,11 +28,14 @@ export function RoleSelectionFields({ control }: RoleSelectionFieldsProps) {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl>
                 <Checkbox
+                  id="wants_driver"
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormLabel className="font-normal cursor-pointer">{t("driver")}</FormLabel>
+              <FormLabel htmlFor="wants_driver" className="font-normal cursor-pointer">
+                {t("driver")}
+              </FormLabel>
             </FormItem>
           )}
         />
@@ -44,11 +47,14 @@ export function RoleSelectionFields({ control }: RoleSelectionFieldsProps) {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl>
                 <Checkbox
+                  id="wants_cm"
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormLabel className="font-normal cursor-pointer">{t("cm")}</FormLabel>
+              <FormLabel htmlFor="wants_cm" className="font-normal cursor-pointer">
+                {t("cm")}
+              </FormLabel>
             </FormItem>
           )}
         />
@@ -60,11 +66,14 @@ export function RoleSelectionFields({ control }: RoleSelectionFieldsProps) {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl>
                 <Checkbox
+                  id="wants_sender"
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormLabel className="font-normal cursor-pointer">{t("sender")}</FormLabel>
+              <FormLabel htmlFor="wants_sender" className="font-normal cursor-pointer">
+                {t("sender")}
+              </FormLabel>
             </FormItem>
           )}
         />

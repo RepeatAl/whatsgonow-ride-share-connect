@@ -120,31 +120,90 @@ serve(async (req) => {
 
     console.log('✅ Pre-registration inserted successfully:', preRegData.id);
 
-    // Bestätigungs-E-Mail senden (MCP-konform: nicht blockierend)
+    // Bestätigungs-E-Mail über Resend senden
     try {
-      console.log('📧 Sending confirmation email...');
+      console.log('📧 Sending confirmation email via Resend...');
       
-      const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-confirmation', {
-        body: {
-          email,
-          first_name,
-          language,
-          type: 'pre_registration',
-          pre_registration_id: preRegData.id
-        }
-      })
-
-      if (emailError) {
-        console.error('⚠️ Email sending failed:', emailError);
+      const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+      if (!RESEND_API_KEY) {
+        console.error('❌ RESEND_API_KEY not configured');
         // E-Mail-Fehler ist nicht kritisch - Pre-Registration war erfolgreich
       } else {
-        console.log('✅ Confirmation email sent successfully');
-        
-        // Markiere als E-Mail versendet
-        await supabaseClient
-          .from('pre_registrations')
-          .update({ notification_sent: true })
-          .eq('id', preRegData.id)
+        // Sprach-spezifische E-Mail-Inhalte
+        const emailContent = {
+          de: {
+            subject: 'Vielen Dank für Ihre Vorregistrierung bei Whatsgonow',
+            greeting: `Hallo ${first_name}`,
+            message: 'Vielen Dank für Ihre Vorregistrierung bei Whatsgonow! Wir haben Ihre Daten erhalten und werden Sie kontaktieren, sobald unsere Plattform in Ihrer Region verfügbar ist.',
+            info: 'Sie erhalten automatisch eine Benachrichtigung, wenn Sie sich vollständig registrieren können.',
+            footer: 'Ihr Whatsgonow Team'
+          },
+          en: {
+            subject: 'Thank you for your pre-registration with Whatsgonow',
+            greeting: `Hello ${first_name}`,
+            message: 'Thank you for your pre-registration with Whatsgonow! We have received your information and will contact you as soon as our platform is available in your region.',
+            info: 'You will automatically receive a notification when you can complete your registration.',
+            footer: 'Your Whatsgonow Team'
+          },
+          ar: {
+            subject: 'شكراً لك على التسجيل المسبق في Whatsgonow',
+            greeting: `مرحباً ${first_name}`,
+            message: 'شكراً لك على التسجيل المسبق في Whatsgonow! لقد تلقينا معلوماتك وسنتواصل معك بمجرد توفر منصتنا في منطقتك.',
+            info: 'ستتلقى إشعاراً تلقائياً عندما يمكنك إكمال تسجيلك.',
+            footer: 'فريق Whatsgonow'
+          }
+        };
+
+        const content = emailContent[language as keyof typeof emailContent] || emailContent.de;
+
+        const htmlBody = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>${content.subject}</title>
+          </head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px;">
+              <h1 style="color: #ff6b35; margin-bottom: 20px;">Whatsgonow</h1>
+              <h2 style="color: #333;">${content.greeting}!</h2>
+              <p style="color: #666; line-height: 1.6;">${content.message}</p>
+              <p style="color: #666; line-height: 1.6;">${content.info}</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+              <p style="color: #999; font-size: 14px;">${content.footer}</p>
+            </div>
+          </body>
+          </html>
+        `;
+
+        const emailResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Whatsgonow <noreply@whatsgonow.com>',
+            to: [email],
+            subject: content.subject,
+            html: htmlBody,
+          }),
+        });
+
+        const emailResult = await emailResponse.json();
+
+        if (!emailResponse.ok) {
+          console.error('❌ Resend API error:', emailResult);
+          // E-Mail-Fehler ist nicht kritisch
+        } else {
+          console.log('✅ Email sent successfully via Resend:', emailResult.id);
+          
+          // Markiere als E-Mail versendet
+          await supabaseClient
+            .from('pre_registrations')
+            .update({ notification_sent: true })
+            .eq('id', preRegData.id);
+        }
       }
     } catch (emailError) {
       console.error('⚠️ Email sending exception:', emailError);
