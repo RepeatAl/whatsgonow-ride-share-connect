@@ -9,7 +9,7 @@ interface PublicRouteProps {
 }
 
 /**
- * PublicRoute - Enhanced for better pre-register handling and video accessibility
+ * PublicRoute - FIXED: Simplified to prevent redirect loops
  * 
  * Zeigt Inhalte öffentlich an. Für eingeloggte Nutzer auf Auth-Seiten
  * wird ein rollenbasiertes Dashboard-Redirect durchgeführt.
@@ -19,22 +19,22 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const location = useLocation();
   const { getLocalizedUrl } = useLanguageMCP();
   
-  // Während des Ladens: Inhalt nicht anzeigen
+  // FIXED: Wait for auth to stabilize before any redirects
   if (loading) {
     return null;
   }
   
-  // ENHANCED: Prüfe ob wir auf einer strikten Auth-Seite oder Pre-Register sind
-  const isStrictAuthPage = location.pathname.includes('/login') || 
-                          (location.pathname.includes('/register') && !location.pathname.includes('/pre-register'));
+  // FIXED: Simplified auth page detection
+  const isAuthPage = location.pathname.includes('/login') || 
+                    location.pathname.includes('/register');
   
   const isPreRegisterPage = location.pathname.includes('/pre-register');
-                       
-  // CRITICAL: Wenn angemeldeter Nutzer mit vollständigem Profil versucht auf Auth-Seiten oder Pre-Register zu gehen → Dashboard
-  if (user && profile && profile.profile_complete && profile.onboarding_complete && (isStrictAuthPage || isPreRegisterPage)) {
-    console.log('[PublicRoute] Authenticated user with complete profile on auth/pre-register page - redirecting to dashboard');
+  
+  // FIXED: Only redirect authenticated users with complete profiles from auth pages
+  if (user && profile?.profile_complete && profile?.onboarding_complete && (isAuthPage || isPreRegisterPage)) {
+    console.log('[PublicRoute] Redirecting authenticated user with complete profile');
     
-    // Rollenbasiertes Redirect
+    // FIXED: Simple role-based redirect without complex logic
     let redirectUrl: string;
     switch (profile.role) {
       case 'admin':
@@ -58,13 +58,13 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
     return <Navigate to={redirectUrl} replace />;
   }
   
-  // ENHANCED: Wenn angemeldeter Nutzer ohne vollständiges Profil auf Pre-Register geht → Complete Profile
+  // FIXED: Simplified incomplete profile handling
   if (user && profile && (!profile.profile_complete || !profile.onboarding_complete) && isPreRegisterPage) {
-    console.log('[PublicRoute] Authenticated user with incomplete profile on pre-register - redirecting to complete-profile');
+    console.log('[PublicRoute] Redirecting incomplete profile to complete-profile');
     return <Navigate to={getLocalizedUrl('/complete-profile')} replace />;
   }
   
-  // Für alle anderen Seiten: Einfach anzeigen (öffentlich) - Videos bleiben immer sichtbar
+  // For all other cases: show content publicly
   return <>{children}</>;
 };
 

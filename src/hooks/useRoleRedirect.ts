@@ -1,37 +1,38 @@
 
-// src/hooks/useRoleRedirect.ts
-// This file follows the conventions from /docs/conventions/roles_and_ids.md
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 
 /**
- * Hook to redirect users to their role-specific dashboard
- * Usage: Place in a component mounted at /dashboard
- * FIXED: Only redirect from exact /dashboard path to avoid conflicts
+ * FIXED: Stabilized role redirect hook to prevent infinite loops
+ * Only redirects from exact /dashboard path to avoid conflicts
  */
 export const useRoleRedirect = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, loading } = useOptimizedAuth();
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    if (loading) return;
+    // FIXED: Don't do anything while loading or if already redirected
+    if (loading || hasRedirectedRef.current) return;
 
     if (!profile) {
       navigate("/login");
       return;
     }
 
-    // FIXED: Only redirect from exact /dashboard path, not subpaths
+    // FIXED: Only redirect from exact /dashboard path
     const currentPath = location.pathname;
     console.log("🔄 useRoleRedirect: Current path:", currentPath, "Role:", profile.role);
     
-    // Only redirect if we're on the generic dashboard route
     if (!currentPath.endsWith('/dashboard')) {
       console.log("🔄 useRoleRedirect: Not on generic dashboard, skipping redirect");
       return;
     }
+
+    // FIXED: Mark as redirected before navigation to prevent loops
+    hasRedirectedRef.current = true;
 
     switch (profile.role) {
       case "sender_private":
@@ -54,7 +55,14 @@ export const useRoleRedirect = () => {
         break;
       default:
         console.log("🔄 useRoleRedirect: Unknown role, staying on /dashboard");
-        // Stay on generic dashboard for unknown roles
+        hasRedirectedRef.current = false; // Allow future redirects for unknown roles
     }
-  }, [profile, loading, navigate, location.pathname]);
+  }, [profile?.role, loading, navigate, location.pathname]);
+
+  // FIXED: Reset redirect flag when leaving dashboard
+  useEffect(() => {
+    if (!location.pathname.includes('/dashboard')) {
+      hasRedirectedRef.current = false;
+    }
+  }, [location.pathname]);
 };

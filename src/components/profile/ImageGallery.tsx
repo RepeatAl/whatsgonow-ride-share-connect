@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,14 +20,12 @@ export default function ImageGallery() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      loadUserImages();
+  // FIXED: Stabilized loadUserImages with useCallback to prevent infinite re-renders
+  const loadUserImages = useCallback(async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
     }
-  }, [user]);
-
-  const loadUserImages = async () => {
-    if (!user) return;
 
     try {
       const { data, error } = await supabase
@@ -72,10 +70,15 @@ export default function ImageGallery() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]); // FIXED: Only depend on user.id, not entire user object
 
-  const deleteImage = async (imageName: string) => {
-    if (!user) return;
+  // FIXED: Only run effect when user.id changes, not on every render
+  useEffect(() => {
+    loadUserImages();
+  }, [loadUserImages]);
+
+  const deleteImage = useCallback(async (imageName: string) => {
+    if (!user?.id) return;
 
     try {
       const { error } = await supabase
@@ -100,7 +103,7 @@ export default function ImageGallery() {
     } catch (error) {
       console.error('Error deleting image:', error);
     }
-  };
+  }, [user?.id]);
 
   if (loading) {
     return (
