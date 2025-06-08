@@ -28,13 +28,12 @@ export const useAuthRedirect = (
     const currentPath = location.pathname;
     console.log('🧭 useAuthRedirect: Checking redirect for path:', currentPath);
 
-    // Precise auth page detection with regex for language prefixes
-    const isStrictAuthPage = /^\/[a-z]{2}\/(login|register)$/.test(currentPath) || 
-                            /^\/(login|register)$/.test(currentPath);
+    // FIXED: Improved auth page detection
+    const isAuthPage = /^\/[a-z]{2}\/(login|register)$|^\/(login|register)$/.test(currentPath);
 
     console.log('🔍 useAuthRedirect: Auth page check:', { 
       currentPath, 
-      isStrictAuthPage, 
+      isAuthPage, 
       hasUser: !!user, 
       hasProfile: !!profile,
       profileComplete: profile?.profile_complete,
@@ -43,46 +42,41 @@ export const useAuthRedirect = (
       alreadyRedirected: redirectedRef.current 
     });
 
-    // Öffentliche Routen überspringen (außer Login/Register bei authentifizierten Usern)
-    if (isPublicRoute(currentPath)) {
-      // Authentifiziert + auf Auth-Seite → Dashboard (mit Loop-Prevention)
-      if (user && profile && isStrictAuthPage && !redirectedRef.current) {
-        redirectedRef.current = true;
-        console.log('✅ useAuthRedirect: Authenticated user on auth page, redirecting to dashboard');
-        
-        // FIXED: Use consistent dashboard structure with 100ms delay
-        let targetPath: string;
-        
-        switch (profile.role) {
-          case 'admin':
-          case 'super_admin':
-            targetPath = getLocalizedUrl('/dashboard/admin');
-            break;
-          case 'cm':
-            targetPath = getLocalizedUrl('/dashboard/cm');
-            break;
-          case 'driver':
-            targetPath = getLocalizedUrl('/dashboard/driver');
-            break;
-          case 'sender_private':
-          case 'sender_business':
-            targetPath = getLocalizedUrl('/dashboard/sender');
-            break;
-          default:
-            targetPath = getLocalizedUrl('/dashboard');
-        }
-        
-        console.log('🎯 useAuthRedirect: Redirecting to:', targetPath);
-        
-        // Use timeout for clean redirect timing
-        setTimeout(() => {
-          navigate(targetPath, { replace: true });
-        }, 100);
-        
-        return;
+    // CRITICAL FIX: Handle authenticated user on login page immediately
+    if (user && profile && isAuthPage && !redirectedRef.current) {
+      redirectedRef.current = true;
+      console.log('✅ useAuthRedirect: Authenticated user on auth page, redirecting to dashboard');
+      
+      let targetPath: string;
+      
+      switch (profile.role) {
+        case 'admin':
+        case 'super_admin':
+          targetPath = getLocalizedUrl('/dashboard/admin');
+          break;
+        case 'cm':
+          targetPath = getLocalizedUrl('/dashboard/cm');
+          break;
+        case 'driver':
+          targetPath = getLocalizedUrl('/dashboard/driver');
+          break;
+        case 'sender_private':
+        case 'sender_business':
+          targetPath = getLocalizedUrl('/dashboard/sender');
+          break;
+        default:
+          targetPath = getLocalizedUrl('/dashboard');
       }
+      
+      console.log('🎯 useAuthRedirect: Redirecting to:', targetPath);
+      
+      // IMMEDIATE redirect without setTimeout
+      navigate(targetPath, { replace: true });
+      return;
+    }
 
-      // Für andere öffentliche Routen nichts tun
+    // Skip public routes (except auth pages for authenticated users - handled above)
+    if (isPublicRoute(currentPath)) {
       return;
     }
 
@@ -100,13 +94,12 @@ export const useAuthRedirect = (
       return;
     }
 
-    // FIXED: Profile vorhanden aber incomplete → Dashboard direkt bei drivers mit profile_complete
-    if (user && profile && profile.profile_complete) {
-      // Wenn Profile complete ist, direkt zum Dashboard - unabhängig vom Onboarding-Status
+    // FIXED: Profile vorhanden aber incomplete → Dashboard direkt bei vollständigen Profilen
+    if (user && profile && profile.profile_complete && !redirectedRef.current) {
       const isDashboardRoute = currentPath.includes('/dashboard');
       const isCompleteProfileRoute = currentPath.includes('/complete-profile');
       
-      if (isCompleteProfileRoute && !redirectedRef.current) {
+      if (isCompleteProfileRoute) {
         redirectedRef.current = true;
         console.log('🎯 useAuthRedirect: Profile complete, skipping completion page, going to dashboard');
         
@@ -130,10 +123,7 @@ export const useAuthRedirect = (
             targetPath = getLocalizedUrl('/dashboard');
         }
         
-        setTimeout(() => {
-          navigate(targetPath, { replace: true });
-        }, 100);
-        
+        navigate(targetPath, { replace: true });
         return;
       }
       
