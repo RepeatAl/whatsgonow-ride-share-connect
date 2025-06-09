@@ -2,7 +2,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 // Don't show BackButton on home/landing pages for any language
@@ -11,7 +10,6 @@ const excludedPaths = ['/', '/de', '/en', '/ar', '/de/', '/en/', '/ar/'];
 export const BackButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
   const { currentLanguage } = useLanguageMCP();
   
   // Don't render on excluded paths (landing pages)
@@ -75,9 +73,10 @@ export const BackButton = () => {
       variant="ghost" 
       className="w-fit mb-4" 
       onClick={handleGoBack}
+      aria-label="Zurück zur vorherigen Seite"
     >
       <ArrowLeft className="h-4 w-4 mr-2" />
-      {t('common.back', 'Zurück')}
+      Zurück
     </Button>
   );
 };

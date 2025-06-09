@@ -2,12 +2,10 @@
 import { Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";
 
 export const HomeButton = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { currentLanguage } = useLanguageMCP();
 
   const handleGoHome = () => {
@@ -27,9 +25,10 @@ export const HomeButton = () => {
       size="sm"
       className="w-fit" 
       onClick={handleGoHome}
+      aria-label="Zur Startseite"
     >
       <Home className="h-4 w-4 mr-2" />
-      {t('common.home', 'Startseite')}
+      Startseite
     </Button>
   );
 };

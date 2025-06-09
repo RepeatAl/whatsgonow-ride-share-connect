@@ -16,7 +16,7 @@ const PreRegisterSuccess = () => {
   const emailSent = status === 'email_sent';
 
   return (
-    <Layout pageType="public">
+    <Layout pageType="public" title="Vorregistrierung erfolgreich - Whatsgonow">
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
@@ -41,7 +41,7 @@ const PreRegisterSuccess = () => {
                   <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg">
                     <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-200 mb-2">
                       <Mail className="h-4 w-4" />
-                      <span className="font-medium">E-Mail versendet</span>
+                      <span className="font-medium">Bestätigungs-E-Mail versendet</span>
                     </div>
                     <p className="text-green-600 dark:text-green-300 text-sm">
                       Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.

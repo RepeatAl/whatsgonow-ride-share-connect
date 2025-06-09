@@ -124,17 +124,14 @@ export const MCPRouter = () => {
         </ProtectedRoute>
       } />
       
-      {/* UPDATED: Consolidated dashboard routes */}
+      {/* FIXED: Konsolidiertes Dashboard für alle Rollen */}
       <Route path={`/${currentLanguage}/dashboard`} element={
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>
       } />
       
-      {/* REDIRECT: Old driver dashboard to main dashboard */}
-      <Route path={`/${currentLanguage}/dashboard/driver`} element={
-        <Navigate to={`/${currentLanguage}/dashboard`} replace />
-      } />
+      {/* ENTFERNT: Separate Driver Dashboard Route - alle nutzen jetzt /dashboard */}
       
       <Route path={`/${currentLanguage}/dashboard/admin`} element={
         <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
@@ -154,7 +151,7 @@ export const MCPRouter = () => {
         </ProtectedRoute>
       } />
       
-      {/* NEW: Admin tools for system audit and management */}
+      {/* Admin tools */}
       <Route path={`/${currentLanguage}/admin`} element={
         <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
           <AdminDashboard />
@@ -174,7 +171,7 @@ export const MCPRouter = () => {
         </ProtectedRoute>
       } />
       
-      {/* Driver specific routes */}
+      {/* Driver specific routes - nur für tatsächliche Driver */}
       <Route path={`/${currentLanguage}/rides`} element={
         <ProtectedRoute allowedRoles={['driver', 'admin', 'super_admin']}>
           <MyRides />

@@ -19,7 +19,7 @@ const DashboardRedirect = () => {
       return;
     }
 
-    // FIXED: Redirect based on user role with consistent dashboard structure
+    // FIXED: Konsolidiertes Dashboard für alle Rollen
     console.log('🔄 DashboardRedirect: Redirecting user with role:', profile.role);
     
     switch (profile.role) {
@@ -30,14 +30,13 @@ const DashboardRedirect = () => {
       case 'cm':
         navigate(getLocalizedUrl('/dashboard/cm'));
         break;
-      case 'driver':
-        navigate(getLocalizedUrl('/dashboard/driver'));
-        break;
       case 'sender_private':
       case 'sender_business':
         navigate(getLocalizedUrl('/dashboard/sender'));
         break;
+      case 'driver':
       default:
+        // FIXED: Alle Driver und unbekannte Rollen zu konsolidiertem Dashboard
         navigate(getLocalizedUrl('/dashboard'));
     }
   }, [profile, loading, navigate, getLocalizedUrl]);

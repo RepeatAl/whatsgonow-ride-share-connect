@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu,
@@ -14,14 +14,12 @@ import {
 import { useOptimizedAuth } from '@/contexts/OptimizedAuthContext';
 import { GlobalLanguageSwitcher } from '@/components/language/GlobalLanguageSwitcher';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
-import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, profile, signOut } = useOptimizedAuth();
   const { getLocalizedUrl } = useLanguageMCP();
   const location = useLocation();
-  const { t } = useTranslation(['common', 'navigation']);
 
   const handleSignOut = async () => {
     try {
@@ -34,21 +32,22 @@ const Navbar = () => {
   const getNavLinks = () => {
     if (!user || !profile) {
       return [
-        { href: getLocalizedUrl('/'), label: t('navigation:home', 'Startseite') },
-        { href: getLocalizedUrl('/about'), label: t('navigation:about', 'Über uns') },
-        { href: getLocalizedUrl('/faq'), label: t('navigation:faq', 'FAQ') },
+        { href: getLocalizedUrl('/'), label: 'Startseite', icon: Home },
+        { href: getLocalizedUrl('/about'), label: 'Über uns' },
+        { href: getLocalizedUrl('/faq'), label: 'FAQ' },
       ];
     }
 
-    // Authenticated user links
+    // HARMONISIERT: Deutsche Bezeichnungen für alle Navigation-Links
     const baseLinks = [
-      { href: getLocalizedUrl('/dashboard'), label: t('navigation:dashboard', 'Dashboard') },
-      { href: getLocalizedUrl('/inbox'), label: t('navigation:messages', 'Nachrichten') },
+      { href: getLocalizedUrl('/'), label: 'Startseite', icon: Home },
+      { href: getLocalizedUrl('/dashboard'), label: 'Dashboard' },
+      { href: getLocalizedUrl('/inbox'), label: 'Nachrichten' },
     ];
 
     // Role-specific links
     if (profile.role === 'driver') {
-      baseLinks.push({ href: getLocalizedUrl('/rides'), label: t('navigation:my_rides', 'Meine Fahrten') });
+      baseLinks.push({ href: getLocalizedUrl('/rides'), label: 'Meine Fahrten' });
     }
 
     return baseLinks;
@@ -73,10 +72,11 @@ const Navbar = () => {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-gray-700 hover:text-orange-600 transition-colors ${
+                className={`flex items-center gap-2 text-gray-700 hover:text-orange-600 transition-colors ${
                   location.pathname === link.href ? 'text-orange-600 font-medium' : ''
                 }`}
               >
+                {link.icon && <link.icon className="h-4 w-4" />}
                 {link.label}
               </Link>
             ))}
@@ -94,7 +94,7 @@ const Navbar = () => {
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <User className="h-4 w-4" />
                     <span className="hidden lg:inline">
-                      {profile.first_name || t('common:profile', 'Profil')}
+                      {profile.first_name || 'Profil'}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -109,19 +109,19 @@ const Navbar = () => {
                   <DropdownMenuItem asChild>
                     <Link to={getLocalizedUrl('/profile')} className="flex items-center">
                       <User className="mr-2 h-4 w-4" />
-                      {t('common:profile', 'Profil')}
+                      Profil
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to={getLocalizedUrl('/dashboard')} className="flex items-center">
                       <Settings className="mr-2 h-4 w-4" />
-                      {t('navigation:dashboard', 'Dashboard')}
+                      Dashboard
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="flex items-center text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
-                    {t('common:logout', 'Abmelden')}
+                    Abmelden
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -129,10 +129,10 @@ const Navbar = () => {
               /* Guest User Actions */
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" asChild>
-                  <Link to={getLocalizedUrl('/login')}>{t('common:login', 'Anmelden')}</Link>
+                  <Link to={getLocalizedUrl('/login')}>Anmelden</Link>
                 </Button>
                 <Button asChild>
-                  <Link to={getLocalizedUrl('/register')}>{t('common:register', 'Registrieren')}</Link>
+                  <Link to={getLocalizedUrl('/register')}>Registrieren</Link>
                 </Button>
               </div>
             )}
@@ -145,7 +145,7 @@ const Navbar = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(!isOpen)}
-              aria-label="Menu"
+              aria-label="Menü"
             >
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -160,11 +160,12 @@ const Navbar = () => {
                 <Link
                   key={link.href}
                   to={link.href}
-                  className={`block px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-gray-50 rounded ${
+                  className={`flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-gray-50 rounded ${
                     location.pathname === link.href ? 'text-orange-600 bg-orange-50' : ''
                   }`}
                   onClick={() => setIsOpen(false)}
                 >
+                  {link.icon && <link.icon className="h-4 w-4" />}
                   {link.label}
                 </Link>
               ))}
@@ -174,19 +175,21 @@ const Navbar = () => {
                   <hr className="my-2" />
                   <Link
                     to={getLocalizedUrl('/profile')}
-                    className="block px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-gray-50 rounded"
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-gray-50 rounded"
                     onClick={() => setIsOpen(false)}
                   >
-                    {t('common:profile', 'Profil')}
+                    <User className="h-4 w-4" />
+                    Profil
                   </Link>
                   <button
                     onClick={() => {
                       handleSignOut();
                       setIsOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded"
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded"
                   >
-                    {t('common:logout', 'Abmelden')}
+                    <LogOut className="h-4 w-4" />
+                    Abmelden
                   </button>
                 </>
               ) : (
@@ -197,14 +200,14 @@ const Navbar = () => {
                     className="block px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-gray-50 rounded"
                     onClick={() => setIsOpen(false)}
                   >
-                    {t('common:login', 'Anmelden')}
+                    Anmelden
                   </Link>
                   <Link
                     to={getLocalizedUrl('/register')}
                     className="block px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
                     onClick={() => setIsOpen(false)}
                   >
-                    {t('common:register', 'Registrieren')}
+                    Registrieren
                   </Link>
                 </>
               )}
