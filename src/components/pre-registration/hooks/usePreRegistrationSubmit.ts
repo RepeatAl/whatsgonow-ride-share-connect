@@ -17,7 +17,7 @@ export const usePreRegistrationSubmit = () => {
     try {
       console.log('📝 Starting pre-registration submission:', data);
       
-      // Call the Supabase Edge Function for pre-registration
+      // REFACTORED: Call the pre-register function which now uses send-email-enhanced internally
       const { data: result, error } = await supabase.functions.invoke('pre-register', {
         body: {
           first_name: data.first_name,
@@ -39,15 +39,17 @@ export const usePreRegistrationSubmit = () => {
 
       console.log('✅ Pre-registration successful:', result);
       
-      // Show success toast
+      // Show success toast with enhanced messaging
       toast({
         title: "Vorregistrierung erfolgreich!",
-        description: "Sie erhalten in Kürze eine Bestätigungs-E-Mail.",
+        description: result?.email_sent 
+          ? "Sie erhalten in Kürze eine Bestätigungs-E-Mail."
+          : "Ihre Vorregistrierung wurde gespeichert.",
         variant: "default",
       });
 
-      // FIXED: Navigate to success page with proper language prefix and email parameter
-      const successUrl = getLocalizedUrl(`/pre-register/success?email=${encodeURIComponent(data.email)}&status=${result?.status || 'success'}`);
+      // Navigate to success page with proper language prefix and email parameter
+      const successUrl = getLocalizedUrl(`/pre-register/success?email=${encodeURIComponent(data.email)}&status=${result?.email_sent ? 'email_sent' : 'registered'}`);
       console.log('🎯 Navigating to pre-register success:', successUrl);
       navigate(successUrl, { replace: true });
 

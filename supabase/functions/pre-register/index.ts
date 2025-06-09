@@ -168,114 +168,102 @@ serve(async (req) => {
 
     console.log('✅ Pre-registration inserted successfully:', preRegData.id);
 
-    // ENHANCED: Email sending with proper error handling and atomic updates
+    // REFACTORED: Email sending via send-email-enhanced Function
     let emailSent = false;
     let emailSendFailed = false;
     
     try {
-      console.log('📧 Attempting to send confirmation email via Resend...');
+      console.log('📧 Attempting to send confirmation email via send-email-enhanced...');
       
-      const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-      if (!RESEND_API_KEY) {
-        console.error('❌ RESEND_API_KEY not configured');
+      // Language-specific email content
+      const emailContent = {
+        de: {
+          subject: 'Vielen Dank für Ihre Vorregistrierung bei Whatsgonow',
+          greeting: `Hallo ${first_name}`,
+          message: 'Vielen Dank für Ihre Vorregistrierung bei Whatsgonow! Wir haben Ihre Daten erhalten und werden Sie kontaktieren, sobald unsere Plattform in Ihrer Region verfügbar ist.',
+          info: 'Sie erhalten automatisch eine Benachrichtigung, wenn Sie sich vollständig registrieren können.',
+          cta: 'Sie können sich auch jetzt schon vollständig registrieren:',
+          button: 'Jetzt registrieren',
+          footer: 'Ihr Whatsgonow Team'
+        },
+        en: {
+          subject: 'Thank you for your pre-registration with Whatsgonow',
+          greeting: `Hello ${first_name}`,
+          message: 'Thank you for your pre-registration with Whatsgonow! We have received your information and will contact you as soon as our platform is available in your region.',
+          info: 'You will automatically receive a notification when you can complete your registration.',
+          cta: 'You can also register completely now:',
+          button: 'Register now',
+          footer: 'Your Whatsgonow Team'
+        }
+      };
+
+      const content = emailContent[language as keyof typeof emailContent] || emailContent.de;
+      const registerUrl = `https://preview--whatsgonow-ride-share-connect.lovable.app/register?email=${encodeURIComponent(email)}`;
+
+      const htmlBody = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${content.subject}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #f8f9fa; padding: 30px; border-radius: 8px; text-align: center; }
+            .logo { color: #ff6b35; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+            .content { margin: 20px 0; }
+            .cta-button { 
+              display: inline-block; 
+              background-color: #ff6b35; 
+              color: white; 
+              padding: 12px 24px; 
+              text-decoration: none; 
+              border-radius: 6px; 
+              margin: 20px 0;
+              font-weight: bold;
+            }
+            .footer { color: #999; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">Whatsgonow</div>
+              <h2 style="color: #333; margin: 0;">${content.greeting}!</h2>
+            </div>
+            <div class="content">
+              <p>${content.message}</p>
+              <p>${content.info}</p>
+              <p><strong>${content.cta}</strong></p>
+              <a href="${registerUrl}" class="cta-button">${content.button}</a>
+            </div>
+            <div class="footer">
+              <p>${content.footer}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // REFACTORED: Use send-email-enhanced function instead of direct Resend API call
+      const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-email-enhanced', {
+        body: {
+          to: email,
+          subject: content.subject,
+          html: htmlBody,
+          from: 'Whatsgonow <noreply@whatsgonow.com>',
+          replyTo: 'support@whatsgonow.com'
+        }
+      });
+
+      if (emailError) {
+        console.error('❌ send-email-enhanced error:', emailError);
         emailSendFailed = true;
       } else {
-        // Language-specific email content
-        const emailContent = {
-          de: {
-            subject: 'Vielen Dank für Ihre Vorregistrierung bei Whatsgonow',
-            greeting: `Hallo ${first_name}`,
-            message: 'Vielen Dank für Ihre Vorregistrierung bei Whatsgonow! Wir haben Ihre Daten erhalten und werden Sie kontaktieren, sobald unsere Plattform in Ihrer Region verfügbar ist.',
-            info: 'Sie erhalten automatisch eine Benachrichtigung, wenn Sie sich vollständig registrieren können.',
-            cta: 'Sie können sich auch jetzt schon vollständig registrieren:',
-            button: 'Jetzt registrieren',
-            footer: 'Ihr Whatsgonow Team'
-          },
-          en: {
-            subject: 'Thank you for your pre-registration with Whatsgonow',
-            greeting: `Hello ${first_name}`,
-            message: 'Thank you for your pre-registration with Whatsgonow! We have received your information and will contact you as soon as our platform is available in your region.',
-            info: 'You will automatically receive a notification when you can complete your registration.',
-            cta: 'You can also register completely now:',
-            button: 'Register now',
-            footer: 'Your Whatsgonow Team'
-          }
-        };
-
-        const content = emailContent[language as keyof typeof emailContent] || emailContent.de;
-        const registerUrl = `https://preview--whatsgonow-ride-share-connect.lovable.app/register?email=${encodeURIComponent(email)}`;
-
-        const htmlBody = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>${content.subject}</title>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background-color: #f8f9fa; padding: 30px; border-radius: 8px; text-align: center; }
-              .logo { color: #ff6b35; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-              .content { margin: 20px 0; }
-              .cta-button { 
-                display: inline-block; 
-                background-color: #ff6b35; 
-                color: white; 
-                padding: 12px 24px; 
-                text-decoration: none; 
-                border-radius: 6px; 
-                margin: 20px 0;
-                font-weight: bold;
-              }
-              .footer { color: #999; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <div class="logo">Whatsgonow</div>
-                <h2 style="color: #333; margin: 0;">${content.greeting}!</h2>
-              </div>
-              <div class="content">
-                <p>${content.message}</p>
-                <p>${content.info}</p>
-                <p><strong>${content.cta}</strong></p>
-                <a href="${registerUrl}" class="cta-button">${content.button}</a>
-              </div>
-              <div class="footer">
-                <p>${content.footer}</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `;
-
-        // ENHANCED: Resend API call with proper error handling
-        const emailResponse = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'Whatsgonow <noreply@whatsgonow.com>',
-            to: [email],
-            subject: content.subject,
-            html: htmlBody,
-          }),
-        });
-
-        const emailResult = await emailResponse.json();
-        console.log('📧 Resend API Response:', { status: emailResponse.status, result: emailResult });
-
-        if (!emailResponse.ok) {
-          console.error('❌ Resend API error:', emailResult);
-          emailSendFailed = true;
-        } else {
-          console.log('✅ Email sent successfully via Resend:', emailResult.id);
-          emailSent = true;
-        }
+        console.log('✅ Email sent successfully via send-email-enhanced:', emailResult);
+        emailSent = true;
       }
+
     } catch (emailError) {
       console.error('⚠️ Email sending exception:', emailError);
       emailSendFailed = true;
