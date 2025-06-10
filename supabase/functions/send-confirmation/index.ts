@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,11 @@ serve(async (req) => {
   try {
     console.log('📧 Send-confirmation function called');
     
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    )
+    
     const { email, first_name, language = 'de', type = 'pre_registration' } = await req.json()
 
     if (!email || !first_name) {
@@ -27,19 +33,7 @@ serve(async (req) => {
       )
     }
 
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-    if (!RESEND_API_KEY) {
-      console.error('❌ RESEND_API_KEY not found in environment');
-      return new Response(
-        JSON.stringify({ error: 'Email service configuration missing' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
-    // Sprach-spezifische E-Mail-Inhalte
+    // Language-specific email content
     const emailContent = {
       de: {
         subject: 'Vielen Dank für Ihre Vorregistrierung bei Whatsgonow',
@@ -86,28 +80,23 @@ serve(async (req) => {
       </html>
     `
 
-    console.log('📧 Sending email to:', email);
+    console.log('📧 Sending email via send-email-enhanced...');
 
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Whatsgonow <noreply@whatsgonow.com>',
-        to: [email],
+    // Use invoke('send-email-enhanced') instead of direct Resend call
+    const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-email-enhanced', {
+      body: {
+        to: email,
         subject: content.subject,
         html: htmlBody,
-      }),
-    })
+        from: 'Whatsgonow <noreply@whatsgonow.com>',
+        replyTo: 'support@whatsgonow.com'
+      }
+    });
 
-    const emailResult = await emailResponse.json()
-
-    if (!emailResponse.ok) {
-      console.error('❌ Resend API error:', emailResult);
+    if (emailError) {
+      console.error('❌ send-email-enhanced error:', emailError);
       return new Response(
-        JSON.stringify({ error: 'Failed to send email', details: emailResult }),
+        JSON.stringify({ error: 'Email failed', details: emailError.message }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -115,12 +104,12 @@ serve(async (req) => {
       )
     }
 
-    console.log('✅ Email sent successfully:', emailResult.id);
+    console.log('✅ Email sent successfully via send-email-enhanced:', emailResult);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        email_id: emailResult.id,
+        email_id: emailResult?.data?.id,
         message: 'Confirmation email sent successfully' 
       }),
       { 

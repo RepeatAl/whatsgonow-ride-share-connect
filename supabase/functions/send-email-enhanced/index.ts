@@ -2,8 +2,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -20,41 +18,6 @@ interface EmailRequest {
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const sendEmailWithRetry = async (emailData: EmailRequest, maxRetries = 3): Promise<any> => {
-  let lastError: Error;
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`[EmailService] Attempt ${attempt}/${maxRetries} for ${emailData.to}`);
-      
-      const response = await resend.emails.send({
-        from: emailData.from || "Whatsgonow <onboarding@resend.dev>",
-        to: [emailData.to],
-        subject: emailData.subject,
-        html: emailData.html,
-        text: emailData.text,
-        replyTo: emailData.replyTo,
-      });
-
-      console.log(`[EmailService] Success on attempt ${attempt}:`, response);
-      return response;
-      
-    } catch (error: any) {
-      lastError = error;
-      console.error(`[EmailService] Attempt ${attempt} failed:`, error);
-      
-      if (attempt < maxRetries) {
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, attempt - 1) * 1000;
-        console.log(`[EmailService] Retrying in ${delay}ms...`);
-        await sleep(delay);
-      }
-    }
-  }
-  
-  throw lastError;
-};
-
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -67,6 +30,22 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("[send-email-enhanced] Function started");
+    
+    // API-key check at handler start
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error("[send-email-enhanced] Missing RESEND_API_KEY");
+      return new Response(
+        JSON.stringify({ error: "Email service mis-configured" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Move Resend client initialization inside handler
+    const resend = new Resend(resendApiKey);
+    console.log("[send-email-enhanced] Resend client initialized successfully");
+
     const { to, subject, html, text, from, replyTo }: EmailRequest = await req.json();
 
     // Validation
@@ -78,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!validateEmail(to)) {
-      console.error(`[EmailService] Invalid email format: ${to}`);
+      console.error(`[send-email-enhanced] Invalid email format: ${to}`);
       return new Response(
         JSON.stringify({ error: "Invalid email format" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -92,14 +71,39 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check if API key is configured
-    if (!Deno.env.get("RESEND_API_KEY")) {
-      console.error("[EmailService] RESEND_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
+    const sendEmailWithRetry = async (emailData: EmailRequest, maxRetries = 3): Promise<any> => {
+      let lastError: Error;
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`[send-email-enhanced] Attempt ${attempt}/${maxRetries} for ${emailData.to}`);
+          
+          const response = await resend.emails.send({
+            from: emailData.from || "Whatsgonow <onboarding@resend.dev>",
+            to: [emailData.to],
+            subject: emailData.subject,
+            html: emailData.html,
+            text: emailData.text,
+            replyTo: emailData.replyTo,
+          });
+
+          console.log(`[send-email-enhanced] Success on attempt ${attempt}:`, response);
+          return response;
+          
+        } catch (error: any) {
+          lastError = error;
+          console.error(`[send-email-enhanced] Attempt ${attempt} failed:`, error);
+          
+          if (attempt < maxRetries) {
+            const delay = Math.pow(2, attempt - 1) * 1000;
+            console.log(`[send-email-enhanced] Retrying in ${delay}ms...`);
+            await sleep(delay);
+          }
+        }
+      }
+      
+      throw lastError;
+    };
 
     // Send email with retry logic
     const emailResponse = await sendEmailWithRetry({
@@ -112,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     // Log success for monitoring
-    console.log(`[EmailService] Email sent successfully to ${to}`, {
+    console.log(`[send-email-enhanced] Email sent successfully to ${to}`, {
       id: emailResponse.data?.id,
       subject,
       timestamp: new Date().toISOString()
@@ -128,9 +132,8 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
   } catch (error: any) {
-    console.error("[EmailService] Fatal error:", error);
+    console.error("[send-email-enhanced] Fatal error:", error);
     
-    // Log detailed error for debugging
     const errorLog = {
       error: error.message,
       stack: error.stack,
@@ -138,12 +141,11 @@ const handler = async (req: Request): Promise<Response> => {
       resend_api_configured: !!Deno.env.get("RESEND_API_KEY")
     };
     
-    console.error("[EmailService] Error details:", errorLog);
+    console.error("[send-email-enhanced] Error details:", errorLog);
 
     return new Response(
       JSON.stringify({ 
-        error: error.message || "Failed to send email",
-        details: process.env.NODE_ENV === 'development' ? errorLog : undefined
+        error: error.message || "Failed to send email"
       }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );

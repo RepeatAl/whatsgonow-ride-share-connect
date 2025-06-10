@@ -168,7 +168,7 @@ serve(async (req) => {
 
     console.log('✅ Pre-registration inserted successfully:', preRegData.id);
 
-    // REFACTORED: Email sending via send-email-enhanced Function
+    // Email sending via send-email-enhanced function
     let emailSent = false;
     let emailSendFailed = false;
     
@@ -245,7 +245,7 @@ serve(async (req) => {
         </html>
       `;
 
-      // REFACTORED: Use send-email-enhanced function instead of direct Resend API call
+      // Use send-email-enhanced function instead of direct Resend API call
       const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-email-enhanced', {
         body: {
           to: email,
@@ -259,6 +259,18 @@ serve(async (req) => {
       if (emailError) {
         console.error('❌ send-email-enhanced error:', emailError);
         emailSendFailed = true;
+        
+        // Return 500 on email failure as per Guard Rail #3
+        return new Response(
+          JSON.stringify({ 
+            error: 'Email failed',
+            details: emailError.message 
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
       } else {
         console.log('✅ Email sent successfully via send-email-enhanced:', emailResult);
         emailSent = true;
@@ -267,9 +279,21 @@ serve(async (req) => {
     } catch (emailError) {
       console.error('⚠️ Email sending exception:', emailError);
       emailSendFailed = true;
+      
+      // Return 500 on email failure as per Guard Rail #3
+      return new Response(
+        JSON.stringify({ 
+          error: 'Email failed',
+          details: emailError.message 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
     }
 
-    // ENHANCED: Atomic update of notification status
+    // Update notification status if email was sent successfully
     if (emailSent) {
       try {
         await supabaseClient
@@ -279,11 +303,10 @@ serve(async (req) => {
         console.log('✅ Updated notification_sent flag to true');
       } catch (updateError) {
         console.error('⚠️ Failed to update notification_sent flag:', updateError);
-        // Non-critical error, continue
       }
     }
 
-    // ENHANCED: Return detailed status
+    // Return success response
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -297,7 +320,7 @@ serve(async (req) => {
           : 'Vorregistrierung abgeschlossen.'
       }),
       { 
-        status: 201, // Changed to 201 for created
+        status: 201,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     )

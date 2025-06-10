@@ -1,10 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-// Initialize Resend with the API key from environment variables
-const resendApiKey = Deno.env.get("RESEND_API_KEY");
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // CORS Headers für Cross-Origin Anfragen
 const corsHeaders = {
@@ -19,30 +15,29 @@ serve(async (req) => {
   }
 
   try {
+    console.log('[auth-email-handler] Function started');
+    
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    )
+    
     const { email, type, redirectUrl } = await req.json();
     
-    console.log(`Processing email request for ${email} of type ${type}`);
-    console.log("Resend API Key status:", resendApiKey ? "✅ Present" : "❌ Missing");
+    console.log(`[auth-email-handler] Processing email request for ${email} of type ${type}`);
 
-    // Überprüfen, ob der Resend API-Key konfiguriert ist
-    if (!resendApiKey) {
-      console.warn("RESEND_API_KEY not configured, falling back to simulation mode");
-      // Für Testzwecke nur Logging, keine echte E-Mail
-      console.log(`Simulation: E-Mail-Versand an ${email} vom Typ ${type}`);
-      
+    // Validate required fields
+    if (!email || !type) {
       return new Response(
-        JSON.stringify({
-          success: true,
-          message: "E-Mail wurde simuliert (nur für Testzwecke, kein RESEND_API_KEY konfiguriert)",
-        }),
+        JSON.stringify({ error: "Missing required fields: email, type" }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
+          status: 400,
         }
       );
     }
     
-    // Wenn der API-Key vorhanden ist, echte E-Mail senden
+    // Email content based on type
     let emailContent = "Willkommen bei Whatsgonow!";
     let emailSubject = "Willkommen bei Whatsgonow";
     
@@ -64,20 +59,40 @@ serve(async (req) => {
       `;
     }
     
-    const emailResponse = await resend.emails.send({
-      from: "Whatsgonow <noreply@whatsgonow.com>",
-      to: [email],
-      subject: emailSubject,
-      html: emailContent
+    console.log('[auth-email-handler] Sending email via send-email-enhanced...');
+
+    // Use invoke('send-email-enhanced') instead of direct Resend call
+    const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-email-enhanced', {
+      body: {
+        to: email,
+        subject: emailSubject,
+        html: emailContent,
+        from: 'Whatsgonow <noreply@whatsgonow.com>',
+        replyTo: 'support@whatsgonow.com'
+      }
     });
-    
-    console.log("Email sent successfully:", emailResponse);
+
+    if (emailError) {
+      console.error('[auth-email-handler] send-email-enhanced error:', emailError);
+      return new Response(
+        JSON.stringify({ 
+          error: "Email failed", 
+          details: emailError.message 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        }
+      );
+    }
+
+    console.log('[auth-email-handler] Email sent successfully via send-email-enhanced:', emailResult);
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "E-Mail wurde erfolgreich gesendet",
-        data: emailResponse
+        data: emailResult
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -85,12 +100,11 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Fehler beim Verarbeiten der E-Mail-Anfrage:", error);
+    console.error("[auth-email-handler] Fehler beim Verarbeiten der E-Mail-Anfrage:", error);
     
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Ein Fehler ist aufgetreten",
-        hint: "Überprüfe die RESEND_API_KEY Konfiguration in den Supabase Secrets"
+        error: error instanceof Error ? error.message : "Ein Fehler ist aufgetreten"
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
