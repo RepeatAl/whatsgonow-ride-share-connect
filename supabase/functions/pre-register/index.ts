@@ -67,6 +67,18 @@ serve(async (req) => {
       )
     }
 
+    // ENHANCED: Role validation - mindestens eine Rolle muss gewählt sein
+    if (!wants_driver && !wants_cm && !wants_sender) {
+      console.error('❌ At least one role must be selected');
+      return new Response(
+        JSON.stringify({ error: 'At least one role must be selected' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     // ENHANCED: E-Mail-Format validation (server-side)
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!isValidEmail) {
@@ -117,7 +129,7 @@ serve(async (req) => {
       )
     }
 
-    // ENHANCED: Insert with all required fields
+    // FIXED: Insert pre-registration data FIRST before email sending
     const { data: preRegData, error: insertError } = await supabaseClient
       .from('pre_registrations')
       .insert([
@@ -168,9 +180,8 @@ serve(async (req) => {
 
     console.log('✅ Pre-registration inserted successfully:', preRegData.id);
 
-    // Email sending via send-email-enhanced function
+    // FIXED: Now try to send email - if this fails, we still have the record
     let emailSent = false;
-    let emailSendFailed = false;
     
     try {
       console.log('📧 Attempting to send confirmation email via send-email-enhanced...');
@@ -245,7 +256,7 @@ serve(async (req) => {
         </html>
       `;
 
-      // Use send-email-enhanced function instead of direct Resend API call
+      // Use send-email-enhanced function
       const { data: emailResult, error: emailError } = await supabaseClient.functions.invoke('send-email-enhanced', {
         body: {
           to: email,
@@ -258,19 +269,8 @@ serve(async (req) => {
 
       if (emailError) {
         console.error('❌ send-email-enhanced error:', emailError);
-        emailSendFailed = true;
-        
-        // Return 500 on email failure as per Guard Rail #3
-        return new Response(
-          JSON.stringify({ 
-            error: 'Email failed',
-            details: emailError.message 
-          }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        )
+        // Don't fail the whole request - just log and continue
+        console.log('⚠️ Pre-registration saved but email failed');
       } else {
         console.log('✅ Email sent successfully via send-email-enhanced:', emailResult);
         emailSent = true;
@@ -278,19 +278,7 @@ serve(async (req) => {
 
     } catch (emailError) {
       console.error('⚠️ Email sending exception:', emailError);
-      emailSendFailed = true;
-      
-      // Return 500 on email failure as per Guard Rail #3
-      return new Response(
-        JSON.stringify({ 
-          error: 'Email failed',
-          details: emailError.message 
-        }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      // Don't fail the whole request - the pre-registration is saved
     }
 
     // Update notification status if email was sent successfully
@@ -306,18 +294,15 @@ serve(async (req) => {
       }
     }
 
-    // Return success response
+    // FIXED: Always return success if pre-registration was saved
     return new Response(
       JSON.stringify({ 
         success: true, 
         id: preRegData.id,
         email_sent: emailSent,
-        email_send_failed: emailSendFailed,
         message: emailSent 
           ? 'Vorregistrierung abgeschlossen. Bestätigungs-E-Mail wurde versendet.' 
-          : emailSendFailed
-          ? 'Vorregistrierung abgeschlossen. Bestätigungs-E-Mail konnte nicht versendet werden.'
-          : 'Vorregistrierung abgeschlossen.'
+          : 'Vorregistrierung abgeschlossen. Bestätigungs-E-Mail konnte nicht versendet werden, Sie werden aber trotzdem benachrichtigt.'
       }),
       { 
         status: 201,

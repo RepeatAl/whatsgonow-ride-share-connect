@@ -46,6 +46,7 @@ export const useAuthRedirect = (
       onboardingComplete: profile?.onboarding_complete,
       userRole: profile?.role,
       currentPath: location.pathname,
+      searchParams: location.search,
       alreadyRedirected: redirectedRef.current 
     });
 
@@ -57,11 +58,37 @@ export const useAuthRedirect = (
     }
 
     const currentPath = location.pathname;
-    console.debug('🧭 useAuthRedirect: Evaluating path:', currentPath);
+    const searchParams = new URLSearchParams(location.search);
+    const flowType = searchParams.get('type'); // "email_confirm", "recovery", etc.
+    const accessToken = searchParams.get('access_token');
+    
+    console.debug('🧭 useAuthRedirect: Evaluating path:', currentPath, 'flowType:', flowType);
+
+    // CRITICAL FIX: Handle email confirmation flow
+    if (user && flowType === 'email_confirm' && !redirectedRef.current) {
+      redirectedRef.current = true;
+      console.debug('✅ useAuthRedirect: Email confirmed, redirecting to home page');
+      navigate(getLocalizedUrl('/?verified=1'), { replace: true });
+      return;
+    }
+
+    // CRITICAL FIX: Handle password recovery flow
+    if (flowType === 'recovery' && accessToken && !redirectedRef.current) {
+      redirectedRef.current = true;
+      console.debug('✅ useAuthRedirect: Password recovery, redirecting to reset page');
+      navigate(getLocalizedUrl(`/reset-password?access_token=${accessToken}&type=recovery`), { replace: true });
+      return;
+    }
 
     // FIXED: Improved auth page detection
     const isAuthPage = /^\/[a-z]{2}\/(login|register)$|^\/(login|register)$/.test(currentPath);
     const isPreRegisterPage = /^\/[a-z]{2}\/pre-register$|^\/pre-register$/.test(currentPath);
+    const isResetPasswordPage = /^\/[a-z]{2}\/reset-password$|^\/reset-password$/.test(currentPath);
+
+    // Don't redirect if we're on reset password page
+    if (isResetPasswordPage) {
+      return;
+    }
 
     // CRITICAL FIX: Handle authenticated user on login/register/pre-register pages
     if (user && profile?.profile_complete && (isAuthPage || isPreRegisterPage) && !redirectedRef.current) {
@@ -80,7 +107,8 @@ export const useAuthRedirect = (
       user && 
       profile?.profile_complete && 
       (currentPath === '/' || /^\/[a-z]{2}\/?$/.test(currentPath)) && 
-      !redirectedRef.current
+      !redirectedRef.current &&
+      !flowType // Don't redirect if we're in a special flow
     ) {
       redirectedRef.current = true;
       console.debug('🏠 useAuthRedirect: Authenticated user on home page, redirecting to dashboard');
@@ -145,7 +173,7 @@ export const useAuthRedirect = (
       return;
     }
 
-  }, [user, profile, loading, isProfileLoading, location.pathname, navigate, currentLanguage, getLocalizedUrl]);
+  }, [user, profile, loading, isProfileLoading, location.pathname, location.search, navigate, currentLanguage, getLocalizedUrl]);
 
   // Reset redirect flag when location changes significantly
   useEffect(() => {

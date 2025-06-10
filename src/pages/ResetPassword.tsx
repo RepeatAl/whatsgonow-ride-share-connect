@@ -58,12 +58,17 @@ const ResetPassword = () => {
       }
 
       console.log("✅ Password reset successful");
-      setResetComplete(true);
+      
+      // FIXED: Sign out user after password reset and redirect to login
+      await supabase.auth.signOut();
       
       toast({
         title: "Passwort erfolgreich geändert",
         description: "Sie können sich jetzt mit Ihrem neuen Passwort anmelden.",
       });
+
+      // Redirect to login page with success message
+      navigate(getLocalizedUrl("/login?pwReset=1"), { replace: true });
 
     } catch (error: any) {
       console.error("❌ Unexpected error:", error);
@@ -72,29 +77,6 @@ const ResetPassword = () => {
       setLoading(false);
     }
   };
-
-  if (resetComplete) {
-    return (
-      <Layout pageType="public">
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <CardTitle className="text-2xl">Passwort geändert</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-center">
-              <p className="text-gray-600">
-                Ihr Passwort wurde erfolgreich geändert. Sie können sich jetzt mit Ihrem neuen Passwort anmelden.
-              </p>
-              <Button onClick={() => navigate(getLocalizedUrl("/login"))} className="w-full">
-                Zur Anmeldung
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout pageType="public">
