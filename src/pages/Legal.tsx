@@ -524,7 +524,7 @@ const Legal = () => {
                       <Badge variant="outline">Standard-Funktionen</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded">
-                      <span className="text-sm">Problematische Nutzer (Trust-Score < 50)</span>
+                      <span className="text-sm">Problematische Nutzer (Trust-Score &lt; 50)</span>
                       <Badge variant="destructive">Eingeschränkte Funktionen</Badge>
                     </div>
                   </div>
