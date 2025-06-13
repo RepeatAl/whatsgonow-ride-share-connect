@@ -18,6 +18,7 @@ export const ROUTES = {
   
   // Legal and policy pages - ADDED
   legal: '/legal',
+  impressum: '/impressum',  // Added Impressum route
   privacyPolicy: '/privacy-policy',
   about: '/about',
   esgDashboard: '/esg-dashboard',
@@ -78,6 +79,7 @@ export const publicRoutes = [
   ROUTES.faq,
   ROUTES.support,
   ROUTES.legal,
+  ROUTES.impressum,  // Added Impressum to public routes
   ROUTES.privacyPolicy,
   ROUTES.about,
   ROUTES.esgDashboard,

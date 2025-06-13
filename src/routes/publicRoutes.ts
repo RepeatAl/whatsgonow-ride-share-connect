@@ -18,6 +18,7 @@ export const publicRoutes = [
   // === LEGAL & POLICY PAGES (CRITICAL FIX) ===
   '/legal',
   '/imprint',
+  '/impressum',  // Added Impressum route
   '/privacy-policy',
   '/terms-of-service',
   
