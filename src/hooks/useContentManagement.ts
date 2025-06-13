@@ -73,6 +73,18 @@ export interface FooterLinkTranslation {
   updated_at: string;
 }
 
+// Enhanced FAQ Item with translation data
+export interface FAQItemWithTranslation extends FAQItem {
+  question: string;
+  answer: string;
+  translation_status?: string | null;
+}
+
+// Enhanced Footer Link with translation data
+export interface FooterLinkWithTranslation extends FooterLink {
+  label: string;
+}
+
 // Hook for legal pages management
 export const useLegalPages = () => {
   const { currentLanguage } = useLanguageMCP();
@@ -80,7 +92,7 @@ export const useLegalPages = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLegalPages = async () => {
+  const fetchLegalPages = async (): Promise<LegalPage[]> => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -90,10 +102,13 @@ export const useLegalPages = () => {
         .order('created_at');
 
       if (error) throw error;
-      setLegalPages(data || []);
+      const pages = data || [];
+      setLegalPages(pages);
+      return pages;
     } catch (err) {
       console.error('Error fetching legal pages:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
+      return [];
     } finally {
       setLoading(false);
     }
@@ -152,7 +167,7 @@ export const useFAQ = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchFAQ = async () => {
+  const fetchFAQ = async (): Promise<FAQItem[]> => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -163,16 +178,19 @@ export const useFAQ = () => {
         .order('order_index');
 
       if (error) throw error;
-      setFaqItems(data || []);
+      const items = data || [];
+      setFaqItems(items);
+      return items;
     } catch (err) {
       console.error('Error fetching FAQ:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  const getFAQWithTranslations = async () => {
+  const getFAQWithTranslations = async (): Promise<FAQItemWithTranslation[]> => {
     try {
       // Get FAQ items with translations
       const { data, error } = await supabase
@@ -193,7 +211,13 @@ export const useFAQ = () => {
 
       if (error) {
         // Fallback to default content if no translations
-        return await fetchFAQ();
+        const fallbackItems = await fetchFAQ();
+        return fallbackItems.map(item => ({
+          ...item,
+          question: item.default_question,
+          answer: item.default_answer,
+          translation_status: null
+        }));
       }
 
       return data?.map(item => ({
@@ -204,7 +228,8 @@ export const useFAQ = () => {
       })) || [];
     } catch (err) {
       console.error('Error fetching FAQ with translations:', err);
-      throw err;
+      // Return empty array instead of throwing
+      return [];
     }
   };
 
@@ -228,7 +253,7 @@ export const useFooterLinks = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchFooterLinks = async () => {
+  const fetchFooterLinks = async (): Promise<FooterLink[]> => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -239,16 +264,19 @@ export const useFooterLinks = () => {
         .order('order_index');
 
       if (error) throw error;
-      setFooterLinks(data || []);
+      const links = data || [];
+      setFooterLinks(links);
+      return links;
     } catch (err) {
       console.error('Error fetching footer links:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  const getFooterLinksWithTranslations = async () => {
+  const getFooterLinksWithTranslations = async (): Promise<FooterLinkWithTranslation[]> => {
     try {
       const { data, error } = await supabase
         .from('footer_links')
@@ -266,7 +294,11 @@ export const useFooterLinks = () => {
 
       if (error) {
         // Fallback to default labels
-        return await fetchFooterLinks();
+        const fallbackLinks = await fetchFooterLinks();
+        return fallbackLinks.map(link => ({
+          ...link,
+          label: link.label_default
+        }));
       }
 
       return data?.map(link => ({
@@ -275,11 +307,11 @@ export const useFooterLinks = () => {
       })) || [];
     } catch (err) {
       console.error('Error fetching footer links with translations:', err);
-      throw err;
+      return [];
     }
   };
 
-  const getFooterLinksBySection = async (section: string) => {
+  const getFooterLinksBySection = async (section: string): Promise<FooterLinkWithTranslation[]> => {
     const links = await getFooterLinksWithTranslations();
     return links.filter(link => link.section === section);
   };

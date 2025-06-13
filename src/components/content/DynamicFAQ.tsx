@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, HelpCircle, Users, CreditCard, Shield, Headphones } from 'lucide-react';
-import { useFAQ } from '@/hooks/useContentManagement';
+import { useFAQ, FAQItemWithTranslation } from '@/hooks/useContentManagement';
 import { useTranslation } from 'react-i18next';
 
 export const DynamicFAQ: React.FC = () => {
   const { t } = useTranslation(['common', 'faq']);
   const { getFAQWithTranslations } = useFAQ();
-  const [faqData, setFaqData] = useState<any[]>([]);
+  const [faqData, setFaqData] = useState<FAQItemWithTranslation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -23,9 +23,11 @@ export const DynamicFAQ: React.FC = () => {
       try {
         setLoading(true);
         const data = await getFAQWithTranslations();
-        setFaqData(data);
+        // Ensure we always set an array
+        setFaqData(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Error loading FAQ:', err);
+        setFaqData([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
@@ -45,9 +47,15 @@ export const DynamicFAQ: React.FC = () => {
     }
   };
 
-  const categories = [...new Set(faqData.map(item => item.category))];
+  // Ensure faqData is always an array before processing
+  const safeGetCategories = (): string[] => {
+    if (!Array.isArray(faqData)) return [];
+    return [...new Set(faqData.map(item => item.category))];
+  };
+
+  const categories = safeGetCategories();
   
-  const filteredFAQ = faqData.filter(item => {
+  const filteredFAQ = Array.isArray(faqData) ? faqData.filter(item => {
     const matchesSearch = !searchTerm || 
       item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.answer.toLowerCase().includes(searchTerm.toLowerCase());
@@ -55,7 +63,7 @@ export const DynamicFAQ: React.FC = () => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     
     return matchesSearch && matchesCategory;
-  });
+  }) : [];
 
   const groupedFAQ = filteredFAQ.reduce((acc, item) => {
     if (!acc[item.category]) {
@@ -63,7 +71,7 @@ export const DynamicFAQ: React.FC = () => {
     }
     acc[item.category].push(item);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, FAQItemWithTranslation[]>);
 
   if (loading) {
     return (
@@ -127,7 +135,7 @@ export const DynamicFAQ: React.FC = () => {
                 {getCategoryIcon(category)}
                 {category}
                 <Badge variant="secondary" className="ml-1">
-                  {faqData.filter(item => item.category === category).length}
+                  {Array.isArray(faqData) ? faqData.filter(item => item.category === category).length : 0}
                 </Badge>
               </Button>
             ))}
