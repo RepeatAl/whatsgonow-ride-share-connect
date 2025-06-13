@@ -3,26 +3,38 @@
 
 Alle wichtigen Änderungen am Projekt werden in dieser Datei dokumentiert.
 
-## [2025-06-13] FAQ & Content Management Bereich gesperrt
+## [2025-06-13] FAQ & Content Management Bereich final stabilisiert und gesperrt
 
 ### Hinzugefügt
-- Lock-Zertifikat für FAQ & Content Management Bereich
-- Vollständige TypeScript-Stabilisierung in useContentManagement.ts
-- Loading-State-Management ohne Flimmern in DynamicFAQ.tsx
-- Mount-State-Handling für bessere Hydration
-- Type Guards und Error Boundaries für alle FAQ-Funktionen
+- RLS-Policies für öffentlichen Zugriff auf Content-Tabellen (faq, faq_translations, legal_pages, legal_page_translations, footer_links, footer_link_translations)
+- Public-safe Spracherkennung ohne Auth-Abhängigkeiten in useContentManagement.ts
+- Error-State-Handling mit Fallback-UI in DynamicFAQ.tsx
+- Auth-unabhängige URL-Navigation in DynamicLegalPage.tsx
 
 ### Verbessert
-- FAQ-Seite Flimmern vollständig behoben
-- Explizite Return-Types für alle async Funktionen
-- Konsistente Array-Returns und Fallback-Mechanismen
-- Error-Handling mit graceful degradation
-- Performance-Optimierung beim Laden der FAQ-Daten
+- FAQ-Seite funktioniert jetzt vollständig ohne Anmeldung (401-Fehler behoben)
+- Alle Auth/Profile-Abhängigkeiten aus Content-Management entfernt
+- Robuste Spracherkennung: URL-Parameter → Browser-Language → Fallback
+- Verbesserte Error-Boundaries und Fallback-Mechanismen
+- Stabilere Loading-States ohne Flimmern
+
+### Behoben
+- **KRITISCH**: 401-Fehler "permission denied for table profiles" in FAQ vollständig behoben
+- RLS-Policies-Konflikte durch Public-Read-Access gelöst
+- Auth-Schleifen in useLanguageMCP für anonyme Nutzer eliminiert
+- Infinite-Query-Loops durch Auth-Context-Abhängigkeiten behoben
 
 ### Gesperrt
-- src/hooks/useContentManagement.ts - TypeScript-Safety, explizite Return-Types
-- src/components/content/DynamicFAQ.tsx - Loading-Stabilität, Mount-Management
-- Bereich ab sofort gesperrt („locked-by-default"). Änderungen nur nach CTO-Approval!
+- src/hooks/useContentManagement.ts - **FINAL LOCKED**: Public-safe, Auth-unabhängig, RLS-kompatibel
+- src/components/content/DynamicFAQ.tsx - **FINAL LOCKED**: Public-Mode, Error-Resilient, Stabil
+- src/components/content/DynamicLegalPage.tsx - **FINAL LOCKED**: Auth-frei, URL-safe
+- **Bereich ab sofort final gesperrt („locked-by-default")**. Änderungen nur nach CTO-Approval!
+
+### Testing-Status
+- ✅ FAQ-Seite lädt ohne 401-Fehler im anonymen Modus
+- ✅ Keine Profile/Auth-Queries mehr in Content-Management
+- ✅ Public RLS-Policies funktional getestet
+- ✅ Mehrsprachigkeit ohne Auth-Context funktional
 
 ## [Unreleased]
 
@@ -71,3 +83,4 @@ Alle wichtigen Änderungen am Projekt werden in dieser Datei dokumentiert.
 - Initialisierung des Projekts
 - Grundlegende Benutzeroberfläche
 - Pre-Registration Formular
+

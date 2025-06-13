@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
+import i18next from 'i18next';
 
 // Types for content management
 export interface LegalPage {
@@ -87,9 +87,40 @@ export interface FooterLinkWithTranslation extends FooterLink {
   label: string;
 }
 
-// Hook for legal pages management
+// PUBLIC SAFE: Get current language without auth dependency
+const getCurrentLanguage = (): string => {
+  // 1. Try URL parameter first (most reliable for public pages)
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlLang = urlParams.get('lang');
+  if (urlLang && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(urlLang)) {
+    return urlLang;
+  }
+
+  // 2. Try URL path parameter
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  if (pathParts.length > 0 && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(pathParts[0])) {
+    return pathParts[0];
+  }
+
+  // 3. Try i18next current language
+  const i18nLang = i18next.language;
+  if (i18nLang && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(i18nLang)) {
+    return i18nLang;
+  }
+
+  // 4. Try browser language
+  const browserLang = navigator.language.split('-')[0];
+  if (['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(browserLang)) {
+    return browserLang;
+  }
+
+  // 5. Default fallback
+  return 'de';
+};
+
+// Hook for legal pages management - PUBLIC SAFE
 export const useLegalPages = () => {
-  const { currentLanguage } = useLanguageMCP();
+  const [currentLanguage] = useState(getCurrentLanguage());
   const [legalPages, setLegalPages] = useState<LegalPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +128,7 @@ export const useLegalPages = () => {
   const fetchLegalPages = async (): Promise<LegalPage[]> => {
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await supabase
         .from('legal_pages')
         .select('*')
@@ -162,9 +194,9 @@ export const useLegalPages = () => {
   };
 };
 
-// Hook for FAQ management
+// Hook for FAQ management - PUBLIC SAFE
 export const useFAQ = () => {
-  const { currentLanguage } = useLanguageMCP();
+  const [currentLanguage] = useState(getCurrentLanguage());
   const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -172,6 +204,7 @@ export const useFAQ = () => {
   const fetchFAQ = async (): Promise<FAQItem[]> => {
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await supabase
         .from('faq')
         .select('*')
@@ -194,7 +227,8 @@ export const useFAQ = () => {
 
   const getFAQWithTranslations = async (): Promise<FAQItemWithTranslation[]> => {
     try {
-      // Get FAQ items with translations
+      setError(null);
+      // Get FAQ items with translations - PUBLIC SAFE QUERY
       const { data, error } = await supabase
         .from('faq')
         .select(`
@@ -212,6 +246,7 @@ export const useFAQ = () => {
         .order('order_index');
 
       if (error) {
+        console.warn('Error fetching FAQ translations, falling back to default content:', error);
         // Fallback to default content if no translations
         const fallbackItems = await fetchFAQ();
         return fallbackItems.map(item => ({
@@ -233,6 +268,7 @@ export const useFAQ = () => {
       return mappedData;
     } catch (err) {
       console.error('Error fetching FAQ with translations:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load FAQ');
       // Always return empty array instead of throwing
       return [];
     }
@@ -251,9 +287,9 @@ export const useFAQ = () => {
   };
 };
 
-// Hook for footer links management
+// Hook for footer links management - PUBLIC SAFE
 export const useFooterLinks = () => {
-  const { currentLanguage } = useLanguageMCP();
+  const [currentLanguage] = useState(getCurrentLanguage());
   const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -261,6 +297,7 @@ export const useFooterLinks = () => {
   const fetchFooterLinks = async (): Promise<FooterLink[]> => {
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await supabase
         .from('footer_links')
         .select('*')
@@ -283,6 +320,7 @@ export const useFooterLinks = () => {
 
   const getFooterLinksWithTranslations = async (): Promise<FooterLinkWithTranslation[]> => {
     try {
+      setError(null);
       const { data, error } = await supabase
         .from('footer_links')
         .select(`
@@ -298,6 +336,7 @@ export const useFooterLinks = () => {
         .order('order_index');
 
       if (error) {
+        console.warn('Error fetching footer link translations, falling back to default labels:', error);
         // Fallback to default labels
         const fallbackLinks = await fetchFooterLinks();
         return fallbackLinks.map(link => ({
@@ -313,6 +352,7 @@ export const useFooterLinks = () => {
       }));
     } catch (err) {
       console.error('Error fetching footer links with translations:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load footer links');
       return []; // Always return empty array
     }
   };

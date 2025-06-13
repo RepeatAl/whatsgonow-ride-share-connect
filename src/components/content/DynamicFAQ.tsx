@@ -8,13 +8,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, HelpCircle, Users, CreditCard, Shield, Headphones } from 'lucide-react';
+import { Search, HelpCircle, Users, CreditCard, Shield, Headphones, AlertCircle } from 'lucide-react';
 import { useFAQ, FAQItemWithTranslation } from '@/hooks/useContentManagement';
 import { useTranslation } from 'react-i18next';
 
 export const DynamicFAQ: React.FC = () => {
   const { t } = useTranslation(['common', 'faq']);
-  const { getFAQWithTranslations } = useFAQ();
+  const { getFAQWithTranslations, error: faqError } = useFAQ();
   const [faqData, setFaqData] = useState<FAQItemWithTranslation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -125,6 +125,37 @@ export const DynamicFAQ: React.FC = () => {
               <div className="h-6 bg-gray-200 rounded"></div>
             </div>
           </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Error state with fallback
+  if (faqError && faqData.length === 0) {
+    return (
+      <Layout title="FAQ - Whatsgonow" description="Häufig gestellte Fragen">
+        <div className="container max-w-4xl px-4 py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
+              <HelpCircle className="h-8 w-8 text-primary" />
+              FAQ - Häufig gestellte Fragen
+            </h1>
+          </div>
+          
+          <Card className="border-yellow-200 bg-yellow-50">
+            <CardContent className="p-6 text-center">
+              <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                FAQ momentan nicht verfügbar
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Die FAQ-Inhalte können derzeit nicht geladen werden. Bitte versuchen Sie es später erneut.
+              </p>
+              <Button onClick={() => window.location.reload()}>
+                Seite neu laden
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );

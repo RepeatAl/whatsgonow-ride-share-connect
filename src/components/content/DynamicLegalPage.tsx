@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, AlertCircle } from 'lucide-react';
 import { useLegalPages } from '@/hooks/useContentManagement';
-import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
 
 interface DynamicLegalPageProps {
   slug: string;
@@ -15,13 +14,26 @@ interface DynamicLegalPageProps {
   fallbackDescription?: string;
 }
 
+// PUBLIC SAFE: Get localized URL without auth dependency
+const getLocalizedUrl = (path: string): string => {
+  // Simple URL construction for public pages
+  const currentPath = window.location.pathname;
+  const langMatch = currentPath.match(/^\/([a-z]{2})\//);
+  const currentLang = langMatch ? langMatch[1] : '';
+  
+  if (currentLang && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(currentLang)) {
+    return `/${currentLang}${path}`;
+  }
+  
+  return path;
+};
+
 export const DynamicLegalPage: React.FC<DynamicLegalPageProps> = ({
   slug,
   fallbackTitle = 'Legal Information',
   fallbackDescription = 'Legal information and terms'
 }) => {
   const { getLegalPageWithTranslation } = useLegalPages();
-  const { getLocalizedUrl } = useLanguageMCP();
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +42,7 @@ export const DynamicLegalPage: React.FC<DynamicLegalPageProps> = ({
     const loadPage = async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await getLegalPageWithTranslation(slug);
         setPageData(data);
       } catch (err) {
