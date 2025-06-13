@@ -18,7 +18,8 @@ import DynamicImpressum from "./pages/DynamicImpressum";
 import DynamicLegal from "./pages/DynamicLegal";
 import DynamicPrivacyPolicy from "./pages/DynamicPrivacyPolicy";
 
-// CRITICAL CHANGE: FAQ now uses StaticFaq (isolated, no global contexts)
+// FINAL VERSION: FAQ now uses OptimizedFaq (production-ready, isolated)
+import OptimizedFaq from "./pages/OptimizedFaq";
 import StaticFaq from "./pages/StaticFaq";
 import DynamicFaq from "./pages/DynamicFaq";
 
@@ -47,9 +48,9 @@ const App = () => (
                 <Route path="/register" element={<Register />} />
                 <Route path="/:lang/register" element={<Register />} />
                 
-                {/* FAQ routes - CRITICAL CHANGE: Now using StaticFaq (isolated) */}
-                <Route path="/faq" element={<StaticFaq />} />
-                <Route path="/:lang/faq" element={<StaticFaq />} />
+                {/* FAQ routes - FINAL VERSION: Now using OptimizedFaq (production-ready) */}
+                <Route path="/faq" element={<OptimizedFaq />} />
+                <Route path="/:lang/faq" element={<OptimizedFaq />} />
                 
                 {/* Legal pages routes - LOCKED: Still using static components */}
                 <Route path="/impressum" element={<Impressum />} />
@@ -67,8 +68,10 @@ const App = () => (
                 <Route path="/dynamic/privacy-policy" element={<DynamicPrivacyPolicy />} />
                 <Route path="/:lang/dynamic/privacy-policy" element={<DynamicPrivacyPolicy />} />
                 
-                {/* TESTING: Old Dynamic FAQ on different route for comparison */}
+                {/* TESTING: Legacy FAQ versions for comparison */}
+                <Route path="/static/faq" element={<StaticFaq />} />
                 <Route path="/dynamic/faq" element={<DynamicFaq />} />
+                <Route path="/:lang/static/faq" element={<StaticFaq />} />
                 <Route path="/:lang/dynamic/faq" element={<DynamicFaq />} />
                 
                 <Route path="/404" element={<NotFound />} />
