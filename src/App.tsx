@@ -8,8 +8,10 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
-// Import new Impressum page
+// Import new pages
 import Impressum from "./pages/Impressum";
+import Legal from "./pages/Legal";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 // Basic pages - only import what exists
 const Landing = lazy(() => import('./pages/Landing'));
@@ -36,9 +38,13 @@ const App = () => (
                 <Route path="/register" element={<Register />} />
                 <Route path="/:lang/register" element={<Register />} />
                 
-                {/* Add Impressum route */}
+                {/* Legal pages routes */}
                 <Route path="/impressum" element={<Impressum />} />
                 <Route path="/:lang/impressum" element={<Impressum />} />
+                <Route path="/legal" element={<Legal />} />
+                <Route path="/:lang/legal" element={<Legal />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/:lang/privacy-policy" element={<PrivacyPolicy />} />
                 
                 <Route path="/404" element={<NotFound />} />
                 <Route path="/:lang/404" element={<NotFound />} />
