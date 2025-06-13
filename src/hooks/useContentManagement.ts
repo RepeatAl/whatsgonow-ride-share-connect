@@ -1,4 +1,6 @@
 
+// [LOCKED: Do not modify without CTO approval – siehe docs/locks/CONTENT_FAQ_LOCK.md]
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguageMCP } from '@/mcp/language/LanguageMCP';
@@ -180,11 +182,11 @@ export const useFAQ = () => {
       if (error) throw error;
       const items = data || [];
       setFaqItems(items);
-      return items;
+      return items; // Explicit return
     } catch (err) {
       console.error('Error fetching FAQ:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      return [];
+      return []; // Explicit fallback return
     } finally {
       setLoading(false);
     }
@@ -220,15 +222,18 @@ export const useFAQ = () => {
         }));
       }
 
-      return data?.map(item => ({
+      // Always return an array, even if data is null/undefined
+      const mappedData = (data || []).map(item => ({
         ...item,
         question: item.faq_translations?.[0]?.question || item.default_question,
         answer: item.faq_translations?.[0]?.answer || item.default_answer,
         translation_status: item.faq_translations?.[0]?.status || null
-      })) || [];
+      }));
+
+      return mappedData;
     } catch (err) {
       console.error('Error fetching FAQ with translations:', err);
-      // Return empty array instead of throwing
+      // Always return empty array instead of throwing
       return [];
     }
   };
@@ -266,11 +271,11 @@ export const useFooterLinks = () => {
       if (error) throw error;
       const links = data || [];
       setFooterLinks(links);
-      return links;
+      return links; // Explicit return
     } catch (err) {
       console.error('Error fetching footer links:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      return [];
+      return []; // Explicit fallback return
     } finally {
       setLoading(false);
     }
@@ -301,19 +306,20 @@ export const useFooterLinks = () => {
         }));
       }
 
-      return data?.map(link => ({
+      // Always return an array
+      return (data || []).map(link => ({
         ...link,
         label: link.footer_link_translations?.[0]?.label || link.label_default
-      })) || [];
+      }));
     } catch (err) {
       console.error('Error fetching footer links with translations:', err);
-      return [];
+      return []; // Always return empty array
     }
   };
 
   const getFooterLinksBySection = async (section: string): Promise<FooterLinkWithTranslation[]> => {
     const links = await getFooterLinksWithTranslations();
-    return links.filter(link => link.section === section);
+    return Array.isArray(links) ? links.filter(link => link.section === section) : [];
   };
 
   useEffect(() => {

@@ -1,4 +1,6 @@
 
+// [LOCKED: Do not modify without CTO approval – siehe docs/locks/CONTENT_FAQ_LOCK.md]
+
 import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,24 +19,47 @@ export const DynamicFAQ: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const loadFAQ = async () => {
       try {
         setLoading(true);
         const data = await getFAQWithTranslations();
-        // Ensure we always set an array
-        setFaqData(Array.isArray(data) ? data : []);
+        // Stabilized: Always ensure we have an array
+        if (Array.isArray(data)) {
+          setFaqData(data);
+        } else {
+          console.warn('FAQ data is not an array, using empty array fallback');
+          setFaqData([]);
+        }
       } catch (err) {
         console.error('Error loading FAQ:', err);
-        setFaqData([]); // Set empty array on error
+        setFaqData([]); // Always fallback to empty array
       } finally {
         setLoading(false);
       }
     };
 
     loadFAQ();
-  }, [getFAQWithTranslations]);
+  }, [getFAQWithTranslations, mounted]);
+
+  // Stabilized category extraction with type safety
+  const getCategories = (): string[] => {
+    if (!Array.isArray(faqData) || faqData.length === 0) return [];
+    try {
+      return [...new Set(faqData.map(item => item?.category).filter(Boolean))];
+    } catch (err) {
+      console.error('Error extracting categories:', err);
+      return [];
+    }
+  };
 
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
@@ -47,31 +72,45 @@ export const DynamicFAQ: React.FC = () => {
     }
   };
 
-  // Ensure faqData is always an array before processing
-  const safeGetCategories = (): string[] => {
+  const categories = getCategories();
+  
+  // Stabilized filtering with type safety
+  const getFilteredFAQ = (): FAQItemWithTranslation[] => {
     if (!Array.isArray(faqData)) return [];
-    return [...new Set(faqData.map(item => item.category))];
+    
+    try {
+      return faqData.filter(item => {
+        if (!item) return false;
+        
+        const matchesSearch = !searchTerm || 
+          (item.question && item.question.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (item.answer && item.answer.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        
+        return matchesSearch && matchesCategory;
+      });
+    } catch (err) {
+      console.error('Error filtering FAQ:', err);
+      return [];
+    }
   };
 
-  const categories = safeGetCategories();
-  
-  const filteredFAQ = Array.isArray(faqData) ? faqData.filter(item => {
-    const matchesSearch = !searchTerm || 
-      item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.answer.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  }) : [];
+  const filteredFAQ = getFilteredFAQ();
 
   const groupedFAQ = filteredFAQ.reduce((acc, item) => {
+    if (!item?.category) return acc;
     if (!acc[item.category]) {
       acc[item.category] = [];
     }
     acc[item.category].push(item);
     return acc;
   }, {} as Record<string, FAQItemWithTranslation[]>);
+
+  // Don't render until mounted to prevent hydration issues
+  if (!mounted) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -135,7 +174,7 @@ export const DynamicFAQ: React.FC = () => {
                 {getCategoryIcon(category)}
                 {category}
                 <Badge variant="secondary" className="ml-1">
-                  {Array.isArray(faqData) ? faqData.filter(item => item.category === category).length : 0}
+                  {faqData.filter(item => item?.category === category).length}
                 </Badge>
               </Button>
             ))}

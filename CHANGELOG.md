@@ -3,6 +3,27 @@
 
 Alle wichtigen Änderungen am Projekt werden in dieser Datei dokumentiert.
 
+## [2025-06-13] FAQ & Content Management Bereich gesperrt
+
+### Hinzugefügt
+- Lock-Zertifikat für FAQ & Content Management Bereich
+- Vollständige TypeScript-Stabilisierung in useContentManagement.ts
+- Loading-State-Management ohne Flimmern in DynamicFAQ.tsx
+- Mount-State-Handling für bessere Hydration
+- Type Guards und Error Boundaries für alle FAQ-Funktionen
+
+### Verbessert
+- FAQ-Seite Flimmern vollständig behoben
+- Explizite Return-Types für alle async Funktionen
+- Konsistente Array-Returns und Fallback-Mechanismen
+- Error-Handling mit graceful degradation
+- Performance-Optimierung beim Laden der FAQ-Daten
+
+### Gesperrt
+- src/hooks/useContentManagement.ts - TypeScript-Safety, explizite Return-Types
+- src/components/content/DynamicFAQ.tsx - Loading-Stabilität, Mount-Management
+- Bereich ab sofort gesperrt („locked-by-default"). Änderungen nur nach CTO-Approval!
+
 ## [Unreleased]
 
 ### Hinzugefügt
