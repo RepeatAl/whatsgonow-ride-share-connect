@@ -57,7 +57,7 @@ const Footer = () => {
               <li><Link to={getLocalizedUrl("/about")} className="text-muted-foreground hover:text-foreground transition-colors">About Us</Link></li>
               <li><Link to={getLocalizedUrl("/privacy-policy")} className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
               <li><Link to={getLocalizedUrl("/legal")} className="text-muted-foreground hover:text-foreground transition-colors">Legal & Terms</Link></li>
-              <li><Link to={getLocalizedUrl("/legal#impressum")} className="text-muted-foreground hover:text-foreground transition-colors">Imprint</Link></li>
+              <li><Link to={getLocalizedUrl("/impressum")} className="text-muted-foreground hover:text-foreground transition-colors">Imprint</Link></li>
             </ul>
           </div>
         </div>

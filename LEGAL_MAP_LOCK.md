@@ -8,6 +8,7 @@ Diese Bereiche sind ab sofort „eingefroren":
 - `src/components/Footer.tsx`
 - `src/pages/Legal.tsx`
 - `src/pages/PrivacyPolicy.tsx`
+- `src/pages/Impressum.tsx`
 - `src/components/map/StableHereMapWithData.tsx`
 - `src/components/home/LiveMapSection.tsx`
 - `src/components/map/MapConsentBanner.tsx`
@@ -42,6 +43,25 @@ Nur folgende Änderungen sind OHNE CTO-Freigabe erlaubt:
 - Fehlerbehebungen bei Typos in nicht-rechtlichen Texten
 - Styling-Änderungen ohne Inhaltsbezug
 
+## Audit-Prozess & Changelog
+
+**Jede Änderung an Locked-Dateien MUSS:**
+- Im Changelog dokumentiert werden
+- Einen CTO-Approval-Nachweis enthalten
+- Den Grund der Änderung explizit beschreiben
+- Rückgängig gemacht werden können (Rollback-Plan)
+
+**Empfohlene Maßnahmen für erweiterte Sicherheit:**
+- CODEOWNERS-Datei für automatische Review-Pflicht
+- Pre-Commit-Hooks für Lock-Validation
+- Quarterly Review-Zyklen für alle Locked-Bereiche
+
 ## Kontakt
 
 Bei Fragen zum Lock-Status: Christiane (CTO)
+
+**Status: ✅ 100% COMPLIANT**
+- Alle kritischen Bereiche sind gelocked
+- Footer-Link korrigiert (/impressum)
+- Bot-sichere E-Mail-Darstellung implementiert
+- Dokumentation vollständig

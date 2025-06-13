@@ -109,11 +109,17 @@ const Impressum = () => {
         </Card>
 
         <div className="mt-8 text-center">
-          <Button asChild>
-            <a href="mailto:admin@whatsgonow.com">
-              Kontakt aufnehmen
-            </a>
-          </Button>
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground mb-2">
+              Kontakt per E-Mail:
+            </p>
+            <span className="text-blue-600 select-all font-mono">
+              admin[at]whatsgonow[dot]com
+            </span>
+            <p className="text-xs text-muted-foreground mt-1">
+              Bitte [at] durch @ und [dot] durch . ersetzen.
+            </p>
+          </div>
         </div>
 
         <div className="mt-8 text-sm text-muted-foreground text-center">
