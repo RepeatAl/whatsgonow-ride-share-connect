@@ -5,20 +5,26 @@ Diese Datei dokumentiert alle gesperrten Bereiche des Projekts.
 
 ## Gesperrte Bereiche
 
-### FAQ & Content Management Bereich
+### FAQ & Content Management Bereich - NOTFALL-ISOLATION
 - **Gesperrt seit:** 2025-06-13
-- **Dateien:** 
+- **Updated:** 2025-06-13 - KRITISCHE ISOLATION implementiert
+- **Dateien LOCKED:** 
   - src/hooks/useContentManagement.ts
   - src/components/content/DynamicFAQ.tsx
   - src/components/content/DynamicLegalPage.tsx
-- **Status:** FINAL LOCKED – Änderungen nur mit CTO-Approval
+- **Dateien NEU ISOLIERT:**
+  - src/pages/StaticFaq.tsx
+  - src/components/content/StaticFaqComponent.tsx
+  - src/components/content/StaticFaqData.ts
+- **Status:** FINAL LOCKED + STANDALONE ISOLATED – Änderungen nur mit CTO-Approval
 - **Lock-Zertifikat:** docs/locks/CONTENT_FAQ_LOCK.md
-- **Grund:** TypeScript-Stabilisierung, RLS-Policies konfiguriert, Auth-Abhängigkeiten entfernt, 401-Fehler behoben
-- **Testing:** ✅ Public-Mode funktional, keine Profile-Queries, mehrsprachig, error-resilient
+- **Grund:** Global Context Contamination behoben durch vollständige Isolation
+- **Architektur-Regel:** NO-GLOBALS, NO-CONTEXTS, NO-AUTH-DEPENDENCIES
+- **Testing:** ✅ Public-safe, ZERO Profile-Queries, mehrsprachig, kontaminationsresistent
 
 ### Weitere gesperrte Bereiche
 (Hier werden weitere Lock-Zertifikate dokumentiert, falls vorhanden)
 
 ---
-**Regel:** Alle Änderungen an gesperrten Bereichen erfordern explizite CTO-Freigabe!
-
+**KRITISCHE REGEL:** FAQ-Bereich bleibt für immer STANDALONE - keine globalen Context/Provider-Imports erlaubt!
+**Alle Änderungen an gesperrten Bereichen erfordern explizite CTO-Freigabe!**

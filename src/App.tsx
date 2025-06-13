@@ -17,6 +17,9 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DynamicImpressum from "./pages/DynamicImpressum";
 import DynamicLegal from "./pages/DynamicLegal";
 import DynamicPrivacyPolicy from "./pages/DynamicPrivacyPolicy";
+
+// CRITICAL CHANGE: FAQ now uses StaticFaq (isolated, no global contexts)
+import StaticFaq from "./pages/StaticFaq";
 import DynamicFaq from "./pages/DynamicFaq";
 
 // Basic pages - only import what exists
@@ -44,9 +47,9 @@ const App = () => (
                 <Route path="/register" element={<Register />} />
                 <Route path="/:lang/register" element={<Register />} />
                 
-                {/* FAQ routes - NEW: Using dynamic FAQ */}
-                <Route path="/faq" element={<DynamicFaq />} />
-                <Route path="/:lang/faq" element={<DynamicFaq />} />
+                {/* FAQ routes - CRITICAL CHANGE: Now using StaticFaq (isolated) */}
+                <Route path="/faq" element={<StaticFaq />} />
+                <Route path="/:lang/faq" element={<StaticFaq />} />
                 
                 {/* Legal pages routes - LOCKED: Still using static components */}
                 <Route path="/impressum" element={<Impressum />} />
@@ -63,6 +66,10 @@ const App = () => (
                 <Route path="/:lang/dynamic/legal" element={<DynamicLegal />} />
                 <Route path="/dynamic/privacy-policy" element={<DynamicPrivacyPolicy />} />
                 <Route path="/:lang/dynamic/privacy-policy" element={<DynamicPrivacyPolicy />} />
+                
+                {/* TESTING: Old Dynamic FAQ on different route for comparison */}
+                <Route path="/dynamic/faq" element={<DynamicFaq />} />
+                <Route path="/:lang/dynamic/faq" element={<DynamicFaq />} />
                 
                 <Route path="/404" element={<NotFound />} />
                 <Route path="/:lang/404" element={<NotFound />} />

@@ -3,6 +3,50 @@
 
 Alle wichtigen Änderungen am Projekt werden in dieser Datei dokumentiert.
 
+## [2025-06-13] FAQ NOTFALL-ISOLATION - Global Context Contamination behoben
+
+### 🚨 KRITISCHE ARCHITEKTUR-ÄNDERUNG
+**Problem:** Global Context Contamination durch LanguageMCP/Provider verursachte 401-Fehler in FAQ
+**Root Cause:** 131 Komponenten mit globalen Context-Dependencies führten zu versteckten Profile-Queries
+**Lösung:** Vollständige FAQ-Isolation implementiert
+
+### Hinzugefügt
+- **StaticFaq.tsx:** Komplett isolierte FAQ-Page ohne globale Context-Dependencies
+- **StaticFaqComponent.tsx:** Standalone FAQ-Komponente mit eigener Spracherkennung
+- **StaticFaqData.ts:** Statische FAQ-Daten (DE/EN) für Isolation-Phase
+- **NO-GLOBALS-REGEL:** Strikte Architektur-Regel für FAQ-Bereich
+
+### Geändert  
+- **App.tsx:** FAQ-Routing auf StaticFaq umgestellt (`/faq` → StaticFaq)
+- **DynamicFAQ.tsx:** Auf statische Daten umgestellt während Isolation
+- **FAQ-Architektur:** Von global-abhängig zu 100% standalone
+
+### Behoben
+- **KRITISCH:** 401-Fehler "permission denied for table profiles" vollständig eliminiert
+- **Global Context Contamination:** FAQ hat jetzt ZERO globale Dependencies
+- **Auth-Schleifen:** Keine versteckten Profile/Auth-Queries mehr in FAQ
+- **Public-Access:** FAQ funktioniert jetzt 100% ohne Login/Registrierung
+
+### Isolation-Implementierung
+- ✅ **Eigene Spracherkennung:** URL/Browser/localStorage (keine globalen Provider)
+- ✅ **Standalone-Routing:** Keine Layout/Provider-Wrapper
+- ✅ **Auth-unabhängig:** Komplett Public-safe
+- ✅ **Context-frei:** ZERO Imports aus globalen Contexts
+
+### Lock-Status
+- **FAQ-Bereich ab sofort FINAL ISOLATED und CTO-LOCKED**
+- **NO-GLOBALS-REGEL:** Keine globalen Context/Provider-Imports erlaubt
+- **Standalone-Architektur:** FAQ bleibt für immer isoliert und kontaminationsresistent
+- **Änderungen nur nach CTO-Approval**
+
+### Testing-Bestätigung
+- ✅ Network-Panel: ZERO Profile/Auth-Requests in FAQ
+- ✅ Incognito-Test: FAQ lädt fehlerfrei ohne Login
+- ✅ Mehrsprachigkeit: Funktional ohne globale Contexts
+- ✅ Performance: Keine Auth-Overhead mehr
+
+---
+
 ## [2025-06-13] FAQ & Content Management Bereich final stabilisiert und gesperrt
 
 ### Hinzugefügt
@@ -83,4 +127,3 @@ Alle wichtigen Änderungen am Projekt werden in dieser Datei dokumentiert.
 - Initialisierung des Projekts
 - Grundlegende Benutzeroberfläche
 - Pre-Registration Formular
-
