@@ -1,4 +1,7 @@
 
+// 🚨 LOCKED FILE – Do not edit without explicit CTO approval! (Stand: 13.06.2025)
+// Änderungen an Footer, Legal, Privacy oder Map-Consent NUR nach schriftlicher Freigabe durch Christiane!
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { useLanguageMCP } from "@/mcp/language/LanguageMCP";

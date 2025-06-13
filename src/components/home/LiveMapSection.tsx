@@ -1,4 +1,7 @@
 
+// 🚨 LOCKED: DSGVO MAP CONSENT. Do not change the loading or consent logic without CTO approval!
+// 🚨 LOCKED FILE – Do not edit without explicit CTO approval! (Stand: 13.06.2025)
+
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";

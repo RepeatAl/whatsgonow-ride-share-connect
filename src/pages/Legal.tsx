@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Legal = () => {
-  const lastUpdated = "12. Juni 2025";
-  const effectiveDate = "12. Juni 2025";
+  const lastUpdated = "13. Juni 2025";
+  const effectiveDate = "13. Juni 2025";
 
   return (
     <Layout 
@@ -722,7 +722,7 @@ const Legal = () => {
             </Card>
           </TabsContent>
 
-          {/* Impressum */}
+          {/* Impressum - UPDATED */}
           <TabsContent value="impressum" className="space-y-8">
             <Card>
               <CardHeader>
@@ -736,15 +736,11 @@ const Legal = () => {
                   <h4 className="font-semibold mb-3">Angaben gemäß § 5 TMG</h4>
                   <div className="bg-muted/20 p-4 rounded-lg">
                     <div className="space-y-2">
-                      <p><strong>Whatsgonow GmbH</strong></p>
-                      <p>Deutschland</p>
+                      <p><strong>Whatsgonow</strong></p>
+                      <p>München, Deutschland</p>
+                      <p>Verantwortlich: Whatsgonow Team</p>
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold mb-3">Vertreten durch</h4>
-                  <p className="text-sm">Max Mustermann, Geschäftsführer</p>
                 </div>
 
                 <div>
@@ -752,22 +748,6 @@ const Legal = () => {
                   <div className="space-y-2 text-sm">
                     <p><strong>E-Mail:</strong> adminatwhatsgonowdotcom</p>
                   </div>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold mb-3">Registereintrag</h4>
-                  <div className="text-sm space-y-1">
-                    <p>Eintragung im Handelsregister</p>
-                    <p><strong>Registergericht:</strong> Amtsgericht Berlin</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold mb-3">Umsatzsteuer-ID</h4>
-                  <p className="text-sm">
-                    Umsatzsteuer-Identifikationsnummer gemäß §27a Umsatzsteuergesetz:<br />
-                    <strong>DE123456789</strong>
-                  </p>
                 </div>
 
                 <div>

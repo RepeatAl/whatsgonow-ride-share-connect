@@ -37,8 +37,8 @@ const PrivacyPolicy = () => {
           <CardContent className="space-y-4">
             <div className="bg-muted/30 p-4 rounded-lg">
               <p className="text-sm">
-                <strong>Whatsgonow GmbH</strong><br />
-                Deutschland<br />
+                <strong>Whatsgonow</strong><br />
+                München, Deutschland<br />
                 E-Mail: adminatwhatsgonowdotcom
               </p>
             </div>
@@ -129,7 +129,7 @@ const PrivacyPolicy = () => {
         </div>
 
         <div className="mt-8 text-sm text-muted-foreground text-center">
-          <p>Stand: 12. Juni 2025</p>
+          <p>Stand: 13. Juni 2025</p>
         </div>
       </div>
     </Layout>

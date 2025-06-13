@@ -1,4 +1,7 @@
 
+// 🚨 LOCKED: DSGVO MAP CONSENT. Do not change the loading or consent logic without CTO approval!
+// 🚨 LOCKED FILE – Do not edit without explicit CTO approval! (Stand: 13.06.2025)
+
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
