@@ -50,7 +50,10 @@ const Impressum = () => {
             <div>
               <h4 className="font-semibold mb-2">Kontakt</h4>
               <p className="text-sm text-muted-foreground">
-                E-Mail: adminatwhatsgonowdotcom
+                E-Mail: <span className="text-blue-600 select-all">admin[at]whatsgonow[dot]com</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Bitte [at] durch @ und [dot] durch . ersetzen.
               </p>
             </div>
           </CardContent>
@@ -107,7 +110,7 @@ const Impressum = () => {
 
         <div className="mt-8 text-center">
           <Button asChild>
-            <a href="mailto:adminatwhatsgonowdotcom">
+            <a href="mailto:admin@whatsgonow.com">
               Kontakt aufnehmen
             </a>
           </Button>
