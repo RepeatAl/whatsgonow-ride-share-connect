@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import i18next from 'i18next';
 
 // Types for content management
 export interface LegalPage {
@@ -87,28 +86,32 @@ export interface FooterLinkWithTranslation extends FooterLink {
   label: string;
 }
 
-// PUBLIC SAFE: Get current language without auth dependency
-const getCurrentLanguage = (): string => {
-  // 1. Try URL parameter first (most reliable for public pages)
+// CRITICAL FIX: Get current language WITHOUT any Profile/Auth dependency
+const getCurrentLanguageSimple = (): string => {
+  // 1. Try URL path first (most reliable for public pages)
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  if (pathParts.length > 0 && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(pathParts[0])) {
+    return pathParts[0];
+  }
+
+  // 2. Try URL search parameter
   const urlParams = new URLSearchParams(window.location.search);
   const urlLang = urlParams.get('lang');
   if (urlLang && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(urlLang)) {
     return urlLang;
   }
 
-  // 2. Try URL path parameter
-  const pathParts = window.location.pathname.split('/').filter(Boolean);
-  if (pathParts.length > 0 && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(pathParts[0])) {
-    return pathParts[0];
+  // 3. Try localStorage (but NO i18next or any external dependency)
+  try {
+    const storedLang = localStorage.getItem('i18nextLng');
+    if (storedLang && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(storedLang)) {
+      return storedLang;
+    }
+  } catch (err) {
+    // Silent fallback
   }
 
-  // 3. Try i18next current language
-  const i18nLang = i18next.language;
-  if (i18nLang && ['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(i18nLang)) {
-    return i18nLang;
-  }
-
-  // 4. Try browser language
+  // 4. Try browser language as final fallback
   const browserLang = navigator.language.split('-')[0];
   if (['de', 'en', 'ar', 'pl', 'fr', 'es'].includes(browserLang)) {
     return browserLang;
@@ -118,9 +121,9 @@ const getCurrentLanguage = (): string => {
   return 'de';
 };
 
-// Hook for legal pages management - PUBLIC SAFE
+// Hook for legal pages management - COMPLETELY PUBLIC SAFE
 export const useLegalPages = () => {
-  const [currentLanguage] = useState(getCurrentLanguage());
+  const [currentLanguage] = useState(getCurrentLanguageSimple());
   const [legalPages, setLegalPages] = useState<LegalPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -129,6 +132,8 @@ export const useLegalPages = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // CRITICAL: Direct query without any auth context
       const { data, error } = await supabase
         .from('legal_pages')
         .select('*')
@@ -150,7 +155,7 @@ export const useLegalPages = () => {
 
   const getLegalPageWithTranslation = async (slug: string) => {
     try {
-      // Get base page
+      // CRITICAL: Direct query without any auth context
       const { data: page, error: pageError } = await supabase
         .from('legal_pages')
         .select('*')
@@ -160,7 +165,7 @@ export const useLegalPages = () => {
 
       if (pageError) throw pageError;
 
-      // Get translation for current language
+      // Get translation for current language - NO auth context
       const { data: translation, error: translationError } = await supabase
         .from('legal_page_translations')
         .select('*')
@@ -194,9 +199,9 @@ export const useLegalPages = () => {
   };
 };
 
-// Hook for FAQ management - PUBLIC SAFE
+// Hook for FAQ management - COMPLETELY PUBLIC SAFE, NO AUTH DEPENDENCY
 export const useFAQ = () => {
-  const [currentLanguage] = useState(getCurrentLanguage());
+  const [currentLanguage] = useState(getCurrentLanguageSimple());
   const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -205,21 +210,30 @@ export const useFAQ = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('[FAQ] Fetching FAQ items directly from table...');
+      
+      // CRITICAL FIX: Direct query to FAQ table only, NO joins, NO auth context
       const { data, error } = await supabase
         .from('faq')
-        .select('*')
+        .select('id, category, default_question, default_answer, order_index, active, created_at, updated_at')
         .eq('active', true)
         .order('category')
         .order('order_index');
 
-      if (error) throw error;
+      if (error) {
+        console.error('[FAQ] Error fetching FAQ items:', error);
+        throw error;
+      }
+      
+      console.log('[FAQ] Successfully fetched FAQ items:', data?.length || 0);
       const items = data || [];
       setFaqItems(items);
-      return items; // Explicit return
+      return items;
     } catch (err) {
-      console.error('Error fetching FAQ:', err);
+      console.error('[FAQ] Error fetching FAQ:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      return []; // Explicit fallback return
+      return [];
     } finally {
       setLoading(false);
     }
@@ -228,48 +242,64 @@ export const useFAQ = () => {
   const getFAQWithTranslations = async (): Promise<FAQItemWithTranslation[]> => {
     try {
       setError(null);
-      // Get FAQ items with translations - PUBLIC SAFE QUERY
-      const { data, error } = await supabase
+      console.log('[FAQ] Getting FAQ with translations for language:', currentLanguage);
+      
+      // STEP 1: Get FAQ items first (completely separate)
+      const { data: faqData, error: faqError } = await supabase
         .from('faq')
-        .select(`
-          *,
-          faq_translations!inner(
-            lang_code,
-            question,
-            answer,
-            status
-          )
-        `)
+        .select('id, category, default_question, default_answer, order_index, active, created_at, updated_at')
         .eq('active', true)
-        .eq('faq_translations.lang_code', currentLanguage)
         .order('category')
         .order('order_index');
 
-      if (error) {
-        console.warn('Error fetching FAQ translations, falling back to default content:', error);
-        // Fallback to default content if no translations
-        const fallbackItems = await fetchFAQ();
-        return fallbackItems.map(item => ({
-          ...item,
-          question: item.default_question,
-          answer: item.default_answer,
-          translation_status: null
-        }));
+      if (faqError) {
+        console.error('[FAQ] FAQ fetch error:', faqError);
+        throw faqError;
       }
 
-      // Always return an array, even if data is null/undefined
-      const mappedData = (data || []).map(item => ({
-        ...item,
-        question: item.faq_translations?.[0]?.question || item.default_question,
-        answer: item.faq_translations?.[0]?.answer || item.default_answer,
-        translation_status: item.faq_translations?.[0]?.status || null
-      }));
+      if (!faqData || faqData.length === 0) {
+        console.log('[FAQ] No FAQ items found');
+        return [];
+      }
 
-      return mappedData;
+      console.log('[FAQ] Found FAQ items:', faqData.length);
+
+      // STEP 2: Get translations separately (no join, no auth context)
+      const { data: translationsData, error: translationsError } = await supabase
+        .from('faq_translations')
+        .select('faq_id, lang_code, question, answer, status')
+        .eq('lang_code', currentLanguage);
+
+      if (translationsError) {
+        console.warn('[FAQ] Translation fetch error, using defaults:', translationsError);
+        // Continue with default content instead of failing
+      }
+
+      console.log('[FAQ] Found translations:', translationsData?.length || 0);
+
+      // STEP 3: Merge data manually (no database join)
+      const translationsMap = new Map();
+      if (translationsData) {
+        translationsData.forEach(trans => {
+          translationsMap.set(trans.faq_id, trans);
+        });
+      }
+
+      const result = faqData.map(item => {
+        const translation = translationsMap.get(item.id);
+        return {
+          ...item,
+          question: translation?.question || item.default_question,
+          answer: translation?.answer || item.default_answer,
+          translation_status: translation?.status || null
+        };
+      });
+
+      console.log('[FAQ] Final FAQ with translations:', result.length);
+      return result;
     } catch (err) {
-      console.error('Error fetching FAQ with translations:', err);
+      console.error('[FAQ] Error fetching FAQ with translations:', err);
       setError(err instanceof Error ? err.message : 'Failed to load FAQ');
-      // Always return empty array instead of throwing
       return [];
     }
   };
@@ -287,9 +317,9 @@ export const useFAQ = () => {
   };
 };
 
-// Hook for footer links management - PUBLIC SAFE
+// Hook for footer links management - COMPLETELY PUBLIC SAFE
 export const useFooterLinks = () => {
-  const [currentLanguage] = useState(getCurrentLanguage());
+  const [currentLanguage] = useState(getCurrentLanguageSimple());
   const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -298,6 +328,8 @@ export const useFooterLinks = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // CRITICAL: Direct query without any auth context
       const { data, error } = await supabase
         .from('footer_links')
         .select('*')
@@ -308,11 +340,11 @@ export const useFooterLinks = () => {
       if (error) throw error;
       const links = data || [];
       setFooterLinks(links);
-      return links; // Explicit return
+      return links;
     } catch (err) {
       console.error('Error fetching footer links:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      return []; // Explicit fallback return
+      return [];
     } finally {
       setLoading(false);
     }
@@ -321,39 +353,50 @@ export const useFooterLinks = () => {
   const getFooterLinksWithTranslations = async (): Promise<FooterLinkWithTranslation[]> => {
     try {
       setError(null);
-      const { data, error } = await supabase
+      
+      // STEP 1: Get footer links first
+      const { data: linksData, error: linksError } = await supabase
         .from('footer_links')
-        .select(`
-          *,
-          footer_link_translations!inner(
-            lang_code,
-            label
-          )
-        `)
+        .select('*')
         .eq('active', true)
-        .eq('footer_link_translations.lang_code', currentLanguage)
         .order('section')
         .order('order_index');
 
-      if (error) {
-        console.warn('Error fetching footer link translations, falling back to default labels:', error);
-        // Fallback to default labels
-        const fallbackLinks = await fetchFooterLinks();
-        return fallbackLinks.map(link => ({
-          ...link,
-          label: link.label_default
-        }));
+      if (linksError) throw linksError;
+
+      if (!linksData || linksData.length === 0) {
+        return [];
       }
 
-      // Always return an array
-      return (data || []).map(link => ({
-        ...link,
-        label: link.footer_link_translations?.[0]?.label || link.label_default
-      }));
+      // STEP 2: Get translations separately
+      const { data: translationsData, error: translationsError } = await supabase
+        .from('footer_link_translations')
+        .select('footer_link_id, lang_code, label')
+        .eq('lang_code', currentLanguage);
+
+      if (translationsError) {
+        console.warn('Error fetching footer link translations, using defaults:', translationsError);
+      }
+
+      // STEP 3: Merge manually
+      const translationsMap = new Map();
+      if (translationsData) {
+        translationsData.forEach(trans => {
+          translationsMap.set(trans.footer_link_id, trans);
+        });
+      }
+
+      return linksData.map(link => {
+        const translation = translationsMap.get(link.id);
+        return {
+          ...link,
+          label: translation?.label || link.label_default
+        };
+      });
     } catch (err) {
       console.error('Error fetching footer links with translations:', err);
       setError(err instanceof Error ? err.message : 'Failed to load footer links');
-      return []; // Always return empty array
+      return [];
     }
   };
 

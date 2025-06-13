@@ -10,10 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, HelpCircle, Users, CreditCard, Shield, Headphones, AlertCircle } from 'lucide-react';
 import { useFAQ, FAQItemWithTranslation } from '@/hooks/useContentManagement';
-import { useTranslation } from 'react-i18next';
 
 export const DynamicFAQ: React.FC = () => {
-  const { t } = useTranslation(['common', 'faq']);
   const { getFAQWithTranslations, error: faqError } = useFAQ();
   const [faqData, setFaqData] = useState<FAQItemWithTranslation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,16 +29,20 @@ export const DynamicFAQ: React.FC = () => {
     const loadFAQ = async () => {
       try {
         setLoading(true);
+        console.log('[DynamicFAQ] Loading FAQ data...');
+        
         const data = await getFAQWithTranslations();
+        console.log('[DynamicFAQ] FAQ data loaded:', data?.length || 0);
+        
         // Stabilized: Always ensure we have an array
         if (Array.isArray(data)) {
           setFaqData(data);
         } else {
-          console.warn('FAQ data is not an array, using empty array fallback');
+          console.warn('[DynamicFAQ] FAQ data is not an array, using empty array fallback');
           setFaqData([]);
         }
       } catch (err) {
-        console.error('Error loading FAQ:', err);
+        console.error('[DynamicFAQ] Error loading FAQ:', err);
         setFaqData([]); // Always fallback to empty array
       } finally {
         setLoading(false);
@@ -56,7 +58,7 @@ export const DynamicFAQ: React.FC = () => {
     try {
       return [...new Set(faqData.map(item => item?.category).filter(Boolean))];
     } catch (err) {
-      console.error('Error extracting categories:', err);
+      console.error('[DynamicFAQ] Error extracting categories:', err);
       return [];
     }
   };
@@ -91,7 +93,7 @@ export const DynamicFAQ: React.FC = () => {
         return matchesSearch && matchesCategory;
       });
     } catch (err) {
-      console.error('Error filtering FAQ:', err);
+      console.error('[DynamicFAQ] Error filtering FAQ:', err);
       return [];
     }
   };
