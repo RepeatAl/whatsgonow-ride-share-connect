@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Impressum from "./pages/Impressum";
 import Legal from "./pages/Legal";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Faq from "./pages/Faq";
 
 // Basic pages - only import what exists
 const Landing = lazy(() => import('./pages/Landing'));
@@ -37,6 +38,10 @@ const App = () => (
                 <Route path="/:lang/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/:lang/register" element={<Register />} />
+                
+                {/* FAQ routes */}
+                <Route path="/faq" element={<Faq />} />
+                <Route path="/:lang/faq" element={<Faq />} />
                 
                 {/* Legal pages routes */}
                 <Route path="/impressum" element={<Impressum />} />
