@@ -341,6 +341,48 @@ export type Database = {
           },
         ]
       }
+      content_audit_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          notes: string | null
+          previous_data: Json | null
+          record_id: string
+          table_name: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          notes?: string | null
+          previous_data?: Json | null
+          record_id: string
+          table_name: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          notes?: string | null
+          previous_data?: Json | null
+          record_id?: string
+          table_name?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       delivery_logs: {
         Row: {
           action: string
@@ -500,6 +542,83 @@ export type Database = {
           },
         ]
       }
+      faq: {
+        Row: {
+          active: boolean | null
+          category: string
+          created_at: string | null
+          default_answer: string
+          default_question: string
+          id: string
+          order_index: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          category: string
+          created_at?: string | null
+          default_answer: string
+          default_question: string
+          id?: string
+          order_index?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          created_at?: string | null
+          default_answer?: string
+          default_question?: string
+          id?: string
+          order_index?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      faq_translations: {
+        Row: {
+          answer: string
+          created_at: string | null
+          faq_id: string
+          id: string
+          lang_code: string
+          last_synced: string | null
+          question: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          answer: string
+          created_at?: string | null
+          faq_id: string
+          id?: string
+          lang_code: string
+          last_synced?: string | null
+          question: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          answer?: string
+          created_at?: string | null
+          faq_id?: string
+          id?: string
+          lang_code?: string
+          last_synced?: string | null
+          question?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faq_translations_faq_id_fkey"
+            columns: ["faq_id"]
+            isOneToOne: false
+            referencedRelation: "faq"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_flag_audit: {
         Row: {
           action: string
@@ -624,6 +743,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      footer_link_translations: {
+        Row: {
+          created_at: string | null
+          footer_link_id: string
+          id: string
+          label: string
+          lang_code: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          footer_link_id: string
+          id?: string
+          label: string
+          lang_code: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          footer_link_id?: string
+          id?: string
+          label?: string
+          lang_code?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "footer_link_translations_footer_link_id_fkey"
+            columns: ["footer_link_id"]
+            isOneToOne: false
+            referencedRelation: "footer_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      footer_links: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          label_default: string
+          order_index: number | null
+          section: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          label_default: string
+          order_index?: number | null
+          section: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          label_default?: string
+          order_index?: number | null
+          section?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       guest_upload_sessions: {
         Row: {
@@ -1109,6 +1296,92 @@ export type Database = {
             referencedColumns: ["item_id"]
           },
         ]
+      }
+      legal_page_translations: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          lang_code: string
+          last_synced: string | null
+          legal_page_id: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          lang_code: string
+          last_synced?: string | null
+          legal_page_id: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          lang_code?: string
+          last_synced?: string | null
+          legal_page_id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_page_translations_legal_page_id_fkey"
+            columns: ["legal_page_id"]
+            isOneToOne: false
+            referencedRelation: "legal_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legal_pages: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          default_content: string
+          default_title: string
+          id: string
+          last_approved_at: string | null
+          last_approved_by: string | null
+          page_type: string
+          requires_cto_approval: boolean | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          default_content: string
+          default_title: string
+          id?: string
+          last_approved_at?: string | null
+          last_approved_by?: string | null
+          page_type?: string
+          requires_cto_approval?: boolean | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          default_content?: string
+          default_title?: string
+          id?: string
+          last_approved_at?: string | null
+          last_approved_by?: string | null
+          page_type?: string
+          requires_cto_approval?: boolean | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -1906,6 +2179,36 @@ export type Database = {
           metadata?: Json | null
           severity?: string | null
           visible_to?: string[] | null
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          key: string
+          lang_code: string | null
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          key: string
+          lang_code?: string | null
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          key?: string
+          lang_code?: string | null
+          updated_at?: string | null
+          value?: string
         }
         Relationships: []
       }
