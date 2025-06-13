@@ -16,6 +16,12 @@ export const ROUTES = {
   preRegister: '/pre-register',
   preRegisterSuccess: '/pre-register/success',
   
+  // Legal and policy pages - ADDED
+  legal: '/legal',
+  privacyPolicy: '/privacy-policy',
+  about: '/about',
+  esgDashboard: '/esg-dashboard',
+  
   // Protected routes
   dashboard: '/dashboard',
   dashboardSender: '/dashboard/sender',
@@ -71,6 +77,10 @@ export const publicRoutes = [
   ROUTES.resetPassword,
   ROUTES.faq,
   ROUTES.support,
+  ROUTES.legal,
+  ROUTES.privacyPolicy,
+  ROUTES.about,
+  ROUTES.esgDashboard,
   '/mobile-upload',
   ROUTES.uploadComplete,
   '/delivery',

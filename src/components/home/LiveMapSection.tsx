@@ -5,28 +5,30 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Shield, Info } from "lucide-react";
 import { MapConsentBanner } from "@/components/map/MapConsentBanner";
-import StableHereMapWithData from "@/components/map/StableHereMapWithData";
+
+// CRITICAL FIX: Dynamic import nur nach Consent
+const LazyHereMap = React.lazy(() => import("@/components/map/StableHereMapWithData"));
 
 const LiveMapSection = () => {
   const { t } = useTranslation(['landing']);
   const [mapConsent, setMapConsent] = useState<boolean | null>(null);
-  const [showFallback, setShowFallback] = useState(false);
 
+  // CRITICAL: Consent-Check beim Laden - kein automatisches Rendering
   useEffect(() => {
     const consent = localStorage.getItem('whatsgonow-map-consent');
+    console.log('🗺️ Map consent check:', consent);
+    
     if (consent === 'accepted') {
       setMapConsent(true);
     } else if (consent === 'declined') {
       setMapConsent(false);
-      setShowFallback(true);
     }
+    // Wenn consent === null, bleibt mapConsent null (Banner wird gezeigt)
   }, []);
 
   const handleConsent = (accepted: boolean) => {
+    console.log('🗺️ Map consent decision:', accepted);
     setMapConsent(accepted);
-    if (!accepted) {
-      setShowFallback(true);
-    }
   };
 
   const MapFallbackContent = () => (
@@ -64,8 +66,8 @@ const LiveMapSection = () => {
           <Button 
             onClick={() => {
               localStorage.removeItem('whatsgonow-map-consent');
+              localStorage.removeItem('whatsgonow-map-consent-date');
               setMapConsent(null);
-              setShowFallback(false);
             }}
             variant="outline"
             className="border-blue-300 text-blue-700 hover:bg-blue-100"
@@ -93,30 +95,39 @@ const LiveMapSection = () => {
         </div>
         
         <div className="max-w-6xl mx-auto">
-          {/* Show consent banner if consent not yet decided */}
+          {/* CRITICAL FIX: Banner nur zeigen wenn Consent unbekannt */}
           {mapConsent === null && (
             <MapConsentBanner onConsent={handleConsent} />
           )}
           
-          {/* Show map if consent given */}
+          {/* CRITICAL FIX: Karte NUR rendern wenn explizit zugestimmt */}
           {mapConsent === true && (
             <Card className="overflow-hidden shadow-lg">
               <CardContent className="p-0">
                 <div className="h-[300px] md:h-[500px] w-full">
-                  <StableHereMapWithData
-                    height="100%"
-                    width="100%"
-                    className="rounded-lg"
-                    center={{ lat: 51.1657, lng: 10.4515 }}
-                    zoom={6}
-                  />
+                  <React.Suspense fallback={
+                    <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                        <p className="text-sm text-gray-600">Karte wird geladen...</p>
+                      </div>
+                    </div>
+                  }>
+                    <LazyHereMap
+                      height="100%"
+                      width="100%"
+                      className="rounded-lg"
+                      center={{ lat: 51.1657, lng: 10.4515 }}
+                      zoom={6}
+                    />
+                  </React.Suspense>
                 </div>
               </CardContent>
             </Card>
           )}
           
-          {/* Show fallback if consent declined */}
-          {showFallback && <MapFallbackContent />}
+          {/* CRITICAL FIX: Fallback nur zeigen wenn explizit abgelehnt */}
+          {mapConsent === false && <MapFallbackContent />}
         </div>
       </div>
     </section>

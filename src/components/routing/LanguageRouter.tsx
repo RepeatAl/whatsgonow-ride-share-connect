@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supportedLanguages } from '@/config/supportedLanguages';
+import { AppRoutes } from './AppRoutes';
 
 // Helper function to detect user's browser language
 const detectBrowserLanguage = (): string => {
@@ -86,5 +87,6 @@ export const LanguageRouter: React.FC<LanguageRouterProps> = ({ children }) => {
     }
   }, [location.pathname, location.search, navigate]);
   
-  return <>{children}</>;
+  // CRITICAL FIX: Render actual routes instead of empty div
+  return <AppRoutes />;
 };

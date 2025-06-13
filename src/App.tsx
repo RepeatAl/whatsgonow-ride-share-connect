@@ -1,12 +1,10 @@
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OptimizedAuthProvider } from "@/contexts/OptimizedAuthContext";
 import { LanguageMCPProvider } from "@/mcp/language/LanguageMCP";
-import { MCPRouter } from "@/components/routing/MCPRouter";
-import "./App.css";
+import { LanguageRouter } from "@/components/routing/LanguageRouter";
+import { Toaster } from "@/components/ui/sonner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,18 +17,18 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
         <LanguageMCPProvider>
           <OptimizedAuthProvider>
-            <TooltipProvider>
-              <MCPRouter />
-              <Toaster />
-            </TooltipProvider>
+            <LanguageRouter>
+              <div /> {/* This is now handled by AppRoutes in LanguageRouter */}
+            </LanguageRouter>
+            <Toaster />
           </OptimizedAuthProvider>
         </LanguageMCPProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 }
 
