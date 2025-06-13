@@ -1,4 +1,3 @@
-
 import React from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -39,16 +38,15 @@ const PrivacyPolicy = () => {
             <div className="bg-muted/30 p-4 rounded-lg">
               <p className="text-sm">
                 <strong>Whatsgonow GmbH</strong><br />
-                Musterstraße 123, 10115 Berlin<br />
-                E-Mail: privacy@whatsgonow.com<br />
-                Telefon: +49 (0) 30 123456789
+                Deutschland<br />
+                E-Mail: adminatwhatsgonowdotcom
               </p>
             </div>
             
             <div>
               <h4 className="font-semibold mb-2">Datenschutzbeauftragter</h4>
               <p className="text-sm text-muted-foreground">
-                Bei Fragen zum Datenschutz wenden Sie sich an: privacy@whatsgonow.com
+                Bei Fragen zum Datenschutz wenden Sie sich an: adminatwhatsgonowdotcom
               </p>
             </div>
           </CardContent>
@@ -114,13 +112,21 @@ const PrivacyPolicy = () => {
 
             <div className="mt-6 text-center">
               <Button asChild>
-                <a href="mailto:privacy@whatsgonow.com">
+                <a href="mailto:adminatwhatsgonowdotcom">
                   Datenschutz-Anfrage stellen
                 </a>
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        <div className="mt-8 text-center">
+          <Button asChild>
+            <a href="mailto:adminatwhatsgonowdotcom">
+              Datenschutz-Anfrage stellen
+            </a>
+          </Button>
+        </div>
 
         <div className="mt-8 text-sm text-muted-foreground text-center">
           <p>Stand: 12. Juni 2025</p>

@@ -1,4 +1,3 @@
-
 import React from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -85,10 +84,8 @@ const Legal = () => {
                   <div className="bg-muted/30 p-4 rounded-lg">
                     <p className="text-sm">
                       <strong>Whatsgonow GmbH</strong><br />
-                      Musterstraße 123, 10115 Berlin<br />
-                      Handelsregister: HRB 123456 (Amtsgericht Berlin-Charlottenburg)<br />
-                      USt-IdNr.: DE123456789<br />
-                      Geschäftsführer: Max Mustermann
+                      Registergericht: Amtsgericht Berlin<br />
+                      E-Mail: adminatwhatsgonowdotcom
                     </p>
                   </div>
                 </div>
@@ -740,7 +737,7 @@ const Legal = () => {
                   <div className="bg-muted/20 p-4 rounded-lg">
                     <div className="space-y-2">
                       <p><strong>Whatsgonow GmbH</strong></p>
-                      <p>Musterstraße 123<br />10115 Berlin<br />Deutschland</p>
+                      <p>Deutschland</p>
                     </div>
                   </div>
                 </div>
@@ -753,10 +750,7 @@ const Legal = () => {
                 <div>
                   <h4 className="font-semibold mb-3">Kontakt</h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Telefon:</strong> +49 (0) 30 123456789</p>
-                    <p><strong>E-Mail:</strong> info@whatsgonow.com</p>
-                    <p><strong>Support:</strong> support@whatsgonow.com</p>
-                    <p><strong>Datenschutz:</strong> privacy@whatsgonow.com</p>
+                    <p><strong>E-Mail:</strong> adminatwhatsgonowdotcom</p>
                   </div>
                 </div>
 
@@ -764,8 +758,7 @@ const Legal = () => {
                   <h4 className="font-semibold mb-3">Registereintrag</h4>
                   <div className="text-sm space-y-1">
                     <p>Eintragung im Handelsregister</p>
-                    <p><strong>Registergericht:</strong> Amtsgericht Berlin-Charlottenburg</p>
-                    <p><strong>Registernummer:</strong> HRB 123456</p>
+                    <p><strong>Registergericht:</strong> Amtsgericht Berlin</p>
                   </div>
                 </div>
 
@@ -831,32 +824,10 @@ const Legal = () => {
                 </div>
 
                 <div className="bg-primary/5 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">📞 Schnellkontakt</h4>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <strong>Technischer Support:</strong><br />
-                      <a href="mailto:support@whatsgonow.com" className="text-primary hover:underline">
-                        support@whatsgonow.com
-                      </a>
-                    </div>
-                    <div>
-                      <strong>Datenschutz-Team:</strong><br />
-                      <a href="mailto:privacy@whatsgonow.com" className="text-primary hover:underline">
-                        privacy@whatsgonow.com
-                      </a>
-                    </div>
-                    <div>
-                      <strong>Business-Anfragen:</strong><br />
-                      <a href="mailto:business@whatsgonow.com" className="text-primary hover:underline">
-                        business@whatsgonow.com
-                      </a>
-                    </div>
-                    <div>
-                      <strong>Rechtliche Fragen:</strong><br />
-                      <a href="mailto:legal@whatsgonow.com" className="text-primary hover:underline">
-                        legal@whatsgonow.com
-                      </a>
-                    </div>
+                  <h4 className="font-semibold mb-2">📞 Kontakt</h4>
+                  <div className="text-sm">
+                    <strong>E-Mail:</strong><br />
+                    <span className="text-primary">adminatwhatsgonowdotcom</span>
                   </div>
                 </div>
               </CardContent>
@@ -871,7 +842,7 @@ const Legal = () => {
               <h3 className="font-semibold text-lg">Haben Sie Fragen zu den rechtlichen Bestimmungen?</h3>
               <div className="flex flex-wrap justify-center gap-4">
                 <Button asChild variant="default">
-                  <a href="mailto:legal@whatsgonow.com">
+                  <a href="mailto:adminatwhatsgonowdotcom">
                     <Scale className="mr-2 h-4 w-4" />
                     Rechtliche Fragen
                   </a>
