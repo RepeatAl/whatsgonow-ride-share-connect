@@ -1,4 +1,3 @@
-
 /**
  * Public Routes für das Public-First Auth-System
  * 
@@ -15,6 +14,12 @@ export const publicRoutes = [
   '/about',
   '/faq',
   '/support',
+  
+  // === LEGAL & POLICY PAGES (CRITICAL FIX) ===
+  '/legal',
+  '/imprint',
+  '/privacy-policy',
+  '/terms-of-service',
   
   // === AUTH-SEITEN ===
   '/login',
@@ -43,9 +48,6 @@ export const publicRoutes = [
   '/delivery',              // Token-basierte Zustellung
   '/invoice-download',      // Token-basierter Download
   '/404',
-  '/privacy-policy',
-  '/terms-of-service',
-  '/imprint',
 ];
 
 /**
