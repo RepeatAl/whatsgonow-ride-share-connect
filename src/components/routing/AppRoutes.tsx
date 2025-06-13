@@ -13,7 +13,7 @@ import Register from '@/pages/Register';
 import RegisterSuccess from '@/pages/RegisterSuccess';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
-import FAQ from '@/pages/FAQ';
+import Faq from '@/pages/Faq';
 import Support from '@/pages/Support';
 import PreRegister from '@/pages/PreRegister';
 import PreRegisterSuccess from '@/pages/PreRegisterSuccess';
@@ -36,7 +36,7 @@ export const AppRoutes = () => {
       <Route path={`/${currentLanguage}/register/success`} element={<RegisterSuccess />} />
       <Route path={`/${currentLanguage}/forgot-password`} element={<ForgotPassword />} />
       <Route path={`/${currentLanguage}/reset-password`} element={<ResetPassword />} />
-      <Route path={`/${currentLanguage}/faq`} element={<FAQ />} />
+      <Route path={`/${currentLanguage}/faq`} element={<Faq />} />
       <Route path={`/${currentLanguage}/support`} element={<Support />} />
       <Route path={`/${currentLanguage}/pre-register`} element={<PreRegister />} />
       <Route path={`/${currentLanguage}/pre-register/success`} element={<PreRegisterSuccess />} />
