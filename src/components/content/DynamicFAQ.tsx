@@ -1,5 +1,5 @@
-
 // [LOCKED: Do not modify without CTO approval – siehe docs/locks/CONTENT_FAQ_LOCK.md]
+// TEMPORÄR DEAKTIVIERT: Alle Supabase-Calls wegen Global Context Bug auskommentiert
 
 import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, HelpCircle, Users, CreditCard, Shield, Headphones, AlertCircle } from 'lucide-react';
-import { useFAQ, FAQItemWithTranslation } from '@/hooks/useContentManagement';
+// TEMPORÄR AUSKOMMENTIERT: import { useFAQ, FAQItemWithTranslation } from '@/hooks/useContentManagement';
+import { staticFaqData, getStaticFaqByLanguage, StaticFAQItem } from './StaticFaqData';
 
 export const DynamicFAQ: React.FC = () => {
-  const { getFAQWithTranslations, error: faqError } = useFAQ();
-  const [faqData, setFaqData] = useState<FAQItemWithTranslation[]>([]);
-  const [loading, setLoading] = useState(true);
+  // TEMPORÄR AUSKOMMENTIERT: const { getFAQWithTranslations, error: faqError } = useFAQ();
+  const [faqData, setFaqData] = useState<StaticFAQItem[]>([]);
+  const [loading, setLoading] = useState(false); // Deaktiviert für statische Daten
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [mounted, setMounted] = useState(false);
@@ -29,30 +30,24 @@ export const DynamicFAQ: React.FC = () => {
     const loadFAQ = async () => {
       try {
         setLoading(true);
-        console.log('[DynamicFAQ] Loading FAQ data...');
+        console.log('[DynamicFAQ] TEMPORÄR: Loading static FAQ data...');
         
-        const data = await getFAQWithTranslations();
-        console.log('[DynamicFAQ] FAQ data loaded:', data?.length || 0);
+        // TEMPORÄR: Statische Daten statt Supabase
+        const data = getStaticFaqByLanguage('de');
+        console.log('[DynamicFAQ] Static FAQ data loaded:', data?.length || 0);
         
-        // Stabilized: Always ensure we have an array
-        if (Array.isArray(data)) {
-          setFaqData(data);
-        } else {
-          console.warn('[DynamicFAQ] FAQ data is not an array, using empty array fallback');
-          setFaqData([]);
-        }
+        setFaqData(data || []);
       } catch (err) {
-        console.error('[DynamicFAQ] Error loading FAQ:', err);
-        setFaqData([]); // Always fallback to empty array
+        console.error('[DynamicFAQ] Error loading static FAQ:', err);
+        setFaqData([]);
       } finally {
         setLoading(false);
       }
     };
 
     loadFAQ();
-  }, [getFAQWithTranslations, mounted]);
+  }, [mounted]);
 
-  // Stabilized category extraction with type safety
   const getCategories = (): string[] => {
     if (!Array.isArray(faqData) || faqData.length === 0) return [];
     try {
@@ -76,8 +71,7 @@ export const DynamicFAQ: React.FC = () => {
 
   const categories = getCategories();
   
-  // Stabilized filtering with type safety
-  const getFilteredFAQ = (): FAQItemWithTranslation[] => {
+  const getFilteredFAQ = (): StaticFAQItem[] => {
     if (!Array.isArray(faqData)) return [];
     
     try {
@@ -107,9 +101,8 @@ export const DynamicFAQ: React.FC = () => {
     }
     acc[item.category].push(item);
     return acc;
-  }, {} as Record<string, FAQItemWithTranslation[]>);
+  }, {} as Record<string, StaticFAQItem[]>);
 
-  // Don't render until mounted to prevent hydration issues
   if (!mounted) {
     return null;
   }
@@ -132,40 +125,17 @@ export const DynamicFAQ: React.FC = () => {
     );
   }
 
-  // Error state with fallback
-  if (faqError && faqData.length === 0) {
-    return (
-      <Layout title="FAQ - Whatsgonow" description="Häufig gestellte Fragen">
-        <div className="container max-w-4xl px-4 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
-              <HelpCircle className="h-8 w-8 text-primary" />
-              FAQ - Häufig gestellte Fragen
-            </h1>
-          </div>
-          
-          <Card className="border-yellow-200 bg-yellow-50">
-            <CardContent className="p-6 text-center">
-              <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                FAQ momentan nicht verfügbar
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Die FAQ-Inhalte können derzeit nicht geladen werden. Bitte versuchen Sie es später erneut.
-              </p>
-              <Button onClick={() => window.location.reload()}>
-                Seite neu laden
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout title="FAQ - Whatsgonow" description="Häufig gestellte Fragen zu whatsgonow - der Crowdlogistik-Plattform">
       <div className="container max-w-4xl px-4 py-8">
+        {/* TEMPORÄRE WARNUNG */}
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center gap-2 text-yellow-800 text-sm">
+            <AlertCircle className="h-4 w-4" />
+            <span>⚠️ TEMPORÄR: FAQ verwendet statische Daten während Global Context Bug behoben wird</span>
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
             <HelpCircle className="h-8 w-8 text-primary" />
