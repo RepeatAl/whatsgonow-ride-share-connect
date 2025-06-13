@@ -1,45 +1,34 @@
 
 // 🚨 LOCKED: DSGVO MAP CONSENT. Do not change the loading or consent logic without CTO approval!
 // 🚨 LOCKED FILE – Do not edit without explicit CTO approval! (Stand: 13.06.2025)
+// 🚨 CRITICAL FIX: Entfernung automatischer onConsent Trigger - nur explizite Button-Clicks!
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Shield, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface MapConsentBannerProps {
-  onConsent: (accepted: boolean) => void;
+  onAccept: () => void;
+  onDecline: () => void;
 }
 
-export function MapConsentBanner({ onConsent }: MapConsentBannerProps) {
+export function MapConsentBanner({ onAccept, onDecline }: MapConsentBannerProps) {
   const { t } = useTranslation(['landing', 'common']);
-  const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    const consent = localStorage.getItem('whatsgonow-map-consent');
-    if (!consent) {
-      setVisible(true);
-    } else if (consent === 'accepted') {
-      onConsent(true);
-    }
-  }, [onConsent]);
+  // CRITICAL FIX: Keine automatischen useEffect oder localStorage-Checks!
+  // Banner wird IMMER gezeigt bis expliziter Button-Click
 
   const handleAccept = () => {
-    localStorage.setItem('whatsgonow-map-consent', 'accepted');
-    localStorage.setItem('whatsgonow-map-consent-date', new Date().toISOString());
-    setVisible(false);
-    onConsent(true);
+    console.log('🛡️ EXPLICIT user click: Accept Map Consent');
+    onAccept();
   };
 
   const handleDecline = () => {
-    localStorage.setItem('whatsgonow-map-consent', 'declined');
-    localStorage.setItem('whatsgonow-map-consent-date', new Date().toISOString());
-    setVisible(false);
-    onConsent(false);
+    console.log('🛡️ EXPLICIT user click: Decline Map Consent');
+    onDecline();
   };
-
-  if (!visible) return null;
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-6">
@@ -102,7 +91,7 @@ export function MapConsentBanner({ onConsent }: MapConsentBannerProps) {
                 {t('landing:mapConsent.privacy', 
                   'Weitere Informationen finden Sie in unserer'
                 )}{' '}
-                <a href="/privacy" className="underline hover:no-underline">
+                <a href="/privacy-policy" className="underline hover:no-underline">
                   {t('common:privacy_policy', 'Datenschutzerklärung')}
                 </a>
               </p>

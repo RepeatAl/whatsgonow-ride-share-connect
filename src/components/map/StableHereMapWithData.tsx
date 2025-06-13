@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,8 @@ import HereMapModularLoader from './HereMapModularLoader';
 import SecureHereMapLoader from './SecureHereMapLoader';
 import MapFallback from './MapFallback';
 import { PublicMapMarkers } from './PublicMapMarkers';
+
+// CRITICAL FIX: Conditional Hook Import - nur nach Consent laden
 import { usePublicMapData } from '@/hooks/usePublicMapData';
 
 interface StableHereMapWithDataProps {
@@ -20,14 +21,14 @@ interface StableHereMapWithDataProps {
 }
 
 /**
- * Vollständig stabilisierte HERE Maps Komponente mit sicherer API-Key-Verwaltung
- * Implementiert robuste Fehlerbehandlung und mehrsprachige UX
+ * CRITICAL GDPR-COMPLIANT: HERE Maps nur nach explizitem Consent
+ * Diese Komponente wird nur gerendert wenn mapConsent === true
  */
 const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
   width = '100%',
   height = '400px',
   className = '',
-  center = { lat: 51.1657, lng: 10.4515 }, // Deutschland Zentrum
+  center = { lat: 51.1657, lng: 10.4515 },
   zoom = 6
 }) => {
   const { t } = useTranslation(['common', 'landing', 'map']);
@@ -45,7 +46,9 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
   const [sdkReady, setSdkReady] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
-  // Lade öffentliche Map-Daten
+  // CRITICAL FIX: Map Data Hook nur ausführen wenn Komponente gerendert wird
+  // (Komponente wird nur gerendert wenn Consent === true)
+  console.log('🛡️ StableHereMapWithData: Loading with EXPLICIT consent');
   const { mapData, loading: dataLoading, error: dataError, refetch } = usePublicMapData();
 
   const initializeMap = async () => {
@@ -56,7 +59,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
         throw new Error(t('map:sdk_not_ready', 'Kartendienst nicht bereit'));
       }
 
-      // Initialize Platform mit Sprachunterstützung
       const lang = currentLanguage === 'de' ? 'de-DE' : 
                    currentLanguage === 'ar' ? 'ar-SA' : 
                    'en-US';
@@ -69,7 +71,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
 
       const defaultLayers = platformRef.current.createDefaultLayers();
 
-      // Create Map Instance
       if (mapRef.current) {
         mapInstanceRef.current = new window.H.Map(
           mapRef.current,
@@ -80,14 +81,11 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
           }
         );
 
-        // Enable map interaction
         const mapEvents = new window.H.mapevents.MapEvents(mapInstanceRef.current);
         const behavior = new window.H.mapevents.Behavior(mapEvents);
 
-        // Enable UI controls mit lokalisierter Sprache
         uiRef.current = window.H.ui.UI.createDefault(mapInstanceRef.current, defaultLayers, lang);
 
-        // Traffic layer optional hinzufügen
         try {
           if (defaultLayers.vector?.normal?.trafficincidents) {
             mapInstanceRef.current.addLayer(defaultLayers.vector.normal.trafficincidents);
@@ -132,7 +130,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
     console.error('[StableHereMap] ❌ SDK loading error:', errorMessage);
     setError(t('map:service_unavailable', 'Kartendienst aktuell nicht verfügbar'));
     
-    // Bestimme Fehlertyp basierend auf Fehlermeldung
     if (errorMessage.includes('CSP') || errorMessage.includes('Content Security Policy')) {
       setErrorType('cors');
     } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
@@ -148,7 +145,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
     console.log('[StableHereMap] 📍 Marker clicked:', item.id);
   };
 
-  // Initialize map when both SDK and API key are ready
   useEffect(() => {
     if (sdkReady && apiKey) {
       initializeMap();
@@ -163,13 +159,11 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
     setSdkReady(false);
     setApiKey(null);
     
-    // Sanft neu laden ohne kompletten Page Refresh
     setTimeout(() => {
       window.location.reload();
     }, 500);
   };
 
-  // Zeige Fallback bei Fehler
   if (error) {
     return (
       <MapFallback 
@@ -182,18 +176,15 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
 
   return (
     <div className={`w-full relative ${className}`} style={{ width, height }}>
-      {/* Secure API Key Loader */}
       <SecureHereMapLoader 
         onApiKeyLoaded={handleApiKeyLoaded}
         onError={handleApiKeyError}
       />
       
-      {/* Load HERE Maps SDK nur wenn API Key verfügbar */}
       {apiKey && (
         <HereMapModularLoader onLoad={handleSdkLoad} onError={handleSdkError} />
       )}
       
-      {/* Loading State mit Progress */}
       {(isLoading || dataLoading || !apiKey) && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/30 rounded-lg z-10 backdrop-blur-sm">
           <div className="flex flex-col items-center space-y-4 bg-background/90 p-6 rounded-lg shadow-lg">
@@ -214,7 +205,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
         </div>
       )}
 
-      {/* Data Error Notification */}
       {dataError && (
         <div className="absolute top-4 left-4 right-4 z-20">
           <Alert>
@@ -230,7 +220,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
         </div>
       )}
       
-      {/* Map Container */}
       <div
         ref={mapRef}
         className="w-full h-full rounded-lg overflow-hidden bg-muted/10"
@@ -241,7 +230,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
         }}
       />
 
-      {/* Public Map Markers */}
       {mapReady && mapInstanceRef.current && uiRef.current && apiKey && (
         <PublicMapMarkers
           mapInstance={mapInstanceRef.current}
@@ -251,7 +239,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
         />
       )}
       
-      {/* Map Stats Overlay */}
       {mapReady && !isLoading && !dataLoading && apiKey && (
         <div className="absolute bottom-4 right-4 bg-background/95 backdrop-blur-sm rounded-lg p-3 shadow-lg text-sm border">
           <div className="flex items-center gap-2">
@@ -266,7 +253,6 @@ const StableHereMapWithData: React.FC<StableHereMapWithDataProps> = ({
         </div>
       )}
 
-      {/* Interactive Legend */}
       <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur-sm rounded-lg p-3 shadow-lg text-xs border">
         <div className="font-medium text-foreground mb-2">{t('map:price_legend', 'Preislegende')}</div>
         <div className="space-y-1">

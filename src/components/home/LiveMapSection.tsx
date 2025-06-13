@@ -1,38 +1,29 @@
 
 // 🚨 LOCKED: DSGVO MAP CONSENT. Do not change the loading or consent logic without CTO approval!
 // 🚨 LOCKED FILE – Do not edit without explicit CTO approval! (Stand: 13.06.2025)
+// 🚨 CRITICAL FIX: Strikte Conditional Imports - Map nur nach explizitem Button-Click!
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Shield, Info } from "lucide-react";
 import { MapConsentBanner } from "@/components/map/MapConsentBanner";
+import { useMapConsent } from "@/hooks/useMapConsent";
 
-// CRITICAL FIX: Dynamic import nur nach Consent
+// CRITICAL FIX: Conditional Dynamic Import nur nach Consent
 const LazyHereMap = React.lazy(() => import("@/components/map/StableHereMapWithData"));
 
 const LiveMapSection = () => {
   const { t } = useTranslation(['landing']);
-  const [mapConsent, setMapConsent] = useState<boolean | null>(null);
-
-  // CRITICAL: Consent-Check beim Laden - kein automatisches Rendering
-  useEffect(() => {
-    const consent = localStorage.getItem('whatsgonow-map-consent');
-    console.log('🗺️ Map consent check:', consent);
-    
-    if (consent === 'accepted') {
-      setMapConsent(true);
-    } else if (consent === 'declined') {
-      setMapConsent(false);
-    }
-    // Wenn consent === null, bleibt mapConsent null (Banner wird gezeigt)
-  }, []);
-
-  const handleConsent = (accepted: boolean) => {
-    console.log('🗺️ Map consent decision:', accepted);
-    setMapConsent(accepted);
-  };
+  const { 
+    showBanner, 
+    isMapAllowed, 
+    acceptConsent, 
+    declineConsent, 
+    revokeConsent,
+    consentState 
+  } = useMapConsent();
 
   const MapFallbackContent = () => (
     <Card className="border-blue-200 bg-blue-50">
@@ -47,9 +38,10 @@ const LiveMapSection = () => {
             {t('landing:mapFallback.title', 'Datenschutz respektiert')}
           </h3>
           <p className="text-blue-800">
-            {t('landing:mapFallback.message', 
-              'Sie haben der Nutzung von HERE Maps nicht zugestimmt. Ihre Privatsphäre ist uns wichtig.'
-            )}
+            {consentState === false 
+              ? t('landing:mapFallback.message', 'Sie haben der Nutzung von HERE Maps nicht zugestimmt. Ihre Privatsphäre ist uns wichtig.')
+              : t('landing:mapFallback.loading', 'Kartenansicht wird nach Ihrer Zustimmung geladen.')
+            }
           </p>
           <div className="bg-blue-100 p-4 rounded-lg text-sm text-blue-700">
             <div className="flex items-start gap-2">
@@ -66,17 +58,15 @@ const LiveMapSection = () => {
               </div>
             </div>
           </div>
-          <Button 
-            onClick={() => {
-              localStorage.removeItem('whatsgonow-map-consent');
-              localStorage.removeItem('whatsgonow-map-consent-date');
-              setMapConsent(null);
-            }}
-            variant="outline"
-            className="border-blue-300 text-blue-700 hover:bg-blue-100"
-          >
-            {t('landing:mapFallback.reconsider', 'Erneut entscheiden')}
-          </Button>
+          {consentState === false && (
+            <Button 
+              onClick={revokeConsent}
+              variant="outline"
+              className="border-blue-300 text-blue-700 hover:bg-blue-100"
+            >
+              {t('landing:mapFallback.reconsider', 'Erneut entscheiden')}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -98,13 +88,16 @@ const LiveMapSection = () => {
         </div>
         
         <div className="max-w-6xl mx-auto">
-          {/* CRITICAL FIX: Banner nur zeigen wenn Consent unbekannt */}
-          {mapConsent === null && (
-            <MapConsentBanner onConsent={handleConsent} />
+          {/* CRITICAL FIX: Banner nur zeigen wenn showBanner === true */}
+          {showBanner && (
+            <MapConsentBanner 
+              onAccept={acceptConsent}
+              onDecline={declineConsent}
+            />
           )}
           
-          {/* CRITICAL FIX: Karte NUR rendern wenn explizit zugestimmt */}
-          {mapConsent === true && (
+          {/* CRITICAL FIX: Map NUR rendern wenn isMapAllowed === true */}
+          {isMapAllowed && (
             <Card className="overflow-hidden shadow-lg">
               <CardContent className="p-0">
                 <div className="h-[300px] md:h-[500px] w-full">
@@ -129,8 +122,8 @@ const LiveMapSection = () => {
             </Card>
           )}
           
-          {/* CRITICAL FIX: Fallback nur zeigen wenn explizit abgelehnt */}
-          {mapConsent === false && <MapFallbackContent />}
+          {/* CRITICAL FIX: Fallback zeigen wenn nicht zugestimmt oder abgelehnt */}
+          {!isMapAllowed && !showBanner && <MapFallbackContent />}
         </div>
       </div>
     </section>
