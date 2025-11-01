@@ -26,7 +26,7 @@ jobs:
           node-version: '18'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: "javascript,typescript"
 
@@ -37,6 +37,6 @@ jobs:
         run: npm run build
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           token: ${{ secrets.CODEQL_TOKEN }}
